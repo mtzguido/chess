@@ -24,8 +24,8 @@ void printBoard(game b);
 #define EMPTY	0
 #define WPAWN	2
 #define BPAWN	3
-#define WTOWER	4
-#define BTOWER	5
+#define WROOK	4
+#define BROOK	5
 #define WKNIGHT	6
 #define BKNIGHT	7
 #define	WBISHOP	8
