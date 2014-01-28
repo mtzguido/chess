@@ -31,7 +31,11 @@ game startingStatus() {
 void printBoard(game g) {
 	int i, j;
 
+	printf("  12345678\n");
+		
+
 	for (i=0; i<8; i++) {
+		printf("%c ", 'A'+i);
 		for (j=0; j<8; j++) {
 			putchar(charOf(g.board[i][j]));
 		}
@@ -42,7 +46,7 @@ void printBoard(game g) {
 char charOf(int piece) {
 
 	switch (piece) {
-		case EMPTY:   return ' ';
+		case EMPTY:   return '.';
 		case WPAWN:   return 'P';
 		case BPAWN:   return 'p';
 		case WROOK:  return 'R';

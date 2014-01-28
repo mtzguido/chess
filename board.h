@@ -1,8 +1,10 @@
 #ifndef __BOARD_H__
 #define __BOARD_H__
 
+#include <stdlib.h>
+
 typedef struct {
-	unsigned char board[8][8];
+	signed char board[8][8];
 	unsigned char turn;
 	unsigned char idlecount;
 	unsigned char wk_cancastle;
@@ -17,33 +19,35 @@ game startingStatus(void);
 void printBoard(game b);
 
 /* players */
-#define WHITE	0
-#define BLACK	1
+#define BLACK	0
+#define WHITE	1
+
+extern int machineColor;
 
 /* pieces */
 #define EMPTY	0
-#define WPAWN	2
-#define BPAWN	3
-#define WROOK	4
-#define BROOK	5
-#define WKNIGHT	6
-#define BKNIGHT	7
-#define	WBISHOP	8
-#define	BBISHOP	9
-#define WQUEEN	10
-#define BQUEEN	11
-#define	WKING	12
-#define	BKING	13
+#define WPAWN	1
+#define WROOK	2
+#define WKNIGHT	3
+#define	WBISHOP	4
+#define WQUEEN	5
+#define	WKING	6
+#define BPAWN	(-1)
+#define BROOK	(-2)
+#define BKNIGHT	(-3)
+#define	BBISHOP	(-4)
+#define BQUEEN	(-5)
+#define	BKING	(-6)
 
 #define isEmpty(c)	((c)==0)
-#define isPawn(c)	((c)/2 == 1)
-#define isTower(c)	((c)/2 == 2)
-#define isKnight(c)	((c)/2 == 3)
-#define isBishop(c)	((c)/2 == 4)
-#define isQueen(c)	((c)/2 == 5)
-#define isKing(c)	((c)/2 == 6)
+#define isPawn(c)	(abs(c) == 1)
+#define isTower(c)	(abs(c) == 2)
+#define isKnight(c)	(abs(c) == 3)
+#define isBishop(c)	(abs(c) == 4)
+#define isQueen(c)	(abs(c) == 5)
+#define isKing(c)	(abs(c) == 6)
 
-#define colorOf(c)	((c)&1)
+#define colorOf(c)	((c)>0)
 
 char charOf(int piece);
 

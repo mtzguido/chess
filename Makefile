@@ -1,9 +1,9 @@
 .PHONY:clean all re run
-CFLAGS=-Wall -pedantic -g
+CFLAGS=-Wall -g
 SHELL=/bin/bash
-TARGET=ai
+TARGET=chess
 
-mods=main board
+mods=main board ai game
 objs=$(patsubst %,%.o,$(mods))
 
 all: $(TARGET)
