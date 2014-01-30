@@ -8,7 +8,7 @@ int isLegalMove(game g, int row1, int col1, int row2, int col2) {
 }
 
 #define copyWithMove(to, from, r, c, R, C) ((to)=(from), (to).board[r][c] = (from).board[R][C], (to).board[R][C] = 0, (to).turn = flipTurn((from).turn), 0)
-#define addToRet(r, c, R, C) (copyWithMove(arr[alen], g, r, c, R, C), alen++, 0)
+#define addToRet(rr, cc, RR, CC) (copyWithMove(arr[alen], g, rr, cc, RR, CC), arr[alen].lastmove.r=rr, arr[alen].lastmove.R=RR, arr[alen].lastmove.c=cc,arr[alen].lastmove.C=CC, alen++, 0)
 
 int genSuccs(game g, game **arr_ret) {
 	int i, j;
@@ -112,6 +112,155 @@ int genSuccs(game g, game **arr_ret) {
 						break;
 					}
 				}
+			} else if (isBishop(g.board[i][j])) {
+				int k, l;
+
+				for (k=i+1, l=j+1; k<8 && l<8; k++, l++) {
+					if (g.board[k][l] == 0)
+						addToRet(k, l, i, j);
+					else {
+						if (colorOf(g.board[k][l]) != g.turn) {
+							addToRet(k, l, i, j);
+						}
+						break;
+					}
+				}
+				for (k=i-1, l=j+1; k>=0 && l<8; k--, l++) {
+					if (g.board[k][l] == 0)
+						addToRet(k, l, i, j);
+					else {
+						if (colorOf(g.board[k][l]) != g.turn) {
+							addToRet(k, l, i, j);
+						}
+						break;
+					}
+				}
+				for (k=i+1, l=j-1; k<8 && l>=0; k++, l--) {
+					if (g.board[k][l] == 0)
+						addToRet(k, l, i, j);
+					else {
+						if (colorOf(g.board[k][l]) != g.turn) {
+							addToRet(k, l, i, j);
+						}
+						break;
+					}
+				}
+				for (k=i-1, l=j-1; k>=0 && l>=0; k--, l--) {
+					if (g.board[k][l] == 0)
+						addToRet(k, l, i, j);
+					else {
+						if (colorOf(g.board[k][l]) != g.turn) {
+							addToRet(k, l, i, j);
+						}
+						break;
+					}
+				}
+			} else if (isQueen(g.board[i][j])) {
+				int k, l;
+
+				k = i;
+				for (l=j+1; l<8; l++) {
+					if (g.board[k][l] == 0)
+						addToRet(k, l, i, j);
+					else {
+						if (colorOf(g.board[k][l]) != g.turn) {
+							addToRet(k, l, i, j);
+						}
+						break;
+					}
+				}
+				k = i;
+				for (l=j-1; l>=0; l--) {
+					if (g.board[k][l] == 0)
+						addToRet(k, l, i, j);
+					else {
+						if (colorOf(g.board[k][l]) != g.turn) {
+							addToRet(k, l, i, j);
+						}
+						break;
+					}
+				}
+				l = j;
+				for (k=i+1; k<8; k++) {
+					if (g.board[k][l] == 0)
+						addToRet(k, l, i, j);
+					else {
+						if (colorOf(g.board[k][l]) != g.turn) {
+							addToRet(k, l, i, j);
+						}
+						break;
+					}
+				}
+				l = j;
+				for (k=i-1; k>=0; k++) {
+					if (g.board[k][l] == 0)
+						addToRet(k, l, i, j);
+					else {
+						if (colorOf(g.board[k][l]) != g.turn) {
+							addToRet(k, l, i, j);
+						}
+						break;
+					}
+				}
+
+				for (k=i+1, l=j+1; k<8 && l<8; k++, l++) {
+					if (g.board[k][l] == 0)
+						addToRet(k, l, i, j);
+					else {
+						if (colorOf(g.board[k][l]) != g.turn) {
+							addToRet(k, l, i, j);
+						}
+						break;
+					}
+				}
+				for (k=i-1, l=j+1; k>=0 && l<8; k--, l++) {
+					if (g.board[k][l] == 0)
+						addToRet(k, l, i, j);
+					else {
+						if (colorOf(g.board[k][l]) != g.turn) {
+							addToRet(k, l, i, j);
+						}
+						break;
+					}
+				}
+				for (k=i+1, l=j-1; k<8 && l>=0; k++, l--) {
+					if (g.board[k][l] == 0)
+						addToRet(k, l, i, j);
+					else {
+						if (colorOf(g.board[k][l]) != g.turn) {
+							addToRet(k, l, i, j);
+						}
+						break;
+					}
+				}
+				for (k=i-1, l=j-1; k>=0 && l>=0; k--, l--) {
+					if (g.board[k][l] == 0)
+						addToRet(k, l, i, j);
+					else {
+						if (colorOf(g.board[k][l]) != g.turn) {
+							addToRet(k, l, i, j);
+						}
+						break;
+					}
+				}
+			} else if (isKing(g.board[i][j])) {
+				if (i>0 && (g.board[i-1][j] == 0 || colorOf(g.board[i-1][j]) != g.turn))
+					addToRet(i-1, j, i, j);
+				if (i<8 && (g.board[i+1][j] == 0 || colorOf(g.board[i+1][j]) != g.turn))
+					addToRet(i+1, j, i, j);
+				if (j>0 && (g.board[i][j-1] == 0 || colorOf(g.board[i][j-1]) != g.turn))
+					addToRet(i, j-1, i, j);                               
+				if (j<8 && (g.board[i][j+1] == 0 || colorOf(g.board[i][j+1]) != g.turn))
+					addToRet(i, j+1, i, j);
+				if (i>0 && j>0 && (g.board[i-1][j-1] == 0 || colorOf(g.board[i-1][j-1]) != g.turn))
+					addToRet(i-1, j-1, i, j);
+				if (i<8 && j>0 && (g.board[i+1][j-1] == 0 || colorOf(g.board[i-1][j-1]) != g.turn))
+					addToRet(i+1, j-1, i, j);
+				if (i>0 && j<8 && (g.board[i-1][j+1] == 0 || colorOf(g.board[i-1][j+1]) != g.turn))
+					addToRet(i-1, j+1, i, j);
+				if (i<8 && j<8 && (g.board[i+1][j+1] == 0 || colorOf(g.board[i-1][j+1]) != g.turn))
+					addToRet(i+1, j+1, i, j);
+
 			}
 		}
 	}

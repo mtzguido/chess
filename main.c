@@ -11,10 +11,20 @@ int main () {
 	machineColor = BLACK;
 
 	while(1) {
+		if (isFinished(b) != -1) {
+			if (isFinished(b) == WHITE)
+				printf("WHITE WON!\n");
+			else 
+				printf("BLACK WON!\n");
+
+			break;
+		}
+
 		if (b.turn == machineColor) {
 			printf("Machine turn:\n");
 			b = machineMove(b);
 			printBoard(b);
+			printf("(move was %c%i->%c%i)\n", b.lastmove.C+'A', 8-b.lastmove.R, b.lastmove.c+'A', 8-b.lastmove.r);
 		} else {
 			char r1,r2;
 			int c1,c2;

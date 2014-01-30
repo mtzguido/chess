@@ -3,10 +3,15 @@
 
 #include <stdlib.h>
 
+typedef struct move {
+	int r, c, R, C;
+} move;
+
 typedef struct {
 	signed char board[8][8];
 	/* board [1][2] == C2 */
 	unsigned char turn;
+	move lastmove;
 	/*
 	unsigned char idlecount;
 	unsigned char wk_cancastle;

@@ -87,7 +87,7 @@ static score machineMoveImpl(
 }
 
 static score heur(game g) {
-	float res;
+	float res = 0;
 	int i, j;
 	score ret = {0,0,0};
 
