@@ -5,7 +5,9 @@
 
 typedef struct {
 	signed char board[8][8];
+	/* board [1][2] == C2 */
 	unsigned char turn;
+	/*
 	unsigned char idlecount;
 	unsigned char wk_cancastle;
 	unsigned char wq_cancastle;
@@ -13,6 +15,7 @@ typedef struct {
 	unsigned char bq_cancastle;
 	unsigned char en_passant_x;
 	unsigned char en_passant_y;
+	*/
 } game;
 
 game startingStatus(void);
@@ -21,6 +24,8 @@ void printBoard(game b);
 /* players */
 #define BLACK	0
 #define WHITE	1
+
+#define flipTurn(t) ((t)==BLACK?WHITE:BLACK)
 
 extern int machineColor;
 
@@ -41,7 +46,7 @@ extern int machineColor;
 
 #define isEmpty(c)	((c)==0)
 #define isPawn(c)	(abs(c) == 1)
-#define isTower(c)	(abs(c) == 2)
+#define isRook(c)	(abs(c) == 2)
 #define isKnight(c)	(abs(c) == 3)
 #define isBishop(c)	(abs(c) == 4)
 #define isQueen(c)	(abs(c) == 5)
@@ -50,6 +55,7 @@ extern int machineColor;
 #define colorOf(c)	((c)>0)
 
 char charOf(int piece);
+int isFinished(game g);
 
 #endif
 

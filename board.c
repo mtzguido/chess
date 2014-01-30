@@ -15,6 +15,7 @@ game init = {
 		{ WROOK, WKNIGHT, WBISHOP, WQUEEN, WKING, WBISHOP, WKNIGHT, WROOK }
 	},
 	.turn = WHITE,
+	/*
 	.idlecount = 0,
 	.wk_cancastle = 1,
 	.wq_cancastle = 1,
@@ -22,6 +23,7 @@ game init = {
 	.bq_cancastle = 1,
 	.en_passant_x = 0,
 	.en_passant_y = 0
+	*/
 };
 
 game startingStatus() {
@@ -31,16 +33,15 @@ game startingStatus() {
 void printBoard(game g) {
 	int i, j;
 
-	printf("  12345678\n");
-		
-
 	for (i=0; i<8; i++) {
-		printf("%c ", 'A'+i);
+		printf("%i  ", 8-i);
 		for (j=0; j<8; j++) {
 			putchar(charOf(g.board[i][j]));
 		}
 		putchar('\n');
 	}
+
+	printf("\n   abcdefgh\n");
 }
 
 char charOf(int piece) {
@@ -61,5 +62,30 @@ char charOf(int piece) {
 		case BKING:	  return 'k';
 		default:      assert(0);
 	}
+}
+
+int isFinished(game g) {
+	int i, j;
+	int wk = 0, bk = 0;
+
+	for (i=0; i<8; i++) {
+		for (j=0; j<8; j++) {
+			if (g.board[i][j] == WKING)
+				wk = 1;
+			if (g.board[i][j] == BKING)
+				bk = 1;
+		}
+	}
+
+	if (!wk && !bk) {
+		fprintf(stderr," LOLWAT\n");
+		printBoard(g);
+		assert("WHAT"==NULL);
+	} else if (!wk)
+		return BLACK;
+	else if (!bk)
+		return WHITE;
+	else
+		return -1;
 }
 

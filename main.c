@@ -6,21 +6,15 @@
 int machineColor;
 
 int main () {
-	int turn;
-
 	game b = startingStatus();
 	printBoard(b);
 	machineColor = BLACK;
 
-	turn = WHITE;
-
 	while(1) {
-		if (turn == machineColor) {
+		if (b.turn == machineColor) {
 			printf("Machine turn:\n");
 			b = machineMove(b);
 			printBoard(b);
-
-			turn = turn == BLACK ? WHITE : BLACK;
 		} else {
 			char r1,r2;
 			int c1,c2;
@@ -48,12 +42,12 @@ int main () {
 				continue;
 			}
 
-			b.board[r2-'A'][c2-1] = b.board[r1-'A'][c1-1];
-			b.board[r1-'A'][c1-1] = 0;
+			b.board[8-c2][r2-'A'] = b.board[8-c1][r1-'A'];
+			b.board[8-c1][r1-'A'] = 0;
 
 			printBoard(b);
 	
-			turn = turn == BLACK ? WHITE : BLACK;
+			b.turn = flipTurn(b.turn);
 		}
 	}
 

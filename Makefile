@@ -15,7 +15,7 @@ $(TARGET): $(objs)
 	gcc ${CFLAGS} -c $<	-o $@
 
 clean:
-	rm -f $(TARGET) gen rand $(objs)
+	rm -f $(TARGET) $(objs)
 
 re: clean all
 
