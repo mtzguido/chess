@@ -3,7 +3,7 @@ CFLAGS=-Wall -g
 SHELL=/bin/bash
 TARGET=chess
 
-mods=main board ai game
+mods=main board moves ai
 objs=$(patsubst %,%.o,$(mods))
 
 all: $(TARGET)

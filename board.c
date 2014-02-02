@@ -33,15 +33,33 @@ game startingStatus() {
 void printBoard(game g) {
 	int i, j;
 
+	printf("(turn: %s)\n", g.turn == WHITE ? "WHITE" : "BLACK");
 	for (i=0; i<8; i++) {
+		printf("   ");
+		for (j=0; j<8; j++) {
+			putchar(charOf(g.board[i][j]));
+			putchar(charOf(g.board[i][j]));
+			putchar(charOf(g.board[i][j]));
+			putchar(' ');
+			putchar(' ');
+			putchar(' ');
+		}
+		putchar('\n');
 		printf("%i  ", 8-i);
 		for (j=0; j<8; j++) {
 			putchar(charOf(g.board[i][j]));
+			putchar(charOf(g.board[i][j]));
+			putchar(charOf(g.board[i][j]));
+			putchar(' ');
+			putchar(' ');
+			putchar(' ');
 		}
+		putchar('\n');
 		putchar('\n');
 	}
 
-	printf("\n   abcdefgh\n");
+	printf("\n    a     b     c     d     e     f     g     h\n");
+	fflush(stdout);
 }
 
 char charOf(int piece) {
@@ -50,8 +68,8 @@ char charOf(int piece) {
 		case EMPTY:   return '.';
 		case WPAWN:   return 'P';
 		case BPAWN:   return 'p';
-		case WROOK:  return 'R';
-		case BROOK:  return 'r';
+		case WROOK:   return 'R';
+		case BROOK:   return 'r';
 		case WKNIGHT: return 'N';
 		case BKNIGHT: return 'n';
 		case WBISHOP: return 'B';
@@ -62,30 +80,5 @@ char charOf(int piece) {
 		case BKING:	  return 'k';
 		default:      assert(0);
 	}
-}
-
-int isFinished(game g) {
-	int i, j;
-	int wk = 0, bk = 0;
-
-	for (i=0; i<8; i++) {
-		for (j=0; j<8; j++) {
-			if (g.board[i][j] == WKING)
-				wk = 1;
-			if (g.board[i][j] == BKING)
-				bk = 1;
-		}
-	}
-
-	if (!wk && !bk) {
-		fprintf(stderr," LOLWAT\n");
-		printBoard(g);
-		assert("WHAT"==NULL);
-	} else if (!wk)
-		return BLACK;
-	else if (!bk)
-		return WHITE;
-	else
-		return -1;
 }
 

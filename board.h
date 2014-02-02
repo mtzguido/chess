@@ -4,6 +4,7 @@
 #include <stdlib.h>
 
 typedef struct move {
+	/* (r,c) -> (R,C) */
 	int r, c, R, C;
 } move;
 
@@ -60,7 +61,6 @@ extern int machineColor;
 #define colorOf(c)	((c)>0)
 
 char charOf(int piece);
-int isFinished(game g);
 
 #endif
 

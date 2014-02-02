@@ -2,7 +2,7 @@
 #define __AI_H__
 
 #include "board.h"
-#include "game.h"
+#include "moves.h"
 
 game machineMove(game start);
 

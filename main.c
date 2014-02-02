@@ -1,7 +1,7 @@
 #include <stdio.h>
-#include "board.h"
 #include "ai.h"
-#include "game.h"
+#include "board.h"
+#include "moves.h"
 
 int machineColor;
 
@@ -24,40 +24,42 @@ int main () {
 			printf("Machine turn:\n");
 			b = machineMove(b);
 			printBoard(b);
-			printf("(move was %c%i->%c%i)\n", b.lastmove.C+'A', 8-b.lastmove.R, b.lastmove.c+'A', 8-b.lastmove.r);
+			printf("(move was %c%i->%c%i)\n", b.lastmove.c+'A', 8-b.lastmove.r, b.lastmove.C+'A', 8-b.lastmove.R);
 		} else {
-			char r1,r2;
-			int c1,c2;
+			int r, R;
+			char c, C;
 			int t;
 			printf("Your turn:\n");
 			
-			if (4 != (t=scanf("%c%i%c%i", &r1, &c1, &r2, &c2))) {
+			if (4 != (t=scanf("%c%i%c%i", &c, &r, &C, &R))) {
 				fprintf(stderr, "Could not parse move... try again\n");
 				continue;
 			}
 
-			if (r1 >= 'a' && r1 <= 'z')
-				r1 = r1 - 'a' + 'A';
-			if (r2 >= 'a' && r2 <= 'z')
-				r2 = r2 - 'a' + 'A';
+			if (c >= 'a' && c <= 'z')
+				c = c - 'a' + 'A';
+			if (C >= 'a' && C <= 'z')
+				C = C - 'a' + 'A';
 
-			if (r1 < 'A' || r1 > 'H' || r2 < 'A' || r2 > 'H' ||
-					c1 < 0 || c1 > 8 || c2 < 0 || c2 > 8) {
+			printf("Your move: %c%i -> %c%i\n", c, r, C, R);
+
+			if (c < 'A' || c > 'H' || C < 'A' || C > 'H' ||
+					r < 0 || r > 8 || R < 0 || R > 8) {
 				fprintf(stderr, "Out of bounds... try again\b");
 				continue;
 			}
 
-			if (!isLegalMove(b, r1-'A', c1-1, r2-'A', c2-1)) {
+			if (!isLegalMove(b, 8-r, c-'A', 8-R, C-'A')) {
 				fprintf(stderr, "Move is not legal... try again\n");
 				continue;
 			}
 
-			b.board[8-c2][r2-'A'] = b.board[8-c1][r1-'A'];
-			b.board[8-c1][r1-'A'] = 0;
+			b = doMove(b, 8-r, c-'A', 8-R, C-'A');
+			//b.board[8-r][c-'A'] = b.board[8-R][C-'A'];
+			//b.board[8-R][C-'A'] = 0;
 
 			printBoard(b);
 	
-			b.turn = flipTurn(b.turn);
 		}
 	}
 
