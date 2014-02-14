@@ -1,18 +1,20 @@
 .PHONY:clean all re run
 CFLAGS=-Wall -g
+LFLAGS=
 SHELL=/bin/bash
 TARGET=chess
+CC=gcc
 
-mods=main board moves ai
+mods=moves main ai board
 objs=$(patsubst %,%.o,$(mods))
 
 all: $(TARGET)
 
 $(TARGET): $(objs)
-	gcc $(objs) -o $(TARGET)
+	$(CC) $(LFLAGS) $(objs) -o $(TARGET)
 
 %.o: %.c $(wildcard *.h)
-	gcc ${CFLAGS} -c $<	-o $@
+	$(CC) $(CFLAGS) -c $<	-o $@
 
 clean:
 	rm -f $(TARGET) $(objs)

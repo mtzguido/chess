@@ -11,3 +11,4 @@ int genSuccs(game g, game **arr);
 game doMove(game g, int r, int c, int R, int C);
 
 #endif
+

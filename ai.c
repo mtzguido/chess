@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <stdlib.h>
+#include <time.h>
 
 typedef struct {
 	float won;
@@ -28,13 +29,17 @@ static int nopen;
 game machineMove(game start) {
 	game ret;
 	score sc;
+	clock_t t1,t2;
 
 //	printf("Turno: %s\n", start.turn == BLACK ? "Black" : "White");
 
 	nopen = 0;
+	t1 = clock();
 	sc = machineMoveImpl(start, 6, 0, &ret, minScore, maxScore);
-	fprintf(stderr, "machineMove returned board with expected score (%f,%f,%f)\n", sc.won, sc.heur, sc.tiebreak);
+	t2 = clock();
 
+	printf("machineMove returned board with expected score (%f,%f,%f)\n", sc.won, sc.heur, sc.tiebreak);
+	printf("time: %.3fs\n", (t2-t1)*1.0/CLOCKS_PER_SEC);
 	printBoard(ret);
 	printf("(nopen = %i)\n", nopen);
 	fflush(NULL);
