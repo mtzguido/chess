@@ -3,39 +3,45 @@
 
 #include <stdlib.h>
 
+/* CAMBIAR POR COMPLETO */
+
+#define MOVE_REGULAR 0
+#define MOVE_KINGSIDE_CASTLE 1
+#define MOVE_QUEENSIDE_CASTLE 2
+
 typedef struct move {
-	/* (r,c) -> (R,C) */
-	int r, c, R, C;
+	int move_type;
+	int r, c, R, C; /* (r,c) -> (R,C) */
+	int capture:1;
+	int epcapture:1;
 } move;
 
-typedef struct {
+struct game_struct {
 	signed char board[8][8];
 	/* board [1][2] == C2 */
 	unsigned char turn;
 	move lastmove;
-	/*
 	unsigned char idlecount;
-	unsigned char wk_cancastle;
-	unsigned char wq_cancastle;
-	unsigned char bk_cancastle;
-	unsigned char bq_cancastle;
+	unsigned char w_castle_king;
+	unsigned char w_castle_queen;
+	unsigned char b_castle_king;
+	unsigned char b_castle_queen;
 	unsigned char en_passant_x;
 	unsigned char en_passant_y;
-	*/
-} game;
+};
 
-game startingStatus(void);
-void printBoard(game b);
+typedef struct game_struct *game;
 
-/* players */
+/* Players */
 #define BLACK	0
 #define WHITE	1
-
 #define flipTurn(t) ((t)==BLACK?WHITE:BLACK)
 
-extern int machineColor;
+/* Results */
+#define DRAW 1
+#define WIN(p) (2+(p))
 
-/* pieces */
+/* Pieces */
 #define EMPTY	0
 #define WPAWN	1
 #define WROOK	2
@@ -49,7 +55,6 @@ extern int machineColor;
 #define	BBISHOP	(-4)
 #define BQUEEN	(-5)
 #define	BKING	(-6)
-
 #define isEmpty(c)	((c)==0)
 #define isPawn(c)	(abs(c) == 1)
 #define isRook(c)	(abs(c) == 2)
@@ -57,10 +62,20 @@ extern int machineColor;
 #define isBishop(c)	(abs(c) == 4)
 #define isQueen(c)	(abs(c) == 5)
 #define isKing(c)	(abs(c) == 6)
-
 #define colorOf(c)	((c)>0)
 
-char charOf(int piece);
+game startingGame(void);
+
+int isLegalMove(game g, move m);
+int doMove(game g, move m); /* Actua sobre g */
+game copyGame(game g);
+void freeGame(game g);
+
+int genSuccs(game g, game **arr);
+void freeSuccs(game *arr, int len);
+int isFinished(game g);
+
+void printBoard(game b);
 
 #endif
 

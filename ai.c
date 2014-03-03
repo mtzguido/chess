@@ -1,5 +1,4 @@
 #include "ai.h"
-#include "moves.h"
 #include "board.h"
 
 #include <assert.h>
@@ -15,6 +14,8 @@ typedef struct {
 	float tiebreak;
 } score;
 
+int machineColor = -1;
+
 static score machineMoveImpl(
 		game start, int maxDepth, int curDepth,
 		game *nb, score alpha, score beta);
@@ -27,11 +28,9 @@ score maxScore = {  INFINITY, 0, 0 };
 static int nopen;
 
 game machineMove(game start) {
-	game ret;
+	game ret = NULL;
 	score sc;
 	clock_t t1,t2;
-
-//	printf("Turno: %s\n", start.turn == BLACK ? "Black" : "White");
 
 	nopen = 0;
 	t1 = clock();
@@ -43,7 +42,9 @@ game machineMove(game start) {
 	printBoard(ret);
 	printf("(nopen = %i)\n", nopen);
 	fflush(NULL);
-	assert(isLegalMove(start, ret.lastmove.r, ret.lastmove.c, ret.lastmove.R, ret.lastmove.C));
+
+	printf("move=%i %i %i %i\n", ret->lastmove.r, ret->lastmove.c, ret->lastmove.R, ret->lastmove.C);
+	assert(isLegalMove(start, ret->lastmove));
 
 	return ret;
 }
@@ -62,7 +63,7 @@ static score machineMoveImpl(
 //		getchar();
 
 		if (nb != NULL)
-			*nb = g;
+			*nb = copyGame(g);
 
 //		printf("%.*s(leaf) = %f,%f,%f\n", curDepth, "            ", heur(g).won, heur(g).heur, heur(g).tiebreak);
 		return heur(g);
@@ -70,6 +71,7 @@ static score machineMoveImpl(
 
 	game *succs;
 	score t;
+	score ret;
 	int i, n;
 
 	n = genSuccs(g, &succs);
@@ -82,44 +84,53 @@ static score machineMoveImpl(
 		assert("NO MOVES!\n" == NULL);
 	}
 
-	if (g.turn == machineColor) {
-		/* maximizing */
+	if (g->turn == machineColor) {
+		/* Maximizing */
 		for (i=0; i<n; i++) {
 			t = machineMoveImpl(succs[i], maxDepth, curDepth+1, NULL, alpha, beta);
 			if (scoreCmp(t, alpha) > 0) {
 				alpha = t;
 
-				if (nb != NULL)
-					*nb = succs[i];
+				if (nb != NULL) {
+					if (*nb != NULL)
+						freeGame(*nb);
+
+					*nb = copyGame(succs[i]);
+				}
 
 				if (scoreCmp(beta, alpha) <= 0)
 					break;
 			}
 		}
 
-		free(succs);
-//		printf("%.*s(max) = %f,%f,%f\n", curDepth, "            ", alpha.won, alpha.heur, alpha.tiebreak);
-		return alpha;
+		ret = alpha;
+		goto out;
 	} else {
-		/* minimizing */
+		/* Minimizing */
 		for (i=0; i<n; i++) {
 			t = machineMoveImpl(succs[i], maxDepth, curDepth+1, NULL, alpha, beta);
 			if (scoreCmp(t, beta) < 0) {
 				beta = t;
 
-				if (nb != NULL)
-					*nb = succs[i];
+				if (nb != NULL) {
+					if (*nb != NULL)
+						freeGame(*nb);
+
+					*nb = copyGame(succs[i]);
+				}
 
 				if (scoreCmp(beta, alpha) <= 0)
 					break;
 			}
 		}
 
-		free(succs);
-//		printf("%.*s(min) = %f,%f,%f\n", curDepth, "            ", beta.won, beta.heur, beta.tiebreak);
-		return beta;
+		ret = beta;
+		goto out;
 	}
 
+out:
+	freeSuccs(succs, n);
+	return ret;
 }
 
 static score heur(game g) {
@@ -129,35 +140,37 @@ static score heur(game g) {
 
 	for (i=0; i<8; i++) {
 		for (j=0; j<8; j++) {
-			if (g.board[i][j] == 0)
+			char piece = g->board[i][j];
+
+			if (piece == 0)
 				continue;
 
-			if (colorOf(g.board[i][j]) == machineColor) {
-				if (isPawn(g.board[i][j])) {
+			if (colorOf(piece) == machineColor) {
+				if (isPawn(piece)) {
 					res += 1;
-				} else if (isRook(g.board[i][j])) {
+				} else if (isRook(piece)) {
 					res += 10;
-				} else if (isKnight(g.board[i][j])) {
+				} else if (isKnight(piece)) {
 					res += 10;
-				} else if (isBishop(g.board[i][j])) {
+				} else if (isBishop(piece)) {
 					res += 10;
-				} else if (isQueen(g.board[i][j])) {
+				} else if (isQueen(piece)) {
 					res += 50;
-				} else if (isKing(g.board[i][j])) {
+				} else if (isKing(piece)) {
 					res += 10000;
 				}
 			} else {
-				if (isPawn(g.board[i][j])) {
+				if (isPawn(piece)) {
 					res -= 1;
-				} else if (isRook(g.board[i][j])) {
+				} else if (isRook(piece)) {
 					res -= 10;
-				} else if (isKnight(g.board[i][j])) {
+				} else if (isKnight(piece)) {
 					res -= 10;
-				} else if (isBishop(g.board[i][j])) {
+				} else if (isBishop(piece)) {
 					res -= 10;
-				} else if (isQueen(g.board[i][j])) {
+				} else if (isQueen(piece)) {
 					res -= 50;
-				} else if (isKing(g.board[i][j])) {
+				} else if (isKing(piece)) {
 					res -= 10000;
 				}
 			}
@@ -167,11 +180,11 @@ static score heur(game g) {
 	int t = isFinished(g);
 
 	if (t != -1) {
-		if (t == machineColor) {
+		if (t == machineColor)
 			ret.won = 1;
-		} else {
+		else
 			ret.won = -1;
-		}
+
 	} else {
 		ret.won = 0;
 	}
@@ -183,10 +196,10 @@ static score heur(game g) {
 }
 
 static int scoreCmp_(score a, score b) {
-	if (a.won > b.won) return  1;
-	if (a.won < b.won) return -1;
-	if (a.heur > b.heur) return  1;
-	if (a.heur < b.heur) return -1;
+	if (a.won      > b.won)      return  1;
+	if (a.won      < b.won)      return -1;
+	if (a.heur     > b.heur)     return  1;
+	if (a.heur     < b.heur)     return -1;
 	if (a.tiebreak > b.tiebreak) return  1;
 	if (a.tiebreak < b.tiebreak) return -1;
 	return 0;
