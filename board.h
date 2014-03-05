@@ -14,8 +14,9 @@ typedef struct move {
 	int who;
 	int move_type;
 	int r, c, R, C; /* (r,c) -> (R,C) */
-	int capture:1;
+/*	int capture:1;
 	int epcapture:1;
+	*/
 } move;
 
 struct game_struct {

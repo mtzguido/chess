@@ -60,7 +60,9 @@ static int pawnMove(game g, int r, int c, int R, int C) {
 			else
 				return 0;
 		} else if ((R == r-1) && (c == C+1 || c == C-1)) {
-			if (g->board[R][C] != 0 && colorOf(g->board[R][C]) != g->turn) /* o en passant! */
+			if (g->board[R][C] != 0 && colorOf(g->board[R][C]) != g->turn)
+				return 1;
+			else if (R == g->en_passant_x && C == g->en_passant_y)
 				return 1;
 			else
 				return 0;
@@ -74,7 +76,9 @@ static int pawnMove(game g, int r, int c, int R, int C) {
 			else
 				return 0;
 		} else if ((R == r+1) && (c == C+1 || c == C-1)) {
-			if (g->board[R][C] != 0 && colorOf(g->board[R][C]) != g->turn) /* o en passant! */
+			if (g->board[R][C] != 0 && colorOf(g->board[R][C]) != g->turn)
+				return 1;
+			else if (R == g->en_passant_x && C == g->en_passant_y)
 				return 1;
 			else
 				return 0;

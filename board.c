@@ -10,6 +10,7 @@ static char charOf(int piece);
 static int threatens(game g, int r, int c, int R, int C);
 static int inCheck(game g, int who);
 
+#if 0
 static const struct game_struct
 init = {
 	.board= {
@@ -33,6 +34,31 @@ init = {
 	.en_passant_y = -1,
 	.inCheck = { 0, 0 }
 };
+#else
+static const struct game_struct
+init = {
+	.board= {
+		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, BKING },
+		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, WROOK, EMPTY, EMPTY },
+		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, WROOK, EMPTY },
+		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
+		{ BPAWN, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
+		{ WPAWN, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
+		{ EMPTY, WPAWN, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
+		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, WKING },
+	},
+	.kingx = { 0, 7 },
+	.kingy = { 7, 7 },
+	.turn = WHITE,
+	.lastmove = { 0 },
+	.idlecount = 0,
+	.castle_king = { 1, 1 },
+	.castle_queen = { 1, 1 },
+	.en_passant_x = -1,
+	.en_passant_y = -1,
+	.inCheck = { 0, 0 }
+};
+#endif
 
 game startingGame() {
 	game g = malloc(sizeof(*g));
@@ -57,9 +83,18 @@ void printBoard(game g) {
 	for (i=0; i<8; i++) {
 		printf("   ");
 		for (j=0; j<8; j++) {
-			putchar(charOf(g->board[i][j]));
-			putchar(charOf(g->board[i][j]));
-			putchar(charOf(g->board[i][j]));
+			if (g->en_passant_x == i && g->en_passant_y == j)
+				putchar('!');
+			else
+				putchar(charOf(g->board[i][j]));
+			if (g->en_passant_x == i && g->en_passant_y == j)
+				putchar('!');
+			else
+				putchar(charOf(g->board[i][j]));
+			if (g->en_passant_x == i && g->en_passant_y == j)
+				putchar('!');
+			else
+				putchar(charOf(g->board[i][j]));
 			putchar(' ');
 			putchar(' ');
 			putchar(' ');
@@ -67,9 +102,18 @@ void printBoard(game g) {
 		putchar('\n');
 		printf("%i  ", 8-i);
 		for (j=0; j<8; j++) {
-			putchar(charOf(g->board[i][j]));
-			putchar(charOf(g->board[i][j]));
-			putchar(charOf(g->board[i][j]));
+			if (g->en_passant_x == i && g->en_passant_y == j)
+				putchar('!');
+			else
+				putchar(charOf(g->board[i][j]));
+			if (g->en_passant_x == i && g->en_passant_y == j)
+				putchar('!');
+			else
+				putchar(charOf(g->board[i][j]));
+			if (g->en_passant_x == i && g->en_passant_y == j)
+				putchar('!');
+			else
+				putchar(charOf(g->board[i][j]));
 			putchar(' ');
 			putchar(' ');
 			putchar(' ');
@@ -83,6 +127,7 @@ void printBoard(game g) {
 	printf("  castle_queen = %i %i \n", g->castle_queen[0], g->castle_queen[1]);
 	printf("  kingx = %i %i \n", g->kingx[0], g->kingx[1]);
 	printf("  kingy = %i %i \n", g->kingy[0], g->kingy[1]);
+	printf("  en_passant = %i %i \n", g->en_passant_x, g->en_passant_y);
 	printf("  inCheck = %i %i \n", g->inCheck[0], g->inCheck[1]);
 	printf("]\n");
 
@@ -137,6 +182,11 @@ int doMove(game g, move m) {
 			g->castle_queen[m.who] = 0;
 		}
 
+		/* En vez de ver si se movió la torre
+		 * correspondiente, nos fijamos en la
+		 * casilla donde empieza la torre.
+		 * Apenas hay un movimiento el enroque
+		 * se invalida para siempre. */
 		if (m.r == m.who*7) {
 			if (m.c == 7)
 				g->castle_king[m.who] = 0;
@@ -144,14 +194,33 @@ int doMove(game g, move m) {
 				g->castle_queen[m.who] = 0;
 		}
 
+		/* Es una captura al paso? */
+		if (isPawn(piece)
+				&& m.R == g->en_passant_x
+				&& m.C == g->en_passant_y) {
+			g->board[m.r][m.C] = 0; /* sic */
+		}
+
+		/* Recalcular en passant */
+		if (isPawn(piece) && abs(m.r - m.R) == 2) {
+			assert (m.c == m.C);
+			g->en_passant_x = (m.r+m.R)/2; /* je.. */
+			g->en_passant_y = m.c;
+		} else {
+			g->en_passant_x = -1;
+			g->en_passant_y = -1;
+		}
+
 		g->board[m.R][m.C] = g->board[m.r][m.c];
 		g->board[m.r][m.c] = 0;
 
-		if (!safe(m.r, m.c, g->kingx[WHITE], g->kingy[WHITE]) ||
+		if (piece == WKING ||
+			!safe(m.r, m.c, g->kingx[WHITE], g->kingy[WHITE]) ||
 			!safe(m.R, m.C, g->kingx[WHITE], g->kingy[WHITE]))
 			g->inCheck[WHITE] = 0;
 
-		if (!safe(m.r, m.c, g->kingx[BLACK], g->kingy[BLACK]) ||
+		if (piece == BKING ||
+			!safe(m.r, m.c, g->kingx[BLACK], g->kingy[BLACK]) ||
 			!safe(m.R, m.C, g->kingx[BLACK], g->kingy[BLACK]))
 			g->inCheck[BLACK] = 0;
 
@@ -159,6 +228,11 @@ int doMove(game g, move m) {
 	}
 	case MOVE_KINGSIDE_CASTLE:
 		g->castle_king[m.who] = 0;
+
+		/* Dropeamos la cache de jaque
+		 * del oponente. Solo por simpleza,
+		 * se podría llamar 4 veces a safe
+		 * pero no se si es rentable */
 		g->inCheck[flipTurn(m.who)] = 0;
 
 		if (m.who == WHITE) {
@@ -234,8 +308,10 @@ static int inCheck(game g, int who) {
 	int kr, kc;
 	int i, j;
 
+	/*
 	if (g->inCheck[who] != 0)
 		return g->inCheck[who] - 1;
+		*/
 
 	kr = g->kingx[who];
 	kc = g->kingy[who];
@@ -248,10 +324,16 @@ static int inCheck(game g, int who) {
 	if (threatens(g, kr+1, kc-2, kr, kc)) goto ret_true;
 	if (threatens(g, kr-1, kc+2, kr, kc)) goto ret_true;
 	if (threatens(g, kr+1, kc+2, kr, kc)) goto ret_true;
-	for (i=0; i<8; i++)
+	for (i=kr+1; i<8; i++)
 		if (threatens(g, i, kc, kr, kc)) goto ret_true;
 		else if (g->board[i][kc] != 0) break;
-	for (i=0; i<8; i++)
+	for (i=kr-1; i>=0; i--)
+		if (threatens(g, i, kc, kr, kc)) goto ret_true;
+		else if (g->board[i][kc] != 0) break;
+	for (i=kc+1; i<8; i++)
+		if (threatens(g, kr, i, kr, kc)) goto ret_true;
+		else if (g->board[kr][i] != 0) break;
+	for (i=kc-1; i>=0; i--)
 		if (threatens(g, kr, i, kr, kc)) goto ret_true;
 		else if (g->board[kr][i] != 0) break;
 
@@ -288,6 +370,8 @@ static inline int threatens(game g, int r, int c, int R, int C) {
 int isLegalMove(game g, move m) {
 	game ng = copyGame(g);
 	int ret;
+
+	assert(m.who == g->turn);
 
 	switch (m.move_type) {
 	case MOVE_REGULAR:
@@ -416,10 +500,14 @@ int genSuccs(game g, game **arr_ret) {
 				if (g->turn == BLACK && i < 7) {
 					if (g->board[i+1][j] == 0)
 						addToRet(g, makeRegularMove(g->turn, i, j, i+1, j), &arr, &alen, &asz);
-					if (j < 7 && g->board[i+1][j+1] != 0&& colorOf(g->board[i+1][j+1]) != g->turn)
+					if (j < 7 && g->board[i+1][j+1] != 0 && colorOf(g->board[i+1][j+1]) != g->turn)
 						addToRet(g, makeRegularMove(g->turn, i, j, i+1, j+1), &arr, &alen, &asz);
-					if (j > 0 && g->board[i+1][j-1] != 0&& colorOf(g->board[i+1][j-1]) != g->turn)
+					if (j > 0 && g->board[i+1][j-1] != 0 && colorOf(g->board[i+1][j-1]) != g->turn)
 						addToRet(g, makeRegularMove(g->turn, i, j, i+1, j-1), &arr, &alen, &asz);
+					if (i<7 && j>0 && g->en_passant_x == i+1 && g->en_passant_y == j-1)
+						addToRet(g, makeRegularMove(g->turn, i, j, i+1, j-1), &arr, &alen, &asz);
+					if (i<7 && j<7 && g->en_passant_x == i+1 && g->en_passant_y == j+1)
+						addToRet(g, makeRegularMove(g->turn, i, j, i+1, j+1), &arr, &alen, &asz);
 				} else if (g->turn == WHITE && i > 0) {
 					if (g->board[i-1][j] == 0)
 						addToRet(g, makeRegularMove(g->turn, i, j, i-1, j), &arr, &alen, &asz);
@@ -427,6 +515,10 @@ int genSuccs(game g, game **arr_ret) {
 						addToRet(g, makeRegularMove(g->turn, i, j, i-1, j+1), &arr, &alen, &asz);
 					if (j > 0 && g->board[i-1][j-1] != 0 && colorOf(g->board[i-1][j-1]) != g->turn)
 						addToRet(g, makeRegularMove(g->turn, i, j, i-1, j-1), &arr, &alen, &asz);
+					if (i>0 && j>0 && g->en_passant_x == i-1 && g->en_passant_y == j-1)
+						addToRet(g, makeRegularMove(g->turn, i, j, i-1, j-1), &arr, &alen, &asz);
+					if (i>0 && j<8 && g->en_passant_x == i-1 && g->en_passant_y == j+1)
+						addToRet(g, makeRegularMove(g->turn, i, j, i-1, j+1), &arr, &alen, &asz);
 				}
 			} else if (isKnight(piece)) {
 				int di, dj;
