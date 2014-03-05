@@ -1,6 +1,6 @@
 .PHONY:clean all re run
-CFLAGS=-Wall -g -pg
-LFLAGS= -pg -static
+CFLAGS=-Wall -g -pg -O99
+LFLAGS= -pg -static -O99
 SHELL=/bin/bash
 TARGET=chess
 CC=gcc
@@ -23,3 +23,7 @@ re: clean all
 
 run: $(TARGET)
 	./$(TARGET)
+
+prof: $(TARGET)
+	$(TARGET) < prof_input
+	gprof $(TARGET) gmon.out >prof
