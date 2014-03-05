@@ -1,5 +1,5 @@
 .PHONY:clean all re run
-CFLAGS=-Wall -g -pg -O99
+CFLAGS=-Wall -g -pg -O99 -funroll-loops
 LFLAGS= -pg -static -O99
 SHELL=/bin/bash
 TARGET=chess
@@ -25,5 +25,5 @@ run: $(TARGET)
 	./$(TARGET)
 
 prof: $(TARGET)
-	$(TARGET) < prof_input
+	./$(TARGET) < prof_input
 	gprof $(TARGET) gmon.out >prof

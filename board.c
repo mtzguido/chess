@@ -149,25 +149,7 @@ int isFinished(game g) {
 
 static int inCheck(game g, int who) {
 	int kr, kc;
-	int i;
-
-	/*
-	int found = 0;
-	for (i=0; !found && i<8; i++)
-		for (j=0; !found && j<8; j++)
-			if (isKing(g->board[i][j]) && colorOf(g->board[i][j]) == who) {
-				kr = i;
-				kc = j;
-				found = 1;
-			}
-
-	assert(found);
-
-	if (who == WHITE)
-		assert(kr == g->wkingx && kc == g->wkingy);
-	else
-		assert(kr == g->bkingx && kc == g->bkingy);
-		*/
+	int i, j;
 
 	if (g->inCheck[who] != 0)
 		return g->inCheck[who] - 1;
@@ -185,8 +167,15 @@ static int inCheck(game g, int who) {
 	if (threatens(g, kr+1, kc+2, kr, kc)) goto ret_true;
 	for (i=0; i<8; i++)  if (threatens(g, i, kc, kr, kc)) goto ret_true;
 	for (i=0; i<8; i++)  if (threatens(g, kr, i, kr, kc)) goto ret_true;
-	for (i=0; i<8; i++)  if (threatens(g, kr-i, kc-i, kr, kc)) goto ret_true;
-	for (i=0; i<8; i++)  if (threatens(g, kr+i, kc+i, kr, kc)) goto ret_true;
+
+	for (i=kr-1, j=kc-1; i>=0 && j>=0; i--, j--)
+		if (threatens(g, i, j, kr, kc)) goto ret_true;
+	for (i=kr+1, j=kc+1; i<8 && j<8; i++, j++)
+		if (threatens(g, i, j, kr, kc)) goto ret_true;
+	for (i=kr+1, j=kc-1; i<8 && j>=0; i++, j--)
+		if (threatens(g, i, j, kr, kc)) goto ret_true;
+	for (i=kr-1, j=kc+1; i>=0 && j<8; i--, j++)
+		if (threatens(g, i, j, kr, kc)) goto ret_true;
 
 	g->inCheck[who] = 1;
 	return 0;
@@ -197,12 +186,12 @@ ret_true:
 }
 
 static int threatens(game g, int r, int c, int R, int C) {
-	if (r < 0 || r > 7) return 0;
-	if (R < 0 || R > 7) return 0;
-	if (c < 0 || c > 7) return 0;
-	if (C < 0 || C > 7) return 0;
-
-	return g->board[r][c]*g->board[R][C] < 0 && canMove(g, r, c, R, C);
+	return r >= 0 && r < 8 
+	    && R >= 0 && R < 8 
+	    && c >= 0 && c < 8 
+	    && C >= 0 && C < 8 
+	    && g->board[r][c]*g->board[R][C] < 0 
+	    && canMove(g, r, c, R, C);
 }
 
 int isLegalMove(game g, move m) {
