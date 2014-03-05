@@ -11,6 +11,7 @@
 #define MOVE_QUEENSIDE_CASTLE 2
 
 typedef struct move {
+	int who;
 	int move_type;
 	int r, c, R, C; /* (r,c) -> (R,C) */
 	int capture:1;

@@ -5,8 +5,22 @@
 
 int main () {
 	game b = startingGame();
-	printBoard(b);
 	machineColor = BLACK;
+
+	/*
+	int i, n;
+	game* arr;
+
+	n = genSuccs(b, &arr);
+
+	printf("N=%i\n", n);
+	for (i=0; i<n; i++)
+		printBoard(arr[i]);
+
+	return 0;
+	*/
+
+	printBoard(b);
 
 	while(1) {
 		if (isFinished(b) > 0) {
@@ -36,6 +50,8 @@ int main () {
 			char *line = NULL;
 			size_t crap = 0;
 
+			m.who = WHITE;
+
 
 			printf("Your turn:\n");
 			
@@ -46,6 +62,12 @@ int main () {
 			}
 
 			if (c=='x') break;
+			if (c=='z') {
+				m.move_type = r == 1? MOVE_KINGSIDE_CASTLE : MOVE_QUEENSIDE_CASTLE;
+				printf("trying to castle\n");
+				goto move;
+			}
+
 
 			if (c >= 'a' && c <= 'z')
 				c = c - 'a' + 'A';
@@ -68,6 +90,7 @@ int main () {
 			m.c = c-'A';
 			m.C = C-'A';
 
+move:
 			if (!isLegalMove(b, m)) {
 				fprintf(stderr, "Move is not legal... try again\n");
 				continue;

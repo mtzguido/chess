@@ -43,7 +43,7 @@ game machineMove(game start) {
 	printf("(nopen = %i)\n", nopen);
 	fflush(NULL);
 
-	printf("move=%i %i %i %i\n", ret->lastmove.r, ret->lastmove.c, ret->lastmove.R, ret->lastmove.C);
+	printf("move=(type=%i) %i %i %i %i\n", ret->lastmove.move_type, ret->lastmove.r, ret->lastmove.c, ret->lastmove.R, ret->lastmove.C);
 	assert(isLegalMove(start, ret->lastmove));
 
 	return ret;
@@ -137,6 +137,9 @@ static score heur(game g) {
 	float res = 0;
 	int i, j;
 	score ret = {0,0,0};
+
+	if (g->board[0][6] == BKING && g->board[0][5] == BROOK)
+		res+=9999999;
 
 	for (i=0; i<8; i++) {
 		for (j=0; j<8; j++) {

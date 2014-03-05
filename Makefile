@@ -1,6 +1,6 @@
 .PHONY:clean all re run
 CFLAGS=-Wall -g -pg -O99 -funroll-loops
-LFLAGS= -pg -static -O99
+LFLAGS= -pg -static 
 SHELL=/bin/bash
 TARGET=chess
 CC=gcc
