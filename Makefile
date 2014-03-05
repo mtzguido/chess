@@ -17,7 +17,7 @@ $(TARGET): $(objs)
 	$(CC) $(CFLAGS) -c $<	-o $@
 
 clean:
-	rm -f $(TARGET) $(objs)
+	rm -f $(TARGET) $(objs) gmon.out
 
 re: clean all
 
