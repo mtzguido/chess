@@ -197,7 +197,12 @@ ret_true:
 }
 
 static int threatens(game g, int r, int c, int R, int C) {
-	return canMove(g, r, c, R, C) && g->board[r][c]*g->board[R][C] < 0;
+	if (r < 0 || r > 7) return 0;
+	if (R < 0 || R > 7) return 0;
+	if (c < 0 || c > 7) return 0;
+	if (C < 0 || C > 7) return 0;
+
+	return g->board[r][c]*g->board[R][C] < 0 && canMove(g, r, c, R, C);
 }
 
 int isLegalMove(game g, move m) {

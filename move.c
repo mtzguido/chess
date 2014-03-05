@@ -22,25 +22,32 @@ int canMove(game g, int r, int c, int R, int C) {
 	if (C < 0 || C >= 8) return 0;
 	if (r == R && c == C) return 0;
 
-	if (g->board[r][c] == 0)
+	switch(g->board[r][c]) {
+	case 0:
 		return 0;
-	else if (isPawn(g->board[r][c]))
+	case WPAWN:
+	case BPAWN:
 		return pawnMove(g, r, c, R, C);
-	else if (isKnight(g->board[r][c]))
+	case WKNIGHT:
+	case BKNIGHT:
 		return knightMove(g, r, c, R, C);
-	else if (isBishop(g->board[r][c]))
+	case WBISHOP:
+	case BBISHOP:
 		return bishopMove(g, r, c, R, C);
-	else if (isRook(g->board[r][c]))
+	case WROOK:
+	case BROOK:
 		return rookMove(g, r, c, R, C);
-	else if (isQueen(g->board[r][c]))
+	case WQUEEN:
+	case BQUEEN:
 	  return rookMove(g, r, c, R, C)
 	  	|| bishopMove(g, r, c, R, C);
-	else if (isKing(g->board[r][c]))
+	case WKING:
+	case BKING:
 		return kingMove(g, r, c, R, C);
-	else
+	default:
 	  fprintf(stderr, "!!!!!!!! (%i)\n", g->board[r][c]);
-
-	return 0;
+	  assert(0);
+	}
 }
 
 static int pawnMove(game g, int r, int c, int R, int C) {
