@@ -2,6 +2,7 @@
 #define __BOARD_H__
 
 #include <stdlib.h>
+#include <stdint.h>
 
 /* CAMBIAR POR COMPLETO */
 
@@ -17,17 +18,31 @@ typedef struct move {
 } move;
 
 struct game_struct {
-	signed char board[8][8];
+	/* Tablero */
 	/* board [1][2] == C2 */
+	int8_t board[8][8];
 	unsigned char turn;
+
+	/* Última jugada */
 	move lastmove;
-	unsigned char idlecount;
-	unsigned char w_castle_king;
-	unsigned char w_castle_queen;
-	unsigned char b_castle_king;
-	unsigned char b_castle_queen;
-	unsigned char en_passant_x;
-	unsigned char en_passant_y;
+
+	/* Estado no visible */
+	uint8_t idlecount;
+	uint8_t castle_king[2];
+	uint8_t castle_queen[2];
+	uint8_t en_passant_x;
+	uint8_t en_passant_y;
+
+	/* Optimizaciones */
+	/*   Posicion de los reyes */
+	uint8_t kingx[2];
+	uint8_t kingy[2];
+
+	/*   Caches de jaque */
+	uint8_t inCheck[2];
+	/*     inCheck[who] = 0 -> no conocido
+	 *     inCheck[who] = 1 -> libre
+	 *     inCheck[who] = 2 -> en jaque */
 };
 
 typedef struct game_struct *game;

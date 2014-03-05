@@ -33,17 +33,26 @@ int main () {
 			char c, C;
 			move m;
 			int t;
+			char *line = NULL;
+			size_t crap = 0;
+
+
 			printf("Your turn:\n");
 			
-			if (4 != (t=scanf("%c%i%c%i", &c, &r, &C, &R))) {
+			getline(&line, &crap, stdin);
+			if (4 != (t=sscanf(line, "%c%i%c%i", &c, &r, &C, &R))) {
 				fprintf(stderr, "Could not parse move... try again\n");
 				continue;
 			}
+
+			if (c=='x') break;
 
 			if (c >= 'a' && c <= 'z')
 				c = c - 'a' + 'A';
 			if (C >= 'a' && C <= 'z')
 				C = C - 'a' + 'A';
+
+			free(line);
 
 			printf("Your move: %c%i -> %c%i\n", c, r, C, R);
 

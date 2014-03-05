@@ -196,10 +196,10 @@ static score heur(game g) {
 }
 
 static int scoreCmp_(score a, score b) {
-	if (a.won      > b.won)      return  1;
-	if (a.won      < b.won)      return -1;
-	if (a.heur     > b.heur)     return  1;
-	if (a.heur     < b.heur)     return -1;
+	if (a.won      > b.won     ) return  1;
+	if (a.won      < b.won     ) return -1;
+	if (a.heur     > b.heur    ) return  1;
+	if (a.heur     < b.heur    ) return -1;
 	if (a.tiebreak > b.tiebreak) return  1;
 	if (a.tiebreak < b.tiebreak) return -1;
 	return 0;

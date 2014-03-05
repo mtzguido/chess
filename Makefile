@@ -1,11 +1,11 @@
 .PHONY:clean all re run
-CFLAGS=-Wall -g
-LFLAGS=
+CFLAGS=-Wall -g -pg
+LFLAGS= -pg -static
 SHELL=/bin/bash
 TARGET=chess
 CC=gcc
 
-mods=main ai board
+mods=main ai board move
 objs=$(patsubst %,%.o,$(mods))
 
 all: $(TARGET)
