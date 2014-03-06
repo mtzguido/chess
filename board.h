@@ -88,6 +88,8 @@ int doMove(game g, move m); /* Actua sobre g */
 game copyGame(game g);
 void freeGame(game g);
 
+int inCheck(game g, int who);
+
 int genSuccs(game g, game **arr);
 void freeSuccs(game *arr, int len);
 int isFinished(game g);

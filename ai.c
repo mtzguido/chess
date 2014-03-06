@@ -133,13 +133,9 @@ out:
 	return ret;
 }
 
-static score heur(game g) {
-	float res = 0;
+static float pieceScore(game g) {
 	int i, j;
-	score ret = {0,0,0};
-
-	if (g->board[0][6] == BKING && g->board[0][5] == BROOK)
-		res+=9999999;
+	float res = 0;
 
 	for (i=0; i<8; i++) {
 		for (j=0; j<8; j++) {
@@ -159,8 +155,6 @@ static score heur(game g) {
 					res += 10;
 				} else if (isQueen(piece)) {
 					res += 50;
-				} else if (isKing(piece)) {
-					res += 10000;
 				}
 			} else {
 				if (isPawn(piece)) {
@@ -173,12 +167,20 @@ static score heur(game g) {
 					res -= 10;
 				} else if (isQueen(piece)) {
 					res -= 50;
-				} else if (isKing(piece)) {
-					res -= 10000;
 				}
 			}
 		}
 	}
+	
+	return res;
+}
+
+static float coverScore(game g) {
+	return 0;
+}
+
+static score heur(game g) {
+	score ret = {0,0,0};
 
 	int t = isFinished(g);
 
@@ -187,12 +189,13 @@ static score heur(game g) {
 			ret.won = 1;
 		else
 			ret.won = -1;
-
 	} else {
 		ret.won = 0;
 	}
 
-	ret.heur = res;
+	ret.heur = pieceScore(g)
+	         + coverScore(g)
+			 + inCheck(g, flipTurn(machineColor)) ? 20 : 0;
 	ret.tiebreak = 0*rand(); /* !!!!!!!!!!!!!!!!!!!!!!! */
 
 	return ret;

@@ -140,7 +140,6 @@ static int rookMove(game g, int r, int c, int R, int C) {
 			return 0;
 
 		return 1;
-
 	} else
 		return 0;
 }

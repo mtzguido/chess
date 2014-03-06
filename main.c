@@ -50,8 +50,7 @@ int main () {
 			char *line = NULL;
 			size_t crap = 0;
 
-			m.who = WHITE;
-
+			m.who = flipTurn(machineColor);
 
 			printf("Your turn:\n");
 			
