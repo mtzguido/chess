@@ -193,9 +193,9 @@ static score heur(game g) {
 		ret.won = 0;
 	}
 
-	ret.heur = pieceScore(g)
-	         + coverScore(g)
-			 + inCheck(g, flipTurn(machineColor)) ? 20 : 0;
+	ret.heur = (pieceScore(g))
+	         + (coverScore(g))
+			 + (inCheck(g, flipTurn(machineColor)) ? 20 : 0);
 	ret.tiebreak = 0*rand(); /* !!!!!!!!!!!!!!!!!!!!!!! */
 
 	return ret;
