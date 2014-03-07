@@ -14,7 +14,7 @@ int pawnSuccs(int r, int c, game g, game **arr, int *alen) {
 	if (g->turn == BLACK && r < 7) {
 		if (g->board[r+1][c] == 0)
 			addToRet2(g, makeRegularMove(g->turn, r, c, r+1, c), arr, alen);
-		if (g->board[r+1][c] == 0 && g->board[r+2][c] == 0)
+		if (r == 1 && g->board[r+1][c] == 0 && g->board[r+2][c] == 0)
 			addToRet2(g, makeRegularMove(g->turn, r, c, r+2, c), arr, alen);
 		if (c < 7 && g->board[r+1][c+1] != 0 && colorOf(g->board[r+1][c+1]) != g->turn)
 			addToRet2(g, makeRegularMove(g->turn, r, c, r+1, c+1), arr, alen);
@@ -27,7 +27,7 @@ int pawnSuccs(int r, int c, game g, game **arr, int *alen) {
 	} else if (g->turn == WHITE && r > 0) {
 		if (g->board[r-1][c] == 0)
 			addToRet2(g, makeRegularMove(g->turn, r, c, r-1, c), arr, alen);
-		if (g->board[r-1][c] == 0 && g->board[r-2][c] == 0)
+		if (r == 6 && g->board[r-1][c] == 0 && g->board[r-2][c] == 0)
 			addToRet2(g, makeRegularMove(g->turn, r, c, r-2, c), arr, alen);
 		if (c < 7 && g->board[r-1][c+1] != 0 && colorOf(g->board[r-1][c+1]) != g->turn)
 			addToRet2(g, makeRegularMove(g->turn, r, c, r-1, c+1), arr, alen);
@@ -330,8 +330,6 @@ static move makeRegularMove(int who, int r, int c, int R, int C) {
 
 int hasNextGame(game g) {
 #if 0
-=======
->>>>>>> ab4482256425cae9cb493fd5d62ebe5c40169702
 	int n;
 	game *arr;
 
@@ -339,7 +337,6 @@ int hasNextGame(game g) {
 	n = genSuccs(g, &arr);
 	freeSuccs(arr, n);
 
-<<<<<<< HEAD
 	return n > 0;
 #else
 	int i, j;
