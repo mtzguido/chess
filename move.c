@@ -51,7 +51,7 @@ int canMove(game g, int r, int c, int R, int C) {
 }
 
 static int pawnMove(game g, int r, int c, int R, int C) {
-	if (g->turn == WHITE) {
+	if (colorOf(g->board[r][c]) == WHITE) {
 		if (c == C) {
 			if (R == r-1 && g->board[R][C] == 0)
 				return 1;
@@ -60,14 +60,14 @@ static int pawnMove(game g, int r, int c, int R, int C) {
 			else
 				return 0;
 		} else if ((R == r-1) && (c == C+1 || c == C-1)) {
-			if (g->board[R][C] != 0 && colorOf(g->board[R][C]) != g->turn)
+			if (g->board[R][C] != 0 && colorOf(g->board[R][C]) != colorOf(g->board[r][c]))
 				return 1;
 			else if (R == g->en_passant_x && C == g->en_passant_y)
 				return 1;
 			else
 				return 0;
 		}
-	} else { /* g->turn == BLACK */
+	} else { /* colorOf(g->board[r][c]) == BLACK */
 		if (c == C) {
 			if (R == r+1 && g->board[R][C] == 0)
 				return 1;
@@ -76,7 +76,7 @@ static int pawnMove(game g, int r, int c, int R, int C) {
 			else
 				return 0;
 		} else if ((R == r+1) && (c == C+1 || c == C-1)) {
-			if (g->board[R][C] != 0 && colorOf(g->board[R][C]) != g->turn)
+			if (g->board[R][C] != 0 && colorOf(g->board[R][C]) != colorOf(g->board[r][c]))
 				return 1;
 			else if (R == g->en_passant_x && C == g->en_passant_y)
 				return 1;
@@ -92,7 +92,7 @@ static int knightMove(game g, int r, int c, int R, int C) {
 	if (abs(r-R) + abs(c-C) != 3 || abs(r-R) == 0 || abs(c-C) == 0)
 		return 0;
 
-	if (g->board[R][C] == 0 || colorOf(g->board[R][C]) != g->turn)
+	if (g->board[R][C] == 0 || colorOf(g->board[R][C]) != colorOf(g->board[r][c]))
 		return 1;
 	else
 		return 0;
@@ -111,7 +111,7 @@ static int bishopMove(game g, int r, int c, int R, int C) {
 		if (g->board[i][j] != 0)
 			return 0;
 
-	if (g->board[R][C] != 0 && colorOf(g->board[R][C]) == g->turn)
+	if (g->board[R][C] != 0 && colorOf(g->board[R][C]) == colorOf(g->board[r][c]))
 		return 0;
 
 	return 1;
@@ -125,7 +125,7 @@ static int rookMove(game g, int r, int c, int R, int C) {
 			if (g->board[r][i] != 0)
 				return 0;
 
-		if (g->board[R][C] != 0 && colorOf(g->board[R][C] == g->turn))
+		if (g->board[R][C] != 0 && colorOf(g->board[R][C] == colorOf(g->board[r][c])))
 			return 0;
 
 		return 1;
@@ -136,7 +136,7 @@ static int rookMove(game g, int r, int c, int R, int C) {
 			if (g->board[i][C] != 0)
 				return 0;
 
-		if (g->board[R][C] != 0 && colorOf(g->board[R][C] == g->turn))
+		if (g->board[R][C] != 0 && colorOf(g->board[R][C] == colorOf(g->board[r][c])))
 			return 0;
 
 		return 1;
@@ -147,7 +147,7 @@ static int rookMove(game g, int r, int c, int R, int C) {
 static int kingMove(game g, int r, int c, int R, int C) {
 	if (abs(C-c) > 1) return 0;
 	if (abs(R-r) > 1) return 0;
-	if (g->board[R][C] != 0 && colorOf(g->board[R][C]) == g->turn)
+	if (g->board[R][C] != 0 && colorOf(g->board[R][C]) == colorOf(g->board[r][c]))
 		return 0;
 
 	return 1;

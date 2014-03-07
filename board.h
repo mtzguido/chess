@@ -4,8 +4,6 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-/* CAMBIAR POR COMPLETO */
-
 #define MOVE_REGULAR 0
 #define MOVE_KINGSIDE_CASTLE 1
 #define MOVE_QUEENSIDE_CASTLE 2
@@ -14,6 +12,7 @@ typedef struct move {
 	int who;
 	int move_type;
 	int r, c, R, C; /* (r,c) -> (R,C) */
+	int promote;
 /*	int capture:1;
 	int epcapture:1;
 	*/
@@ -41,10 +40,10 @@ struct game_struct {
 	uint8_t kingy[2];
 
 	/*   Caches de jaque */
-	uint8_t inCheck[2];
-	/*     inCheck[who] = 0 -> no conocido
-	 *     inCheck[who] = 1 -> libre
-	 *     inCheck[who] = 2 -> en jaque */
+	int8_t inCheck[2];
+	/*     inCheck[who] = -1 -> no conocido
+	 *     inCheck[who] = 0 -> libre
+	 *     inCheck[who] = 1 -> en jaque */
 };
 
 typedef struct game_struct *game;
@@ -84,13 +83,14 @@ typedef struct game_struct *game;
 game startingGame(void);
 
 int isLegalMove(game g, move m);
-int doMove(game g, move m); /* Actua sobre g */
+void doMove(game g, move m); /* Actua sobre g */
 game copyGame(game g);
 void freeGame(game g);
 
+#include "succs.h"
+
 int inCheck(game g, int who);
 
-int genSuccs(game g, game **arr);
 void freeSuccs(game *arr, int len);
 int isFinished(game g);
 

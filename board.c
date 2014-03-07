@@ -22,8 +22,6 @@ init = {
 		{ WPAWN, WPAWN, WPAWN, WPAWN, WPAWN, WPAWN, WPAWN, WPAWN },
 		{ WROOK, WKNIGHT, WBISHOP, WQUEEN, WKING, WBISHOP, WKNIGHT, WROOK }
 	},
-	.kingx = { 0, 7 },
-	.kingy = { 4, 4 },
 	.turn = WHITE,
 	.lastmove = { 0 },
 	.idlecount = 0,
@@ -31,37 +29,58 @@ init = {
 	.castle_queen = { 1, 1 },
 	.en_passant_x = -1,
 	.en_passant_y = -1,
-	.inCheck = { 0, 0 }
 };
 #else
 static const struct game_struct
 init = {
 	.board= {
-		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, BKING },
-		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, WROOK, EMPTY, EMPTY },
-		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, WROOK, EMPTY },
+		{ EMPTY, EMPTY, EMPTY, BKING, EMPTY, EMPTY, EMPTY, EMPTY },
+		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, WROOK },
 		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
-		{ BPAWN, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
-		{ WPAWN, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
-		{ EMPTY, WPAWN, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
-		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, WKING },
+		{ WKNIGHT, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
+		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
+		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
+		{ EMPTY, EMPTY, WKING, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
+		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY }
 	},
-	.kingx = { 0, 7 },
-	.kingy = { 7, 7 },
-	.turn = WHITE,
+	.turn = BLACK,
 	.lastmove = { 0 },
 	.idlecount = 0,
 	.castle_king = { 1, 1 },
 	.castle_queen = { 1, 1 },
 	.en_passant_x = -1,
 	.en_passant_y = -1,
-	.inCheck = { 0, 0 }
 };
 #endif
+
+static void fixKings(game g) {
+	int i, j;
+	int kw = 0, kb = 0;
+
+	for (i=0; i<8; i++) {
+		for (j=0; j<8; j++) {
+			if (g->board[i][j] == WKING) {
+				assert(kw == 0);
+				g->kingx[WHITE] = i;
+				g->kingy[WHITE] = j;
+				kw = 1;
+			} else if (g->board[i][j] == BKING) {
+				assert(kb == 0);
+				g->kingx[BLACK] = i;
+				g->kingy[BLACK] = j;
+				kb = 1;
+			}
+		}
+	}
+}
 
 game startingGame() {
 	game g = malloc(sizeof(*g));
 	*g = init;
+	fixKings(g);
+
+	g->inCheck[BLACK] = -1;
+	g->inCheck[WHITE] = -1;
 	return g;
 }
 
@@ -161,15 +180,21 @@ static char charOf(int piece) {
  * . . k .
  * . . . .
  * may occur. Where moving the knight could cause a check
- * even when it's not the piece who threatens the king */
+ * even when it's not the piece that threatens the king */
 static int safe (int r, int c, int kr, int kc) {
-	if (r == kr || c == kc) return 1; /* misma fila o columna */
-	if (abs(r-c) == abs(kr-kc)) return 1; /* misma diagonal */
-	if (abs(r-kr) - abs(c-kc) == 3) return 1; /* caballos */
-	return 0;
+	int dx, dy;
+	if (r == kr || c == kc) return 0; /* misma fila o columna */
+	dx = abs(r - kr);
+	dy = abs(c - kc);
+	if (dx == dy) return 0; /* misma diagonal */
+	if (dx + dy == 3 && dx != 0 && dy != 0) return 0; /* caballos */
+	return 1;
 }
 
-int doMove(game g, move m) {
+static void doMove_impl(game g, move m) {
+	int other = flipTurn(m.who);
+	assert(g->turn == m.who);
+	g->lastmove = m;
 
 	switch (m.move_type) {
 	case MOVE_REGULAR: {
@@ -213,15 +238,24 @@ int doMove(game g, move m) {
 		g->board[m.R][m.C] = g->board[m.r][m.c];
 		g->board[m.r][m.c] = 0;
 
-		if (piece == WKING ||
-			!safe(m.r, m.c, g->kingx[WHITE], g->kingy[WHITE]) ||
-			!safe(m.R, m.C, g->kingx[WHITE], g->kingy[WHITE]))
-			g->inCheck[WHITE] = 0;
+		/* Es un peón que promueve? */
+		if (isPawn(piece)
+				&& m.R == (m.who == WHITE ? 0 : 7)) {
+			g->board[m.R][m.C] = m.who == WHITE ? m.promote : -m.promote;
+		}
 
-		if (piece == BKING ||
-			!safe(m.r, m.c, g->kingx[BLACK], g->kingy[BLACK]) ||
-			!safe(m.R, m.C, g->kingx[BLACK], g->kingy[BLACK]))
-			g->inCheck[BLACK] = 0;
+		/* Necesitamos también (posiblemente) dropear la nuestra,
+		 * doMove_impl puede ser llamado con una movida no válida */
+		if (!safe(m.r, m.c, g->kingx[m.who], g->kingy[m.who]) ||
+			!safe(m.R, m.C, g->kingx[m.who], g->kingy[m.who]) ||
+			isKing(piece))
+			g->inCheck[m.who] = -1;
+
+		/* Si es algún movimiento relevante al rey contrario
+		 * dropeamos la cache */
+		if (!safe(m.r, m.c, g->kingx[other], g->kingy[other]) ||
+			!safe(m.R, m.C, g->kingx[other], g->kingy[other]))
+			g->inCheck[other] = -1;
 
 		break;
 	}
@@ -232,7 +266,7 @@ int doMove(game g, move m) {
 		 * del oponente. Solo por simpleza,
 		 * se podría llamar 4 veces a safe
 		 * pero no se si es rentable */
-		g->inCheck[flipTurn(m.who)] = 0;
+		g->inCheck[other] = -1;
 
 		if (m.who == WHITE) {
 			g->board[7][4] = EMPTY;
@@ -252,7 +286,7 @@ int doMove(game g, move m) {
 		break;
 	case MOVE_QUEENSIDE_CASTLE:
 		g->castle_queen[m.who] = 0;
-		g->inCheck[flipTurn(m.who)] = 0;
+		g->inCheck[other] = -1;
 
 		if (m.who == WHITE) {
 			g->board[7][0] = EMPTY;
@@ -273,44 +307,40 @@ int doMove(game g, move m) {
 		}
 		break;
 
-
 	default:
 		assert("UNIMPLEMENTED" == NULL);
 	}
+}
+
+void doMove(game g, move m) {
+//	assert(isLegalMove(g, m));
+	doMove_impl(g, m);
 
 	/* Sabemos con certeza que no podemos estar en jaque,
 	 * ya que la movida es válida (isLegalMove debe haber
 	 * retornado true para poder llamar a doMove). */
-	g->inCheck[m.who] = 1;
+	g->inCheck[m.who] = 0;
 	g->turn = flipTurn(g->turn);
-
-	return 0;
 }
 
+
 int isFinished(game g) {
-	game *arr;
-	int n;
-
-	/* medio choto esto */
-	n = genSuccs(g, &arr);
-	freeSuccs(arr, n);
-
-	if (n != 0)
+	if (hasNextGame(g) != 0)
 		return -1;
 	else if (inCheck(g, g->turn))
-		return DRAW; /* Stalemate */
-	else
 		return WIN(flipTurn(g->turn)); /* Current player is checkmated */
+	else
+		return DRAW; /* Stalemate */
 }
 
 int inCheck(game g, int who) {
 	int kr, kc;
 	int i, j;
 
-	/*
-	if (g->inCheck[who] != 0)
-		return g->inCheck[who] - 1;
-		*/
+#ifdef CHECK_CACHE
+	if (g->inCheck[who] != -1)
+		return g->inCheck[who];
+#endif
 
 	kr = g->kingx[who];
 	kc = g->kingy[who];
@@ -349,11 +379,14 @@ int inCheck(game g, int who) {
 		if (threatens(g, i, j, kr, kc)) goto ret_true;
 		else if (g->board[i][j] != 0) break;
 
-	g->inCheck[who] = 1;
+	assert(g->inCheck[who] != 1);
+	g->inCheck[who] = 0;
 	return 0;
 
 ret_true:
-	g->inCheck[who] = 2;
+
+	assert(g->inCheck[who] != 0);
+	g->inCheck[who] = 1;
 	return 1;
 }
 
@@ -384,6 +417,16 @@ int isLegalMove(game g, move m) {
 		if (!canMove(g, m.r, m.c, m.R, m.C)) {
 			ret = 0;
 			goto out;
+		}
+
+		/* Es un peón que promueve? */
+		if (isPawn(g->board[m.r][m.c])
+				&& m.R == (m.who == WHITE ? 0 : 7)) {
+			if (m.promote == 0) {
+				printf("Esa movida requiere una promoción!!!\n");
+				ret = 0;
+				goto out;
+			}
 		}
 
 		break;
@@ -430,7 +473,7 @@ int isLegalMove(game g, move m) {
 	}
 
 	/* Nunca podemos quedar en jaque */
-	doMove(ng, m);
+	doMove_impl(ng, m);
 	if (inCheck(ng, g->turn)) {
 		ret = 0;
 		goto out;
@@ -443,314 +486,6 @@ out:
 	return ret;
 }
 
-static void addToRet(game g, move m, game **arr, int *len) {
-	game t = copyGame(g);
-	doMove(t, m);
-
-	if (inCheck(t, g->turn)) {
-		freeGame(t);
-		return;
-	}
-
-	t->turn = flipTurn(g->turn);
-	t->lastmove = m;
-
-	(*arr)[*len] = t;
-	(*len)++;
-}
-
-static move makeRegularMove(int who, int r, int c, int R, int C) {
-	move ret;
-
-	ret.who = who;
-	ret.move_type = MOVE_REGULAR;
-	ret.r = r;
-	ret.c = c;
-	ret.R = R;
-	ret.C = C;
-
-	return ret;
-}
-
-int genSuccs(game g, game **arr_ret) {
-	int i, j;
-	int alen, asz;
-	game *arr;
-
-	alen = 0;
-	asz = 128;
-	arr = malloc(asz * sizeof g);
-	assert(arr != NULL);
-
-	for (i=0; i<8; i++) {
-		for (j=0; j<8; j++) {
-			char piece = g->board[i][j];
-
-			if (piece == 0 || colorOf(piece) != g->turn)
-				continue; /* Can't be moved */
-
-			if (isPawn(piece)) {
-				if (g->turn == BLACK && i < 7) {
-					if (g->board[i+1][j] == 0)
-						addToRet(g, makeRegularMove(g->turn, i, j, i+1, j), &arr, &alen);
-					if (j < 7 && g->board[i+1][j+1] != 0 && colorOf(g->board[i+1][j+1]) != g->turn)
-						addToRet(g, makeRegularMove(g->turn, i, j, i+1, j+1), &arr, &alen);
-					if (j > 0 && g->board[i+1][j-1] != 0 && colorOf(g->board[i+1][j-1]) != g->turn)
-						addToRet(g, makeRegularMove(g->turn, i, j, i+1, j-1), &arr, &alen);
-					if (i<7 && j>0 && g->en_passant_x == i+1 && g->en_passant_y == j-1)
-						addToRet(g, makeRegularMove(g->turn, i, j, i+1, j-1), &arr, &alen);
-					if (i<7 && j<7 && g->en_passant_x == i+1 && g->en_passant_y == j+1)
-						addToRet(g, makeRegularMove(g->turn, i, j, i+1, j+1), &arr, &alen);
-				} else if (g->turn == WHITE && i > 0) {
-					if (g->board[i-1][j] == 0)
-						addToRet(g, makeRegularMove(g->turn, i, j, i-1, j), &arr, &alen);
-					if (j < 7 && g->board[i-1][j+1] != 0 && colorOf(g->board[i-1][j+1]) != g->turn)
-						addToRet(g, makeRegularMove(g->turn, i, j, i-1, j+1), &arr, &alen);
-					if (j > 0 && g->board[i-1][j-1] != 0 && colorOf(g->board[i-1][j-1]) != g->turn)
-						addToRet(g, makeRegularMove(g->turn, i, j, i-1, j-1), &arr, &alen);
-					if (i>0 && j>0 && g->en_passant_x == i-1 && g->en_passant_y == j-1)
-						addToRet(g, makeRegularMove(g->turn, i, j, i-1, j-1), &arr, &alen);
-					if (i>0 && j<8 && g->en_passant_x == i-1 && g->en_passant_y == j+1)
-						addToRet(g, makeRegularMove(g->turn, i, j, i-1, j+1), &arr, &alen);
-				}
-			} else if (isKnight(piece)) {
-				int di, dj;
-				for (di=1; di<3; di++) {
-					dj = 3-di;
-
-					if (i+di >= 0 && j+dj>=0 && i+di < 8 && j+dj < 8 && (g->board[i+di][j+dj] == 0 || colorOf(g->board[i+di][j+dj]) != g->turn))
-						addToRet(g, makeRegularMove(g->turn, i, j, i+di, j+dj), &arr, &alen);
-
-					dj=-dj;
-					if (i+di >= 0 && j+dj>=0 && i+di < 8 && j+dj < 8 && (g->board[i+di][j+dj] == 0 || colorOf(g->board[i+di][j+dj]) != g->turn))
-						addToRet(g, makeRegularMove(g->turn, i, j, i+di, j+dj), &arr, &alen);
-
-					di=-di;
-					if (i+di >= 0 && j+dj>=0 && i+di < 8 && j+dj < 8 && (g->board[i+di][j+dj] == 0 || colorOf(g->board[i+di][j+dj]) != g->turn))
-						addToRet(g, makeRegularMove(g->turn, i, j, i+di, j+dj), &arr, &alen);
-
-					dj=-dj;
-					if (i+di >= 0 && j+dj>=0 && i+di < 8 && j+dj < 8 && (g->board[i+di][j+dj] == 0 || colorOf(g->board[i+di][j+dj]) != g->turn))
-						addToRet(g, makeRegularMove(g->turn, i, j, i+di, j+dj), &arr, &alen);
-
-					di=-di;
-				}
-			} else if (isRook(piece)) {
-				int k, l;
-
-				k = i;
-				for (l=j+1; l<8; l++) {
-					if (g->board[k][l] == 0)
-						addToRet(g, makeRegularMove(g->turn, i, j, k, l), &arr, &alen);
-					else {
-						if (colorOf(g->board[k][l]) != g->turn) {
-							addToRet(g, makeRegularMove(g->turn, i, j, k, l), &arr, &alen);
-						}
-						break;
-					}
-				}
-				k = i;
-				for (l=j-1; l>=0; l--) {
-					if (g->board[k][l] == 0)
-						addToRet(g, makeRegularMove(g->turn, i, j, k, l), &arr, &alen);
-					else {
-						if (colorOf(g->board[k][l]) != g->turn) {
-							addToRet(g, makeRegularMove(g->turn, i, j, k, l), &arr, &alen);
-						}
-						break;
-					}
-				}
-				l = j;
-				for (k=i+1; k<8; k++) {
-					if (g->board[k][l] == 0)
-						addToRet(g, makeRegularMove(g->turn, i, j, k, l), &arr, &alen);
-					else {
-						if (colorOf(g->board[k][l]) != g->turn) {
-							addToRet(g, makeRegularMove(g->turn, i, j, k, l), &arr, &alen);
-						}
-						break;
-					}
-				}
-				l = j;
-				for (k=i-1; k>=0; k++) {
-					if (g->board[k][l] == 0)
-						addToRet(g, makeRegularMove(g->turn, i, j, k, l), &arr, &alen);
-					else {
-						if (colorOf(g->board[k][l]) != g->turn) {
-							addToRet(g, makeRegularMove(g->turn, i, j, k, l), &arr, &alen);
-						}
-						break;
-					}
-				}
-			} else if (isBishop(piece)) {
-				int k, l;
-
-				for (k=i+1, l=j+1; k<8 && l<8; k++, l++) {
-					if (g->board[k][l] == 0)
-						addToRet(g, makeRegularMove(g->turn, i, j, k, l), &arr, &alen);
-					else {
-						if (colorOf(g->board[k][l]) != g->turn) {
-							addToRet(g, makeRegularMove(g->turn, i, j, k, l), &arr, &alen);
-						}
-						break;
-					}
-				}
-				for (k=i-1, l=j+1; k>=0 && l<8; k--, l++) {
-					if (g->board[k][l] == 0)
-						addToRet(g, makeRegularMove(g->turn, i, j, k, l), &arr, &alen);
-					else {
-						if (colorOf(g->board[k][l]) != g->turn) {
-							addToRet(g, makeRegularMove(g->turn, i, j, k, l), &arr, &alen);
-						}
-						break;
-					}
-				}
-				for (k=i+1, l=j-1; k<8 && l>=0; k++, l--) {
-					if (g->board[k][l] == 0)
-						addToRet(g, makeRegularMove(g->turn, i, j, k, l), &arr, &alen);
-					else {
-						if (colorOf(g->board[k][l]) != g->turn) {
-							addToRet(g, makeRegularMove(g->turn, i, j, k, l), &arr, &alen);
-						}
-						break;
-					}
-				}
-				for (k=i-1, l=j-1; k>=0 && l>=0; k--, l--) {
-					if (g->board[k][l] == 0)
-						addToRet(g, makeRegularMove(g->turn, i, j, k, l), &arr, &alen);
-					else {
-						if (colorOf(g->board[k][l]) != g->turn) {
-							addToRet(g, makeRegularMove(g->turn, i, j, k, l), &arr, &alen);
-						}
-						break;
-					}
-				}
-			} else if (isQueen(piece)) {
-				int k, l;
-
-				k = i;
-				for (l=j+1; l<8; l++) {
-					if (g->board[k][l] == 0)
-						addToRet(g, makeRegularMove(g->turn, i, j, k, l), &arr, &alen);
-					else {
-						if (colorOf(g->board[k][l]) != g->turn) {
-							addToRet(g, makeRegularMove(g->turn, i, j, k, l), &arr, &alen);
-						}
-						break;
-					}
-				}
-				k = i;
-				for (l=j-1; l>=0; l--) {
-					if (g->board[k][l] == 0)
-						addToRet(g, makeRegularMove(g->turn, i, j, k, l), &arr, &alen);
-					else {
-						if (colorOf(g->board[k][l]) != g->turn) {
-							addToRet(g, makeRegularMove(g->turn, i, j, k, l), &arr, &alen);
-						}
-						break;
-					}
-				}
-				l = j;
-				for (k=i+1; k<8; k++) {
-					if (g->board[k][l] == 0)
-						addToRet(g, makeRegularMove(g->turn, i, j, k, l), &arr, &alen);
-					else {
-						if (colorOf(g->board[k][l]) != g->turn) {
-							addToRet(g, makeRegularMove(g->turn, i, j, k, l), &arr, &alen);
-						}
-						break;
-					}
-				}
-				l = j;
-				for (k=i-1; k>=0; k--) {
-					if (g->board[k][l] == 0)
-						addToRet(g, makeRegularMove(g->turn, i, j, k, l), &arr, &alen);
-					else {
-						if (colorOf(g->board[k][l]) != g->turn) {
-							addToRet(g, makeRegularMove(g->turn, i, j, k, l), &arr, &alen);
-						}
-						break;
-					}
-				}
-				for (k=i+1, l=j+1; k<8 && l<8; k++, l++) {
-					if (g->board[k][l] == 0)
-						addToRet(g, makeRegularMove(g->turn, i, j, k, l), &arr, &alen);
-					else {
-						if (colorOf(g->board[k][l]) != g->turn) {
-							addToRet(g, makeRegularMove(g->turn, i, j, k, l), &arr, &alen);
-						}
-						break;
-					}
-				}
-				for (k=i-1, l=j+1; k>=0 && l<8; k--, l++) {
-					if (g->board[k][l] == 0)
-						addToRet(g, makeRegularMove(g->turn, i, j, k, l), &arr, &alen);
-					else {
-						if (colorOf(g->board[k][l]) != g->turn) {
-							addToRet(g, makeRegularMove(g->turn, i, j, k, l), &arr, &alen);
-						}
-						break;
-					}
-				}
-				for (k=i+1, l=j-1; k<8 && l>=0; k++, l--) {
-					if (g->board[k][l] == 0)
-						addToRet(g, makeRegularMove(g->turn, i, j, k, l), &arr, &alen);
-					else {
-						if (colorOf(g->board[k][l]) != g->turn) {
-							addToRet(g, makeRegularMove(g->turn, i, j, k, l), &arr, &alen);
-						}
-						break;
-					}
-				}
-				for (k=i-1, l=j-1; k>=0 && l>=0; k--, l--) {
-					if (g->board[k][l] == 0)
-						addToRet(g, makeRegularMove(g->turn, i, j, k, l), &arr, &alen);
-					else {
-						if (colorOf(g->board[k][l]) != g->turn) {
-							addToRet(g, makeRegularMove(g->turn, i, j, k, l), &arr, &alen);
-						}
-						break;
-					}
-				}
-			} else if (isKing(piece)) {
-				if (i>0 && (g->board[i-1][j] == 0 || colorOf(g->board[i-1][j]) != g->turn))
-					addToRet(g, makeRegularMove(g->turn, i, j, i-1, j), &arr, &alen);
-				if (i<7 && (g->board[i+1][j] == 0 || colorOf(g->board[i+1][j]) != g->turn))
-					addToRet(g, makeRegularMove(g->turn, i, j, i+1, j), &arr, &alen);
-				if (j>0 && (g->board[i][j-1] == 0 || colorOf(g->board[i][j-1]) != g->turn))
-					addToRet(g, makeRegularMove(g->turn, i, j, i, j-1), &arr, &alen);                               
-				if (j<7 && (g->board[i][j+1] == 0 || colorOf(g->board[i][j+1]) != g->turn))
-					addToRet(g, makeRegularMove(g->turn, i, j, i, j+1), &arr, &alen);
-				if (i>0 && j>0 && (g->board[i-1][j-1] == 0 || colorOf(g->board[i-1][j-1]) != g->turn))
-					addToRet(g, makeRegularMove(g->turn, i, j, i-1, j-1), &arr, &alen);
-				if (i<7 && j>0 && (g->board[i+1][j-1] == 0 || colorOf(g->board[i+1][j-1]) != g->turn))
-					addToRet(g, makeRegularMove(g->turn, i, j, i+1, j-1), &arr, &alen);
-				if (i>0 && j<7 && (g->board[i-1][j+1] == 0 || colorOf(g->board[i-1][j+1]) != g->turn))
-					addToRet(g, makeRegularMove(g->turn, i, j, i-1, j+1), &arr, &alen);
-				if (i<7 && j<7 && (g->board[i+1][j+1] == 0 || colorOf(g->board[i+1][j+1]) != g->turn))
-					addToRet(g, makeRegularMove(g->turn, i, j, i+1, j+1), &arr, &alen);
-			}
-			assert(arr != NULL);
-		}
-	}
-
-	move m;
-
-	m.who = g->turn;
-	m.move_type = MOVE_KINGSIDE_CASTLE;
-	if (isLegalMove(g, m))
-		addToRet(g, m, &arr, &alen);
-
-	m.move_type = MOVE_QUEENSIDE_CASTLE;
-	if (isLegalMove(g, m))
-		addToRet(g, m, &arr, &alen);
-
-	*arr_ret = arr;
-
-	assert(alen <= asz);
-
-	return alen;
-}
 
 void freeSuccs(game *arr, int len) {
 	int i;
