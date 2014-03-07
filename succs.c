@@ -325,6 +325,8 @@ static move makeRegularMove(int who, int r, int c, int R, int C) {
 
 int hasNextGame(game g) {
 #if 0
+=======
+>>>>>>> ab4482256425cae9cb493fd5d62ebe5c40169702
 	int n;
 	game *arr;
 
@@ -332,6 +334,7 @@ int hasNextGame(game g) {
 	n = genSuccs(g, &arr);
 	freeSuccs(arr, n);
 
+<<<<<<< HEAD
 	return n > 0;
 #else
 	int i, j;
@@ -393,5 +396,4 @@ out:
 	return ret;
 #endif
 }
-
 

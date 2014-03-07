@@ -9,7 +9,7 @@
 static char charOf(int piece);
 static int threatens(game g, int r, int c, int R, int C);
 
-#if 1
+#if 0
 static const struct game_struct
 init = {
 	.board= {
