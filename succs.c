@@ -10,9 +10,12 @@ static move makeRegularMove(int who, int r, int c, int R, int C);
 
 int pawnSuccs(int r, int c, game g, game **arr, int *alen) {
 	int n = *alen;
+
 	if (g->turn == BLACK && r < 7) {
 		if (g->board[r+1][c] == 0)
 			addToRet2(g, makeRegularMove(g->turn, r, c, r+1, c), arr, alen);
+		if (g->board[r+1][c] == 0 && g->board[r+2][c] == 0)
+			addToRet2(g, makeRegularMove(g->turn, r, c, r+2, c), arr, alen);
 		if (c < 7 && g->board[r+1][c+1] != 0 && colorOf(g->board[r+1][c+1]) != g->turn)
 			addToRet2(g, makeRegularMove(g->turn, r, c, r+1, c+1), arr, alen);
 		if (c > 0 && g->board[r+1][c-1] != 0 && colorOf(g->board[r+1][c-1]) != g->turn)
@@ -24,6 +27,8 @@ int pawnSuccs(int r, int c, game g, game **arr, int *alen) {
 	} else if (g->turn == WHITE && r > 0) {
 		if (g->board[r-1][c] == 0)
 			addToRet2(g, makeRegularMove(g->turn, r, c, r-1, c), arr, alen);
+		if (g->board[r-1][c] == 0 && g->board[r-2][c] == 0)
+			addToRet2(g, makeRegularMove(g->turn, r, c, r-2, c), arr, alen);
 		if (c < 7 && g->board[r-1][c+1] != 0 && colorOf(g->board[r-1][c+1]) != g->turn)
 			addToRet2(g, makeRegularMove(g->turn, r, c, r-1, c+1), arr, alen);
 		if (c > 0 && g->board[r-1][c-1] != 0 && colorOf(g->board[r-1][c-1]) != g->turn)
