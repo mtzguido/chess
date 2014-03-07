@@ -1,11 +1,11 @@
 .PHONY:clean all re run
-CFLAGS= -Wall -pg -g -O99 -funroll-loops
-LFLAGS= -pg -O99
+CFLAGS= -Wall -pg -g -funroll-loops $(CFLAGS_EXTRA)
+LFLAGS= -pg 
 SHELL=/bin/bash
 TARGET=chess
 CC=gcc
 
-mods=main ai board move
+mods=main ai board move succs
 objs=$(patsubst %,%.o,$(mods))
 
 all: $(TARGET)
@@ -25,5 +25,5 @@ run: $(TARGET)
 	./$(TARGET)
 
 prof: $(TARGET)
-	./$(TARGET) < prof_input
+	./$(TARGET) < prof_input # >/dev/null
 	gprof $(TARGET) gmon.out >prof
