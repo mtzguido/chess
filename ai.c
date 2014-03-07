@@ -185,17 +185,20 @@ static score heur(game g) {
 	int t = isFinished(g);
 
 	if (t != -1) {
-		if (t == machineColor)
+		if (t == WIN(machineColor))
 			ret.won = 1;
+		else if (t == WIN(flipTurn(machineColor)))
+			ret.won = 0;
 		else
-			ret.won = -1;
+			ret.won = 0.5;
 	} else {
-		ret.won = 0;
+		ret.won = 0.5;
 	}
 
 	ret.heur = (pieceScore(g))
 	         + (coverScore(g))
 			 + (inCheck(g, flipTurn(machineColor)) ? 20 : 0);
+
 	ret.tiebreak = 0*rand(); /* !!!!!!!!!!!!!!!!!!!!!!! */
 
 	return ret;
