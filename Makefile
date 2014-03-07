@@ -1,5 +1,5 @@
 .PHONY:clean all re run
-CFLAGS= -Wall -pg -g -funroll-loops $(CFLAGS_EXTRA)
+CFLAGS= -Wall -pg -g -funroll-loops -O99 -DNDEBUG -DCHECK_CACHE $(CFLAGS_EXTRA)
 LFLAGS= -pg 
 SHELL=/bin/bash
 TARGET=chess

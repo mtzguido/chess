@@ -313,7 +313,7 @@ static void doMove_impl(game g, move m) {
 }
 
 void doMove(game g, move m) {
-//	assert(isLegalMove(g, m));
+	assert(isLegalMove(g, m));
 	doMove_impl(g, m);
 
 	/* Sabemos con certeza que no podemos estar en jaque,
