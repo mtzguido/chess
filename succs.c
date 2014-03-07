@@ -222,11 +222,14 @@ int genSuccs(game g, game **arr_ret) {
 				pawnSuccs(i, j, g, &arr, &alen);
 			else if (isKnight(piece))
 				knightSuccs(i, j, g, &arr, &alen);
-			else if (isRook(piece) || isQueen(piece))
+			else if (isRook(piece))
 				rookSuccs(i, j, g, &arr, &alen);
-			else if (isBishop(piece) || isQueen(piece))
+			else if (isBishop(piece))
 				bishopSuccs(i, j, g, &arr, &alen);
-			else if (isKing(piece)) 
+			else if (isQueen(piece)) {
+				rookSuccs(i, j, g, &arr, &alen);
+				bishopSuccs(i, j, g, &arr, &alen);
+			} else if (isKing(piece)) 
 				kingSuccs(i, j, g, &arr, &alen);
 
 			assert(arr != NULL);
@@ -362,10 +365,16 @@ int hasNextGame(game g) {
 			} else if (isKnight(piece)) {
 				if (knightSuccs(i, j, g, &arr, &alen))
 					goto out;
-			} else if (isRook(piece) || isQueen(piece)) {
+			} else if (isRook(piece)) {
 				if (rookSuccs(i, j, g, &arr, &alen))
 					goto out;
-			} else if (isBishop(piece) || isQueen(piece)) {
+			} else if (isBishop(piece)) {
+				if (bishopSuccs(i, j, g, &arr, &alen))
+					goto out;
+			} else if (isQueen(piece)) {
+				if (rookSuccs(i, j, g, &arr, &alen))
+					goto out;
+
 				if (bishopSuccs(i, j, g, &arr, &alen))
 					goto out;
 			} else if (isKing(piece)) {
