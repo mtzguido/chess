@@ -9,7 +9,7 @@
 static char charOf(int piece);
 static int threatens(game g, int r, int c, int R, int C);
 
-#if 0
+#if 1
 static const struct game_struct
 init = {
 	.board= {
@@ -34,14 +34,14 @@ init = {
 static const struct game_struct
 init = {
 	.board= {
-		{ EMPTY, EMPTY, EMPTY, BKING, EMPTY, EMPTY, EMPTY, EMPTY },
-		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, WROOK },
-		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
-		{ WKNIGHT, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
 		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
 		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
-		{ EMPTY, EMPTY, WKING, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
-		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY }
+		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
+		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, BQUEEN, EMPTY, EMPTY },
+		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
+		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
+		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, BROOK, EMPTY },
+		{ EMPTY, EMPTY, WKING, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY }
 	},
 	.turn = BLACK,
 	.lastmove = { 0 },
@@ -337,10 +337,8 @@ int inCheck(game g, int who) {
 	int kr, kc;
 	int i, j;
 
-#ifdef CHECK_CACHE
 	if (g->inCheck[who] != -1)
 		return g->inCheck[who];
-#endif
 
 	kr = g->kingx[who];
 	kc = g->kingy[who];
@@ -494,5 +492,19 @@ void freeSuccs(game *arr, int len) {
 		freeGame(arr[i]);
 
 	free(arr);
+}
+
+int equalMove(move a, move b) {
+	if (a.who != b.who) return 0;
+	if (a.move_type != b.move_type) return 0;
+
+	if (a.move_type != MOVE_REGULAR)
+		return 1;
+
+	return a.r == b.r
+		&& a.c == b.c
+		&& a.R == b.R
+		&& a.C == b.C
+		&& a.promote == b.promote;
 }
 

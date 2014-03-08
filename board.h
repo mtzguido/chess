@@ -96,5 +96,7 @@ int isFinished(game g);
 
 void printBoard(game b);
 
+int equalMove(move a, move b);
+
 #endif
 
