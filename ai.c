@@ -6,7 +6,11 @@
 #include <stdio.h>
 #include <assert.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <time.h>
+
+#define SEARCH_DEPTH	6
+#define NKILLER	2
 
 typedef struct {
 	float won;
@@ -19,7 +23,7 @@ int machineColor = -1;
 static score machineMoveImpl(
 		game start, int maxDepth, int curDepth,
 		game *nb, score alpha, score beta);
-static score heur(game g);
+static score heur(game g, int depth);
 static int scoreCmp(score a, score b);
 
 score minScore = { -INFINITY, 0, 0 };
@@ -27,23 +31,29 @@ score maxScore = {  INFINITY, 0, 0 };
 
 static int nopen;
 
+static move killerTable[SEARCH_DEPTH][NKILLER];
+
 game machineMove(game start) {
 	game ret = NULL;
 	score sc;
 	clock_t t1,t2;
+	int i, j;
+
+	for (i=0; i<SEARCH_DEPTH; i++)
+		for (j=0; j<NKILLER; j++)
+			killerTable[i][j].move_type = -1;
 
 	nopen = 0;
 	t1 = clock();
-	sc = machineMoveImpl(start, 6, 0, &ret, minScore, maxScore);
+	sc = machineMoveImpl(start, SEARCH_DEPTH, 0, &ret, minScore, maxScore);
 	t2 = clock();
 
 	printf("machineMove returned board with expected score (%f,%f,%f)\n", sc.won, sc.heur, sc.tiebreak);
+	printf("move=(type=%i) %i %i %i %i\n", ret->lastmove.move_type, ret->lastmove.r, ret->lastmove.c, ret->lastmove.R, ret->lastmove.C);
 	printf("time: %.3fs\n", (t2-t1)*1.0/CLOCKS_PER_SEC);
-	printBoard(ret);
 	printf("(nopen = %i)\n", nopen);
 	fflush(NULL);
 
-	printf("move=(type=%i) %i %i %i %i\n", ret->lastmove.move_type, ret->lastmove.r, ret->lastmove.c, ret->lastmove.R, ret->lastmove.C);
 	assert(isLegalMove(start, ret->lastmove));
 
 	return ret;
@@ -53,84 +63,103 @@ static score machineMoveImpl(
 		game g, int maxDepth, int curDepth,
 		game *nb, score alpha, score beta) {
 
-	/* si hay jaque mate buscamos el mejor o
-	 * lo agarramos y listo? */
-
+	/* Si nos pasamos de profundidad o el tablero
+	 * es terminal */
 	if (curDepth >= maxDepth || isFinished(g) != -1) {
-//		printf("LEAF BOARD!!\n");
-//		printBoard(g);
-//		printf("HEUR= %f %f %f\n", heur(g).won, heur(g).heur, heur(g).tiebreak);
-//		getchar();
-
 		if (nb != NULL)
 			*nb = copyGame(g);
 
-//		printf("%.*s(leaf) = %f,%f,%f\n", curDepth, "            ", heur(g).won, heur(g).heur, heur(g).tiebreak);
-		return heur(g);
+		return heur(g, curDepth);
 	}
 
+	bool maximizing;
 	game *succs;
 	score t;
-	score ret;
 	int i, n;
+	int kindex;
 
+	if (g->turn == machineColor)
+		maximizing = true;
+	else
+		maximizing = false;
+
+	/* Generamos los sucesores del tablero */
 	n = genSuccs(g, &succs);
-
 	nopen++;
 
+	/* No debería ocurrir nunca */
 	if (n == 0) {
 		printBoard(g);
 		printf("--------------------\n");
 		assert("NO MOVES!\n" == NULL);
 	}
 
-	if (g->turn == machineColor) {
-		/* Maximizing */
-		for (i=0; i<n; i++) {
-			t = machineMoveImpl(succs[i], maxDepth, curDepth+1, NULL, alpha, beta);
-			if (scoreCmp(t, alpha) > 0) {
-				alpha = t;
+	/* Pongo las killer move primero */
+	int k;
 
-				if (nb != NULL) {
-					if (*nb != NULL)
-						freeGame(*nb);
+	kindex = 0;
+	for (i=0; i<n; i++) {
+		for (k=0; k<NKILLER; k++) {
+			if (equalMove(succs[i]->lastmove, killerTable[curDepth][k])) {
+				game temp;
 
-					*nb = copyGame(succs[i]);
+				if (i > kindex) {
+					temp = succs[i];
+					succs[i] = succs[kindex];
+					succs[kindex] = temp;
 				}
+				kindex++;
 
-				if (scoreCmp(beta, alpha) <= 0)
-					break;
+				break;
 			}
 		}
-
-		ret = alpha;
-		goto out;
-	} else {
-		/* Minimizing */
-		for (i=0; i<n; i++) {
-			t = machineMoveImpl(succs[i], maxDepth, curDepth+1, NULL, alpha, beta);
-			if (scoreCmp(t, beta) < 0) {
-				beta = t;
-
-				if (nb != NULL) {
-					if (*nb != NULL)
-						freeGame(*nb);
-
-					*nb = copyGame(succs[i]);
-				}
-
-				if (scoreCmp(beta, alpha) <= 0)
-					break;
-			}
-		}
-
-		ret = beta;
-		goto out;
 	}
 
-out:
+	/* Itero por los sucesores */
+	for (i=0; i< n; i++) {
+		t = machineMoveImpl(succs[i], maxDepth, curDepth+1, NULL, alpha, beta);
+
+		if (maximizing && scoreCmp(t, alpha) <= 0)
+			continue;
+		else if (!maximizing && scoreCmp(t, beta) >= 0)
+			continue;
+
+		if (maximizing)
+			alpha = t;
+		else
+			beta = t;
+
+		if (nb != NULL) {
+			if (*nb != NULL)
+				freeGame(*nb);
+
+			*nb = copyGame(succs[i]);
+		}
+
+		/* Corte, alpha o beta */
+		if (scoreCmp(beta, alpha) <= 0) {
+/*			printf("Cut-off! %i %i %i %i %i\n", curDepth,
+					succs[i]->lastmove.r,
+					succs[i]->lastmove.c,
+					succs[i]->lastmove.R,
+					succs[i]->lastmove.C);
+					*/
+
+			/* Si no era una killer move, la agrego */
+			if (i >= kindex) {
+				int k;
+				for (k=NKILLER-1; k>0; k--)
+					killerTable[curDepth][k] = killerTable[curDepth][k-1];
+
+				killerTable[curDepth][0] = succs[i]->lastmove;
+			}
+
+			break;
+		}
+	}
+
 	freeSuccs(succs, n);
-	return ret;
+	return maximizing ? alpha : beta;
 }
 
 static float pieceScore(game g) {
@@ -179,7 +208,7 @@ static float coverScore(game g) {
 	return 0;
 }
 
-static score heur(game g) {
+static score heur(game g, int depth) {
 	score ret = {0,0,0};
 
 	int t = isFinished(g);
@@ -199,7 +228,7 @@ static score heur(game g) {
 	         + (coverScore(g))
 			 + (inCheck(g, flipTurn(machineColor)) ? 20 : 0);
 
-	ret.tiebreak = 0*rand(); /* !!!!!!!!!!!!!!!!!!!!!!! */
+	ret.tiebreak = -depth;
 
 	return ret;
 }
