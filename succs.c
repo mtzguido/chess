@@ -252,7 +252,6 @@ int genSuccs(game g, game **arr_ret) {
 	return alen;
 }
 
-
 static void addToRet(game g, move m, game **arr, int *len) {
 	if (! isLegalMove(g, m)) {
 		return;
