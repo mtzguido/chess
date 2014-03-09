@@ -343,9 +343,10 @@ static int safe (int r, int c, int kr, int kc) {
 }
 
 /* 1 : ok
- * 0 : movida no válida, no hay garantias respecto a g (puede haber cambiado)  */
+ * 0 : movida no válida, deja a g intacto */
 int doMove(game g, move m) {
 	int ret;
+	game old_g = copyGame(g);
 
 	assert(m.who == g->turn);
 
@@ -353,6 +354,8 @@ int doMove(game g, move m) {
 	case MOVE_REGULAR:
 	{
 		int8_t piece = g->board[m.r][m.c];
+		int other = flipTurn(g->turn);
+
 		/* Siempre se mueve una pieza propia */
 		if (piece == 0 || colorOf(piece) != g->turn) {
 			ret = 0;
@@ -457,11 +460,9 @@ int doMove(game g, move m) {
 
 		g->castle_king[m.who] = 0;
 
-		/* Dropeamos la cache de jaque
-		 * del oponente. Solo por simpleza,
-		 * se podría llamar 4 veces a safe
-		 * pero no se si es rentable */
-		g->inCheck[other] = -1;
+		/* Dropeamos la cache de jaque */
+		g->inCheck[0] = -1;
+		g->inCheck[1] = -1;
 
 		if (m.who == WHITE) {
 			g->board[7][4] = EMPTY;
@@ -503,7 +504,8 @@ int doMove(game g, move m) {
 
 		g->castle_queen[m.who] = 0;
 
-		g->inCheck[other] = -1;
+		g->inCheck[0] = -1;
+		g->inCheck[1] = -1;
 
 		if (m.who == WHITE) {
 			g->board[7][0] = EMPTY;
@@ -528,7 +530,7 @@ int doMove(game g, move m) {
 	}
 
 	/* Nunca podemos quedar en jaque */
-	if (g->inCheck[g->turn] != 0 && inCheck(ng, g->turn)) {
+	if (g->inCheck[g->turn] != 0 && inCheck(g, g->turn)) {
 		ret = 0;
 		goto out;
 	}
@@ -539,6 +541,12 @@ int doMove(game g, move m) {
 	ret = 1;
 
 out:
+	if (ret == 0) {
+		*g = *old_g;
+	}
+
+	freeGame(old_g);
+
 	return ret;
 }
 

@@ -54,8 +54,6 @@ game machineMove(game start) {
 	printf("(nopen = %i)\n", nopen);
 	fflush(NULL);
 
-	assert(isLegalMove(start, ret->lastmove));
-
 	return ret;
 }
 

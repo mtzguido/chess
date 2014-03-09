@@ -230,17 +230,14 @@ int genSuccs(game g, game **arr_ret) {
 }
 
 static void addToRet(game g, move m, game **arr, int *len) {
-	if (! isLegalMove(g, m)) {
+	game t = copyGame(g);
+
+	if (!doMove(t, m)) {
+		freeGame(t);
 		return;
 	}
 
-	game t = copyGame(g);
-
-	doMove(t, m);
 	assert (!inCheck(t, g->turn));
-
-	t->turn = flipTurn(g->turn);
-	t->lastmove = m;
 
 	(*arr)[*len] = t;
 	(*len)++;
@@ -255,17 +252,15 @@ static void addToRet2(game g, move m, game **arr, int *len) {
 		&& m.R == (m.who == WHITE ? 0 : 7)) {
 		/* Caballo */
 		do {
-			m.promote = WKNIGHT;
-			if (! isLegalMove(g, m))
-				break;
-
 			game t = copyGame(g);
 
-			doMove(t, m);
-			assert (!inCheck(t, g->turn));
+			m.promote = WKNIGHT;
+			if (!doMove(t, m)) {
+				freeGame(t);
+				break;
+			}
 
-			t->turn = flipTurn(g->turn);
-			t->lastmove = m;
+			assert (!inCheck(t, g->turn));
 
 			(*arr)[*len] = t;
 			(*len)++;
@@ -273,17 +268,15 @@ static void addToRet2(game g, move m, game **arr, int *len) {
 
 		/* Reina */
 		do {
-			m.promote = WQUEEN;
-			if (! isLegalMove(g, m))
-				break;
-
 			game t = copyGame(g);
 
-			doMove(t, m);
-			assert (!inCheck(t, g->turn));
+			m.promote = WQUEEN;
+			if (!doMove(t, m)) {
+				freeGame(t);
+				break;
+			}
 
-			t->turn = flipTurn(g->turn);
-			t->lastmove = m;
+			assert (!inCheck(t, g->turn));
 
 			(*arr)[*len] = t;
 			(*len)++;
@@ -311,6 +304,7 @@ int hasNextGame(game g) {
 	int i, j;
 	int alen, asz;
 	game *arr;
+	game tg;
 
 	alen = 0;
 	asz = 128;
@@ -356,14 +350,22 @@ int hasNextGame(game g) {
 
 	m.who = g->turn;
 	m.move_type = MOVE_KINGSIDE_CASTLE;
-	if (g->castle_king[g->turn])
-		if (isLegalMove(g, m))
-			goto out;
+	if (g->castle_king[g->turn]) {
+		tg = copyGame(g);
+		if (doMove(tg, m))
+			addToRet(g, m, &arr, &alen);
+		else
+			freeGame(tg);
+	}
 
 	m.move_type = MOVE_QUEENSIDE_CASTLE;
-	if (g->castle_queen[g->turn])
-		if (isLegalMove(g, m))
+	if (g->castle_queen[g->turn]) {
+		tg = copyGame(g);
+		if (doMove(tg, m))
 			addToRet(g, m, &arr, &alen);
+		else
+			freeGame(tg);
+	}
 
 
 	ret = 0;
