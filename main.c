@@ -110,8 +110,6 @@ int main () {
 
 			free(line);
 
-
-
 			printf("Your move: %c%i -> %c%i\n", c, r, C, R);
 
 			if (c < 'A' || c > 'H' || C < 'A' || C > 'H' ||
@@ -130,12 +128,11 @@ int main () {
 			printf("promote=%i\n", m.promote);
 
 move:
-			if (!isLegalMove(b, m)) {
+			if (!doMove(b, m)) {
 				fprintf(stderr, "Move is not legal... try again\n");
 				continue;
 			}
 
-			doMove(b, m);
 			printBoard(b);
 		}
 	}

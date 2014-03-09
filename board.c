@@ -172,172 +172,6 @@ static char charOf(int piece) {
 	}
 }
 
-/* True if a change in (r,c) can never cause
- * a threat to (kr, kc). Having a piece type is useless
- * because something like
- * B . . .
- * . N . .
- * . . k .
- * . . . .
- * may occur. Where moving the knight could cause a check
- * even when it's not the piece that threatens the king */
-static int safe (int r, int c, int kr, int kc) {
-	int dx, dy;
-	/* Misma fila o columna */
-	if (r == kr || c == kc)
-		return 0;
-
-	dx = abs(r - kr);
-	dy = abs(c - kc);
-
-	/* Misma diagonal */
-	if (dx == dy)
-		return 0;
-
-	/* Caballos */
-	if (dx + dy == 3)
-		return 0; 
-
-	return 1;
-}
-
-static void doMove_impl(game g, move m) {
-	int other = flipTurn(m.who);
-	assert(g->turn == m.who);
-	g->lastmove = m;
-
-	switch (m.move_type) {
-	case MOVE_REGULAR: {
-		int8_t piece = g->board[m.r][m.c];
-
-		if (isKing(piece)) {
-			g->kingx[colorOf(piece)] = m.R;
-			g->kingy[colorOf(piece)] = m.C;
-			g->castle_king[m.who] = 0;
-			g->castle_queen[m.who] = 0;
-		}
-
-		/* En vez de ver si se movió la torre
-		 * correspondiente, nos fijamos en la
-		 * casilla donde empieza la torre.
-		 * Apenas hay un movimiento el enroque
-		 * se invalida para siempre. */
-		if (m.r == m.who*7) {
-			if (m.c == 7)
-				g->castle_king[m.who] = 0;
-			else if (m.c == 0)
-				g->castle_queen[m.who] = 0;
-		}
-
-		/* Es una captura al paso? */
-		if (isPawn(piece)
-			&& m.R == g->en_passant_x
-			&& m.C == g->en_passant_y) {
-			g->board[m.r][m.C] = 0;
-		}
-
-		/* Recalcular en passant */
-		if (isPawn(piece) && abs(m.r - m.R) == 2) {
-			assert (m.c == m.C);
-			g->en_passant_x = (m.r+m.R)/2;
-			g->en_passant_y = m.c;
-		} else {
-			g->en_passant_x = -1;
-			g->en_passant_y = -1;
-		}
-
-		g->board[m.R][m.C] = g->board[m.r][m.c];
-		g->board[m.r][m.c] = 0;
-
-		/* Es un peón que promueve? */
-		if (isPawn(piece)
-				&& m.R == (m.who == WHITE ? 0 : 7)) {
-			g->board[m.R][m.C] = m.who == WHITE ? m.promote : -m.promote;
-		}
-
-		/* Si es algún movimiento relevante al rey contrario
-		 * dropeamos la cache */
-		if (!safe(m.r, m.c, g->kingx[other], g->kingy[other]) ||
-			!safe(m.R, m.C, g->kingx[other], g->kingy[other]))
-			g->inCheck[other] = -1;
-
-		/* Necesitamos también (posiblemente) dropear la nuestra,
-		 * doMove_impl puede ser llamado con una movida no válida */
-		if (isKing(piece) ||
-			!safe(m.r, m.c, g->kingx[m.who], g->kingy[m.who]) ||
-			!safe(m.R, m.C, g->kingx[m.who], g->kingy[m.who]))
-			g->inCheck[m.who] = -1;
-
-		break;
-	}
-	case MOVE_KINGSIDE_CASTLE:
-		g->castle_king[m.who] = 0;
-
-		/* Dropeamos la cache de jaque
-		 * del oponente. Solo por simpleza,
-		 * se podría llamar 4 veces a safe
-		 * pero no se si es rentable */
-		g->inCheck[other] = -1;
-		g->inCheck[m.who] = -1;
-
-		if (m.who == WHITE) {
-			g->board[7][4] = EMPTY;
-			g->board[7][5] = WROOK;
-			g->board[7][6] = WKING;
-			g->board[7][7] = EMPTY;
-			g->kingx[WHITE] = 7;
-			g->kingy[WHITE] = 6;
-		} else {
-			g->board[0][4] = EMPTY;
-			g->board[0][5] = BROOK;
-			g->board[0][6] = BKING;
-			g->board[0][7] = EMPTY;
-			g->kingx[BLACK] = 0;
-			g->kingy[BLACK] = 6;
-		}
-		break;
-	case MOVE_QUEENSIDE_CASTLE:
-		g->castle_queen[m.who] = 0;
-
-		g->inCheck[other] = -1;
-		g->inCheck[m.who] = -1;
-
-		if (m.who == WHITE) {
-			g->board[7][0] = EMPTY;
-			g->board[7][1] = EMPTY;
-			g->board[7][2] = WKING;
-			g->board[7][3] = WROOK;
-			g->board[7][4] = EMPTY;
-			g->kingx[WHITE] = 7;
-			g->kingy[WHITE] = 2;
-		} else {
-			g->board[0][0] = EMPTY;
-			g->board[0][1] = EMPTY;
-			g->board[0][2] = BKING;
-			g->board[0][3] = BROOK;
-			g->board[0][4] = EMPTY;
-			g->kingx[BLACK] = 0;
-			g->kingy[BLACK] = 2;
-		}
-		break;
-
-	default:
-		assert("UNIMPLEMENTED" == NULL);
-	}
-}
-
-void doMove(game g, move m) {
-	assert(isLegalMove(g, m));
-	doMove_impl(g, m);
-
-	/* Sabemos con certeza que no podemos estar en jaque,
-	 * ya que la movida es válida (isLegalMove debe haber
-	 * retornado true para poder llamar a doMove). */
-	g->inCheck[m.who] = 0;
-	g->turn = flipTurn(g->turn);
-}
-
-
 int isFinished(game g) {
 	if (hasNextGame(g) != 0)
 		return -1;
@@ -453,92 +287,6 @@ static inline int threatens(game g, int r, int c, int R, int C) {
 	    && canMove(g, r, c, R, C);
 }
 
-int isLegalMove(game g, move m) {
-	game ng = copyGame(g);
-	int ret;
-
-	assert(m.who == g->turn);
-
-	switch (m.move_type) {
-	case MOVE_REGULAR:
-		/* Siempre se mueve una pieza propia */
-		if (g->board[m.r][m.c] == 0 || colorOf(g->board[m.r][m.c]) != g->turn) {
-			ret = 0;
-			goto out;
-		}
-
-		/* La pieza debe poder moverse al destino */
-		if (!canMove(g, m.r, m.c, m.R, m.C)) {
-			ret = 0;
-			goto out;
-		}
-
-		/* Es un peón que promueve? */
-		if (isPawn(g->board[m.r][m.c])
-				&& m.R == (m.who == WHITE ? 0 : 7)) {
-			if (m.promote == 0) {
-				printf("Esa movida requiere una promoción!!!\n");
-				ret = 0;
-				goto out;
-			}
-		}
-
-		break;
-	case MOVE_KINGSIDE_CASTLE:
-		if (m.who == WHITE) {
-			if (!(g->castle_king[WHITE] && ! inCheck(g, WHITE)
-			 && g->board[7][7] == WROOK && g->board[7][6] == EMPTY
-			 && g->board[7][5] == EMPTY && g->board[7][4] == WKING)) {
-				ret = 0;
-				goto out;
-			}
-		} else {
-			if (!(g->castle_king[BLACK] && ! inCheck(g, BLACK)
-			 && g->board[0][7] == BROOK && g->board[0][6] == EMPTY
-			 && g->board[0][5] == EMPTY && g->board[0][4] == BKING)) {
-				ret = 0;
-				goto out;
-			}
-		}
-		break;
-	case MOVE_QUEENSIDE_CASTLE:
-		if (m.who == WHITE) {
-			if (!(g->castle_queen[WHITE] && ! inCheck(g, WHITE)
-			 && g->board[7][0] == WROOK && g->board[7][1] == EMPTY
-			 && g->board[7][2] == EMPTY && g->board[7][3] == EMPTY
-			 && g->board[7][4] == WKING)) {
-				ret = 0;
-				goto out;
-			}
-		} else {
-			if (!(g->castle_queen[BLACK] && ! inCheck(g, BLACK)
-			 && g->board[0][0] == BROOK && g->board[0][1] == EMPTY
-			 && g->board[0][2] == EMPTY && g->board[0][3] == EMPTY
-			 && g->board[0][4] == BKING)) {
-				ret = 0;
-				goto out;
-			}
-		}
-		break;
-
-	default:
-		assert("UNIMPLEMENTED" == NULL);
-	}
-
-	/* Nunca podemos quedar en jaque */
-	doMove_impl(ng, m);
-	if (ng->inCheck[g->turn] != 0 && inCheck(ng, g->turn)) {
-		ret = 0;
-		goto out;
-	}
-
-	ret = 1;
-
-out:
-	freeGame(ng);
-	return ret;
-}
-
 
 void freeSuccs(game *arr, int len) {
 	int i;
@@ -561,5 +309,243 @@ int equalMove(move a, move b) {
 		&& a.R == b.R
 		&& a.C == b.C
 		&& a.promote == b.promote;
+}
+
+
+/* True if a change in (r,c) can never cause
+ * a threat to (kr, kc). Having a piece type is useless
+ * because something like
+ * B . . .
+ * . N . .
+ * . . k .
+ * . . . .
+ * may occur. Where moving the knight could cause a check
+ * even when it's not the piece that threatens the king */
+static int safe (int r, int c, int kr, int kc) {
+	int dx, dy;
+	/* Misma fila o columna */
+	if (r == kr || c == kc)
+		return 0;
+
+	dx = abs(r - kr);
+	dy = abs(c - kc);
+
+	/* Misma diagonal */
+	if (dx == dy)
+		return 0;
+
+	/* Caballos */
+	if (dx + dy == 3)
+		return 0; 
+
+	return 1;
+}
+
+/* 1 : ok
+ * 0 : movida no válida, deja a g intacto */
+int doMove(game g, move m) {
+	int ret;
+	game old_g = copyGame(g);
+
+	assert(m.who == g->turn);
+
+	switch (m.move_type) {
+	case MOVE_REGULAR:
+	{
+		int8_t piece = g->board[m.r][m.c];
+		int other = flipTurn(g->turn);
+
+		/* Siempre se mueve una pieza propia */
+		if (piece == 0 || colorOf(piece) != g->turn) {
+			ret = 0;
+			goto out;
+		}
+
+		/* La pieza debe poder moverse al destino */
+		if (!canMove(g, m.r, m.c, m.R, m.C)) {
+			ret = 0;
+			goto out;
+		}
+
+		/* Es un peón que promueve? */
+		if (isPawn(piece)
+				&& m.R == (m.who == WHITE ? 0 : 7)) {
+			if (m.promote == 0) {
+				printf("Esa movida requiere una promoción!!!\n");
+				ret = 0;
+				goto out;
+			}
+		}
+
+		/* Es válida, podemos modificar g */
+		g->lastmove = m;
+
+		if (isKing(piece)) {
+			g->kingx[colorOf(piece)] = m.R;
+			g->kingy[colorOf(piece)] = m.C;
+			g->castle_king[m.who] = 0;
+			g->castle_queen[m.who] = 0;
+		}
+
+		/* En vez de ver si se movió la torre
+		 * correspondiente, nos fijamos en la
+		 * casilla donde empieza la torre.
+		 * Apenas hay un movimiento el enroque
+		 * se invalida para siempre. */
+		if (m.r == m.who*7) {
+			if (m.c == 7)
+				g->castle_king[m.who] = 0;
+			else if (m.c == 0)
+				g->castle_queen[m.who] = 0;
+		}
+
+		/* Es una captura al paso? */
+		if (isPawn(piece)
+			&& m.R == g->en_passant_x
+			&& m.C == g->en_passant_y) {
+			g->board[m.r][m.C] = 0;
+		}
+
+		/* Recalcular en passant */
+		if (isPawn(piece) && abs(m.r - m.R) == 2) {
+			assert (m.c == m.C);
+			g->en_passant_x = (m.r+m.R)/2;
+			g->en_passant_y = m.c;
+		} else {
+			g->en_passant_x = -1;
+			g->en_passant_y = -1;
+		}
+
+		g->board[m.R][m.C] = g->board[m.r][m.c];
+		g->board[m.r][m.c] = 0;
+
+		/* Es un peón que promueve? */
+		if (isPawn(piece)
+				&& m.R == (m.who == WHITE ? 0 : 7)) {
+			g->board[m.R][m.C] = m.who == WHITE ? m.promote : -m.promote;
+		}
+
+		/* Si es algún movimiento relevante al rey contrario
+		 * dropeamos la cache */
+		if (!safe(m.r, m.c, g->kingx[other], g->kingy[other]) ||
+			!safe(m.R, m.C, g->kingx[other], g->kingy[other]))
+			g->inCheck[other] = -1;
+
+		/* Necesitamos también (posiblemente) dropear la nuestra */
+		if (isKing(piece) ||
+			!safe(m.r, m.c, g->kingx[m.who], g->kingy[m.who]) ||
+			!safe(m.R, m.C, g->kingx[m.who], g->kingy[m.who]))
+			g->inCheck[m.who] = -1;
+
+		break;
+	}
+	case MOVE_KINGSIDE_CASTLE:
+	{
+		if (m.who == WHITE) {
+			if (!(g->castle_king[WHITE] && ! inCheck(g, WHITE)
+			 && g->board[7][7] == WROOK && g->board[7][6] == EMPTY
+			 && g->board[7][5] == EMPTY && g->board[7][4] == WKING)) {
+				ret = 0;
+				goto out;
+			}
+		} else {
+			if (!(g->castle_king[BLACK] && ! inCheck(g, BLACK)
+			 && g->board[0][7] == BROOK && g->board[0][6] == EMPTY
+			 && g->board[0][5] == EMPTY && g->board[0][4] == BKING)) {
+				ret = 0;
+				goto out;
+			}
+		}
+
+		g->castle_king[m.who] = 0;
+
+		/* Dropeamos la cache de jaque */
+		g->inCheck[0] = -1;
+		g->inCheck[1] = -1;
+
+		if (m.who == WHITE) {
+			g->board[7][4] = EMPTY;
+			g->board[7][5] = WROOK;
+			g->board[7][6] = WKING;
+			g->board[7][7] = EMPTY;
+			g->kingx[WHITE] = 7;
+			g->kingy[WHITE] = 6;
+		} else {
+			g->board[0][4] = EMPTY;
+			g->board[0][5] = BROOK;
+			g->board[0][6] = BKING;
+			g->board[0][7] = EMPTY;
+			g->kingx[BLACK] = 0;
+			g->kingy[BLACK] = 6;
+		}
+
+		break;
+	}
+	case MOVE_QUEENSIDE_CASTLE:
+	{
+		if (m.who == WHITE) {
+			if (!(g->castle_queen[WHITE] && ! inCheck(g, WHITE)
+			 && g->board[7][0] == WROOK && g->board[7][1] == EMPTY
+			 && g->board[7][2] == EMPTY && g->board[7][3] == EMPTY
+			 && g->board[7][4] == WKING)) {
+				ret = 0;
+				goto out;
+			}
+		} else {
+			if (!(g->castle_queen[BLACK] && ! inCheck(g, BLACK)
+			 && g->board[0][0] == BROOK && g->board[0][1] == EMPTY
+			 && g->board[0][2] == EMPTY && g->board[0][3] == EMPTY
+			 && g->board[0][4] == BKING)) {
+				ret = 0;
+				goto out;
+			}
+		}
+
+		g->castle_queen[m.who] = 0;
+
+		g->inCheck[0] = -1;
+		g->inCheck[1] = -1;
+
+		if (m.who == WHITE) {
+			g->board[7][0] = EMPTY;
+			g->board[7][1] = EMPTY;
+			g->board[7][2] = WKING;
+			g->board[7][3] = WROOK;
+			g->board[7][4] = EMPTY;
+			g->kingx[WHITE] = 7;
+			g->kingy[WHITE] = 2;
+		} else {
+			g->board[0][0] = EMPTY;
+			g->board[0][1] = EMPTY;
+			g->board[0][2] = BKING;
+			g->board[0][3] = BROOK;
+			g->board[0][4] = EMPTY;
+			g->kingx[BLACK] = 0;
+			g->kingy[BLACK] = 2;
+		}
+
+		break;
+	}
+	}
+
+	/* Nunca podemos quedar en jaque */
+	if (g->inCheck[g->turn] != 0 && inCheck(g, g->turn)) {
+		ret = 0;
+		goto out;
+	}
+
+	assert(g->inCheck[g->turn] == 0);
+	g->turn = flipTurn(g->turn);
+
+	ret = 1;
+
+out:
+	if (ret == 0) {
+		*g = *old_g;
+	}
+
+	freeGame(old_g);
+
+	return ret;
 }
 

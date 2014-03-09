@@ -82,8 +82,7 @@ typedef struct game_struct *game;
 
 game startingGame(void);
 
-int isLegalMove(game g, move m);
-void doMove(game g, move m); /* Actua sobre g */
+int doMove(game g, move m); /* Actua sobre g */
 game copyGame(game g);
 void freeGame(game g);
 
