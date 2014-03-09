@@ -9,7 +9,7 @@
 static char charOf(int piece);
 static int threatens(game g, int r, int c, int R, int C);
 
-#if 1
+#if 0
 static const struct game_struct
 init = {
 	.board= {
@@ -34,16 +34,16 @@ init = {
 static const struct game_struct
 init = {
 	.board= {
+		{ BKING, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
+		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
+		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
+		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, BQUEEN, EMPTY },
 		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
 		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
 		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
-		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, BQUEEN, EMPTY, EMPTY },
-		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
-		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
-		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, BROOK, EMPTY },
-		{ EMPTY, EMPTY, WKING, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY }
+		{ EMPTY, EMPTY, EMPTY, EMPTY, WKING, EMPTY, EMPTY, WROOK }
 	},
-	.turn = BLACK,
+	.turn = WHITE,
 	.lastmove = { 0 },
 	.idlecount = 0,
 	.castle_king = { 1, 1 },
@@ -278,6 +278,7 @@ static void doMove_impl(game g, move m) {
 		 * se podría llamar 4 veces a safe
 		 * pero no se si es rentable */
 		g->inCheck[other] = -1;
+		g->inCheck[m.who] = -1;
 
 		if (m.who == WHITE) {
 			g->board[7][4] = EMPTY;
@@ -299,6 +300,7 @@ static void doMove_impl(game g, move m) {
 		g->castle_queen[m.who] = 0;
 
 		g->inCheck[other] = -1;
+		g->inCheck[m.who] = -1;
 
 		if (m.who == WHITE) {
 			g->board[7][0] = EMPTY;
@@ -525,7 +527,7 @@ int isLegalMove(game g, move m) {
 
 	/* Nunca podemos quedar en jaque */
 	doMove_impl(ng, m);
-	if (g->inCheck[g->turn] != 0 && inCheck(ng, g->turn)) {
+	if (ng->inCheck[g->turn] != 0 && inCheck(ng, g->turn)) {
 		ret = 0;
 		goto out;
 	}
