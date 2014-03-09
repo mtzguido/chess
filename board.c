@@ -381,7 +381,8 @@ int doMove(game g, move m) {
 	}
 
 	/* Nunca podemos quedar en jaque */
-	if (g->inCheck[g->turn] != 0 && inCheck(g, g->turn))
+	if (g->inCheck[g->turn] != 0
+		&& inCheck(g, g->turn))
 		goto fail;
 
 	freeGame(old_g);
