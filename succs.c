@@ -178,29 +178,6 @@ int kingSuccs(int r, int c, game g, game **arr, int *alen) {
 	return *alen > n;
 }
 
-	/*
-	for (di=1; di<3; di++) {
-		dj = 3-di;
-
-		if (r+di >= 0 && j+dj>=0 && r+di < 8 && j+dj < 8 && (g->board[r+di][j+dj] == 0 || colorOf(g->board[i+di][j+dj]) != g->turn))
-			addToRet(g, makeRegularMove(g->turn, i, j, i+di, j+dj), &arr, &alen);
-
-		dj=-dj;
-		if (r+di >= 0 && j+dj>=0 && r+di < 8 && j+dj < 8 && (g->board[i+di][j+dj] == 0 || colorOf(g->board[i+di][j+dj]) != g->turn))
-			addToRet(g, makeRegularMove(g->turn, i, j, i+di, j+dj), &arr, &alen);
-
-		di=-di;
-		if (r+di >= 0 && j+dj>=0 && r+di < 8 && j+dj < 8 && (g->board[i+di][j+dj] == 0 || colorOf(g->board[i+di][j+dj]) != g->turn))
-			addToRet(g, makeRegularMove(g->turn, i, j, i+di, j+dj), &arr, &alen);
-
-		dj=-dj;
-		if (r+di >= 0 && j+dj>=0 && r+di < 8 && j+dj < 8 && (g->board[i+di][j+dj] == 0 || colorOf(g->board[i+di][j+dj]) != g->turn))
-			addToRet(g, makeRegularMove(g->turn, i, j, i+di, j+dj), &arr, &alen);
-
-		di=-di;
-	}
-	*/
-
 int genSuccs(game g, game **arr_ret) {
 	int i, j;
 	int alen, asz;
@@ -331,16 +308,6 @@ static move makeRegularMove(int who, int r, int c, int R, int C) {
 }
 
 int hasNextGame(game g) {
-#if 0
-	int n;
-	game *arr;
-
-	/* medio choto esto */
-	n = genSuccs(g, &arr);
-	freeSuccs(arr, n);
-
-	return n > 0;
-#else
 	int i, j;
 	int alen, asz;
 	game *arr;
@@ -404,6 +371,5 @@ out:
 	assert(alen <= asz);
 	freeSuccs(arr, alen);
 	return ret;
-#endif
 }
 
