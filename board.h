@@ -44,6 +44,9 @@ struct game_struct {
 	/*     inCheck[who] = -1 -> no conocido
 	 *     inCheck[who] = 0 -> libre
 	 *     inCheck[who] = 1 -> en jaque */
+
+	/*   Cache de score */
+	float pieceScore;
 };
 
 typedef struct game_struct *game;

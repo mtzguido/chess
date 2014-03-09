@@ -161,45 +161,7 @@ static score machineMoveImpl(
 }
 
 static float pieceScore(game g) {
-	int i, j;
-	float res = 0;
-
-	for (i=0; i<8; i++) {
-		for (j=0; j<8; j++) {
-			char piece = g->board[i][j];
-
-			if (piece == 0)
-				continue;
-
-			if (colorOf(piece) == machineColor) {
-				if (isPawn(piece)) {
-					res += 1;
-				} else if (isRook(piece)) {
-					res += 10;
-				} else if (isKnight(piece)) {
-					res += 10;
-				} else if (isBishop(piece)) {
-					res += 10;
-				} else if (isQueen(piece)) {
-					res += 50;
-				}
-			} else {
-				if (isPawn(piece)) {
-					res -= 1;
-				} else if (isRook(piece)) {
-					res -= 10;
-				} else if (isKnight(piece)) {
-					res -= 10;
-				} else if (isBishop(piece)) {
-					res -= 10;
-				} else if (isQueen(piece)) {
-					res -= 50;
-				}
-			}
-		}
-	}
-	
-	return res;
+	return g->pieceScore * (machineColor == WHITE ? 1 : -1);
 }
 
 static float coverScore(game g) {

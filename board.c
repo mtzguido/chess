@@ -9,6 +9,8 @@
 static char charOf(int piece);
 static int threatens(game g, int r, int c, int R, int C);
 
+static float scoreOf(int piece);
+
 static int doMoveRegular(game g, move m);
 static int doMoveKCastle(game g, move m);
 static int doMoveQCastle(game g, move m);
@@ -85,6 +87,8 @@ game startingGame() {
 
 	g->inCheck[BLACK] = -1;
 	g->inCheck[WHITE] = -1;
+
+	g->pieceScore = 0;
 	return g;
 }
 
@@ -341,8 +345,6 @@ static int safe(int r, int c, int kr, int kc) {
 	if (dx + dy == 3)
 		return 0; 
 
-	int sx, sy;
-
 	/* No estan en ninguna linea */
 	if (r != kr && c != kc && dx != dy)
 		return 1;
@@ -446,6 +448,7 @@ static int doMoveRegular(game g, move m) {
 	if (isPawn(piece)
 			&& m.R == g->en_passant_x
 			&& m.C == g->en_passant_y) {
+		g->pieceScore -= scoreOf(g->board[m.r][m.C]);
 		g->board[m.r][m.C] = 0;
 	}
 
@@ -459,13 +462,16 @@ static int doMoveRegular(game g, move m) {
 		g->en_passant_y = -1;
 	}
 
+	g->pieceScore -= scoreOf(g->board[m.R][m.C]);
 	g->board[m.R][m.C] = g->board[m.r][m.c];
 	g->board[m.r][m.c] = 0;
 
 	/* Es un peón que promueve? */
 	if (isPawn(piece)
 			&& m.R == (m.who == WHITE ? 0 : 7)) {
+		g->pieceScore -= scoreOf(g->board[m.R][m.C]);
 		g->board[m.R][m.C] = m.who == WHITE ? m.promote : -m.promote;
+		g->pieceScore += scoreOf(g->board[m.R][m.C]);
 	}
 
 	/* Si es algún movimiento relevante al rey contrario
@@ -565,3 +571,37 @@ static int doMoveQCastle(game g, move m) {
 
 	return 1;
 }
+
+static float scoreOf(int piece) {
+	int p = abs(piece);
+	int m = colorOf(piece) == WHITE ? 1 : -1;
+
+	switch(p) {
+	case WQUEEN:
+		return m*50;
+	case WROOK:
+	case WBISHOP:
+	case WKNIGHT:
+		return m*10;
+	case WPAWN:
+		return m;
+
+	/*
+	 * debemos agregar este caso
+	 * para jugadas intermedias,
+	 * obviamente no válidas ya
+	 * que nunca se come al rey.
+	 */
+	case WKING:
+	case 0:
+		return 0;
+
+
+	default:
+		printf("!!!%i %i\n", piece, p);
+		assert(0);
+
+	}
+}
+
+
