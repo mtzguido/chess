@@ -183,11 +183,21 @@ static char charOf(int piece) {
  * even when it's not the piece that threatens the king */
 static int safe (int r, int c, int kr, int kc) {
 	int dx, dy;
-	if (r == kr || c == kc) return 0; /* misma fila o columna */
+	/* Misma fila o columna */
+	if (r == kr || c == kc)
+		return 0;
+
 	dx = abs(r - kr);
 	dy = abs(c - kc);
-	if (dx == dy) return 0; /* misma diagonal */
-	if (dx + dy == 3 && dx != 0 && dy != 0) return 0; /* caballos */
+
+	/* Misma diagonal */
+	if (dx == dy)
+		return 0;
+
+	/* Caballos */
+	if (dx + dy == 3)
+		return 0; 
+
 	return 1;
 }
 
@@ -199,6 +209,7 @@ static void doMove_impl(game g, move m) {
 	switch (m.move_type) {
 	case MOVE_REGULAR: {
 		int8_t piece = g->board[m.r][m.c];
+
 		if (isKing(piece)) {
 			g->kingx[colorOf(piece)] = m.R;
 			g->kingy[colorOf(piece)] = m.C;
@@ -220,15 +231,15 @@ static void doMove_impl(game g, move m) {
 
 		/* Es una captura al paso? */
 		if (isPawn(piece)
-				&& m.R == g->en_passant_x
-				&& m.C == g->en_passant_y) {
-			g->board[m.r][m.C] = 0; /* sic */
+			&& m.R == g->en_passant_x
+			&& m.C == g->en_passant_y) {
+			g->board[m.r][m.C] = 0;
 		}
 
 		/* Recalcular en passant */
 		if (isPawn(piece) && abs(m.r - m.R) == 2) {
 			assert (m.c == m.C);
-			g->en_passant_x = (m.r+m.R)/2; /* je.. */
+			g->en_passant_x = (m.r+m.R)/2;
 			g->en_passant_y = m.c;
 		} else {
 			g->en_passant_x = -1;
@@ -244,18 +255,18 @@ static void doMove_impl(game g, move m) {
 			g->board[m.R][m.C] = m.who == WHITE ? m.promote : -m.promote;
 		}
 
-		/* Necesitamos también (posiblemente) dropear la nuestra,
-		 * doMove_impl puede ser llamado con una movida no válida */
-		if (!safe(m.r, m.c, g->kingx[m.who], g->kingy[m.who]) ||
-			!safe(m.R, m.C, g->kingx[m.who], g->kingy[m.who]) ||
-			isKing(piece))
-			g->inCheck[m.who] = -1;
-
 		/* Si es algún movimiento relevante al rey contrario
 		 * dropeamos la cache */
 		if (!safe(m.r, m.c, g->kingx[other], g->kingy[other]) ||
 			!safe(m.R, m.C, g->kingx[other], g->kingy[other]))
 			g->inCheck[other] = -1;
+
+		/* Necesitamos también (posiblemente) dropear la nuestra,
+		 * doMove_impl puede ser llamado con una movida no válida */
+		if (isKing(piece) ||
+			!safe(m.r, m.c, g->kingx[m.who], g->kingy[m.who]) ||
+			!safe(m.R, m.C, g->kingx[m.who], g->kingy[m.who]))
+			g->inCheck[m.who] = -1;
 
 		break;
 	}
@@ -286,6 +297,7 @@ static void doMove_impl(game g, move m) {
 		break;
 	case MOVE_QUEENSIDE_CASTLE:
 		g->castle_queen[m.who] = 0;
+
 		g->inCheck[other] = -1;
 
 		if (m.who == WHITE) {
@@ -328,9 +340,9 @@ int isFinished(game g) {
 	if (hasNextGame(g) != 0)
 		return -1;
 	else if (inCheck(g, g->turn))
-		return WIN(flipTurn(g->turn)); /* Current player is checkmated */
+		return WIN(flipTurn(g->turn)); /* Jaque mate al jugador actual */
 	else
-		return DRAW; /* Stalemate */
+		return DRAW; /* Ahogado (Stalemate) */
 }
 
 int inCheck(game g, int who) {
@@ -343,6 +355,7 @@ int inCheck(game g, int who) {
 	kr = g->kingx[who];
 	kc = g->kingy[who];
 
+	/* Caballos */
 	if (threatens(g, kr-2, kc-1, kr, kc)) goto ret_true;
 	if (threatens(g, kr+2, kc-1, kr, kc)) goto ret_true;
 	if (threatens(g, kr-2, kc+1, kr, kc)) goto ret_true;
@@ -351,31 +364,75 @@ int inCheck(game g, int who) {
 	if (threatens(g, kr+1, kc-2, kr, kc)) goto ret_true;
 	if (threatens(g, kr-1, kc+2, kr, kc)) goto ret_true;
 	if (threatens(g, kr+1, kc+2, kr, kc)) goto ret_true;
-	for (i=kr+1; i<8; i++)
-		if (threatens(g, i, kc, kr, kc)) goto ret_true;
-		else if (g->board[i][kc] != 0) break;
-	for (i=kr-1; i>=0; i--)
-		if (threatens(g, i, kc, kr, kc)) goto ret_true;
-		else if (g->board[i][kc] != 0) break;
-	for (i=kc+1; i<8; i++)
-		if (threatens(g, kr, i, kr, kc)) goto ret_true;
-		else if (g->board[kr][i] != 0) break;
-	for (i=kc-1; i>=0; i--)
-		if (threatens(g, kr, i, kr, kc)) goto ret_true;
-		else if (g->board[kr][i] != 0) break;
 
+	/* Columna */
+	j = kc;
+	for (i=kr+1; i<8; i++)
+		if (g->board[i][j] != 0) {
+			if (threatens(g, i, j, kr, kc))
+				goto ret_true;
+			else
+				break;
+		}
+
+	for (i=kr-1; i>=0; i--)
+		if (g->board[i][j] != 0) {
+			if (threatens(g, i, j, kr, kc))
+				goto ret_true;
+			else
+				break;
+		}
+
+	/* Fila */
+	i = kr;
+	for (j=kc+1; j<8; j++)
+		if (g->board[i][j] != 0) {
+			if (threatens(g, i, j, kr, kc))
+				goto ret_true;
+			else
+				break;
+		}
+
+	for (j=kc-1; j>=0; j--)
+		if (g->board[i][j] != 0) {
+			if (threatens(g, i, j, kr, kc))
+				goto ret_true;
+			else
+				break;
+		}
+
+	/* Diagonales */
 	for (i=kr-1, j=kc-1; i>=0 && j>=0; i--, j--)
-		if (threatens(g, i, j, kr, kc)) goto ret_true;
-		else if (g->board[i][j] != 0) break;
+		if (g->board[i][j] != 0) {
+			if (threatens(g, i, j, kr, kc))
+				goto ret_true;
+			else
+				break;
+		}
+
 	for (i=kr+1, j=kc+1; i<8 && j<8; i++, j++)
-		if (threatens(g, i, j, kr, kc)) goto ret_true;
-		else if (g->board[i][j] != 0) break;
+		if (g->board[i][j] != 0) {
+			if (threatens(g, i, j, kr, kc))
+				goto ret_true;
+			else
+				break;
+		}
+
 	for (i=kr+1, j=kc-1; i<8 && j>=0; i++, j--)
-		if (threatens(g, i, j, kr, kc)) goto ret_true;
-		else if (g->board[i][j] != 0) break;
+		if (g->board[i][j] != 0) {
+			if (threatens(g, i, j, kr, kc))
+				goto ret_true;
+			else
+				break;
+		}
+
 	for (i=kr-1, j=kc+1; i>=0 && j<8; i--, j++)
-		if (threatens(g, i, j, kr, kc)) goto ret_true;
-		else if (g->board[i][j] != 0) break;
+		if (g->board[i][j] != 0) {
+			if (threatens(g, i, j, kr, kc))
+				goto ret_true;
+			else
+				break;
+		}
 
 	assert(g->inCheck[who] != 1);
 	g->inCheck[who] = 0;
@@ -388,12 +445,9 @@ ret_true:
 	return 1;
 }
 
+/* Debe ser llamado con r,c,R,C VALIDOS */
 static inline int threatens(game g, int r, int c, int R, int C) {
-	return r >= 0 && r < 8 
-	    && R >= 0 && R < 8 
-	    && c >= 0 && c < 8 
-	    && C >= 0 && C < 8 
-	    && g->board[r][c]*g->board[R][C] < 0 
+	return (g->board[r][c] ^ g->board[R][C]) < 0
 	    && canMove(g, r, c, R, C);
 }
 
@@ -465,14 +519,13 @@ int isLegalMove(game g, move m) {
 		}
 		break;
 
-
 	default:
 		assert("UNIMPLEMENTED" == NULL);
 	}
 
 	/* Nunca podemos quedar en jaque */
 	doMove_impl(ng, m);
-	if (inCheck(ng, g->turn)) {
+	if (g->inCheck[g->turn] != 0 && inCheck(ng, g->turn)) {
 		ret = 0;
 		goto out;
 	}
