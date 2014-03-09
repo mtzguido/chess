@@ -1,5 +1,5 @@
 .PHONY:clean all re run
-CFLAGS= -Wall -pg -g -funroll-loops -O99 $(CFLAGS_EXTRA)
+CFLAGS= -Wall -pg -g -funroll-loops -DNDEBUG -O99 $(CFLAGS_EXTRA)
 LFLAGS= -pg 
 SHELL=/bin/bash
 TARGET=chess
@@ -24,6 +24,6 @@ re: clean all
 run: $(TARGET)
 	./$(TARGET)
 
-prof: $(TARGET)
+prof: $(TARGET) prof_input
 	./$(TARGET) < prof_input # >/dev/null
 	gprof $(TARGET) gmon.out >prof
