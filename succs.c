@@ -237,8 +237,6 @@ static void addToRet(game g, move m, game **arr, int *len) {
 		return;
 	}
 
-	assert (!inCheck(t, g->turn));
-
 	(*arr)[*len] = t;
 	(*len)++;
 }
@@ -260,8 +258,6 @@ static void addToRet2(game g, move m, game **arr, int *len) {
 				break;
 			}
 
-			assert (!inCheck(t, g->turn));
-
 			(*arr)[*len] = t;
 			(*len)++;
 		} while (0);
@@ -275,8 +271,6 @@ static void addToRet2(game g, move m, game **arr, int *len) {
 				freeGame(t);
 				break;
 			}
-
-			assert (!inCheck(t, g->turn));
 
 			(*arr)[*len] = t;
 			(*len)++;
@@ -353,7 +347,7 @@ int hasNextGame(game g) {
 	if (g->castle_king[g->turn]) {
 		tg = copyGame(g);
 		if (doMove(tg, m))
-			addToRet(g, m, &arr, &alen);
+			addToRet(tg, m, &arr, &alen);
 		else
 			freeGame(tg);
 	}
@@ -362,13 +356,13 @@ int hasNextGame(game g) {
 	if (g->castle_queen[g->turn]) {
 		tg = copyGame(g);
 		if (doMove(tg, m))
-			addToRet(g, m, &arr, &alen);
+			addToRet(tg, m, &arr, &alen);
 		else
 			freeGame(tg);
 	}
 
-
 	ret = 0;
+
 out:
 	assert(alen <= asz);
 	freeSuccs(arr, alen);

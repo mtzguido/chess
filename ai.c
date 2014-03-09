@@ -26,8 +26,8 @@ static score machineMoveImpl(
 static score heur(game g, int depth);
 static int scoreCmp(score a, score b);
 
-score minScore = { -INFINITY, 0, 0 };
-score maxScore = {  INFINITY, 0, 0 };
+static const score minScore = { -INFINITY, 0, 0 };
+static const score maxScore = {  INFINITY, 0, 0 };
 
 static int nopen;
 
@@ -224,14 +224,17 @@ static score heur(game g, int depth) {
 
 	ret.heur = (pieceScore(g))
 	         + (coverScore(g))
-			 + (inCheck(g, flipTurn(machineColor)) ? 20 : 0);
+			 + (inCheck(g, flipTurn(machineColor)) ?  20 : 0);
+			 + (inCheck(g,          machineColor ) ? -20 : 0);
 
+	/* Con esto, ante heuristicas iguales,
+	 * preferimos movidas cercanas */
 	ret.tiebreak = -depth;
 
 	return ret;
 }
 
-static int scoreCmp_(score a, score b) {
+static int scoreCmp(score a, score b) {
 	if (a.won      > b.won     ) return  1;
 	if (a.won      < b.won     ) return -1;
 	if (a.heur     > b.heur    ) return  1;
@@ -241,10 +244,3 @@ static int scoreCmp_(score a, score b) {
 	return 0;
 }
 
-static int scoreCmp(score a, score b) {
-	int t = scoreCmp_(a,b);
-
-//	printf("cmp (%f %f %f) (%f %f %f) = %i\n", a.won, a.heur, a.tiebreak, b.won, b.heur, b.tiebreak, t);
-
-	return t;
-}
