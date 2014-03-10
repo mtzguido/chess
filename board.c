@@ -20,7 +20,7 @@ inline static int sign(int a) {
 	return 0;
 }
 
-#if 1
+#if 0
 static const struct game_struct
 init = {
 	.board= {
@@ -46,11 +46,11 @@ static const struct game_struct
 init = {
 	.board= {
 		{ EMPTY, BQUEEN, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
+		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, BKING, EMPTY },
+		{ WQUEEN, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
 		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
-		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
-		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
-		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
-		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
+		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, WPAWN, EMPTY },
+		{ WROOK, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, BPAWN, EMPTY },
 		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, BROOK },
 		{ WKING, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY }
 	},
@@ -598,25 +598,5 @@ static const int scoreTab_[] =
 static const int * scoreTab = &scoreTab_[6];
 
 static float scoreOf(int piece) {
-#if 1
 	return scoreTab[piece];
-#else
-	switch(piece) {
-	case WQUEEN:  return  50;
-	case BQUEEN:  return -50;
-	case WROOK:   return  10;
-	case WBISHOP: return  10;
-	case WKNIGHT: return  10;
-	case BROOK:   return -10;
-	case BBISHOP: return -10;
-	case BKNIGHT: return -10;
-	case WPAWN:   return  1;
-	case BPAWN:   return -1;
-	case WKING:   return  0;
-	case BKING:   return  0;
-	case 0:       return  0;
-	default:      assert(0);
-	}
-
-#endif
 }
