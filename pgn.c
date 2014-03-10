@@ -23,6 +23,8 @@ static char charOf(int piece) {
 		case BKING:	  return 'k';
 		default:      assert(0);
 	}
+
+	return 'x';
 }
 
 move fromPGN(game g, struct pgn p) {
