@@ -151,3 +151,4 @@ static int kingMove(game g, int r, int c, int R, int C) {
 
 	return 1;
 }
+
