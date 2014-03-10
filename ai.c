@@ -9,7 +9,7 @@
 #include <stdbool.h>
 #include <time.h>
 
-#define SEARCH_DEPTH	7
+#define SEARCH_DEPTH	5
 #define KTABLE_SIZE	(SEARCH_DEPTH * 2)
 #define NKILLER	2
 
@@ -63,14 +63,15 @@ static score machineMoveImpl(
 		if (nb != NULL)
 			*nb = copyGame(g);
 
-		return heur(g, curDepth);
+		return g->turn == machineColor ? 
+			heur(g, curDepth) :
+			- heur(g, curDepth);
 	}
 
 	game *succs;
 	score t;
 	int i, n;
 	int kindex;
-	score best;
 
 	/* Generamos los sucesores del tablero */
 	nopen++;
@@ -83,16 +84,22 @@ static score machineMoveImpl(
 		assert("NO MOVES!\n" == NULL);
 	}
 
+	int k;
+
+	/*
+	 * Ordenamos rudimentariamente los
+	 * sucesores. Lo hacemos antes de
+	 * ordenar las killer move para
+	 * darle prioridad a las killer
+	 */
+	sortSuccs(succs, n);
+
 	/*
 	 * Pongo las killer move primero
 	 *
 	 * usamos también las killers de 2
 	 * plies atrás.
 	 */
-	int k;
-
-	sortSuccs(succs, n);
-
 	kindex = 0;
 	for (i=0; i<n; i++) {
 		for (k=0; k<NKILLER; k++) {
@@ -114,43 +121,73 @@ static score machineMoveImpl(
 	}
 
 	/* Itero por los sucesores */
-	best = minScore;
-	for (i=0; i<n; i++) {
-		t = - machineMoveImpl(succs[i], maxDepth, curDepth+1, NULL, -beta, -alpha);
+	if (g->turn == machineColor) {
+		/* Maximizar */
+		for (i=0; i<n; i++) {
+			t = machineMoveImpl(succs[i], maxDepth, curDepth+1, NULL, alpha, beta);
 
-		if (t > best) {
-			best = t;
+			if (t > alpha) {
+				alpha = t;
 
-			if (nb != NULL) {
-				if (*nb != NULL)
-					freeGame(*nb);
+				if (nb != NULL) {
+					if (*nb != NULL)
+						freeGame(*nb);
 
-				*nb = copyGame(succs[i]);
+					*nb = copyGame(succs[i]);
+				}
+			}
+
+			/* Corte, alpha o beta */
+			if (beta <= alpha) {
+				/* Si no era una killer move, la agrego */
+				if (i >= kindex) {
+					int k;
+					for (k=NKILLER-1; k>0; k--)
+						killerTable[curDepth][k] = killerTable[curDepth][k-1];
+
+					killerTable[curDepth][0] = succs[i]->lastmove;
+				}
+
+				break;
 			}
 		}
 
-		if (t > alpha)
-			alpha = t;
+		freeSuccs(succs, n);
+		return alpha;
+	} else {
+		/* Minimizar */
+		for (i=0; i<n; i++) {
+			t = machineMoveImpl(succs[i], maxDepth, curDepth+1, NULL, alpha, beta);
 
-		/* Corte, alpha o beta */
-#if 1
-		if (beta <= alpha) {
-			/* Si no era una killer move, la agrego */
-			if (i >= kindex) {
-				int k;
-				for (k=NKILLER-1; k>0; k--)
-					killerTable[curDepth][k] = killerTable[curDepth][k-1];
+			if (t < beta) {
+				beta = t;
 
-				killerTable[curDepth][0] = succs[i]->lastmove;
+				if (nb != NULL) {
+					if (*nb != NULL)
+						freeGame(*nb);
+
+					*nb = copyGame(succs[i]);
+				}
 			}
 
-			break;
+			/* Corte, alpha o beta */
+			if (beta <= alpha) {
+				/* Si no era una killer move, la agrego */
+				if (i >= kindex) {
+					int k;
+					for (k=NKILLER-1; k>0; k--)
+						killerTable[curDepth][k] = killerTable[curDepth][k-1];
+
+					killerTable[curDepth][0] = succs[i]->lastmove;
+				}
+
+				break;
+			}
 		}
-#endif
+
+		freeSuccs(succs, n);
+		return beta;
 	}
-
-	freeSuccs(succs, n);
-	return best;
 }
 
 static float pieceScore(game g) {
@@ -206,15 +243,11 @@ static int succCmp(const void *bp, const void *ap) {
 	if (a->lastmove.was_promotion != b->lastmove.was_promotion)
 		return a->lastmove.was_promotion - b->lastmove.was_promotion;
 
-	const int ar = a->lastmove.r;
-	const int ac = a->lastmove.c;
-	const int br = b->lastmove.r;
-	const int bc = b->lastmove.c;
-
-	return abs(a->board[ar][ac]) - abs(b->board[br][bc]);
+	return 0;
 }
 
 static void sortSuccs(game *succs, int n)
 {
 	qsort(succs, n, sizeof (game), succCmp);
 }
+
