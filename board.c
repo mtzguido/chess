@@ -45,16 +45,16 @@ init = {
 static const struct game_struct
 init = {
 	.board= {
-		{ BKING, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
+		{ BROOK, EMPTY, BBISHOP, BQUEEN, BKING, BBISHOP, EMPTY, BROOK },
+		{ EMPTY, BPAWN, BPAWN, BPAWN, BPAWN, BPAWN, BPAWN, BPAWN },
+		{ BPAWN, EMPTY, BKNIGHT, EMPTY, EMPTY, EMPTY, EMPTY, BKNIGHT },
 		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
-		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
-		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, BQUEEN, EMPTY },
-		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
-		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
-		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
-		{ EMPTY, EMPTY, EMPTY, EMPTY, WKING, EMPTY, EMPTY, WROOK }
+		{ EMPTY, EMPTY, EMPTY, WPAWN, WPAWN, EMPTY, EMPTY, EMPTY },
+		{ WPAWN, EMPTY, WKNIGHT, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
+		{ EMPTY, WPAWN, WPAWN, EMPTY, EMPTY, WPAWN, WPAWN, WPAWN },
+		{ WROOK, EMPTY, WBISHOP, WQUEEN, WKING, WBISHOP, WKNIGHT, WROOK }
 	},
-	.turn = WHITE,
+	.turn = BLACK,
 	.lastmove = { 0 },
 	.idlecount = 0,
 	.castle_king = { 1, 1 },
@@ -455,8 +455,12 @@ static int doMoveRegular(game g, move m) {
 		g->en_passant_y = -1;
 	}
 
-	if (g->board[m.R][m.C] != 0)
+	if (g->board[m.R][m.C] != 0) {
+		g->lastmove.was_capture = 1;
 		g->pieceScore -= scoreOf(g->board[m.R][m.C]);
+	} else {
+		g->lastmove.was_capture = 0;
+	}
 
 	g->board[m.R][m.C] = g->board[m.r][m.c];
 	g->board[m.r][m.c] = 0;
@@ -467,6 +471,10 @@ static int doMoveRegular(game g, move m) {
 		g->pieceScore -= scoreOf(g->board[m.R][m.C]);
 		g->board[m.R][m.C] = m.who == WHITE ? m.promote : -m.promote;
 		g->pieceScore += scoreOf(g->board[m.R][m.C]);
+
+		g->lastmove.was_promotion = 1;
+	} else {
+		g->lastmove.was_promotion = 0;
 	}
 
 	/* Si es algún movimiento relevante al rey contrario
@@ -568,7 +576,7 @@ static int doMoveQCastle(game g, move m) {
 }
 
 static const int scoreTab_[] =
-{ 0, -50, -10, -10, -10, -1, 0, 1, 10, 10, 10, 50, 0 };
+{ -200, -9, -3, -3, -5, -1, 0, 1, 5, 3, 3, 9, 200 };
 
 static const int * scoreTab = &scoreTab_[6];
 

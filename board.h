@@ -13,6 +13,10 @@ typedef struct move {
 	int move_type;
 	int r, c, R, C; /* (r,c) -> (R,C) */
 	int promote;
+
+	int was_capture;
+	int was_promotion;
+
 /*	int capture:1;
 	int epcapture:1;
 	*/

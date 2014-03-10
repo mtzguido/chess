@@ -10,6 +10,7 @@
 #include <time.h>
 
 #define SEARCH_DEPTH	6
+#define KTABLE_SIZE	(SEARCH_DEPTH * 2)
 #define NKILLER	2
 
 typedef struct {
@@ -31,7 +32,7 @@ static const score maxScore = {  INFINITY, 0, 0 };
 
 static int nopen;
 
-static move killerTable[SEARCH_DEPTH][NKILLER];
+static move killerTable[KTABLE_SIZE][NKILLER];
 
 game machineMove(game start) {
 	game ret = NULL;
@@ -39,7 +40,7 @@ game machineMove(game start) {
 	clock_t t1,t2;
 	int i, j;
 
-	for (i=0; i<SEARCH_DEPTH; i++)
+	for (i=0; i<KTABLE_SIZE; i++)
 		for (j=0; j<NKILLER; j++)
 			killerTable[i][j].move_type = -1;
 
@@ -61,9 +62,20 @@ static score machineMoveImpl(
 		game g, int maxDepth, int curDepth,
 		game *nb, score alpha, score beta) {
 
-	/* Si nos pasamos de profundidad o el tablero
-	 * es terminal */
-	if (curDepth >= maxDepth || isFinished(g) != -1) {
+	/* Si el tablero es terminal */
+	if (curDepth == KTABLE_SIZE|| isFinished(g) != -1) {
+		if (nb != NULL)
+			*nb = copyGame(g);
+
+		return heur(g, curDepth);
+	}
+
+	/* Aumentamos la profundidad máxima con
+	 * el "ruido" del tablero */
+	if ((g->lastmove.was_capture
+		 + g->lastmove.was_promotion
+		 + inCheck(g, WHITE)
+		 + inCheck(g, BLACK))*2 + maxDepth <= curDepth) {
 		if (nb != NULL)
 			*nb = copyGame(g);
 
@@ -82,8 +94,8 @@ static score machineMoveImpl(
 		maximizing = false;
 
 	/* Generamos los sucesores del tablero */
-	n = genSuccs(g, &succs);
 	nopen++;
+	n = genSuccs(g, &succs);
 
 	/* No debería ocurrir nunca */
 	if (n == 0) {
@@ -92,13 +104,19 @@ static score machineMoveImpl(
 		assert("NO MOVES!\n" == NULL);
 	}
 
-	/* Pongo las killer move primero */
+	/*
+	 * Pongo las killer move primero
+	 * usamos también las killers de 2
+	 * plies atrás.
+	 */
 	int k;
 
 	kindex = 0;
 	for (i=0; i<n; i++) {
 		for (k=0; k<NKILLER; k++) {
-			if (equalMove(succs[i]->lastmove, killerTable[curDepth][k])) {
+			if (equalMove(succs[i]->lastmove, killerTable[curDepth][k])
+				|| (curDepth >= 2 && equalMove(succs[i]->lastmove, killerTable[curDepth-2][k]))
+				) {
 				game temp;
 
 				if (i > kindex) {
@@ -136,13 +154,6 @@ static score machineMoveImpl(
 
 		/* Corte, alpha o beta */
 		if (scoreCmp(beta, alpha) <= 0) {
-/*			printf("Cut-off! %i %i %i %i %i\n", curDepth,
-					succs[i]->lastmove.r,
-					succs[i]->lastmove.c,
-					succs[i]->lastmove.R,
-					succs[i]->lastmove.C);
-					*/
-
 			/* Si no era una killer move, la agrego */
 			if (i >= kindex) {
 				int k;
@@ -179,7 +190,7 @@ static score heur(game g, int depth) {
 		else if (t == WIN(flipTurn(machineColor)))
 			ret.won = 0;
 		else
-			ret.won = 0.5;
+			ret.won = 0.6;
 	} else {
 		ret.won = 0.5;
 	}
