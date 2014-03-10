@@ -47,6 +47,8 @@ int canMove(game g, int r, int c, int R, int C) {
 	  fprintf(stderr, "!!!!!!!! (%i)\n", g->board[r][c]);
 	  assert(0);
 	}
+
+	return -1;
 }
 
 static int pawnMove(game g, int r, int c, int R, int C) {
