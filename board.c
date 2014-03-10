@@ -6,6 +6,8 @@
 
 #include "move.h"
 
+inline static int safe(game g, int r, int c, int kr, int kc) __attribute__((always_inline));
+
 static char charOf(int piece);
 static int threatens(game g, int r, int c, int R, int C);
 
@@ -201,16 +203,6 @@ int inCheck(game g, int who) {
 	kr = g->kingx[who];
 	kc = g->kingy[who];
 
-	/* Caballos */
-	if (threatens(g, kr-2, kc-1, kr, kc)) goto ret_true;
-	if (threatens(g, kr+2, kc-1, kr, kc)) goto ret_true;
-	if (threatens(g, kr-2, kc+1, kr, kc)) goto ret_true;
-	if (threatens(g, kr+2, kc+1, kr, kc)) goto ret_true;
-	if (threatens(g, kr-1, kc-2, kr, kc)) goto ret_true;
-	if (threatens(g, kr+1, kc-2, kr, kc)) goto ret_true;
-	if (threatens(g, kr-1, kc+2, kr, kc)) goto ret_true;
-	if (threatens(g, kr+1, kc+2, kr, kc)) goto ret_true;
-
 	/* Columna */
 	j = kc;
 	for (i=kr+1; i<8; i++)
@@ -280,6 +272,16 @@ int inCheck(game g, int who) {
 				break;
 		}
 
+	/* Caballos */
+	if (threatens(g, kr-2, kc-1, kr, kc)) goto ret_true;
+	if (threatens(g, kr+2, kc-1, kr, kc)) goto ret_true;
+	if (threatens(g, kr-2, kc+1, kr, kc)) goto ret_true;
+	if (threatens(g, kr+2, kc+1, kr, kc)) goto ret_true;
+	if (threatens(g, kr-1, kc-2, kr, kc)) goto ret_true;
+	if (threatens(g, kr+1, kc-2, kr, kc)) goto ret_true;
+	if (threatens(g, kr-1, kc+2, kr, kc)) goto ret_true;
+	if (threatens(g, kr+1, kc+2, kr, kc)) goto ret_true;
+
 	assert(g->inCheck[who] != 1);
 	g->inCheck[who] = 0;
 	return 0;
@@ -323,7 +325,9 @@ int equalMove(move a, move b) {
 
 /*
  * Devuelve verdadero si un cambio en (r,c)
- * nunca puede causar una amenaza a (kr, kc).
+ * nunca puede causar una amenaza a (kr, kc),
+ * para el tablero dado en g.
+ *
  * No es útil tener el tipo de pieza movida, ya 
  * que puede ocurrir algo como:
  *
@@ -335,19 +339,52 @@ int equalMove(move a, move b) {
  * en donde mover el caballo causa un jaque aún
  * cuando no lo amenaza
  */
-static int safe(int r, int c, int kr, int kc) {
+inline static int safe(game g, int r, int c, int kr, int kc) {
+	/* Misma fila */
+	if (r == kr) {
+		int i, j;
+		i = kr;
+
+		if (c < kc) {
+			for (j=kc-1; j>c; j--)
+				if (g->board[i][j] != 0)
+					return 1;
+		} else {
+			for (j=kc+1; j<c; j++)
+				if (g->board[i][j] != 0)
+					return 1;
+		}
+
+		return 0;
+	}
+	
+	/* Misma columna */
+	if (c == kc) {
+		int i, j;
+		j = kc;
+
+		if (r < kr) {
+			for (i=kr-1; i>r; i--)
+				if (g->board[i][j] != 0)
+					return 1;
+		} else {
+			for (i=kr+1; i<r; i++)
+				if (g->board[i][j] != 0)
+					return 1;
+		}
+
+		return 0;
+	}
+
 	int dx, dy;
 
+	if (
 	dx = abs(r - kr);
 	dy = abs(c - kc);
 
-	/* Caballos */
-	if (dx + dy == 3)
+	/* Caballos o diagonal */
+	if (dx == dy || dx + dy == 3)
 		return 0; 
-
-	/* No estan en ninguna linea */
-	if (r != kr && c != kc && dx != dy)
-		return 1;
 
 	return 1;
 }
@@ -476,14 +513,14 @@ static int doMoveRegular(game g, move m) {
 
 	/* Si es algún movimiento relevante al rey contrario
 	 * dropeamos la cache */
-	if (!safe(m.r, m.c, g->kingx[other], g->kingy[other]) ||
-		!safe(m.R, m.C, g->kingx[other], g->kingy[other]))
+	if (!safe(g, m.r, m.c, g->kingx[other], g->kingy[other]) ||
+		!safe(g, m.R, m.C, g->kingx[other], g->kingy[other]))
 		g->inCheck[other] = -1;
 
 	/* Necesitamos también (posiblemente) dropear la nuestra */
 	if (isKing(piece) ||
-		!safe(m.r, m.c, g->kingx[m.who], g->kingy[m.who]) ||
-		!safe(m.R, m.C, g->kingx[m.who], g->kingy[m.who]))
+		!safe(g, m.r, m.c, g->kingx[m.who], g->kingy[m.who]) ||
+		!safe(g, m.R, m.C, g->kingx[m.who], g->kingy[m.who]))
 		g->inCheck[m.who] = -1;
 
 	return 1;
