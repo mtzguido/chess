@@ -15,28 +15,28 @@ int pawnSuccs(int r, int c, game g, game **arr, int *alen) {
 		if (g->board[r+1][c] == 0)
 			addToRet2(g, makeRegularMove(g->turn, r, c, r+1, c), arr, alen);
 		if (r == 1 && g->board[r+1][c] == 0 && g->board[r+2][c] == 0)
-			addToRet2(g, makeRegularMove(g->turn, r, c, r+2, c), arr, alen);
+			addToRet(g, makeRegularMove(g->turn, r, c, r+2, c), arr, alen);
 		if (c < 7 && g->board[r+1][c+1] != 0 && colorOf(g->board[r+1][c+1]) != g->turn)
 			addToRet2(g, makeRegularMove(g->turn, r, c, r+1, c+1), arr, alen);
 		if (c > 0 && g->board[r+1][c-1] != 0 && colorOf(g->board[r+1][c-1]) != g->turn)
 			addToRet2(g, makeRegularMove(g->turn, r, c, r+1, c-1), arr, alen);
 		if (r < 7 && c > 0 && g->en_passant_x == r+1 && g->en_passant_y == c-1)
-			addToRet2(g, makeRegularMove(g->turn, r, c, r+1, c-1), arr, alen);
+			addToRet(g, makeRegularMove(g->turn, r, c, r+1, c-1), arr, alen);
 		if (r < 7 && c < 7 && g->en_passant_x == r+1 && g->en_passant_y == c+1)
-			addToRet2(g, makeRegularMove(g->turn, r, c, r+1, c+1), arr, alen);
+			addToRet(g, makeRegularMove(g->turn, r, c, r+1, c+1), arr, alen);
 	} else if (g->turn == WHITE && r > 0) {
 		if (g->board[r-1][c] == 0)
 			addToRet2(g, makeRegularMove(g->turn, r, c, r-1, c), arr, alen);
 		if (r == 6 && g->board[r-1][c] == 0 && g->board[r-2][c] == 0)
-			addToRet2(g, makeRegularMove(g->turn, r, c, r-2, c), arr, alen);
+			addToRet(g, makeRegularMove(g->turn, r, c, r-2, c), arr, alen);
 		if (c < 7 && g->board[r-1][c+1] != 0 && colorOf(g->board[r-1][c+1]) != g->turn)
 			addToRet2(g, makeRegularMove(g->turn, r, c, r-1, c+1), arr, alen);
 		if (c > 0 && g->board[r-1][c-1] != 0 && colorOf(g->board[r-1][c-1]) != g->turn)
 			addToRet2(g, makeRegularMove(g->turn, r, c, r-1, c-1), arr, alen);
 		if (r > 0 && c > 0 && g->en_passant_x == r-1 && g->en_passant_y == c-1)
-			addToRet2(g, makeRegularMove(g->turn, r, c, r-1, c-1), arr, alen);
+			addToRet(g, makeRegularMove(g->turn, r, c, r-1, c-1), arr, alen);
 		if (r > 0 && c < 8 && g->en_passant_x == r-1 && g->en_passant_y == c+1)
-			addToRet2(g, makeRegularMove(g->turn, r, c, r-1, c+1), arr, alen);
+			addToRet(g, makeRegularMove(g->turn, r, c, r-1, c+1), arr, alen);
 	}
 
 	return *alen > n;
@@ -246,8 +246,7 @@ static void addToRet2(game g, move m, game **arr, int *len) {
 	 * es una chanchada, si. */
 	assert(isPawn(g->board[m.r][m.c]));
 
-	if (m.move_type == MOVE_REGULAR
-		&& m.R == (m.who == WHITE ? 0 : 7)) {
+	if (m.R == (m.who == WHITE ? 0 : 7)) {
 		/* Caballo */
 		do {
 			game t = copyGame(g);
