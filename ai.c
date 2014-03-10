@@ -13,22 +13,18 @@
 #define KTABLE_SIZE	(SEARCH_DEPTH * 2)
 #define NKILLER	2
 
-typedef struct {
-	float won;
-	float heur;
-	float tiebreak;
-} score;
+typedef float score;
 
 int machineColor = -1;
 
 static score machineMoveImpl(
 		game start, int maxDepth, int curDepth,
 		game *nb, score alpha, score beta);
-static score heur(game g, int depth);
-static int scoreCmp(score a, score b);
 
-static const score minScore = { -INFINITY, 0, 0 };
-static const score maxScore = {  INFINITY, 0, 0 };
+static score heur(game g, int depth);
+
+static const score minScore = -INFINITY;
+static const score maxScore =  INFINITY;
 
 static int nopen;
 
@@ -36,7 +32,7 @@ static move killerTable[KTABLE_SIZE][NKILLER];
 
 game machineMove(game start) {
 	game ret = NULL;
-	score sc;
+	score t;
 	clock_t t1,t2;
 	int i, j;
 
@@ -46,15 +42,13 @@ game machineMove(game start) {
 
 	nopen = 0;
 	t1 = clock();
-	sc = machineMoveImpl(start, SEARCH_DEPTH, 0, &ret, minScore, maxScore);
+	t = machineMoveImpl(start, SEARCH_DEPTH, 0, &ret, minScore, maxScore);
 	t2 = clock();
 
-	printf("machineMove returned board with expected score (%f,%f,%f)\n", sc.won, sc.heur, sc.tiebreak);
-	printf("move=(type=%i) %i %i %i %i\n", ret->lastmove.move_type, ret->lastmove.r, ret->lastmove.c, ret->lastmove.R, ret->lastmove.C);
-	printf("time: %.3fs\n", (t2-t1)*1.0/CLOCKS_PER_SEC);
-	printf("(nopen = %i)\n", nopen);
+	fprintf(stderr, "%i \t nodes in \t %.3fs\n", nopen, (t2-t1)*1.0/CLOCKS_PER_SEC);
+	fprintf(stderr, "expected score: %f\n", t);
+//	printBoard(ret);
 	fflush(NULL);
-
 	return ret;
 }
 
@@ -63,35 +57,18 @@ static score machineMoveImpl(
 		game *nb, score alpha, score beta) {
 
 	/* Si el tablero es terminal */
-	if (curDepth == KTABLE_SIZE|| isFinished(g) != -1) {
+	if (curDepth == maxDepth || isFinished(g) != -1) {
 		if (nb != NULL)
 			*nb = copyGame(g);
 
 		return heur(g, curDepth);
 	}
 
-	/* Aumentamos la profundidad máxima con
-	 * el "ruido" del tablero */
-	if ((g->lastmove.was_capture
-		 + g->lastmove.was_promotion
-		 + inCheck(g, WHITE)
-		 + inCheck(g, BLACK))*2 + maxDepth <= curDepth) {
-		if (nb != NULL)
-			*nb = copyGame(g);
-
-		return heur(g, curDepth);
-	}
-
-	bool maximizing;
 	game *succs;
 	score t;
 	int i, n;
 	int kindex;
-
-	if (g->turn == machineColor)
-		maximizing = true;
-	else
-		maximizing = false;
+	score best;
 
 	/* Generamos los sucesores del tablero */
 	nopen++;
@@ -106,6 +83,7 @@ static score machineMoveImpl(
 
 	/*
 	 * Pongo las killer move primero
+	 *
 	 * usamos también las killers de 2
 	 * plies atrás.
 	 */
@@ -132,28 +110,26 @@ static score machineMoveImpl(
 	}
 
 	/* Itero por los sucesores */
-	for (i=0; i< n; i++) {
-		t = machineMoveImpl(succs[i], maxDepth, curDepth+1, NULL, alpha, beta);
+	best = minScore;
+	for (i=0; i<n; i++) {
+		t = - machineMoveImpl(succs[i], maxDepth, curDepth+1, NULL, -beta, -alpha);
 
-		if (maximizing && scoreCmp(t, alpha) <= 0)
-			continue;
-		else if (!maximizing && scoreCmp(t, beta) >= 0)
-			continue;
+		if (t > best) {
+			best = t;
 
-		if (maximizing)
-			alpha = t;
-		else
-			beta = t;
+			if (nb != NULL) {
+				if (*nb != NULL)
+					freeGame(*nb);
 
-		if (nb != NULL) {
-			if (*nb != NULL)
-				freeGame(*nb);
-
-			*nb = copyGame(succs[i]);
+				*nb = copyGame(succs[i]);
+			}
 		}
 
+		if (t > alpha)
+			alpha = t;
+
 		/* Corte, alpha o beta */
-		if (scoreCmp(beta, alpha) <= 0) {
+		if (beta <= alpha) {
 			/* Si no era una killer move, la agrego */
 			if (i >= kindex) {
 				int k;
@@ -168,11 +144,11 @@ static score machineMoveImpl(
 	}
 
 	freeSuccs(succs, n);
-	return maximizing ? alpha : beta;
+	return best;
 }
 
 static float pieceScore(game g) {
-	return g->pieceScore * (machineColor == WHITE ? 1 : -1);
+	return g->pieceScore * (g->turn == WHITE ? 1 : -1);
 }
 
 static float coverScore(game g) {
@@ -180,40 +156,41 @@ static float coverScore(game g) {
 }
 
 static score heur(game g, int depth) {
-	score ret = {0,0,0};
+	score ret = 0;
 
 	int t = isFinished(g);
 
 	if (t != -1) {
-		if (t == WIN(machineColor))
-			ret.won = 1;
-		else if (t == WIN(flipTurn(machineColor)))
-			ret.won = 0;
+		if (t == WIN(g->turn))
+			ret += 100000;
+		else if (t == WIN(flipTurn(g->turn)))
+			ret += -100000;
 		else
-			ret.won = 0.6;
+			ret += 0;
 	} else {
-		ret.won = 0.5;
+		ret += 0;
 	}
 
-	ret.heur = (pieceScore(g))
-	         + (coverScore(g))
-			 + (inCheck(g, flipTurn(machineColor)) ?  20 : 0);
-			 + (inCheck(g,          machineColor ) ? -20 : 0);
+	/* Si estaba terminada, no nos importa esto */
+	if (ret == 0) {
+		ret += (pieceScore(g))
+			 + (coverScore(g))
+			 + (inCheck(g, flipTurn(g->turn)) ?  2 : 0)
+			 + (inCheck(g,          g->turn ) ? -2 : 0)
+			 + (g->castle_king [flipTurn(g->turn)] ? -0.3 : 0)
+			 + (g->castle_king [        (g->turn)] ?  0.3 : 0)
+			 + (g->castle_queen[flipTurn(g->turn)] ? -0.3 : 0)
+			 + (g->castle_queen[        (g->turn)] ?  0.3 : 0)
+			 ;
+	}
 
 	/* Con esto, ante heuristicas iguales,
 	 * preferimos movidas cercanas */
-	ret.tiebreak = -depth;
-
+	if (g->turn == machineColor)
+		ret -= depth * 0.01;
+	else
+		ret += depth * 0.01;
+	
 	return ret;
-}
-
-static int scoreCmp(score a, score b) {
-	if (a.won      > b.won     ) return  1;
-	if (a.won      < b.won     ) return -1;
-	if (a.heur     > b.heur    ) return  1;
-	if (a.heur     < b.heur    ) return -1;
-	if (a.tiebreak > b.tiebreak) return  1;
-	if (a.tiebreak < b.tiebreak) return -1;
-	return 0;
 }
 
