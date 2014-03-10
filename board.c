@@ -365,11 +365,17 @@ int doMove(game g, move m) {
 		if (!doMoveKCastle(g, m))
 			goto fail;
 
+		g->en_passant_x = -1;
+		g->en_passant_y = -1;
+
 		break;
 	
 	case MOVE_QUEENSIDE_CASTLE:
 		if (!doMoveQCastle(g, m))
 			goto fail;
+
+		g->en_passant_x = -1;
+		g->en_passant_y = -1;
 
 		break;
 	default:
