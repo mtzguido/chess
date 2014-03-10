@@ -7,7 +7,6 @@
 #include "move.h"
 
 static char charOf(int piece);
-static int threatens(game g, int r, int c, int R, int C);
 
 static float scoreOf(int piece);
 
@@ -67,20 +66,15 @@ init = {
 
 static void fixKings(game g) {
 	int i, j;
-	int kw = 0, kb = 0;
 
 	for (i=0; i<8; i++) {
 		for (j=0; j<8; j++) {
 			if (g->board[i][j] == WKING) {
-				assert(kw == 0);
 				g->kingx[WHITE] = i;
 				g->kingy[WHITE] = j;
-				kw = 1;
 			} else if (g->board[i][j] == BKING) {
-				assert(kb == 0);
 				g->kingx[BLACK] = i;
 				g->kingy[BLACK] = j;
-				kb = 1;
 			}
 		}
 	}
@@ -211,7 +205,7 @@ int inCheck(game g, int who) {
 	j = kc;
 	for (i=kr+1; i<8; i++)
 		if (g->board[i][j] != 0) {
-			if (threatens(g, i, j, kr, kc))
+			if (colorOf(g->board[i][j]) != who && canMove(g, i, j, kr, kc))
 				goto ret_true;
 			else
 				break;
@@ -219,7 +213,7 @@ int inCheck(game g, int who) {
 
 	for (i=kr-1; i>=0; i--)
 		if (g->board[i][j] != 0) {
-			if (threatens(g, i, j, kr, kc))
+			if (colorOf(g->board[i][j]) != who && canMove(g, i, j, kr, kc))
 				goto ret_true;
 			else
 				break;
@@ -229,7 +223,7 @@ int inCheck(game g, int who) {
 	i = kr;
 	for (j=kc+1; j<8; j++)
 		if (g->board[i][j] != 0) {
-			if (threatens(g, i, j, kr, kc))
+			if (colorOf(g->board[i][j]) != who && canMove(g, i, j, kr, kc))
 				goto ret_true;
 			else
 				break;
@@ -237,7 +231,7 @@ int inCheck(game g, int who) {
 
 	for (j=kc-1; j>=0; j--)
 		if (g->board[i][j] != 0) {
-			if (threatens(g, i, j, kr, kc))
+			if (colorOf(g->board[i][j]) != who && canMove(g, i, j, kr, kc))
 				goto ret_true;
 			else
 				break;
@@ -246,7 +240,7 @@ int inCheck(game g, int who) {
 	/* Diagonales */
 	for (i=kr-1, j=kc-1; i>=0 && j>=0; i--, j--)
 		if (g->board[i][j] != 0) {
-			if (threatens(g, i, j, kr, kc))
+			if (colorOf(g->board[i][j]) != who && canMove(g, i, j, kr, kc))
 				goto ret_true;
 			else
 				break;
@@ -254,7 +248,7 @@ int inCheck(game g, int who) {
 
 	for (i=kr+1, j=kc+1; i<8 && j<8; i++, j++)
 		if (g->board[i][j] != 0) {
-			if (threatens(g, i, j, kr, kc))
+			if (colorOf(g->board[i][j]) != who && canMove(g, i, j, kr, kc))
 				goto ret_true;
 			else
 				break;
@@ -262,7 +256,7 @@ int inCheck(game g, int who) {
 
 	for (i=kr+1, j=kc-1; i<8 && j>=0; i++, j--)
 		if (g->board[i][j] != 0) {
-			if (threatens(g, i, j, kr, kc))
+			if (colorOf(g->board[i][j]) != who && canMove(g, i, j, kr, kc))
 				goto ret_true;
 			else
 				break;
@@ -270,21 +264,21 @@ int inCheck(game g, int who) {
 
 	for (i=kr-1, j=kc+1; i>=0 && j<8; i--, j++)
 		if (g->board[i][j] != 0) {
-			if (threatens(g, i, j, kr, kc))
+			if (colorOf(g->board[i][j]) != who && canMove(g, i, j, kr, kc))
 				goto ret_true;
 			else
 				break;
 		}
 
 	/* Caballos */
-	if (threatens(g, kr-2, kc-1, kr, kc)) goto ret_true;
-	if (threatens(g, kr+2, kc-1, kr, kc)) goto ret_true;
-	if (threatens(g, kr-2, kc+1, kr, kc)) goto ret_true;
-	if (threatens(g, kr+2, kc+1, kr, kc)) goto ret_true;
-	if (threatens(g, kr-1, kc-2, kr, kc)) goto ret_true;
-	if (threatens(g, kr+1, kc-2, kr, kc)) goto ret_true;
-	if (threatens(g, kr-1, kc+2, kr, kc)) goto ret_true;
-	if (threatens(g, kr+1, kc+2, kr, kc)) goto ret_true;
+	if (colorOf(g->board[kr-2][kc-1]) != who && canMove(g, kr-2, kc-1, kr, kc)) goto ret_true;
+	if (colorOf(g->board[kr+2][kc-1]) != who && canMove(g, kr+2, kc-1, kr, kc)) goto ret_true;
+	if (colorOf(g->board[kr-2][kc+1]) != who && canMove(g, kr-2, kc+1, kr, kc)) goto ret_true;
+	if (colorOf(g->board[kr+2][kc+1]) != who && canMove(g, kr+2, kc+1, kr, kc)) goto ret_true;
+	if (colorOf(g->board[kr-1][kc-2]) != who && canMove(g, kr-1, kc-2, kr, kc)) goto ret_true;
+	if (colorOf(g->board[kr+1][kc-2]) != who && canMove(g, kr+1, kc-2, kr, kc)) goto ret_true;
+	if (colorOf(g->board[kr-1][kc+2]) != who && canMove(g, kr-1, kc+2, kr, kc)) goto ret_true;
+	if (colorOf(g->board[kr+1][kc+2]) != who && canMove(g, kr+1, kc+2, kr, kc)) goto ret_true;
 
 	assert(g->inCheck[who] != 1);
 	g->inCheck[who] = 0;
@@ -296,12 +290,6 @@ ret_true:
 	g->inCheck[who] = 1;
 	return 1;
 }
-
-static int threatens(game g, int r, int c, int R, int C) {
-	return (g->board[r][c] ^ g->board[R][C]) < 0
-	    && canMove(g, r, c, R, C);
-}
-
 
 void freeSuccs(game *arr, int len) {
 	int i;
@@ -343,30 +331,16 @@ int equalMove(move a, move b) {
  * cuando no lo amenaza
  */
 static int safe(game g, int r, int c, int kr, int kc) {
-	int dx, dy;
-
-	dx = abs(r-kr);
-	dy = abs(c-kc);
-
-	if (dx + dy == 3) {
-		/* Caballos o diagonal */
-		return 0; 
-	} else if (r == kr || c == kc || dx == dy) {
-#if 1
+	if (r == kr || c == kc) {
 		return 0;
-#else
-		int sr, sc; /* step */
-		int i, j;
+	} else {
+		int dx, dy;
 
-		sr = kr > r ? 1 : kr == r ? 0 : -1;
-		sc = kc > c ? 1 : kc == c ? 0 : -1;
+		dx = abs(r-kr);
+		dy = abs(c-kc);
 
-		for (i=r+sr, j=c+sc; i != kr || j != kc ; i+=sr, j+=sc)
-			if (g->board[i][j] != 0)
-				return 1;
-		 
-		return 0;
-#endif
+		if (dx == dy || dx + dy == 3)
+			return 0;
 	}
 
 	return 1;
@@ -409,7 +383,6 @@ int doMove(game g, move m) {
 
 	freeGame(old_g);
 
-	assert(g->inCheck[g->turn] == 0);
 	g->turn = flipTurn(g->turn);
 
 	return 1;
@@ -594,23 +567,31 @@ static int doMoveQCastle(game g, move m) {
 	return 1;
 }
 
-inline static float scoreOf(int piece) {
+static const int scoreTab_[] =
+{ 0, -50, -10, -10, -10, -1, 0, 1, 10, 10, 10, 50, 0 };
+
+static const int * scoreTab = &scoreTab_[6];
+
+static float scoreOf(int piece) {
+#if 1
+	return scoreTab[piece];
+#else
 	switch(piece) {
-		case WQUEEN:	return  50;
-		case BQUEEN:	return -50;
-		case WROOK:	return 10;
-		case WBISHOP:	return 10;
-		case WKNIGHT:	return 10;
-		case BROOK:	return -10;
-		case BBISHOP:	return -10;
-		case BKNIGHT:	return -10;
-		case WPAWN:	return  1;
-		case BPAWN:	return -1;
-		case WKING:	return 0;
-		case BKING:	return 0;
-		case 0:	return 0;
-		default: assert(0);
+	case WQUEEN:  return  50;
+	case BQUEEN:  return -50;
+	case WROOK:   return  10;
+	case WBISHOP: return  10;
+	case WKNIGHT: return  10;
+	case BROOK:   return -10;
+	case BBISHOP: return -10;
+	case BKNIGHT: return -10;
+	case WPAWN:   return  1;
+	case BPAWN:   return -1;
+	case WKING:   return  0;
+	case BKING:   return  0;
+	case 0:       return  0;
+	default:      assert(0);
 	}
+
+#endif
 }
-
-
