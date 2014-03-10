@@ -9,7 +9,7 @@
 #include <stdbool.h>
 #include <time.h>
 
-#define SEARCH_DEPTH	6
+#define SEARCH_DEPTH	7
 #define KTABLE_SIZE	(SEARCH_DEPTH * 2)
 #define NKILLER	2
 
@@ -25,6 +25,8 @@ static score heur(game g, int depth);
 
 static const score minScore = -INFINITY;
 static const score maxScore =  INFINITY;
+
+static void sortSuccs(game *succs, int n);
 
 static int nopen;
 
@@ -89,6 +91,8 @@ static score machineMoveImpl(
 	 */
 	int k;
 
+	sortSuccs(succs, n);
+
 	kindex = 0;
 	for (i=0; i<n; i++) {
 		for (k=0; k<NKILLER; k++) {
@@ -129,6 +133,7 @@ static score machineMoveImpl(
 			alpha = t;
 
 		/* Corte, alpha o beta */
+#if 1
 		if (beta <= alpha) {
 			/* Si no era una killer move, la agrego */
 			if (i >= kindex) {
@@ -141,6 +146,7 @@ static score machineMoveImpl(
 
 			break;
 		}
+#endif
 	}
 
 	freeSuccs(succs, n);
@@ -177,10 +183,6 @@ static score heur(game g, int depth) {
 			 + (coverScore(g))
 			 + (inCheck(g, flipTurn(g->turn)) ?  2 : 0)
 			 + (inCheck(g,          g->turn ) ? -2 : 0)
-			 + (g->castle_king [flipTurn(g->turn)] ? -0.3 : 0)
-			 + (g->castle_king [        (g->turn)] ?  0.3 : 0)
-			 + (g->castle_queen[flipTurn(g->turn)] ? -0.3 : 0)
-			 + (g->castle_queen[        (g->turn)] ?  0.3 : 0)
 			 ;
 	}
 
@@ -194,3 +196,25 @@ static score heur(game g, int depth) {
 	return ret;
 }
 
+static int succCmp(const void *bp, const void *ap) {
+	game a = *((game*)ap);
+	game b = *((game*)bp);
+
+	if (a->lastmove.was_capture != b->lastmove.was_capture)
+		return a->lastmove.was_capture - b->lastmove.was_capture;
+
+	if (a->lastmove.was_promotion != b->lastmove.was_promotion)
+		return a->lastmove.was_promotion - b->lastmove.was_promotion;
+
+	const int ar = a->lastmove.r;
+	const int ac = a->lastmove.c;
+	const int br = b->lastmove.r;
+	const int bc = b->lastmove.c;
+
+	return abs(a->board[ar][ac]) - abs(b->board[br][bc]);
+}
+
+static void sortSuccs(game *succs, int n)
+{
+	qsort(succs, n, sizeof (game), succCmp);
+}
