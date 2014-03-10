@@ -6,8 +6,6 @@
 
 #include "move.h"
 
-inline static int safe(game g, int r, int c, int kr, int kc) __attribute__((always_inline));
-
 static char charOf(int piece);
 static int threatens(game g, int r, int c, int R, int C);
 
@@ -16,6 +14,12 @@ static float scoreOf(int piece);
 static int doMoveRegular(game g, move m);
 static int doMoveKCastle(game g, move m);
 static int doMoveQCastle(game g, move m);
+
+inline static int sign(int a) {
+	if (a > 0) return 1;
+	if (a < 0) return -1;
+	return 0;
+}
 
 #if 1
 static const struct game_struct
@@ -339,52 +343,31 @@ int equalMove(move a, move b) {
  * en donde mover el caballo causa un jaque aún
  * cuando no lo amenaza
  */
-inline static int safe(game g, int r, int c, int kr, int kc) {
-	/* Misma fila */
-	if (r == kr) {
-		int i, j;
-		i = kr;
+static int safe(game g, int r, int c, int kr, int kc) {
+	/* Aparentemente, esto no ayuda */
+//	return 0;
 
-		if (c < kc) {
-			for (j=kc-1; j>c; j--)
-				if (g->board[i][j] != 0)
-					return 1;
-		} else {
-			for (j=kc+1; j<c; j++)
-				if (g->board[i][j] != 0)
-					return 1;
-		}
 
-		return 0;
-	}
-	
-	/* Misma columna */
-	if (c == kc) {
-		int i, j;
-		j = kc;
-
-		if (r < kr) {
-			for (i=kr-1; i>r; i--)
-				if (g->board[i][j] != 0)
-					return 1;
-		} else {
-			for (i=kr+1; i<r; i++)
-				if (g->board[i][j] != 0)
-					return 1;
-		}
-
-		return 0;
-	}
-
+	int sr, sc; /* step */
 	int dx, dy;
+	int i, j;
 
-	if (
 	dx = abs(r - kr);
 	dy = abs(c - kc);
 
-	/* Caballos o diagonal */
-	if (dx == dy || dx + dy == 3)
+	if (dx + dy == 3) {
+		/* Caballos o diagonal */
 		return 0; 
+	} else if (r == kr || c == kc || dx == dy) {
+		sr = kr > r ? 1 : kr == r ? 0 : -1;
+		sc = kc > c ? 1 : kc == c ? 0 : -1;
+
+		for (i=r+sr, j=c+sc; i != kr || j != kc ; i+=sr, j+=sc)
+			if (g->board[i][j] != 0)
+				return 1;
+		 
+		return 0;
+	}
 
 	return 1;
 }
@@ -499,7 +482,9 @@ static int doMoveRegular(game g, move m) {
 		g->en_passant_y = -1;
 	}
 
-	g->pieceScore -= scoreOf(g->board[m.R][m.C]);
+	if (g->board[m.R][m.C] != 0)
+		g->pieceScore -= scoreOf(g->board[m.R][m.C]);
+
 	g->board[m.R][m.C] = g->board[m.r][m.c];
 	g->board[m.r][m.c] = 0;
 
@@ -609,35 +594,22 @@ static int doMoveQCastle(game g, move m) {
 	return 1;
 }
 
-static float scoreOf(int piece) {
-	int p = abs(piece);
-	int m = colorOf(piece) == WHITE ? 1 : -1;
-
-	switch(p) {
-	case WQUEEN:
-		return m*50;
-	case WROOK:
-	case WBISHOP:
-	case WKNIGHT:
-		return m*10;
-	case WPAWN:
-		return m;
-
-	/*
-	 * debemos agregar este caso
-	 * para jugadas intermedias,
-	 * obviamente no válidas ya
-	 * que nunca se come al rey.
-	 */
-	case WKING:
-	case 0:
-		return 0;
-
-
-	default:
-		printf("!!!%i %i\n", piece, p);
-		assert(0);
-
+inline static float scoreOf(int piece) {
+	switch(piece) {
+		case WQUEEN:	return  50;
+		case BQUEEN:	return -50;
+		case WROOK:	return 10;
+		case WBISHOP:	return 10;
+		case WKNIGHT:	return 10;
+		case BROOK:	return -10;
+		case BBISHOP:	return -10;
+		case BKNIGHT:	return -10;
+		case WPAWN:	return  1;
+		case BPAWN:	return -1;
+		case WKING:	return 0;
+		case BKING:	return 0;
+		case 0:	return 0;
+		default: assert(0);
 	}
 }
 
