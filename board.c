@@ -107,58 +107,58 @@ void freeGame(game g) {
 void printBoard(game g) {
 	int i, j;
 
-	printf("(turn: %s)\n", g->turn == WHITE ? "WHITE" : "BLACK");
+	fprintf(stderr, "(turn: %s)\n", g->turn == WHITE ? "WHITE" : "BLACK");
 	for (i=0; i<8; i++) {
-		printf("   ");
+		fprintf(stderr, "   ");
 		for (j=0; j<8; j++) {
 			if (g->en_passant_x == i && g->en_passant_y == j)
-				putchar('!');
+				fputc('!', stderr);
 			else
-				putchar(charOf(g->board[i][j]));
+				fputc(charOf(g->board[i][j]), stderr);
 			if (g->en_passant_x == i && g->en_passant_y == j)
-				putchar('!');
+				fputc('!', stderr);
 			else
-				putchar(charOf(g->board[i][j]));
+				fputc(charOf(g->board[i][j]), stderr);
 			if (g->en_passant_x == i && g->en_passant_y == j)
-				putchar('!');
+				fputc('!', stderr);
 			else
-				putchar(charOf(g->board[i][j]));
-			putchar(' ');
-			putchar(' ');
-			putchar(' ');
+				fputc(charOf(g->board[i][j]), stderr);
+			fputc(' ', stderr);
+			fputc(' ', stderr);
+			fputc(' ', stderr);
 		}
-		putchar('\n');
-		printf("%i  ", 8-i);
+		fputc('\n', stderr);
+		fprintf(stderr, "%i  ", 8-i);
 		for (j=0; j<8; j++) {
 			if (g->en_passant_x == i && g->en_passant_y == j)
-				putchar('!');
+				fputc('!', stderr);
 			else
-				putchar(charOf(g->board[i][j]));
+				fputc(charOf(g->board[i][j]), stderr);
 			if (g->en_passant_x == i && g->en_passant_y == j)
-				putchar('!');
+				fputc('!', stderr);
 			else
-				putchar(charOf(g->board[i][j]));
+				fputc(charOf(g->board[i][j]), stderr);
 			if (g->en_passant_x == i && g->en_passant_y == j)
-				putchar('!');
+				fputc('!', stderr);
 			else
-				putchar(charOf(g->board[i][j]));
-			putchar(' ');
-			putchar(' ');
-			putchar(' ');
+				fputc(charOf(g->board[i][j]), stderr);
+			fputc(' ', stderr);
+			fputc(' ', stderr);
+			fputc(' ', stderr);
 		}
-		putchar('\n');
-		putchar('\n');
+		fputc('\n', stderr);
+		fputc('\n', stderr);
 	}
 
-	printf("\n    a     b     c     d     e     f     g     h\n");
+	fprintf(stderr, "\n    a     b     c     d     e     f     g     h\n");
 	/*
-	printf("[ castle_king = %i %i \n", g->castle_king[0], g->castle_king[1]);
-	printf("  castle_queen = %i %i \n", g->castle_queen[0], g->castle_queen[1]);
-	printf("  kingx = %i %i \n", g->kingx[0], g->kingx[1]);
-	printf("  kingy = %i %i \n", g->kingy[0], g->kingy[1]);
-	printf("  en_passant = %i %i \n", g->en_passant_x, g->en_passant_y);
-	printf("  inCheck = %i %i \n", g->inCheck[0], g->inCheck[1]);
-	printf("]\n");
+	fprintf(stderr, "[ castle_king = %i %i \n", g->castle_king[0], g->castle_king[1]);
+	fprintf(stderr, "  castle_queen = %i %i \n", g->castle_queen[0], g->castle_queen[1]);
+	fprintf(stderr, "  kingx = %i %i \n", g->kingx[0], g->kingx[1]);
+	fprintf(stderr, "  kingy = %i %i \n", g->kingy[0], g->kingy[1]);
+	fprintf(stderr, "  en_passant = %i %i \n", g->en_passant_x, g->en_passant_y);
+	fprintf(stderr, "  inCheck = %i %i \n", g->inCheck[0], g->inCheck[1]);
+	fprintf(stderr, "]\n");
 	*/
 
 	fflush(stdout);
@@ -181,6 +181,8 @@ static char charOf(int piece) {
 		case BKING:	  return 'k';
 		default:      assert(0);
 	}
+
+	return 'x';
 }
 
 int isFinished(game g) {
