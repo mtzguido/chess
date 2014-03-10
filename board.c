@@ -297,8 +297,7 @@ ret_true:
 	return 1;
 }
 
-/* Debe ser llamado con r,c,R,C VALIDOS */
-static inline int threatens(game g, int r, int c, int R, int C) {
+static int threatens(game g, int r, int c, int R, int C) {
 	return (g->board[r][c] ^ g->board[R][C]) < 0
 	    && canMove(g, r, c, R, C);
 }
@@ -344,21 +343,21 @@ int equalMove(move a, move b) {
  * cuando no lo amenaza
  */
 static int safe(game g, int r, int c, int kr, int kc) {
-	/* Aparentemente, esto no ayuda */
-//	return 0;
-
-
-	int sr, sc; /* step */
 	int dx, dy;
-	int i, j;
 
-	dx = abs(r - kr);
-	dy = abs(c - kc);
+	dx = abs(r-kr);
+	dy = abs(c-kc);
 
 	if (dx + dy == 3) {
 		/* Caballos o diagonal */
 		return 0; 
 	} else if (r == kr || c == kc || dx == dy) {
+#if 1
+		return 0;
+#else
+		int sr, sc; /* step */
+		int i, j;
+
 		sr = kr > r ? 1 : kr == r ? 0 : -1;
 		sc = kc > c ? 1 : kc == c ? 0 : -1;
 
@@ -367,6 +366,7 @@ static int safe(game g, int r, int c, int kr, int kc) {
 				return 1;
 		 
 		return 0;
+#endif
 	}
 
 	return 1;
