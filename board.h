@@ -16,10 +16,6 @@ typedef struct move {
 
 	int was_capture;
 	int was_promotion;
-
-/*	int capture:1;
-	int epcapture:1;
-	*/
 } move;
 
 struct game_struct {

@@ -45,14 +45,14 @@ init = {
 static const struct game_struct
 init = {
 	.board= {
-		{ BROOK, EMPTY, BBISHOP, BQUEEN, BKING, BBISHOP, EMPTY, BROOK },
-		{ EMPTY, BPAWN, BPAWN, BPAWN, BPAWN, BPAWN, BPAWN, BPAWN },
-		{ BPAWN, EMPTY, BKNIGHT, EMPTY, EMPTY, EMPTY, EMPTY, BKNIGHT },
+		{ EMPTY, BQUEEN, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
 		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
-		{ EMPTY, EMPTY, EMPTY, WPAWN, WPAWN, EMPTY, EMPTY, EMPTY },
-		{ WPAWN, EMPTY, WKNIGHT, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
-		{ EMPTY, WPAWN, WPAWN, EMPTY, EMPTY, WPAWN, WPAWN, WPAWN },
-		{ WROOK, EMPTY, WBISHOP, WQUEEN, WKING, WBISHOP, WKNIGHT, WROOK }
+		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
+		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
+		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
+		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
+		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, BROOK },
+		{ WKING, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY }
 	},
 	.turn = BLACK,
 	.lastmove = { 0 },
@@ -151,6 +151,7 @@ void printBoard(game g) {
 	}
 
 	printf("\n    a     b     c     d     e     f     g     h\n");
+	/*
 	printf("[ castle_king = %i %i \n", g->castle_king[0], g->castle_king[1]);
 	printf("  castle_queen = %i %i \n", g->castle_queen[0], g->castle_queen[1]);
 	printf("  kingx = %i %i \n", g->kingx[0], g->kingx[1]);
@@ -158,7 +159,7 @@ void printBoard(game g) {
 	printf("  en_passant = %i %i \n", g->en_passant_x, g->en_passant_y);
 	printf("  inCheck = %i %i \n", g->inCheck[0], g->inCheck[1]);
 	printf("]\n");
-
+	*/
 
 	fflush(stdout);
 }
@@ -367,6 +368,7 @@ int doMove(game g, move m) {
 
 		g->en_passant_x = -1;
 		g->en_passant_y = -1;
+		g->idlecount = 0;
 
 		break;
 	
@@ -376,6 +378,7 @@ int doMove(game g, move m) {
 
 		g->en_passant_x = -1;
 		g->en_passant_y = -1;
+		g->idlecount = 0;
 
 		break;
 	default:
@@ -423,6 +426,7 @@ static int doMoveRegular(game g, move m) {
 
 	/* Es válida */
 	g->lastmove = m;
+	g->idlecount++;
 
 	if (isKing(piece)) {
 		g->kingx[colorOf(piece)] = m.R;
@@ -443,6 +447,10 @@ static int doMoveRegular(game g, move m) {
 			g->castle_queen[m.who] = 0;
 	}
 
+	/* Los peones no son reversibles */
+	if (isPawn(piece))
+		g->idlecount = 0;
+
 	/* Es una captura al paso? */
 	if (isPawn(piece)
 			&& m.R == g->en_passant_x
@@ -462,6 +470,7 @@ static int doMoveRegular(game g, move m) {
 	}
 
 	if (g->board[m.R][m.C] != 0) {
+		g->idlecount = 0;
 		g->lastmove.was_capture = 1;
 		g->pieceScore -= scoreOf(g->board[m.R][m.C]);
 	} else {
