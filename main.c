@@ -2,6 +2,7 @@
 #include <assert.h>
 #include "ai.h"
 #include "board.h"
+#include "pgn.h"
 
 static char pieceOf(char c) {
 	switch (c) {
@@ -21,9 +22,21 @@ static char pieceOf(char c) {
 	}   
 }
 
-int main () {
+int main (int argc, char **argv) {
 	game b = startingGame();
-	machineColor = BLACK;
+
+	if (argc > 1 && argv[1][0] == 'w')
+		machineColor = WHITE;
+	else
+		machineColor = BLACK;
+
+	int movenum = 1;
+
+	FILE *game_log = fopen(machineColor == WHITE ? "gamelog_w" : "gamelog_b", "w");
+
+	move m;
+	char mbuf[500];
+	struct pgn pp;
 
 	/*
 	   int i, j, n;
@@ -48,8 +61,6 @@ int main () {
 	   return 0;
    */
 
-	printBoard(b);
-
 	while(1) {
 		int rc = isFinished(b);
 		if (rc > 0) {
@@ -65,20 +76,33 @@ int main () {
 			break;
 		}
 
+		game t = copyGame(b);
+		printBoard(b);
+
 		if (b->turn == machineColor) {
 			game nb;
-			printf("Machine turn:\n");
+
+			/// printf("...\n");
 
 			nb = machineMove(b);
 			freeGame(b);
 			b = nb;
 
-			printBoard(b);
-			printf("(move was (REGULAR?) %c%i->%c%i)\n", b->lastmove.c+'A', 8-b->lastmove.r, b->lastmove.C+'A', 8-b->lastmove.R);
+			m = nb->lastmove;
+			if (nb->lastmove.move_type == MOVE_REGULAR)
+				printf("%c%c%c%c\n",
+						nb->lastmove.c + 'a',
+						'8'-nb->lastmove.r,
+						nb->lastmove.C + 'a',
+						'8'-nb->lastmove.R);
+			else if (nb->lastmove.move_type == MOVE_KINGSIDE_CASTLE)
+				printf("z1z1\n");
+			else
+				printf("z2z2\n");
+
 		} else {
 			int r, R;
 			char c, C;
-			move m;
 			char newpiece;
 			int t;
 			char *line = NULL;
@@ -86,7 +110,7 @@ int main () {
 
 			m.who = flipTurn(machineColor);
 
-			printf("Your turn:\n");
+//			printf("Your turn:\n");
 
 			getline(&line, &crap, stdin);
 			if (5 != (t=sscanf(line, "%c%i%c%i%c", &c, &r, &C, &R, &newpiece))
@@ -99,7 +123,7 @@ int main () {
 			if (c=='x') break;
 			if (c=='z') {
 				m.move_type = r == 1? MOVE_KINGSIDE_CASTLE : MOVE_QUEENSIDE_CASTLE;
-				printf("trying to castle\n");
+				// printf("trying to castle\n");
 				goto move;
 			}
 
@@ -110,7 +134,8 @@ int main () {
 
 			free(line);
 
-			printf("Your move: %c%i -> %c%i\n", c, r, C, R);
+			fprintf(stderr, "Your move: %c%i -> %c%i\n", c, r, C, R);
+
 
 			if (c < 'A' || c > 'H' || C < 'A' || C > 'H' ||
 					r < 0   || r > 8   || R < 0   || R > 8  ) {
@@ -125,16 +150,23 @@ int main () {
 			m.C = C-'A';
 			m.promote = pieceOf(newpiece);
 
-			printf("promote=%i\n", m.promote);
-
 move:
 			if (!doMove(b, m)) {
 				fprintf(stderr, "Move is not legal... try again\n");
 				continue;
 			}
-
-			printBoard(b);
 		}
+
+		pp = toPGN(t, m);
+		freeGame(t);
+		stringPGN(mbuf, pp);
+		fprintf(game_log, "%i. %s ", movenum, mbuf);
+		if (movenum % 2 == 0)
+			fprintf(game_log, "\n");
+
+		movenum++;
+
+		fflush(stdout);
 	}
 
 	freeGame(b);
