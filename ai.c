@@ -11,7 +11,7 @@
 #include <time.h>
 
 #define SEARCH_DEPTH	6
-#define KTABLE_SIZE	(SEARCH_DEPTH * 2)
+#define KTABLE_SIZE	(SEARCH_DEPTH + 7)
 #define NKILLER	2
 
 typedef int score;
