@@ -21,7 +21,6 @@ inline static int sign(int a) {
 	return 0;
 }
 
-#if 1
 static const struct game_struct
 init = {
 	.board= {
@@ -40,28 +39,6 @@ init = {
 	.castle_king = { 1, 1 },
 	.castle_queen = { 1, 1 },
 };
-#else
-static const struct game_struct
-init = {
-	.board= {
-		{ EMPTY, EMPTY, EMPTY, BBISHOP, BPAWN, EMPTY, EMPTY, EMPTY },
-		{ EMPTY, WPAWN, EMPTY, BKING, BPAWN, EMPTY, EMPTY, EMPTY },
-		{ WROOK, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
-		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
-		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
-		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
-		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
-		{ EMPTY, EMPTY, WROOK, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
-	},
-	.turn = WHITE,
-	.lastmove = { 0 },
-	.idlecount = 0,
-	.castle_king = { 1, 1 },
-	.castle_queen = { 1, 1 },
-	.en_passant_x = -1,
-	.en_passant_y = -1,
-};
-#endif
 
 static void fix(game g) {
 	int i, j;
