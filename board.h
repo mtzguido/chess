@@ -46,7 +46,8 @@ struct game_struct {
 	 *     inCheck[who] = 1 -> en jaque */
 
 	/*   Cache de score */
-	float pieceScore;
+	int pieceScore;
+	int totalScore;
 };
 
 typedef struct game_struct *game;

@@ -1,5 +1,6 @@
 #include "ai.h"
 #include "board.h"
+#include "piece-square.h"
 
 #include <assert.h>
 #include <math.h> /* INFINITY */
@@ -9,11 +10,11 @@
 #include <stdbool.h>
 #include <time.h>
 
-#define SEARCH_DEPTH	5
+#define SEARCH_DEPTH	6
 #define KTABLE_SIZE	(SEARCH_DEPTH * 2)
 #define NKILLER	2
 
-typedef float score;
+typedef int score;
 
 int machineColor = -1;
 
@@ -21,10 +22,10 @@ static score machineMoveImpl(
 		game start, int maxDepth, int curDepth,
 		game *nb, score alpha, score beta);
 
-static score heur(game g, int depth);
+static score heur(game g);
 
-static const score minScore = -INFINITY;
-static const score maxScore =  INFINITY;
+static const score minScore = -1e7;
+static const score maxScore =  1e7;
 
 static void sortSuccs(game *succs, int n);
 
@@ -48,7 +49,7 @@ game machineMove(game start) {
 	t2 = clock();
 
 	fprintf(stderr, "%i \t nodes in \t %.3fs\n", nopen, (t2-t1)*1.0/CLOCKS_PER_SEC);
-	fprintf(stderr, "expected score: %f\n", t);
+	fprintf(stderr, "expected score: %i\n", t);
 //	printBoard(ret);
 	fflush(NULL);
 	return ret;
@@ -57,15 +58,21 @@ game machineMove(game start) {
 static score machineMoveImpl(
 		game g, int maxDepth, int curDepth,
 		game *nb, score alpha, score beta) {
+	
+	int extraDepth = 
+		  1 * inCheck(g, WHITE)
+		+ 1 * inCheck(g, BLACK)
+		+ 2 * g->lastmove.was_capture
+		+ 3 * g->lastmove.was_promotion;
 
 	/* Si el tablero es terminal */
-	if (curDepth == maxDepth || isFinished(g) != -1) {
+	if (curDepth >= maxDepth + extraDepth || isFinished(g) != -1) {
 		if (nb != NULL)
 			*nb = copyGame(g);
 
-		return g->turn == machineColor ? 
-			heur(g, curDepth) :
-			- heur(g, curDepth);
+		return (machineColor == WHITE ?
+		            heur(g)
+			    : - heur(g)) - curDepth;
 	}
 
 	game *succs;
@@ -190,24 +197,31 @@ static score machineMoveImpl(
 	}
 }
 
-static float pieceScore(game g) {
-	return g->pieceScore * (g->turn == WHITE ? 1 : -1);
+int pieceScore(game g) {
+	int i, j;
+	int phase = g->totalScore;
+	score ret = 0;
+
+	for (i=0; i<8; i++) 
+		for (j=0; j<8; j++) {
+			ret += piece_square_val(g->board[i][j], phase, i, j);
+		}
+
+	ret += g->pieceScore;
+
+	return ret;
 }
 
-static float coverScore(game g) {
-	return 0;
-}
-
-static score heur(game g, int depth) {
+static score heur(game g) {
 	score ret = 0;
 
 	int t = isFinished(g);
 
 	if (t != -1) {
-		if (t == WIN(g->turn))
-			ret += 100000;
-		else if (t == WIN(flipTurn(g->turn)))
-			ret += -100000;
+		if (t == WIN(WHITE))
+			ret += 1000000;
+		else if (t == WIN(BLACK))
+			ret += -1000000;
 		else
 			ret += 0;
 	} else {
@@ -217,19 +231,11 @@ static score heur(game g, int depth) {
 	/* Si estaba terminada, no nos importa esto */
 	if (ret == 0) {
 		ret += (pieceScore(g))
-			 + (coverScore(g))
-			 + (inCheck(g, flipTurn(g->turn)) ?  2 : 0)
-			 + (inCheck(g,          g->turn ) ? -2 : 0)
+			 + (inCheck(g, BLACK) ?  200 : 0)
+			 + (inCheck(g, WHITE) ? -200 : 0)
 			 ;
 	}
 
-	/* Con esto, ante heuristicas iguales,
-	 * preferimos movidas cercanas */
-	if (g->turn == machineColor)
-		ret -= depth * 0.01;
-	else
-		ret += depth * 0.01;
-	
 	return ret;
 }
 

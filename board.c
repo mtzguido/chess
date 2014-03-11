@@ -8,7 +8,8 @@
 
 static char charOf(int piece);
 
-static float scoreOf(int piece);
+static int scoreOf(int piece);
+static int absoluteScoreOf(int piece);
 
 static int doMoveRegular(game g, move m);
 static int doMoveKCastle(game g, move m);
@@ -20,7 +21,7 @@ inline static int sign(int a) {
 	return 0;
 }
 
-#if 0
+#if 1
 static const struct game_struct
 init = {
 	.board= {
@@ -38,8 +39,6 @@ init = {
 	.idlecount = 0,
 	.castle_king = { 1, 1 },
 	.castle_queen = { 1, 1 },
-	.en_passant_x = -1,
-	.en_passant_y = -1,
 };
 #else
 static const struct game_struct
@@ -64,31 +63,36 @@ init = {
 };
 #endif
 
-static void fixKings(game g) {
+static void fix(game g) {
 	int i, j;
+
+	g->pieceScore = 0;
+	g->totalScore = 0;
 
 	for (i=0; i<8; i++) {
 		for (j=0; j<8; j++) {
-			if (g->board[i][j] == WKING) {
-				g->kingx[WHITE] = i;
-				g->kingy[WHITE] = j;
-			} else if (g->board[i][j] == BKING) {
-				g->kingx[BLACK] = i;
-				g->kingy[BLACK] = j;
+			int piece = g->board[i][j];
+
+			if (isKing(piece)) {
+				g->kingx[colorOf(piece)] = i;
+				g->kingy[colorOf(piece)] = j;
 			}
+
+			g->pieceScore += scoreOf(piece);
+			g->totalScore += absoluteScoreOf(piece);
 		}
 	}
+
+	g->inCheck[BLACK] = -1;
+	g->inCheck[WHITE] = -1;
+	g->en_passant_x = -1;
+	g->en_passant_y = -1;
 }
 
 game startingGame() {
 	game g = malloc(sizeof(*g));
 	*g = init;
-	fixKings(g);
-
-	g->inCheck[BLACK] = -1;
-	g->inCheck[WHITE] = -1;
-
-	g->pieceScore = 0;
+	fix(g);
 	return g;
 }
 
@@ -371,6 +375,7 @@ int doMove(game g, move m) {
 		g->en_passant_x = -1;
 		g->en_passant_y = -1;
 		g->idlecount = 0;
+		g->lastmove = m;
 
 		break;
 	
@@ -381,6 +386,7 @@ int doMove(game g, move m) {
 		g->en_passant_x = -1;
 		g->en_passant_y = -1;
 		g->idlecount = 0;
+		g->lastmove = m;
 
 		break;
 	default:
@@ -458,6 +464,7 @@ static int doMoveRegular(game g, move m) {
 			&& m.R == g->en_passant_x
 			&& m.C == g->en_passant_y) {
 		g->pieceScore -= scoreOf(g->board[m.r][m.C]);
+		g->totalScore -= absoluteScoreOf(g->board[m.r][m.C]);
 		g->board[m.r][m.C] = 0;
 	}
 
@@ -475,6 +482,7 @@ static int doMoveRegular(game g, move m) {
 		g->idlecount = 0;
 		g->lastmove.was_capture = 1;
 		g->pieceScore -= scoreOf(g->board[m.R][m.C]);
+		g->totalScore -= absoluteScoreOf(g->board[m.R][m.C]);
 	} else {
 		g->lastmove.was_capture = 0;
 	}
@@ -486,8 +494,10 @@ static int doMoveRegular(game g, move m) {
 	if (isPawn(piece)
 			&& m.R == (m.who == WHITE ? 0 : 7)) {
 		g->pieceScore -= scoreOf(g->board[m.R][m.C]);
+		g->totalScore -= absoluteScoreOf(g->board[m.R][m.C]);
 		g->board[m.R][m.C] = m.who == WHITE ? m.promote : -m.promote;
 		g->pieceScore += scoreOf(g->board[m.R][m.C]);
+		g->totalScore += absoluteScoreOf(g->board[m.R][m.C]);
 
 		g->lastmove.was_promotion = 1;
 	} else {
@@ -593,10 +603,14 @@ static int doMoveQCastle(game g, move m) {
 }
 
 static const int scoreTab_[] =
-{ -200, -9, -3, -3, -5, -1, 0, 1, 5, 3, 3, 9, 200 };
+{ -20000, -900, -300, -300, -500, -100, 0, 100, 500, 300, 300, 900, 20000 };
 
 static const int * scoreTab = &scoreTab_[6];
 
-static float scoreOf(int piece) {
+static int scoreOf(int piece) {
 	return scoreTab[piece];
+}
+
+static int absoluteScoreOf(int piece) {
+	return abs(scoreTab[piece]);
 }

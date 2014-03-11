@@ -5,7 +5,7 @@ SHELL=/bin/bash
 TARGET=chess
 CC=gcc
 
-mods=main ai board move succs pgn
+mods=main ai board move succs pgn piece-square
 objs=$(patsubst %,%.o,$(mods))
 
 all: $(TARGET)
