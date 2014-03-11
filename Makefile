@@ -35,5 +35,5 @@ vprof: prof
 match: | $(TARGET)
 	rm -f wpipe bpipe
 	mkfifo wpipe bpipe
-	./$(TARGET) w >wpipe <bpipe &
 	./fairy.sh <wpipe >bpipe &
+	./$(TARGET) w >wpipe <bpipe
