@@ -3,6 +3,11 @@
 
 #include <assert.h>
 
+/*
+ * Fuente:
+ * http://chessprogramming.wikispaces.com/Simplified+evaluation+function
+ */
+
 static const int pawn[8][8];
 static const int bishop[8][8];
 static const int knight[8][8];
