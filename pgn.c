@@ -6,27 +6,6 @@
 #include <string.h>
 #include <ctype.h>
 
-static char charOf(int piece) {
-	switch (piece) {
-		case EMPTY:   assert(0);
-		case WPAWN:   return 'P';
-		case BPAWN:   return 'p';
-		case WROOK:   return 'R';
-		case BROOK:   return 'r';
-		case WKNIGHT: return 'N';
-		case BKNIGHT: return 'n';
-		case WBISHOP: return 'B';
-		case BBISHOP: return 'b';
-		case WQUEEN:  return 'Q';
-		case BQUEEN:  return 'q';
-		case WKING:	  return 'K';
-		case BKING:	  return 'k';
-		default:      assert(0);
-	}
-
-	return 'x';
-}
-
 move fromPGN(game g, struct pgn p) {
 	move ret = {0};
 	int piece;

@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
+#include <ctype.h>
 
 #include "ai.h"
 #include "board.h"
@@ -40,38 +41,15 @@ int main (int argc, char **argv) {
 	char mbuf[500];
 	struct pgn pp;
 
-	/*
-	   int i, j, n;
-	   game *arr;
-	   game *arr2;
-	   int n2;
-
-	   n = genSuccs(b, &arr);
-
-	   printf("N=%i\n", n);
-	   for (i=0; i<n; i++) {
-		   printBoard(arr[i]);
-		   if (isFinished(arr[i]) > 0 ) {
-			   printf("!!!!!!!\n");
-			   printf("!!!!!!!\n");
-			   printf("!!!!!!!\n");
-			   printf("!!!!!!!\n");
-		   }
-		   getchar();
-	   }
-
-	   return 0;
-   */
-
 	while(1) {
 		int rc = isFinished(b);
 		if (rc > 0) {
 			if (rc == WIN(WHITE))
-				printf("WHITE WON!\n");
+				fprintf(stderr, "WHITE WON!\n");
 			else if (rc == WIN(BLACK))
-				printf("BLACK WON!\n");
+				fprintf(stderr, "BLACK WON!\n");
 			else if (rc == DRAW)
-				printf("It's a draw!!\n");
+				fprintf(stderr, "It's a draw!!\n");
 			else
 				assert(0);
 
@@ -84,25 +62,31 @@ int main (int argc, char **argv) {
 		if (b->turn == machineColor) {
 			game nb;
 
-			/// printf("...\n");
-
 			nb = machineMove(b);
 			freeGame(b);
 			b = nb;
 
 			m = nb->lastmove;
-			if (nb->lastmove.move_type == MOVE_REGULAR)
-				printf("%c%c%c%c\n",
-						nb->lastmove.c + 'a',
-						'8'-nb->lastmove.r,
-						nb->lastmove.C + 'a',
-						'8'-nb->lastmove.R);
-			else if (nb->lastmove.move_type == MOVE_KINGSIDE_CASTLE)
-				//printf("z1z1\n");
-				printf("e1g1\n");
-			else
-				//printf("z2z2\n");
-				printf("e1c1\n");
+
+			if (m.move_type == MOVE_KINGSIDE_CASTLE) {
+				if (m.who == BLACK)
+					printf("e8g8\n");
+				else
+					printf("e1g1\n");
+			} else if (m.move_type == MOVE_QUEENSIDE_CASTLE) {
+				if (m.who == BLACK)
+					printf("e8c8\n");
+				else
+					printf("e1c1\n");
+			} else {
+				assert(m.move_type == MOVE_REGULAR);
+
+				if (m.was_promotion) {
+					printf("%c%c%c%c%c\n", m.c + 'a', '8'-m.r, m.C + 'a', '8'-m.R, tolower(charOf(m.promote)));
+				} else {
+					printf("%c%c%c%c\n", m.c + 'a', '8'-m.r, m.C + 'a', '8'-m.R);
+				}
+			}
 
 		} else {
 			int r, R;
@@ -114,8 +98,6 @@ int main (int argc, char **argv) {
 
 			m.who = flipTurn(machineColor);
 
-//			printf("Your turn:\n");
-
 			getline(&line, &crap, stdin);
 			if (5 != (t=sscanf(line, "%c%i%c%i%c", &c, &r, &C, &R, &newpiece))
 					&& (newpiece = 0) /* muuuuuuy chanta */
@@ -124,46 +106,48 @@ int main (int argc, char **argv) {
 				continue;
 			}
 
-			if (strcmp(line, "e8g8") == 0 && b->castle_king[m.who]) {
-				m.move_type = MOVE_KINGSIDE_CASTLE;
-				goto move;
-			}
-			if (strcmp(line, "e8c8") == 0 && b->castle_queen[m.who]) {
-				m.move_type = MOVE_QUEENSIDE_CASTLE;
-				goto move;
-			}
-
-			if (c=='x') break;
-			if (c=='z') {
-				m.move_type = r == 1? MOVE_KINGSIDE_CASTLE : MOVE_QUEENSIDE_CASTLE;
-				// printf("trying to castle\n");
-				goto move;
-			}
-
-			if (c >= 'a' && c <= 'z')
-				c = c - 'a' + 'A';
-			if (C >= 'a' && C <= 'z')
-				C = C - 'a' + 'A';
-
 			free(line);
+
+			c = tolower(c);
+			C = tolower(C);
 
 			fprintf(stderr, "Your move: %c%i -> %c%i\n", c, r, C, R);
 
-
-			if (c < 'A' || c > 'H' || C < 'A' || C > 'H' ||
+			if (c < 'a' || c > 'h' || C < 'a' || C > 'h' ||
 					r < 0   || r > 8   || R < 0   || R > 8  ) {
 				fprintf(stderr, "Out of bounds... try again\b");
 				continue;
 			}
 
-			m.move_type = MOVE_REGULAR;
-			m.r = 8-r;
-			m.R = 8-R;
-			m.c = c-'A';
-			m.C = C-'A';
-			m.promote = pieceOf(newpiece);
+			if (m.who == BLACK
+				&& c == 'e' && r == 8
+				&& C == 'g' && R == 8
+				&& b->castle_king[m.who]) {
+				m.move_type = MOVE_KINGSIDE_CASTLE;
+			} else if (m.who == BLACK
+				&& c == 'e' && r == 8
+				&& C == 'c' && R == 8
+				&& b->castle_queen[m.who]) {
+				m.move_type = MOVE_QUEENSIDE_CASTLE;
+			} else if (m.who == WHITE
+				&& c == 'e' && r == 1
+				&& C == 'g' && R == 1
+				&& b->castle_king[m.who]) {
+				m.move_type = MOVE_KINGSIDE_CASTLE;
+			} else if (m.who == WHITE
+				&& c == 'e' && r == 1
+				&& C == 'c' && R == 1
+				&& b->castle_queen[m.who]) {
+				m.move_type = MOVE_QUEENSIDE_CASTLE;
+			} else {
+				m.move_type = MOVE_REGULAR;
+				m.r = 8-r;
+				m.R = 8-R;
+				m.c = c-'a';
+				m.C = C-'a';
+				m.promote = pieceOf(newpiece);
+			}
 
-move:
 			if (!doMove(b, m)) {
 				fprintf(stderr, "Move is not legal... try again\n");
 				continue;

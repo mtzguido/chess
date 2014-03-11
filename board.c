@@ -6,7 +6,7 @@
 
 #include "move.h"
 
-static char charOf(int piece);
+char charOf(int piece);
 
 static int scoreOf(int piece);
 static int absoluteScoreOf(int piece);
@@ -169,7 +169,7 @@ void printBoard(game g) {
 	fflush(stdout);
 }
 
-static char charOf(int piece) {
+char charOf(int piece) {
 	switch (piece) {
 		case EMPTY:   return '.';
 		case WPAWN:   return 'P';
@@ -429,6 +429,7 @@ static int doMoveRegular(game g, move m) {
 			&& m.R == (m.who == WHITE ? 0 : 7)) {
 		if (m.promote == 0) {
 			printf("Esa movida requiere una promoción!!!\n");
+			abort();
 			return 0;
 		}
 	}
