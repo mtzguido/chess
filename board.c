@@ -44,14 +44,14 @@ init = {
 static const struct game_struct
 init = {
 	.board= {
-		{ EMPTY, BQUEEN, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
-		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, BKING, EMPTY },
-		{ WQUEEN, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
 		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
-		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, WPAWN, EMPTY },
-		{ WROOK, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, BPAWN, EMPTY },
-		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, BROOK },
-		{ WKING, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY }
+		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
+		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
+		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
+		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
+		{ EMPTY, EMPTY, EMPTY, EMPTY, BKING, EMPTY, EMPTY, BPAWN },
+		{ EMPTY, EMPTY, WKING, EMPTY, EMPTY, BPAWN, EMPTY, EMPTY },
+		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
 	},
 	.turn = BLACK,
 	.lastmove = { 0 },
@@ -155,15 +155,16 @@ void printBoard(game g) {
 	}
 
 	fprintf(stderr, "\n    a     b     c     d     e     f     g     h\n");
-	/*
+
 	fprintf(stderr, "[ castle_king = %i %i \n", g->castle_king[0], g->castle_king[1]);
 	fprintf(stderr, "  castle_queen = %i %i \n", g->castle_queen[0], g->castle_queen[1]);
 	fprintf(stderr, "  kingx = %i %i \n", g->kingx[0], g->kingx[1]);
 	fprintf(stderr, "  kingy = %i %i \n", g->kingy[0], g->kingy[1]);
 	fprintf(stderr, "  en_passant = %i %i \n", g->en_passant_x, g->en_passant_y);
 	fprintf(stderr, "  inCheck = %i %i \n", g->inCheck[0], g->inCheck[1]);
+	fprintf(stderr, "  scores = %i %i\n", g->pieceScore, g->totalScore);
 	fprintf(stderr, "]\n");
-	*/
+
 
 	fflush(stdout);
 }

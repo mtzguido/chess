@@ -8,7 +8,7 @@
 
 static char charOf(int piece) {
 	switch (piece) {
-		case EMPTY:   return '.';
+		case EMPTY:   assert(0);
 		case WPAWN:   return 'P';
 		case BPAWN:   return 'p';
 		case WROOK:   return 'R';
