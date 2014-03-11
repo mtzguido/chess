@@ -18,6 +18,7 @@ $(TARGET): $(objs)
 
 clean:
 	rm -f $(TARGET) $(objs) gmon.out
+	rm -f bpipe wpipe
 
 re: clean all
 
@@ -30,3 +31,9 @@ prof: $(TARGET) prof_input
 
 vprof: prof
 	gprof2dot.py prof | xdot
+
+match: | $(TARGET)
+	rm -f wpipe bpipe
+	mkfifo wpipe bpipe
+	./$(TARGET) w >wpipe <bpipe &
+	./fairy.sh <wpipe >bpipe &
