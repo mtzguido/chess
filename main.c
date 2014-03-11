@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <assert.h>
+#include <string.h>
+
 #include "ai.h"
 #include "board.h"
 #include "pgn.h"
@@ -96,9 +98,11 @@ int main (int argc, char **argv) {
 						nb->lastmove.C + 'a',
 						'8'-nb->lastmove.R);
 			else if (nb->lastmove.move_type == MOVE_KINGSIDE_CASTLE)
-				printf("z1z1\n");
+				//printf("z1z1\n");
+				printf("e1g1\n");
 			else
-				printf("z2z2\n");
+				//printf("z2z2\n");
+				printf("e1c1\n");
 
 		} else {
 			int r, R;
@@ -118,6 +122,15 @@ int main (int argc, char **argv) {
 					&& (4 != (t=sscanf(line, "%c%i%c%i", &c, &r, &C, &R)))) {
 				fprintf(stderr, "Could not parse move... try again\n");
 				continue;
+			}
+
+			if (strcmp(line, "e8g8") == 0 && b->castle_king[m.who]) {
+				m.move_type = MOVE_KINGSIDE_CASTLE;
+				goto move;
+			}
+			if (strcmp(line, "e8c8") == 0 && b->castle_queen[m.who]) {
+				m.move_type = MOVE_QUEENSIDE_CASTLE;
+				goto move;
 			}
 
 			if (c=='x') break;
