@@ -20,6 +20,7 @@ clean:
 	rm -f $(TARGET) $(objs) gmon.out
 	rm -f bpipe wpipe
 	$(MAKE) -C doc clean
+	rm -f FINISHLOG full_log gamelog_*
 
 re: clean all
 
