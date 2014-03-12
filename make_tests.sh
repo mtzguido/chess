@@ -1,4 +1,4 @@
-rm -f SCORELOG FINISHLOG
+rm -f FINISHLOG
 n=0
 total=100
 
@@ -7,12 +7,12 @@ mkfifo wpipe bpipe
 
 while [ $n -lt $total ]; do
 	n=$((n+1))
-	./fairy.sh <wpipe >bpipe & 
+	( fairymax <wpipe >bpipe ) & disown
 	pid=$!
 
 	./chess w 2>&1 >wpipe <bpipe | tee full_log | grep -E '^RES:' | tee -a FINISHLOG
 
-	kill $pid
+	kill -9 $pid
 
 	cp gamelog_w gamelog_$n
 	echo "$n/$total games"

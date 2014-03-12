@@ -52,6 +52,10 @@ int main (int argc, char **argv) {
 	char mbuf[500];
 	struct pgn pp;
 
+	printf("new\n");
+	if (machineColor != WHITE) 
+		printf("go\n");
+
 	while(1) {
 		int rc = isFinished(b);
 		if (rc > 0) {
@@ -116,6 +120,7 @@ int main (int argc, char **argv) {
 
 
 			getline(&line, &crap, stdin);
+			line[strlen(line)-1] = 0;
 
 			fprintf(stderr, "LINE= <%s>\n", line);
 			if (isPrefix("1/2-1/2 {", line)) {
@@ -124,10 +129,10 @@ int main (int argc, char **argv) {
 				return 101;
 			}
 
-			if (5 != (t=sscanf(line, "%c%i%c%i%c", &c, &r, &C, &R, &newpiece))
+			if (5 != (t=sscanf(line, "move %c%i%c%i%c", &c, &r, &C, &R, &newpiece))
 					&& (newpiece = 0) /* muuuuuuy chanta */
-					&& (4 != (t=sscanf(line, "%c%i%c%i", &c, &r, &C, &R)))) {
-				fprintf(stderr, "Could not parse move... try again\n");
+					&& (4 != (t=sscanf(line, "move %c%i%c%i", &c, &r, &C, &R)))) {
+				fprintf(stderr, "Ignoring line <%s>\n", line);
 				continue;
 			}
 
@@ -175,6 +180,7 @@ int main (int argc, char **argv) {
 
 			if (!doMove(b, m)) {
 				fprintf(stderr, "Move is not legal... try again\n");
+				printf("illegal move: %c%i%c%i\n", c, r, C, R);
 				continue;
 			}
 		}
