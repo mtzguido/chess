@@ -129,6 +129,10 @@ int main (int argc, char **argv) {
 				return 101;
 			}
 
+			if (!isPrefix("move ", line)) {
+				continue;
+			}
+
 			if (5 != (t=sscanf(line, "move %c%i%c%i%c", &c, &r, &C, &R, &newpiece))
 					&& (newpiece = 0) /* muuuuuuy chanta */
 					&& (4 != (t=sscanf(line, "move %c%i%c%i", &c, &r, &C, &R)))) {
