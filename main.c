@@ -7,6 +7,17 @@
 #include "board.h"
 #include "pgn.h"
 
+/* a prefijo de b */
+static int isPrefix(char *a, char *b) {
+	while (*a && *a++ == *b++)
+		;
+
+	if (*a == 0)
+		return 1;
+
+	return 0;
+}
+
 static char pieceOf(char c) {
 	switch (c) {
 		case 'P':   return WPAWN;
@@ -44,14 +55,19 @@ int main (int argc, char **argv) {
 	while(1) {
 		int rc = isFinished(b);
 		if (rc > 0) {
-			if (rc == WIN(WHITE))
-				fprintf(stderr, "WHITE WON!\n");
-			else if (rc == WIN(BLACK))
-				fprintf(stderr, "BLACK WON!\n");
-			else if (rc == DRAW)
-				fprintf(stderr, "It's a draw!!\n");
-			else
+			if (rc == WIN(machineColor)) {
+				fprintf(stderr, "RES: I won\n");
+				return 12;
+			} else if (rc == WIN(flipTurn(machineColor))) {
+				fprintf(stderr, "RES: I lost..\n");
+				return 10;
+			} else if (rc == DRAW) {
+				fprintf(stderr, "RES: It's a draw!!\n");
+				return 11;
+			} else {
 				assert(0);
+			}
+
 
 			break;
 		}
@@ -98,7 +114,16 @@ int main (int argc, char **argv) {
 
 			m.who = flipTurn(machineColor);
 
+
 			getline(&line, &crap, stdin);
+
+			fprintf(stderr, "LINE= <%s>\n", line);
+			if (isPrefix("1/2-1/2 {", line)) {
+				fprintf(stderr, "ADVERSARY CLAIMED DRAW, BLINDY BELIEVE\n");
+				fprintf(stderr, "RES: It's a draw  (claimed)!!\n");
+				return 101;
+			}
+
 			if (5 != (t=sscanf(line, "%c%i%c%i%c", &c, &r, &C, &R, &newpiece))
 					&& (newpiece = 0) /* muuuuuuy chanta */
 					&& (4 != (t=sscanf(line, "%c%i%c%i", &c, &r, &C, &R)))) {
@@ -167,6 +192,7 @@ int main (int argc, char **argv) {
 	}
 
 	freeGame(b);
+	fprintf(stderr, "RES: WHAT?");
 
 	return 0;
 }

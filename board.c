@@ -405,7 +405,7 @@ static int doMoveRegular(game g, move m) {
 	if (isPawn(piece)
 			&& m.R == (m.who == WHITE ? 0 : 7)) {
 		if (m.promote == 0) {
-			printf("Esa movida requiere una promoción!!!\n");
+			fprintf(stderr, "Esa movida requiere una promoción!!!\n");
 			abort();
 			return 0;
 		}

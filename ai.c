@@ -87,7 +87,7 @@ static score machineMoveImpl(
 	/* No debería ocurrir nunca */
 	if (n == 0) {
 		printBoard(g);
-		printf("--NO MOVES!!! ------\n");
+		fprintf(stderr, "--NO MOVES!!! ------\n");
 		abort();
 	}
 

@@ -345,19 +345,13 @@ int hasNextGame(game g) {
 	m.move_type = MOVE_KINGSIDE_CASTLE;
 	if (g->castle_king[g->turn]) {
 		tg = copyGame(g);
-		if (doMove(tg, m))
-			addToRet(tg, m, &arr, &alen);
-		else
-			freeGame(tg);
+		addToRet(tg, m, &arr, &alen);
 	}
 
 	m.move_type = MOVE_QUEENSIDE_CASTLE;
 	if (g->castle_queen[g->turn]) {
 		tg = copyGame(g);
-		if (doMove(tg, m))
-			addToRet(tg, m, &arr, &alen);
-		else
-			freeGame(tg);
+		addToRet(tg, m, &arr, &alen);
 	}
 
 	ret = 0;
