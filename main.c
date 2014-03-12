@@ -201,6 +201,8 @@ int main (int argc, char **argv) {
 		fflush(stdout);
 	}
 
+	printf("quit\n");
+
 	freeGame(b);
 	fprintf(stderr, "RES: WHAT?");
 
