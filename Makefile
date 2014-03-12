@@ -19,6 +19,7 @@ $(TARGET): $(objs)
 clean:
 	rm -f $(TARGET) $(objs) gmon.out
 	rm -f bpipe wpipe
+	$(MAKE) -C doc clean
 
 re: clean all
 
