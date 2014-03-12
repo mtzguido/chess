@@ -1,4 +1,4 @@
-.PHONY:clean all re run
+.PHONY:clean all re run doc
 CFLAGS= -Wall -pg -g -funroll-loops -DNDEBUG -O99 $(CFLAGS_EXTRA)
 LFLAGS= -pg 
 SHELL=/bin/bash
@@ -8,7 +8,7 @@ CC=gcc
 mods=main ai board move succs pgn piece-square
 objs=$(patsubst %,%.o,$(mods))
 
-all: $(TARGET)
+all: $(TARGET) doc
 
 $(TARGET): $(objs)
 	$(CC) $(LFLAGS) $(objs) -o $(TARGET)
@@ -37,3 +37,6 @@ match: | $(TARGET)
 	mkfifo wpipe bpipe
 	./fairy.sh <wpipe >bpipe &
 	./$(TARGET) w >wpipe <bpipe
+
+doc:
+	$(MAKE) -C doc

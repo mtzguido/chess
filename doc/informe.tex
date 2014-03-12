@@ -1,0 +1,59 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{fullpage}
+
+\renewcommand{\refname}{\section{Referencias}}
+
+\begin{document}
+
+\title{Proyecto IIA - Ajedrez}
+\date{11 de Marzo, 2014}
+
+\author{Guido Martínez \\ LCC, FCEIA, UNR }
+
+\maketitle
+
+\section{Objetivo}
+
+Crear una inteligencia artificial para jugar al ajedrez, usando métodos tradicionales. Priorizar la eficiencia ante la claridad del código, y priorizar la calidad de cada movida al tiempo de ejecución (mientras sea razonable).
+
+\section{Implementación}
+
+El algoritmo de búsqueda elegido es Minimax, con las mejoras de poda alfa-beta y {\it Killer Heuristic}.
+La profundidad usada es de 6  {\it plies} (movidas de algún jugador).
+Está profundidad máxima se extiende en el caso de que la última movida sea una captura, una promoción, o un jaque.
+Esto ayuda a evitar el efecto horizonte, porque tendemos a no dejar de buscar si la última movida fue {\it ruidosa}. 
+El algoritmo es {\bf determinista} y no tiene en cuenta el tiempo que tarda.\\
+
+La función de evaluación del tablero combina:
+\begin{itemize}
+\item Puntaje de fichas individuales
+\item Puntaje de fichas por posición
+\item Jaques actuales
+\end{itemize}
+
+Las tablas ficha-posición fueron tomadas de \cite{piece-square-table} y ligeramente modificadas.\\
+
+La representación del tablero se hizo de cero e incluye muchos datos sobre el tablero, que se calculan incrementalmente en vez de calcularse nuevamente para cada tablero, esto permite calcular el puntaje de las fichas muy rápidamente.
+También, al ver si un tablero está en jaque, se guarda el resultado en la misma estructura para no recalcularlo varias veces.
+Al hacer una movida, se decide si la jugada puede haber influenciado la amenaza al rey, y en caso negativo, no se recalcula el jaque.
+
+\section{Resultados}
+Probando nuestra IA contra otras ya existentes, notamos muy buenos resultados. A continuación, algunos resultados:
+
+\begin{itemize}
+\item Nombre IA: \hfill x/y/z, porcentajes de ganados, tablas, perdidos
+\item Contra Fairy (IA por defecto de xboard): \hfill ?/?/?
+\end{itemize}
+
+
+\begin{thebibliography}{9}
+
+\bibitem{piece-square-table}
+  http://chessprogramming.wikispaces.com/Simplified+evaluation+function
+
+\end{thebibliography}
+
+
+
+\end{document}
