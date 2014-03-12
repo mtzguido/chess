@@ -597,7 +597,7 @@ static int doMoveQCastle(game g, move m) {
 		freeGame(tg);
 	}
 
-	g->castle_king[m.who] = 0;
+	g->castle_queen[m.who] = 0;
 
 	/* Dropeamos la cache de jaque */
 	g->inCheck[0] = -1;
