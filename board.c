@@ -499,18 +499,44 @@ static int doMoveRegular(game g, move m) {
 }
 
 static int doMoveKCastle(game g, move m) {
-	if (m.who == WHITE) {
-		if (!(g->castle_king[WHITE] && ! inCheck(g, WHITE)
-			&& g->board[7][7] == WROOK && g->board[7][6] == EMPTY
-			&& g->board[7][5] == EMPTY && g->board[7][4] == WKING)) {
+	const int rank = m.who == WHITE ? 7 : 0;
+	const int kpiece = m.who == WHITE ? WKING : BKING;
+	const int rpiece = m.who == WHITE ? WROOK : BROOK;
+
+	if (!(g->castle_king[m.who] && ! inCheck(g, m.who)
+		&& g->board[rank][7] == rpiece && g->board[rank][6] == EMPTY
+		&& g->board[rank][5] == EMPTY  && g->board[rank][4] == kpiece)) {
+
+		return 0;
+	}
+
+	{
+		game tg;
+		move tm;
+
+		tg = copyGame(g);
+		tm.who = m.who;
+		tm.move_type = MOVE_REGULAR;
+		tm.r = tm.R = rank;
+		tm.c = 4; tm.C = 5;
+
+		if (!doMove(tg, tm)) {
+			freeGame(tg);
 			return 0;
 		}
-	} else {
-		if (!(g->castle_king[BLACK] && ! inCheck(g, BLACK)
-			&& g->board[0][7] == BROOK && g->board[0][6] == EMPTY
-			&& g->board[0][5] == EMPTY && g->board[0][4] == BKING)) {
+
+		tg->turn = flipTurn(tg->turn);
+		tm.who = m.who;
+		tm.move_type = MOVE_REGULAR;
+		tm.r = tm.R = rank;
+		tm.c = 5; tm.C = 6;
+
+		if (!doMove(tg, tm)) {
+			freeGame(tg);
 			return 0;
 		}
+
+		freeGame(tg);
 	}
 
 	g->castle_king[m.who] = 0;
@@ -519,64 +545,71 @@ static int doMoveKCastle(game g, move m) {
 	g->inCheck[0] = -1;
 	g->inCheck[1] = -1;
 
-	if (m.who == WHITE) {
-		g->board[7][4] = EMPTY;
-		g->board[7][5] = WROOK;
-		g->board[7][6] = WKING;
-		g->board[7][7] = EMPTY;
-		g->kingx[WHITE] = 7;
-		g->kingy[WHITE] = 6;
-	} else {
-		g->board[0][4] = EMPTY;
-		g->board[0][5] = BROOK;
-		g->board[0][6] = BKING;
-		g->board[0][7] = EMPTY;
-		g->kingx[BLACK] = 0;
-		g->kingy[BLACK] = 6;
-	}
+	g->board[rank][4] = EMPTY;
+	g->board[rank][5] = rpiece;
+	g->board[rank][6] = kpiece;
+	g->board[rank][7] = EMPTY;
+	g->kingx[m.who] = rank;
+	g->kingy[m.who] = 6;
 
 	return 1;
 }
 
 static int doMoveQCastle(game g, move m) {
-	if (m.who == WHITE) {
-		if (!(g->castle_queen[WHITE]
-			&& g->board[7][0] == WROOK && g->board[7][1] == EMPTY
-			&& g->board[7][2] == EMPTY && g->board[7][3] == EMPTY
-			&& g->board[7][4] == WKING && ! inCheck(g, WHITE))) {
-			return 0;
-		}
-	} else {
-		if (!(g->castle_queen[BLACK] 
-			&& g->board[0][0] == BROOK && g->board[0][1] == EMPTY
-			&& g->board[0][2] == EMPTY && g->board[0][3] == EMPTY
-			&& g->board[0][4] == BKING && ! inCheck(g, BLACK))) {
-			return 0;
-		}
+	const int rank = m.who == WHITE ? 7 : 0;
+	const int kpiece = m.who == WHITE ? WKING : BKING;
+	const int rpiece = m.who == WHITE ? WROOK : BROOK;
+
+	if (!(g->castle_queen[m.who] && ! inCheck(g, m.who)
+		&& g->board[rank][0] == rpiece && g->board[rank][1] == EMPTY
+		&& g->board[rank][2] == EMPTY  && g->board[rank][3] == EMPTY
+		&& g->board[rank][4] == kpiece)) {
+
+		return 0;
 	}
 
-	g->castle_queen[m.who] = 0;
+	{
+		game tg;
+		move tm;
 
+		tg = copyGame(g);
+		tm.who = m.who;
+		tm.move_type = MOVE_REGULAR;
+		tm.r = tm.R = rank;
+		tm.c = 4; tm.C = 3;
+
+		if (!doMove(tg, tm)) {
+			freeGame(tg);
+			return 0;
+		}
+
+		tg->turn = flipTurn(tg->turn);
+		tm.who = m.who;
+		tm.move_type = MOVE_REGULAR;
+		tm.r = tm.R = rank;
+		tm.c = 3; tm.C = 2;
+
+		if (!doMove(tg, tm)) {
+			freeGame(tg);
+			return 0;
+		}
+
+		freeGame(tg);
+	}
+
+	g->castle_king[m.who] = 0;
+
+	/* Dropeamos la cache de jaque */
 	g->inCheck[0] = -1;
 	g->inCheck[1] = -1;
 
-	if (m.who == WHITE) {
-		g->board[7][0] = EMPTY;
-		g->board[7][1] = EMPTY;
-		g->board[7][2] = WKING;
-		g->board[7][3] = WROOK;
-		g->board[7][4] = EMPTY;
-		g->kingx[WHITE] = 7;
-		g->kingy[WHITE] = 2;
-	} else {
-		g->board[0][0] = EMPTY;
-		g->board[0][1] = EMPTY;
-		g->board[0][2] = BKING;
-		g->board[0][3] = BROOK;
-		g->board[0][4] = EMPTY;
-		g->kingx[BLACK] = 0;
-		g->kingy[BLACK] = 2;
-	}
+	g->board[rank][0] = EMPTY;
+	g->board[rank][1] = EMPTY;
+	g->board[rank][2] = kpiece;
+	g->board[rank][3] = rpiece;
+	g->board[rank][4] = EMPTY;
+	g->kingx[m.who] = rank;
+	g->kingy[m.who] = 2;
 
 	return 1;
 }
