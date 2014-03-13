@@ -256,14 +256,14 @@ int inCheck(game g, int who) {
 		}
 
 	/* Caballos */
-	if (colorOf(g->board[kr-2][kc-1]) != who && canMove(g, kr-2, kc-1, kr, kc)) goto ret_true;
-	if (colorOf(g->board[kr+2][kc-1]) != who && canMove(g, kr+2, kc-1, kr, kc)) goto ret_true;
-	if (colorOf(g->board[kr-2][kc+1]) != who && canMove(g, kr-2, kc+1, kr, kc)) goto ret_true;
-	if (colorOf(g->board[kr+2][kc+1]) != who && canMove(g, kr+2, kc+1, kr, kc)) goto ret_true;
-	if (colorOf(g->board[kr-1][kc-2]) != who && canMove(g, kr-1, kc-2, kr, kc)) goto ret_true;
-	if (colorOf(g->board[kr+1][kc-2]) != who && canMove(g, kr+1, kc-2, kr, kc)) goto ret_true;
-	if (colorOf(g->board[kr-1][kc+2]) != who && canMove(g, kr-1, kc+2, kr, kc)) goto ret_true;
-	if (colorOf(g->board[kr+1][kc+2]) != who && canMove(g, kr+1, kc+2, kr, kc)) goto ret_true;
+	if (canMove(g, kr-2, kc-1, kr, kc) && colorOf(g->board[kr-2][kc-1]) != who) goto ret_true;
+	if (canMove(g, kr+2, kc-1, kr, kc) && colorOf(g->board[kr+2][kc-1]) != who) goto ret_true;
+	if (canMove(g, kr-2, kc+1, kr, kc) && colorOf(g->board[kr-2][kc+1]) != who) goto ret_true;
+	if (canMove(g, kr+2, kc+1, kr, kc) && colorOf(g->board[kr+2][kc+1]) != who) goto ret_true;
+	if (canMove(g, kr-1, kc-2, kr, kc) && colorOf(g->board[kr-1][kc-2]) != who) goto ret_true;
+	if (canMove(g, kr+1, kc-2, kr, kc) && colorOf(g->board[kr+1][kc-2]) != who) goto ret_true;
+	if (canMove(g, kr-1, kc+2, kr, kc) && colorOf(g->board[kr-1][kc+2]) != who) goto ret_true;
+	if (canMove(g, kr+1, kc+2, kr, kc) && colorOf(g->board[kr+1][kc+2]) != who) goto ret_true;
 
 	assert(g->inCheck[who] != 1);
 	g->inCheck[who] = 0;
