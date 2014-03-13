@@ -1,8 +1,8 @@
 rm -f FINISHLOG
 n=0
-total=100
+total=${1:-100} # $1 o 100, por defecto
 
-rm -f wpipe bpipe
+rm -f wpipe bpipe full_log
 mkfifo wpipe bpipe
 
 while [ $n -lt $total ]; do
@@ -10,7 +10,7 @@ while [ $n -lt $total ]; do
 	( fairymax <wpipe >bpipe ) & disown
 	pid=$!
 
-	./chess w 2>&1 >wpipe <bpipe | tee full_log | grep -E '^RES:' | tee -a FINISHLOG
+	./chess w 2>&1 >wpipe <bpipe | tee -a full_log | grep -E '^RES:' | tee -a FINISHLOG
 
 	kill -9 $pid
 
