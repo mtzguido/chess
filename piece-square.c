@@ -20,7 +20,9 @@ int piece_square_val(int piece, int phase, int r, int c) {
 	int m = colorOf(piece) == WHITE ? 1 : -1;
 	int p = abs(piece);
 
-	assert(phase >= 0 && phase <= 47800);
+	/* los reyes siempre están, restamos 40000 */
+	assert(phase >= 40000 && phase <= 47800);
+	phase -= 40000;
 
 	/* Simetría para el negro */
 	if (colorOf(piece) != WHITE) {
@@ -40,7 +42,7 @@ int piece_square_val(int piece, int phase, int r, int c) {
 	case WQUEEN:
 		return m*(queen[r][c]);
 	case WKING:
-		return m*((phase*(kingO[r][c] - kingE[r][c]))/47800 + kingE[r][c]);
+		return m*((phase*(kingO[r][c] - kingE[r][c]))/7800 + kingE[r][c]);
 	default:
 		return 0;
 	}
