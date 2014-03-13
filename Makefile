@@ -20,6 +20,7 @@ clean:
 	rm -f $(TARGET) $(objs) gmon.out
 	rm -f bpipe wpipe
 	$(MAKE) -C doc clean
+	rm -f FINISHLOG full_log gamelog_*
 
 re: clean all
 
@@ -33,11 +34,8 @@ prof: $(TARGET) prof_input
 vprof: prof
 	gprof2dot.py prof | xdot
 
-match: | $(TARGET)
-	rm -f wpipe bpipe
-	mkfifo wpipe bpipe
-	./fairy.sh <wpipe >bpipe &
-	./$(TARGET) w >wpipe <bpipe
+test: | $(TARGET)
+	./scripts/make_tests.sh
 
 doc:
 	$(MAKE) -C doc
