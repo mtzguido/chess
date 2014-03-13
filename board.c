@@ -445,6 +445,9 @@ static int doMoveRegular(game g, move m) {
 		g->pieceScore -= scoreOf(g->board[m.r][m.C]);
 		g->totalScore -= absoluteScoreOf(g->board[m.r][m.C]);
 		g->board[m.r][m.C] = 0;
+
+		g->inCheck[WHITE] = -1;
+		g->inCheck[BLACK] = -1;
 	}
 
 	/* Recalcular en passant */
@@ -485,15 +488,17 @@ static int doMoveRegular(game g, move m) {
 
 	/* Si es algún movimiento relevante al rey contrario
 	 * dropeamos la cache */
-	if (!safe(g, m.r, m.c, g->kingx[other], g->kingy[other]) ||
-		!safe(g, m.R, m.C, g->kingx[other], g->kingy[other]))
-		g->inCheck[other] = -1;
+	if (g->inCheck[other] != -1)
+		if (!safe(g, m.r, m.c, g->kingx[other], g->kingy[other]) ||
+			!safe(g, m.R, m.C, g->kingx[other], g->kingy[other]))
+			g->inCheck[other] = -1;
 
 	/* Necesitamos también (posiblemente) dropear la nuestra */
-	if (isKing(piece) ||
-		!safe(g, m.r, m.c, g->kingx[m.who], g->kingy[m.who]) ||
-		!safe(g, m.R, m.C, g->kingx[m.who], g->kingy[m.who]))
-		g->inCheck[m.who] = -1;
+	if (g->inCheck[m.who] != -1)
+		if (isKing(piece) ||
+			!safe(g, m.r, m.c, g->kingx[m.who], g->kingy[m.who]) ||
+			!safe(g, m.R, m.C, g->kingx[m.who], g->kingy[m.who]))
+			g->inCheck[m.who] = -1;
 
 	return 1;
 }
