@@ -7,12 +7,13 @@ mkfifo wpipe bpipe
 
 while [ $n -lt $total ]; do
 	n=$((n+1))
-	( fairymax <wpipe >bpipe ) & disown
-	pid=$!
 
+	fairymax <wpipe >bpipe &
 	./chess w 2>&1 >wpipe <bpipe | tee -a full_log | grep -E '^RES:' | tee -a FINISHLOG
 
-	kill -9 $pid
+	echo -n "waiting.."
+	wait
+	echo ok
 
 	cp gamelog_w gamelog_$n
 	echo "$n/$total games"
