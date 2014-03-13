@@ -540,6 +540,7 @@ static int doMoveKCastle(game g, move m) {
 	}
 
 	g->castle_king[m.who] = 0;
+	g->castle_queen[m.who] = 0;
 
 	/* Dropeamos la cache de jaque */
 	g->inCheck[0] = -1;
@@ -598,6 +599,7 @@ static int doMoveQCastle(game g, move m) {
 	}
 
 	g->castle_queen[m.who] = 0;
+	g->castle_king[m.who] = 0;
 
 	/* Dropeamos la cache de jaque */
 	g->inCheck[0] = -1;
