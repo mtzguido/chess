@@ -297,7 +297,6 @@ int hasNextGame(game g) {
 	int i, j;
 	int alen, asz;
 	game *arr;
-	game tg;
 
 	alen = 0;
 	asz = 128;
