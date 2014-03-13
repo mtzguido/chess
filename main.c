@@ -89,22 +89,30 @@ int main (int argc, char **argv) {
 			m = nb->lastmove;
 
 			if (m.move_type == MOVE_KINGSIDE_CASTLE) {
-				if (m.who == BLACK)
+				if (m.who == BLACK) {
 					printf("e8g8\n");
-				else
+					fprintf(stderr, "e8g8\n");
+				} else {
 					printf("e1g1\n");
+					fprintf(stderr, "e1g1\n");
+				}
 			} else if (m.move_type == MOVE_QUEENSIDE_CASTLE) {
-				if (m.who == BLACK)
+				if (m.who == BLACK) {
 					printf("e8c8\n");
-				else
+					fprintf(stderr, "e8c8\n");
+				} else {
 					printf("e1c1\n");
+					fprintf(stderr, "e1c1\n");
+				}
 			} else {
 				assert(m.move_type == MOVE_REGULAR);
 
 				if (m.was_promotion) {
 					printf("%c%c%c%c%c\n", m.c + 'a', '8'-m.r, m.C + 'a', '8'-m.R, tolower(charOf(m.promote)));
+					fprintf(stderr, "%c%c%c%c%c\n", m.c + 'a', '8'-m.r, m.C + 'a', '8'-m.R, tolower(charOf(m.promote)));
 				} else {
 					printf("%c%c%c%c\n", m.c + 'a', '8'-m.r, m.C + 'a', '8'-m.R);
+					fprintf(stderr, "%c%c%c%c\n", m.c + 'a', '8'-m.r, m.C + 'a', '8'-m.R);
 				}
 			}
 
@@ -185,6 +193,7 @@ int main (int argc, char **argv) {
 			if (!doMove(b, m)) {
 				fprintf(stderr, "Move is not legal... try again\n");
 				printf("illegal move: %c%i%c%i\n", c, r, C, R);
+				fprintf(stderr, "illegal move: %c%i%c%i\n", c, r, C, R);
 				continue;
 			}
 		}
