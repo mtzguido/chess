@@ -79,6 +79,8 @@ int main (int argc, char **argv) {
 		game t = copyGame(b);
 		printBoard(b);
 
+		fprintf(stderr, "turn=%i\n", b->turn);
+
 		if (b->turn == machineColor) {
 			game nb;
 
@@ -131,9 +133,11 @@ int main (int argc, char **argv) {
 			line[strlen(line)-1] = 0;
 
 			fprintf(stderr, "LINE= <%s>\n", line);
-			if (isPrefix("1/2-1/2 {", line)) {
-				fprintf(stderr, "ADVERSARY CLAIMED DRAW, BLINDY BELIEVE\n");
-				fprintf(stderr, "RES: It's a draw  (claimed)!!\n");
+
+			if (isPrefix("1/2-1/2 {", line)
+				|| isPrefix("0-1 {", line)
+				|| isPrefix("1-0 {", line)) {
+				fprintf(stderr, "RES: <%s>\n", line);
 				return 101;
 			}
 
