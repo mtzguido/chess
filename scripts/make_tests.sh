@@ -1,3 +1,6 @@
+CHESS_PROG=hoichess
+CHESS_ARGS=-x
+
 rm -f FINISHLOG
 n=0
 total=${1:-100} # $1 o 100, por defecto
@@ -8,7 +11,7 @@ mkfifo wpipe bpipe
 while [ $n -lt $total ]; do
 	n=$((n+1))
 
-	fairymax <wpipe >bpipe &
+	${CHESS_PROG} ${CHESS_ARGS} <wpipe | tee fairylog >bpipe &
 	./chess w 2>&1 >wpipe <bpipe | tee -a full_log | grep -E '^RES:' | tee -a FINISHLOG
 
 	echo -n "waiting.."
