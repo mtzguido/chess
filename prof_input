@@ -1,21 +1,48 @@
-d2d4
-e2e4
-a2a3
-b1c3
-g1f3
-c1f4
-h2h3
-f1e2
-z1z1
-e2c4
-g2g3
-f1e1
-d1e2
-c3d5
-d5f6
-g1h2
-e2d3
-d3b3
-h2g1
-a1d1
-x1x2
+tellics say     Fairy-Max 4.8Q
+tellics say     by H.G. Muller
+tellics say Gothic Chess is protected by U.S. patent #6,481,716 by Ed Trice.
+tellics say Falcon Chess is protected by U.S. patent #5,690,334 by George W. Duke
+move c7c5
+move b7b6
+move g8f6
+move c8b7
+move d8c7
+move h7h6
+move c7c8
+move d7d6
+move c5c4
+move f6d5
+move d5f4
+move c8b7
+move e7d6
+move f8d6
+move f4g2
+move b7e4
+move e4f4
+move g2f4
+move b8a6
+move e8c8
+move f4g2
+move g2h4
+move d8e8
+move h4f3
+move e8e6
+move e6c6
+move b6b5
+move b5c4
+move f3e5
+move e5c4
+move c4a3
+move a3c2
+move h8d8
+move c6c2
+move a6c5
+move d8d3
+move c2f2
+move f2g2
+move g2g7
+move c5e6
+move g7g5
+move g5d5
+move f7f5
+0-1 {Black mates}
