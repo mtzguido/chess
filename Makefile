@@ -1,11 +1,11 @@
 .PHONY:clean all re run doc
-CFLAGS= -Wall -pg -g -funroll-loops -DNDEBUG -O99 $(CFLAGS_EXTRA)
+CFLAGS= -Wall -pg -g -funroll-loops -O99 -DNDEBUG $(CFLAGS_EXTRA)
 LFLAGS= -pg 
 SHELL=/bin/bash
 TARGET=chess
 CC=gcc
 
-mods=main ai board move succs pgn piece-square
+mods=main ai board move succs pgn
 objs=$(patsubst %,%.o,$(mods))
 
 all: $(TARGET) doc
@@ -28,7 +28,7 @@ run: $(TARGET)
 	./$(TARGET)
 
 prof: $(TARGET) prof_input
-	./$(TARGET) < prof_input # >/dev/null
+	./$(TARGET) w < prof_input || true # >/dev/null
 	gprof $(TARGET) gmon.out >prof
 
 vprof: prof
