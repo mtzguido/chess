@@ -318,8 +318,8 @@ static int inCheck_knig(game g, int kr, int kc, int who) {
 	if (kr >= 2 && kc <= 6 && canMove(g, kr-2, kc+1, kr, kc) && colorOf(g->board[kr-2][kc+1]) != who) return 1;
 	if (kr <= 5 && kc <= 6 && canMove(g, kr+2, kc+1, kr, kc) && colorOf(g->board[kr+2][kc+1]) != who) return 1;
 	if (kr >= 1 && kc >= 2 && canMove(g, kr-1, kc-2, kr, kc) && colorOf(g->board[kr-1][kc-2]) != who) return 1;
-	if (kr >= 1 && kc <= 5 && canMove(g, kr+1, kc-2, kr, kc) && colorOf(g->board[kr+1][kc-2]) != who) return 1;
-	if (kr <= 6 && kc >= 2 && canMove(g, kr-1, kc+2, kr, kc) && colorOf(g->board[kr-1][kc+2]) != who) return 1;
+	if (kr <= 6 && kc >= 2 && canMove(g, kr+1, kc-2, kr, kc) && colorOf(g->board[kr+1][kc-2]) != who) return 1;
+	if (kr >= 1 && kc <= 5 && canMove(g, kr-1, kc+2, kr, kc) && colorOf(g->board[kr-1][kc+2]) != who) return 1;
 	if (kr <= 6 && kc <= 5 && canMove(g, kr+1, kc+2, kr, kc) && colorOf(g->board[kr+1][kc+2]) != who) return 1;
 
 	return 0;
