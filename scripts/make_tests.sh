@@ -1,5 +1,10 @@
-CHESS_PROG=hoichess
-CHESS_ARGS=-x
+if false; then
+	CHESS_PROG=hoichess
+	CHESS_ARGS=-x
+else
+	CHESS_PROG=fairymax
+	CHESS_ARGS=
+fi
 
 rm -f FINISHLOG
 n=0
