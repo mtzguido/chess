@@ -10,7 +10,7 @@
 #include <stdbool.h>
 #include <time.h>
 
-#define SEARCH_DEPTH	6
+#define SEARCH_DEPTH	4
 #define KTABLE_SIZE	(SEARCH_DEPTH + 7)
 #define NKILLER	2
 
@@ -72,7 +72,8 @@ static score machineMoveImpl(
 
 		return (machineColor == WHITE ?
 		            heur(g)
-			    : - heur(g)) - curDepth;
+			    : - heur(g))
+			- curDepth;
 	}
 
 	game *succs;
@@ -198,18 +199,10 @@ static score machineMoveImpl(
 }
 
 int pieceScore(game g) {
-	int i, j;
-	int phase = g->totalScore;
-	score ret = 0;
+	int x = g->totalScore - 40000;
+	int pps = (x*g->pps_O + (7800-x)*g->pps_E)/7800;
 
-	for (i=0; i<8; i++) 
-		for (j=0; j<8; j++) {
-			ret += piece_square_val(g->board[i][j], phase, i, j);
-		}
-
-	ret += g->pieceScore;
-
-	return ret;
+	return g->pieceScore + pps;
 }
 
 static score heur(game g) {
@@ -219,13 +212,13 @@ static score heur(game g) {
 
 	if (t != -1) {
 		if (t == WIN(WHITE))
-			ret += 1000000;
+			ret = 1000000;
 		else if (t == WIN(BLACK))
-			ret += -1000000;
+			ret = -1000000;
 		else
-			ret += 0;
+			ret = 0;
 	} else {
-		ret += 0;
+		ret = 0;
 	}
 
 	/* Si estaba terminada, no nos importa esto */
