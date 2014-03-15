@@ -5,6 +5,7 @@
 #include <stdlib.h>
 
 #include "move.h"
+#include "piece-square.h"
 
 char charOf(int piece);
 
@@ -21,6 +22,7 @@ inline static int sign(int a) {
 	return 0;
 }
 
+#if 1
 static const struct game_struct
 init = {
 	.board= {
@@ -39,6 +41,26 @@ init = {
 	.castle_king = { 1, 1 },
 	.castle_queen = { 1, 1 },
 };
+#else
+static const struct game_struct
+init = {
+	.board= {
+		{ BKING, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
+		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, WQUEEN },
+		{ EMPTY, WPAWN, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
+		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
+		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
+		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
+		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
+		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY }
+	},
+	.turn = WHITE,
+	.lastmove = { 0 },
+	.idlecount = 0,
+	.castle_king = { 1, 1 },
+	.castle_queen = { 1, 1 },
+};
+#endif
 
 static void fix(game g) {
 	int i, j;
@@ -64,6 +86,8 @@ static void fix(game g) {
 	g->inCheck[WHITE] = -1;
 	g->en_passant_x = -1;
 	g->en_passant_y = -1;
+
+	piecePosFullRecalc(g);
 }
 
 game startingGame() {
@@ -140,6 +164,7 @@ void printBoard(game g) {
 	fprintf(stderr, "  en_passant = %i %i \n", g->en_passant_x, g->en_passant_y);
 	fprintf(stderr, "  inCheck = %i %i \n", g->inCheck[0], g->inCheck[1]);
 	fprintf(stderr, "  scores = %i %i\n", g->pieceScore, g->totalScore);
+	fprintf(stderr, "  pps o e = %i %i\n", g->pps_O, g->pps_E);
 	fprintf(stderr, "]\n");
 
 
@@ -168,7 +193,9 @@ char charOf(int piece) {
 }
 
 int isFinished(game g) {
-	if (hasNextGame(g) != 0)
+	if (g->idlecount >= 50)
+		return DRAW;
+	else if (hasNextGame(g))
 		return -1;
 	else if (inCheck(g, g->turn))
 		return WIN(flipTurn(g->turn)); /* Jaque mate al jugador actual */
@@ -176,9 +203,12 @@ int isFinished(game g) {
 		return DRAW; /* Ahogado (Stalemate) */
 }
 
+static int inCheck_diag(game g, int kr, int kc, int who);
+static int inCheck_line(game g, int kr, int kc, int who);
+static int inCheck_knig(game g, int kr, int kc, int who);
+
 int inCheck(game g, int who) {
 	int kr, kc;
-	int i, j;
 
 	if (g->inCheck[who] != -1)
 		return g->inCheck[who];
@@ -186,94 +216,113 @@ int inCheck(game g, int who) {
 	kr = g->kingx[who];
 	kc = g->kingy[who];
 
+	g->inCheck[who] = inCheck_diag(g, kr, kc, who)
+	                || inCheck_line(g, kr, kc, who)
+					|| inCheck_knig(g, kr, kc, who);
+
+	return g->inCheck[who];
+}
+
+static int inCheck_line(game g, int kr, int kc, int who) {
+	int i, j;
 	/* Columna */
 	j = kc;
 	for (i=kr+1; i<8; i++)
 		if (g->board[i][j] != 0) {
-			if (colorOf(g->board[i][j]) != who && canMove(g, i, j, kr, kc))
-				goto ret_true;
-			else
-				break;
+			if (colorOf(g->board[i][j]) != who)
+				if (isQueen(g->board[i][j]) || isRook(g->board[i][j]) || canMove(g, i, j, kr, kc))
+					return 1;
+
+			break;
 		}
 
 	for (i=kr-1; i>=0; i--)
 		if (g->board[i][j] != 0) {
-			if (colorOf(g->board[i][j]) != who && canMove(g, i, j, kr, kc))
-				goto ret_true;
-			else
-				break;
+			if (colorOf(g->board[i][j]) != who)
+				if (isQueen(g->board[i][j]) || isRook(g->board[i][j]) || canMove(g, i, j, kr, kc))
+					return 1;
+
+			break;
 		}
 
 	/* Fila */
 	i = kr;
 	for (j=kc+1; j<8; j++)
 		if (g->board[i][j] != 0) {
-			if (colorOf(g->board[i][j]) != who && canMove(g, i, j, kr, kc))
-				goto ret_true;
-			else
-				break;
+			if (colorOf(g->board[i][j]) != who)
+				if (isQueen(g->board[i][j]) || isRook(g->board[i][j]) || canMove(g, i, j, kr, kc))
+					return 1;
+
+			break;
 		}
 
 	for (j=kc-1; j>=0; j--)
 		if (g->board[i][j] != 0) {
-			if (colorOf(g->board[i][j]) != who && canMove(g, i, j, kr, kc))
-				goto ret_true;
-			else
-				break;
+			if (colorOf(g->board[i][j]) != who)
+				if (isQueen(g->board[i][j]) || isRook(g->board[i][j]) || canMove(g, i, j, kr, kc))
+					return 1;
+
+			break;
 		}
+
+	return 0;
+}
+
+static int inCheck_diag(game g, int kr, int kc, int who) {
+	int i, j;
 
 	/* Diagonales */
 	for (i=kr-1, j=kc-1; i>=0 && j>=0; i--, j--)
 		if (g->board[i][j] != 0) {
-			if (colorOf(g->board[i][j]) != who && canMove(g, i, j, kr, kc))
-				goto ret_true;
-			else
-				break;
+			if (colorOf(g->board[i][j]) != who)
+				if (isQueen(g->board[i][j]) || isBishop(g->board[i][j]) || canMove(g, i, j, kr, kc))
+					return 1;
+
+			break;
 		}
 
 	for (i=kr+1, j=kc+1; i<8 && j<8; i++, j++)
 		if (g->board[i][j] != 0) {
-			if (colorOf(g->board[i][j]) != who && canMove(g, i, j, kr, kc))
-				goto ret_true;
-			else
-				break;
+			if (colorOf(g->board[i][j]) != who)
+				if (isQueen(g->board[i][j]) || isBishop(g->board[i][j]) || canMove(g, i, j, kr, kc))
+					return 1;
+
+			break;
 		}
 
 	for (i=kr+1, j=kc-1; i<8 && j>=0; i++, j--)
 		if (g->board[i][j] != 0) {
-			if (colorOf(g->board[i][j]) != who && canMove(g, i, j, kr, kc))
-				goto ret_true;
-			else
-				break;
+			if (colorOf(g->board[i][j]) != who)
+				if (isQueen(g->board[i][j]) || isBishop(g->board[i][j]) || canMove(g, i, j, kr, kc))
+					return 1;
+
+			break;
 		}
 
 	for (i=kr-1, j=kc+1; i>=0 && j<8; i--, j++)
 		if (g->board[i][j] != 0) {
-			if (colorOf(g->board[i][j]) != who && canMove(g, i, j, kr, kc))
-				goto ret_true;
-			else
-				break;
+			if (colorOf(g->board[i][j]) != who)
+				if (isQueen(g->board[i][j]) || isBishop(g->board[i][j]) || canMove(g, i, j, kr, kc))
+					return 1;
+
+			break;
 		}
 
-	/* Caballos */
-	if (canMove(g, kr-2, kc-1, kr, kc) && colorOf(g->board[kr-2][kc-1]) != who) goto ret_true;
-	if (canMove(g, kr+2, kc-1, kr, kc) && colorOf(g->board[kr+2][kc-1]) != who) goto ret_true;
-	if (canMove(g, kr-2, kc+1, kr, kc) && colorOf(g->board[kr-2][kc+1]) != who) goto ret_true;
-	if (canMove(g, kr+2, kc+1, kr, kc) && colorOf(g->board[kr+2][kc+1]) != who) goto ret_true;
-	if (canMove(g, kr-1, kc-2, kr, kc) && colorOf(g->board[kr-1][kc-2]) != who) goto ret_true;
-	if (canMove(g, kr+1, kc-2, kr, kc) && colorOf(g->board[kr+1][kc-2]) != who) goto ret_true;
-	if (canMove(g, kr-1, kc+2, kr, kc) && colorOf(g->board[kr-1][kc+2]) != who) goto ret_true;
-	if (canMove(g, kr+1, kc+2, kr, kc) && colorOf(g->board[kr+1][kc+2]) != who) goto ret_true;
-
-	assert(g->inCheck[who] != 1);
-	g->inCheck[who] = 0;
 	return 0;
+}
 
-ret_true:
+static int inCheck_knig(game g, int kr, int kc, int who) {
+	/* Caballos */
+	if (kr >= 2 && kc >= 1 && canMove(g, kr-2, kc-1, kr, kc) && colorOf(g->board[kr-2][kc-1]) != who) return 1;
+	if (kr <= 5 && kc >= 1 && canMove(g, kr+2, kc-1, kr, kc) && colorOf(g->board[kr+2][kc-1]) != who) return 1;
+	if (kr >= 2 && kc <= 6 && canMove(g, kr-2, kc+1, kr, kc) && colorOf(g->board[kr-2][kc+1]) != who) return 1;
+	if (kr <= 5 && kc <= 6 && canMove(g, kr+2, kc+1, kr, kc) && colorOf(g->board[kr+2][kc+1]) != who) return 1;
+	if (kr >= 1 && kc >= 2 && canMove(g, kr-1, kc-2, kr, kc) && colorOf(g->board[kr-1][kc-2]) != who) return 1;
+	if (kr >= 1 && kc <= 5 && canMove(g, kr+1, kc-2, kr, kc) && colorOf(g->board[kr+1][kc-2]) != who) return 1;
+	if (kr <= 6 && kc >= 2 && canMove(g, kr-1, kc+2, kr, kc) && colorOf(g->board[kr-1][kc+2]) != who) return 1;
+	if (kr <= 6 && kc <= 5 && canMove(g, kr+1, kc+2, kr, kc) && colorOf(g->board[kr+1][kc+2]) != who) return 1;
 
-	assert(g->inCheck[who] != 0);
-	g->inCheck[who] = 1;
-	return 1;
+	return 0;
 }
 
 void freeSuccs(game *arr, int len) {
@@ -372,8 +421,8 @@ int doMove(game g, move m) {
 	}
 
 	/* Nunca podemos quedar en jaque */
-	if (g->inCheck[g->turn] != 0
-		&& inCheck(g, g->turn))
+	if (g->inCheck[g->turn] == 1  ||
+		(g->inCheck[g->turn] == -1 && inCheck(g, g->turn)))
 		goto fail;
 
 	freeGame(old_g);
@@ -389,6 +438,7 @@ fail:
 	return 0;
 }
 
+
 static int doMoveRegular(game g, move m) {
 	int piece = g->board[m.r][m.c];
 	int other = flipTurn(g->turn);
@@ -398,7 +448,12 @@ static int doMoveRegular(game g, move m) {
 		return 0;
 
 	/* La pieza debe poder moverse al destino */
-	if (!canMove(g, m.r, m.c, m.R, m.C))
+	if (m.r < 0 || m.r > 7
+		|| m.c < 0 || m.c > 7
+		|| m.R < 0 || m.R > 7
+		|| m.C < 0 || m.C > 7
+		|| (m.r == m.R && m.c == m.C)
+		|| !canMove(g, m.r, m.c, m.R, m.C))
 		return 0;
 
 	/* Es un peón que promueve? */
@@ -444,6 +499,10 @@ static int doMoveRegular(game g, move m) {
 			&& m.C == g->en_passant_y) {
 		g->pieceScore -= scoreOf(g->board[m.r][m.C]);
 		g->totalScore -= absoluteScoreOf(g->board[m.r][m.C]);
+
+		g->pps_O -= piece_square_val_O(g->board[m.r][m.C], m.r, m.C);
+		g->pps_E -= piece_square_val_E(g->board[m.r][m.C], m.r, m.C);
+
 		g->board[m.r][m.C] = 0;
 
 		g->inCheck[WHITE] = -1;
@@ -465,9 +524,16 @@ static int doMoveRegular(game g, move m) {
 		g->lastmove.was_capture = 1;
 		g->pieceScore -= scoreOf(g->board[m.R][m.C]);
 		g->totalScore -= absoluteScoreOf(g->board[m.R][m.C]);
+		g->pps_O -= piece_square_val_O(g->board[m.R][m.C], m.R, m.C);
+		g->pps_E -= piece_square_val_E(g->board[m.R][m.C], m.R, m.C);
 	} else {
 		g->lastmove.was_capture = 0;
 	}
+
+	g->pps_O -= piece_square_val_O(piece, m.r, m.c);
+	g->pps_O += piece_square_val_O(piece, m.R, m.C);
+	g->pps_E -= piece_square_val_E(piece, m.r, m.c);
+	g->pps_E += piece_square_val_E(piece, m.R, m.C);
 
 	g->board[m.R][m.C] = g->board[m.r][m.c];
 	g->board[m.r][m.c] = 0;
@@ -477,7 +543,13 @@ static int doMoveRegular(game g, move m) {
 			&& m.R == (m.who == WHITE ? 0 : 7)) {
 		g->pieceScore -= scoreOf(g->board[m.R][m.C]);
 		g->totalScore -= absoluteScoreOf(g->board[m.R][m.C]);
+		g->pps_O      -= piece_square_val_O(g->board[m.R][m.C], m.R, m.C);
+		g->pps_E      -= piece_square_val_E(g->board[m.R][m.C], m.R, m.C);
+
 		g->board[m.R][m.C] = m.who == WHITE ? m.promote : -m.promote;
+
+		g->pps_E      += piece_square_val_E(g->board[m.R][m.C], m.R, m.C);
+		g->pps_O      += piece_square_val_O(g->board[m.R][m.C], m.R, m.C);
 		g->pieceScore += scoreOf(g->board[m.R][m.C]);
 		g->totalScore += absoluteScoreOf(g->board[m.R][m.C]);
 
@@ -558,6 +630,15 @@ static int doMoveKCastle(game g, move m) {
 	g->kingx[m.who] = rank;
 	g->kingy[m.who] = 6;
 
+	g->pps_E -= piece_square_val_E(kpiece, rank, 4);
+	g->pps_E += piece_square_val_E(kpiece, rank, 6);
+	g->pps_E -= piece_square_val_E(rpiece, rank, 7);
+	g->pps_E += piece_square_val_E(rpiece, rank, 5);
+	g->pps_O -= piece_square_val_O(kpiece, rank, 4);
+	g->pps_O += piece_square_val_O(kpiece, rank, 6);
+	g->pps_O -= piece_square_val_O(rpiece, rank, 7);
+	g->pps_O += piece_square_val_O(rpiece, rank, 5);
+
 	return 1;
 }
 
@@ -617,6 +698,15 @@ static int doMoveQCastle(game g, move m) {
 	g->board[rank][4] = EMPTY;
 	g->kingx[m.who] = rank;
 	g->kingy[m.who] = 2;
+
+	g->pps_E -= piece_square_val_E(kpiece, rank, 4);
+	g->pps_E += piece_square_val_E(kpiece, rank, 2);
+	g->pps_E -= piece_square_val_E(rpiece, rank, 0);
+	g->pps_E += piece_square_val_E(rpiece, rank, 3);
+	g->pps_O -= piece_square_val_O(kpiece, rank, 4);
+	g->pps_O += piece_square_val_O(kpiece, rank, 2);
+	g->pps_O -= piece_square_val_O(rpiece, rank, 0);
+	g->pps_O += piece_square_val_O(rpiece, rank, 3);
 
 	return 1;
 }

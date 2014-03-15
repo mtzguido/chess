@@ -48,6 +48,10 @@ struct game_struct {
 	/*   Cache de score */
 	int pieceScore;
 	int totalScore;
+	/*   Piece scores de opening y
+	 *   endgame, se interpolan luego */
+	int pps_O;
+	int pps_E;
 };
 
 typedef struct game_struct *game;
