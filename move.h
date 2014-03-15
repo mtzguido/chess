@@ -4,6 +4,7 @@
 #include "board.h"
 #include <assert.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 int pawnMove(game g, int r, int c, int R, int C);
 int rookMove(game g, int r, int c, int R, int C);
@@ -37,7 +38,7 @@ static inline int canMove(game g, int r, int c, int R, int C) {
 		return kingMove(g, r, c, R, C);
 	default:
 	  fprintf(stderr, "!!!!!!!! (%i)\n", g->board[r][c]);
-	  assert(0);
+	  abort();
 	}
 
 	return -1;
