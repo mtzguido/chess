@@ -48,6 +48,29 @@ int main (int argc, char **argv) {
 
 	FILE *game_log = fopen(machineColor == WHITE ? "gamelog_w" : "gamelog_b", "w");
 
+#if 0
+	{
+		game *arr;
+		int i, n;
+
+		n = genSuccs(b, &arr);
+
+		for (i = 0; i < n; i++) {
+			printBoard(arr[i]);
+			printf("move was: (%i,%i) -> (%i,%i)\n",
+					arr[i]->lastmove.r,
+					arr[i]->lastmove.c,
+					arr[i]->lastmove.R,
+					arr[i]->lastmove.C);
+
+			getchar();
+		}
+
+		return 0;
+	}
+#endif
+
+
 	move m;
 	char mbuf[500];
 	struct pgn pp;
