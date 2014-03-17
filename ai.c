@@ -10,7 +10,7 @@
 #include <stdbool.h>
 #include <time.h>
 
-#define SEARCH_DEPTH	4
+#define SEARCH_DEPTH	6
 #define KTABLE_SIZE	(SEARCH_DEPTH + 7)
 #define NKILLER	2
 
@@ -66,18 +66,24 @@ static score machineMoveImpl(
 		+ 3 * g->lastmove.was_promotion;
 
 	/* Si el tablero es terminal */
-	if (curDepth >= maxDepth + extraDepth || isFinished(g) != -1) {
+	int rc;
+	if ((rc=isFinished(g)) != -1) {
+		if (rc == WIN(machineColor))
+			return 1000000 - curDepth;
+		else if (rc == DRAW)
+			return 0;
+		else
+			return -1000000 + curDepth;
+	}
+
+	/* Si llegamos a la profundidad deseada */
+	if (curDepth >= maxDepth + extraDepth) {
 		if (nb != NULL)
 			*nb = copyGame(g);
 
-		int t = (machineColor == WHITE ?
+		return (machineColor == WHITE ?
 		            heur(g)
 			    : - heur(g));
-
-		if (t > 0)
-			return t - curDepth;
-		else
-			return t + curDepth;
 	}
 
 	game *succs;
@@ -212,26 +218,10 @@ int pieceScore(game g) {
 static score heur(game g) {
 	score ret = 0;
 
-	int t = isFinished(g);
-
-	if (t != -1) {
-		if (t == WIN(WHITE))
-			ret = 1000000;
-		else if (t == WIN(BLACK))
-			ret = -1000000;
-		else
-			ret = 0;
-	} else {
-		ret = 0;
-	}
-
-	/* Si estaba terminada, no nos importa esto */
-	if (ret == 0) {
-		ret += (pieceScore(g))
-			 + (inCheck(g, BLACK) ?  200 : 0)
-			 + (inCheck(g, WHITE) ? -200 : 0)
-			 ;
-	}
+	ret = (pieceScore(g))
+		+ (inCheck(g, BLACK) ?  200 : 0)
+		+ (inCheck(g, WHITE) ? -200 : 0)
+		;
 
 	return ret;
 }
