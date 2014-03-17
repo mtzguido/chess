@@ -70,10 +70,14 @@ static score machineMoveImpl(
 		if (nb != NULL)
 			*nb = copyGame(g);
 
-		return (machineColor == WHITE ?
+		int t = (machineColor == WHITE ?
 		            heur(g)
-			    : - heur(g))
-			- curDepth;
+			    : - heur(g));
+
+		if (t > 0)
+			return t - curDepth;
+		else
+			return t + curDepth;
 	}
 
 	game *succs;
