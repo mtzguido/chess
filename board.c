@@ -22,7 +22,7 @@ inline static int sign(int a) {
 	return 0;
 }
 
-#if 1
+#if 0
 static const struct game_struct
 init = {
 	.board= {
@@ -45,13 +45,13 @@ init = {
 static const struct game_struct
 init = {
 	.board= {
-		{ BKING, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
-		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, WQUEEN },
-		{ EMPTY, WPAWN, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
 		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
-		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
-		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
-		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
+		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, BPAWN, BPAWN, BPAWN },
+		{ EMPTY, EMPTY, EMPTY, BKING, EMPTY, EMPTY, EMPTY, EMPTY },
+		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, BBISHOP },
+		{ EMPTY, EMPTY, WROOK, WKING, EMPTY, EMPTY, EMPTY, EMPTY },
+		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, BROOK, WPAWN },
+		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, BROOK, EMPTY, EMPTY },
 		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY }
 	},
 	.turn = WHITE,
@@ -206,6 +206,8 @@ int isFinished(game g) {
 static int inCheck_diag(game g, int kr, int kc, int who);
 static int inCheck_line(game g, int kr, int kc, int who);
 static int inCheck_knig(game g, int kr, int kc, int who);
+static int inCheck_pawn(game g, int kr, int kc, int who);
+static int inCheck_king(game g, int kr, int kc, int who);
 
 int inCheck(game g, int who) {
 	int kr, kc;
@@ -218,7 +220,9 @@ int inCheck(game g, int who) {
 
 	g->inCheck[who] = inCheck_diag(g, kr, kc, who)
 	                || inCheck_line(g, kr, kc, who)
-					|| inCheck_knig(g, kr, kc, who);
+					|| inCheck_knig(g, kr, kc, who)
+					|| inCheck_pawn(g, kr, kc, who)
+					|| inCheck_king(g, kr, kc, who);
 
 	return g->inCheck[who];
 }
@@ -230,7 +234,7 @@ static int inCheck_line(game g, int kr, int kc, int who) {
 	for (i=kr+1; i<8; i++)
 		if (g->board[i][j] != 0) {
 			if (colorOf(g->board[i][j]) != who)
-				if (isQueen(g->board[i][j]) || isRook(g->board[i][j]) || canMove(g, i, j, kr, kc))
+				if (isQueen(g->board[i][j]) || isRook(g->board[i][j]))
 					return 1;
 
 			break;
@@ -239,7 +243,7 @@ static int inCheck_line(game g, int kr, int kc, int who) {
 	for (i=kr-1; i>=0; i--)
 		if (g->board[i][j] != 0) {
 			if (colorOf(g->board[i][j]) != who)
-				if (isQueen(g->board[i][j]) || isRook(g->board[i][j]) || canMove(g, i, j, kr, kc))
+				if (isQueen(g->board[i][j]) || isRook(g->board[i][j]))
 					return 1;
 
 			break;
@@ -250,7 +254,7 @@ static int inCheck_line(game g, int kr, int kc, int who) {
 	for (j=kc+1; j<8; j++)
 		if (g->board[i][j] != 0) {
 			if (colorOf(g->board[i][j]) != who)
-				if (isQueen(g->board[i][j]) || isRook(g->board[i][j]) || canMove(g, i, j, kr, kc))
+				if (isQueen(g->board[i][j]) || isRook(g->board[i][j]))
 					return 1;
 
 			break;
@@ -259,7 +263,7 @@ static int inCheck_line(game g, int kr, int kc, int who) {
 	for (j=kc-1; j>=0; j--)
 		if (g->board[i][j] != 0) {
 			if (colorOf(g->board[i][j]) != who)
-				if (isQueen(g->board[i][j]) || isRook(g->board[i][j]) || canMove(g, i, j, kr, kc))
+				if (isQueen(g->board[i][j]) || isRook(g->board[i][j]))
 					return 1;
 
 			break;
@@ -275,7 +279,7 @@ static int inCheck_diag(game g, int kr, int kc, int who) {
 	for (i=kr-1, j=kc-1; i>=0 && j>=0; i--, j--)
 		if (g->board[i][j] != 0) {
 			if (colorOf(g->board[i][j]) != who)
-				if (isQueen(g->board[i][j]) || isBishop(g->board[i][j]) || canMove(g, i, j, kr, kc))
+				if (isQueen(g->board[i][j]) || isBishop(g->board[i][j]))
 					return 1;
 
 			break;
@@ -284,7 +288,7 @@ static int inCheck_diag(game g, int kr, int kc, int who) {
 	for (i=kr+1, j=kc+1; i<8 && j<8; i++, j++)
 		if (g->board[i][j] != 0) {
 			if (colorOf(g->board[i][j]) != who)
-				if (isQueen(g->board[i][j]) || isBishop(g->board[i][j]) || canMove(g, i, j, kr, kc))
+				if (isQueen(g->board[i][j]) || isBishop(g->board[i][j]))
 					return 1;
 
 			break;
@@ -293,7 +297,7 @@ static int inCheck_diag(game g, int kr, int kc, int who) {
 	for (i=kr+1, j=kc-1; i<8 && j>=0; i++, j--)
 		if (g->board[i][j] != 0) {
 			if (colorOf(g->board[i][j]) != who)
-				if (isQueen(g->board[i][j]) || isBishop(g->board[i][j]) || canMove(g, i, j, kr, kc))
+				if (isQueen(g->board[i][j]) || isBishop(g->board[i][j]))
 					return 1;
 
 			break;
@@ -302,7 +306,7 @@ static int inCheck_diag(game g, int kr, int kc, int who) {
 	for (i=kr-1, j=kc+1; i>=0 && j<8; i--, j++)
 		if (g->board[i][j] != 0) {
 			if (colorOf(g->board[i][j]) != who)
-				if (isQueen(g->board[i][j]) || isBishop(g->board[i][j]) || canMove(g, i, j, kr, kc))
+				if (isQueen(g->board[i][j]) || isBishop(g->board[i][j]))
 					return 1;
 
 			break;
@@ -321,6 +325,47 @@ static int inCheck_knig(game g, int kr, int kc, int who) {
 	if (kr <= 6 && kc >= 2 && canMove(g, kr+1, kc-2, kr, kc) && colorOf(g->board[kr+1][kc-2]) != who) return 1;
 	if (kr >= 1 && kc <= 5 && canMove(g, kr-1, kc+2, kr, kc) && colorOf(g->board[kr-1][kc+2]) != who) return 1;
 	if (kr <= 6 && kc <= 5 && canMove(g, kr+1, kc+2, kr, kc) && colorOf(g->board[kr+1][kc+2]) != who) return 1;
+
+	return 0;
+}
+
+static int inCheck_pawn(game g, int kr, int kc, int who) {
+	if (who == WHITE) {
+		if (kr > 0) {
+			if (kc > 0 && g->board[kr-1][kc-1] == BPAWN)
+				return 1;
+			if (kc < 7 && g->board[kr-1][kc+1] == BPAWN)
+				return 1;
+		}
+
+		return 0;
+	} else {
+		if (kr < 7) {
+			if (kc > 0 && g->board[kr+1][kc-1] == WPAWN)
+				return 1;
+			if (kc < 7 && g->board[kr+1][kc+1] == WPAWN)
+				return 1;
+		}
+
+		return 0;
+	}
+}
+
+static int inCheck_king(game g, int kr, int kc, int who) {
+	static const int dr[] = {  1, 1, 1, 0, -1, -1, -1,  0 };
+	static const int dc[] = { -1, 0, 1, 1,  1,  0, -1, -1 };
+	int i;
+
+	for (i = 0; i < sizeof dr / sizeof dr[0]; i++) {
+		register int R = kr + dr[i];
+		register int C = kc + dc[i];
+
+		if (R >= 0 && R < 8 && C >= 0 && C < 8)
+			if (isKing(g->board[R][C])) {
+				/* si o si debe ser el rey contrario */
+				return 1;
+			}
+	}
 
 	return 0;
 }
