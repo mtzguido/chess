@@ -1,48 +1,62 @@
-tellics say     Fairy-Max 4.8Q
-tellics say     by H.G. Muller
-tellics say Gothic Chess is protected by U.S. patent #6,481,716 by Ed Trice.
-tellics say Falcon Chess is protected by U.S. patent #5,690,334 by George W. Duke
-move c7c5
-move b7b6
-move g8f6
-move c8b7
-move d8c7
-move h7h6
-move c7c8
-move d7d6
-move c5c4
-move f6d5
-move d5f4
-move c8b7
-move e7d6
-move f8d6
-move f4g2
-move b7e4
-move e4f4
-move g2f4
-move b8a6
+HoiChess 0.10.3 (May 22 2012 22:33:43)
+Copyright (C) 2004-2007 Holger Ruckdeschel <holger@hoicher.de>
+This program is free software and comes with ABSOLUTELY NO WARRANTY.
+See the GNU General Public License for more details.
+
+Platform: unix
+Compiler: GCC 4.7.0
+
+
+Failed to open opening book.
+Hash table size: 1677721 entries (32.0 MiB)
+Hash table usage: 0 entries (0%)
+Hash table replacement scheme: always replace
+Pawn hash table size: 116508 entries (4.0 MiB)
+Pawn hash table usage: 0 entries (0%)
+Evaluation cache size: 349525 entries (4.0 MiB)
+Evaluation cache usage: 0 entries (0%)
+move d7d5
+move d5e4
+move c8f5
+move f5g6
+move b8c6
+move d8d5
+move d5c6
+move c6c5
+move c5b4
+move b4b2
 move e8c8
-move f4g2
-move g2h4
-move d8e8
-move h4f3
-move e8e6
-move e6c6
-move b6b5
-move b5c4
-move f3e5
-move e5c4
-move c4a3
-move a3c2
-move h8d8
-move c6c2
-move a6c5
-move d8d3
-move c2f2
-move f2g2
-move g2g7
-move c5e6
-move g7g5
-move g5d5
-move f7f5
+move b7b6
+move b2a3
+move a3a7
+move c8b8
+move d8d6
+move g8f6
+move e7e5
+move h7g6
+move f6e4
+move a7a2
+move a2d5
+move d6d5
+move d5d4
+move d4c4
+move f8d6
+move d6h2
+move h2d6
+move d6c5
+move c4h4
+move c5a3
+move h4h1
+move h8e8
+move a3b4
+move h1e1
+move e8e2
+move e1b1
+move e2c2
+move c2d2
+move d2d7
+move b1b3
+move b3d3
+move d7d4
+move b4e7
 0-1 {Black mates}
