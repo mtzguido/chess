@@ -28,7 +28,7 @@ run: $(TARGET)
 	./$(TARGET)
 
 prof: $(TARGET) prof_input
-	./$(TARGET) w < prof_input || true # >/dev/null
+	time ./$(TARGET) w < prof_input || true # >/dev/null
 	gprof $(TARGET) gmon.out >prof
 
 vprof: prof
