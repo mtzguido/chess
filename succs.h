@@ -5,5 +5,6 @@
 
 int genSuccs(game g, game **arr);
 int hasNextGame(game g);
+int nSucc(game g);
 
 #endif

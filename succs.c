@@ -298,6 +298,14 @@ int hasNextGame(game g) {
 	int alen, asz;
 	game *arr;
 
+	if (g->hasNext != -1)
+		return g->hasNext;
+
+	if (g->nSucc != -1) {
+		g->hasNext = g->nSucc != 0;
+		return g->hasNext;
+	}
+
 	alen = 0;
 	asz = 128;
 	arr = malloc(asz * sizeof g);
@@ -312,27 +320,21 @@ int hasNextGame(game g) {
 			if (piece == 0 || colorOf(piece) != g->turn) {
 				continue; /* Can't be moved */
 			} else if (isPawn(piece)) {
-				if (pawnSuccs(i, j, g, &arr, &alen))
-					goto out;
+				pawnSuccs(i, j, g, &arr, &alen);
 			} else if (isKnight(piece)) {
-				if (knightSuccs(i, j, g, &arr, &alen))
-					goto out;
+				knightSuccs(i, j, g, &arr, &alen);
 			} else if (isRook(piece)) {
-				if (rookSuccs(i, j, g, &arr, &alen))
-					goto out;
+				rookSuccs(i, j, g, &arr, &alen);
 			} else if (isBishop(piece)) {
-				if (bishopSuccs(i, j, g, &arr, &alen))
-					goto out;
+				bishopSuccs(i, j, g, &arr, &alen);
 			} else if (isQueen(piece)) {
-				if (rookSuccs(i, j, g, &arr, &alen))
-					goto out;
-
-				if (bishopSuccs(i, j, g, &arr, &alen))
-					goto out;
+				rookSuccs(i, j, g, &arr, &alen);
+				bishopSuccs(i, j, g, &arr, &alen);
 			} else if (isKing(piece)) {
-				if (kingSuccs(i, j, g, &arr, &alen))
-					goto out;
+				kingSuccs(i, j, g, &arr, &alen);
 			}
+
+			if (alen > 0) goto out;
 
 			assert(arr != NULL);
 		}
@@ -344,15 +346,34 @@ int hasNextGame(game g) {
 
 	m.move_type = MOVE_KINGSIDE_CASTLE;
 	addToRet(g, m, &arr, &alen);
+	if (alen > 0) goto out;
 
 	m.move_type = MOVE_QUEENSIDE_CASTLE;
 	addToRet(g, m, &arr, &alen);
+	if (alen > 0) goto out;
 
 	ret = 0;
 
 out:
 	assert(alen <= asz);
 	freeSuccs(arr, alen);
+
+	g->hasNext = ret;
+
 	return ret;
+}
+
+int nSucc(game g) {
+	if (g->nSucc != -1)
+		return g->nSucc;
+
+	game *arr;
+	int n;
+
+	n = genSuccs(g, &arr);
+	freeSuccs(arr, n);
+
+	g->nSucc = n;
+	return n;
 }
 

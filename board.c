@@ -22,7 +22,7 @@ inline static int sign(int a) {
 	return 0;
 }
 
-#if 0
+#if 1
 static const struct game_struct
 init = {
 	.board= {
@@ -45,14 +45,14 @@ init = {
 static const struct game_struct
 init = {
 	.board= {
-		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
-		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, BPAWN, BPAWN, BPAWN },
-		{ EMPTY, EMPTY, EMPTY, BKING, EMPTY, EMPTY, EMPTY, EMPTY },
-		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, BBISHOP },
-		{ EMPTY, EMPTY, WROOK, WKING, EMPTY, EMPTY, EMPTY, EMPTY },
-		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, BROOK, WPAWN },
-		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, BROOK, EMPTY, EMPTY },
-		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY }
+		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, BKING },
+		{ EMPTY, EMPTY, BPAWN, EMPTY, EMPTY, BPAWN, EMPTY, EMPTY },
+		{ EMPTY, EMPTY, EMPTY, BBISHOP, EMPTY, EMPTY, EMPTY, BPAWN },
+		{ BPAWN, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
+		{ WPAWN, EMPTY, BPAWN, EMPTY, EMPTY, EMPTY, WROOK, WKING },
+		{ EMPTY, EMPTY, WPAWN, BBISHOP, EMPTY, BROOK, EMPTY, WPAWN },
+		{ EMPTY, WPAWN, EMPTY, EMPTY, BROOK, EMPTY, EMPTY, EMPTY },
+		{ WROOK, EMPTY, WBISHOP, WKNIGHT, EMPTY, EMPTY, EMPTY, EMPTY }
 	},
 	.turn = WHITE,
 	.lastmove = { 0 },
@@ -86,6 +86,9 @@ static void fix(game g) {
 	g->inCheck[WHITE] = -1;
 	g->en_passant_x = -1;
 	g->en_passant_y = -1;
+	
+	g->hasNext = -1;
+	g->nSucc = -1;
 
 	piecePosFullRecalc(g);
 }
@@ -473,6 +476,8 @@ int doMove(game g, move m) {
 	freeGame(old_g);
 
 	g->turn = flipTurn(g->turn);
+	g->hasNext = -1;
+	g->nSucc = -1;
 
 	return 1;
 
@@ -756,10 +761,24 @@ static int doMoveQCastle(game g, move m) {
 	return 1;
 }
 
-static const int scoreTab_[] =
-{ -20000, -900, -300, -300, -500, -100, 0, 100, 500, 300, 300, 900, 20000 };
+static const int __scoreTab[] =
+{
+	[6+BKING] = -20000,
+	[6+BQUEEN] = -900,
+	[6+BROOK] = -500,
+	[6+BBISHOP] = -330,
+	[6+BKNIGHT] = -320,
+	[6+BPAWN] = -100,
+	[6+0] = 0,
+	[6+WKING] = 20000,
+	[6+WQUEEN] = 900,
+	[6+WROOK] = 500,
+	[6+WBISHOP] = 330,
+	[6+WKNIGHT] = 320,
+	[6+WPAWN] = 100
+};
 
-static const int * scoreTab = &scoreTab_[6];
+static const int * scoreTab = &__scoreTab[6];
 
 static int scoreOf(int piece) {
 	return scoreTab[piece];
