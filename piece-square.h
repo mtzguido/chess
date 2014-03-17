@@ -61,6 +61,7 @@ static inline int piece_square_val_E(int piece, int r, int c) {
 	}
 }
 
+static void piecePosFullRecalc(game g) __attribute__((unused));
 static void piecePosFullRecalc(game g) {
 	int i, j;
 
