@@ -11,16 +11,16 @@
  * http://chessprogramming.wikispaces.com/Simplified+evaluation+function
  */
 
-static const int pawn[8][8];
-static const int bishop[8][8];
-static const int knight[8][8];
-static const int rook[8][8];
-static const int queen[8][8];
-static const int kingO[8][8];
-static const int kingE[8][8];
+static const char t_pawn[8][8];
+static const char t_bishop[8][8];
+static const char t_knight[8][8];
+static const char t_rook[8][8];
+static const char t_queen[8][8];
+static const char t_kingO[8][8];
+static const char t_kingE[8][8];
 
-static inline int piece_square_val_O(int piece, int r, int c) {
-	int m = colorOf(piece) == WHITE ? 1 : -1;
+static inline char piece_square_val_O(int piece, int r, int c) {
+	char m = colorOf(piece) == WHITE ? 1 : -1;
 	int p = abs(piece);
 
 	/* Simetría para el negro */
@@ -30,18 +30,18 @@ static inline int piece_square_val_O(int piece, int r, int c) {
 	}
 
 	switch (p) {
-	case WPAWN: return m*(pawn[r][c]);
-	case WBISHOP: return m*(bishop[r][c]);
-	case WROOK: return m*(rook[r][c]);
-	case WKNIGHT: return m*(knight[r][c]);
-	case WQUEEN: return m*(queen[r][c]);
-	case WKING: return m*(kingO[r][c]);
+	case WPAWN: return m*(t_pawn[r][c]);
+	case WBISHOP: return m*(t_bishop[r][c]);
+	case WROOK: return m*(t_rook[r][c]);
+	case WKNIGHT: return m*(t_knight[r][c]);
+	case WQUEEN: return m*(t_queen[r][c]);
+	case WKING: return m*(t_kingO[r][c]);
 	default: return 0;
 	}
 }
 
-static inline int piece_square_val_E(int piece, int r, int c) {
-	int m = colorOf(piece) == WHITE ? 1 : -1;
+static inline char piece_square_val_E(int piece, int r, int c) {
+	char m = colorOf(piece) == WHITE ? 1 : -1;
 	int p = abs(piece);
 
 	/* Simetría para el negro */
@@ -51,12 +51,12 @@ static inline int piece_square_val_E(int piece, int r, int c) {
 	}
 
 	switch (p) {
-	case WPAWN: return m*(pawn[r][c]);
-	case WBISHOP: return m*(bishop[r][c]);
-	case WROOK: return m*(rook[r][c]);
-	case WKNIGHT: return m*(knight[r][c]);
-	case WQUEEN: return m*(queen[r][c]);
-	case WKING: return m*(kingE[r][c]);
+	case WPAWN: return m*(t_pawn[r][c]);
+	case WBISHOP: return m*(t_bishop[r][c]);
+	case WROOK: return m*(t_rook[r][c]);
+	case WKNIGHT: return m*(t_knight[r][c]);
+	case WQUEEN: return m*(t_queen[r][c]);
+	case WKING: return m*(t_kingE[r][c]);
 	default: return 0;
 	}
 }
@@ -75,7 +75,7 @@ static void piecePosFullRecalc(game g) {
 		}
 }
 
-static const int pawn[8][8] = 
+static const char t_pawn[8][8] = 
 {
 	{	0,	0,	0,	0,	0,	0,	0,	0	},
 	{	80,	80,	80,	80,	80,	80,	80,	80	},
@@ -87,7 +87,7 @@ static const int pawn[8][8] =
 	{	0,	0,	0,	0,	0,	0,	0,	0	}
 };
 
-static const int knight[8][8] =
+static const char t_knight[8][8] =
 {
 	{	-50,	-40,	-30,	-30,	-30,	-30,	-40,	-50	},
 	{	-40,	-20,	0,	0,	0,	0,	-20,	-40	},
@@ -99,7 +99,7 @@ static const int knight[8][8] =
 	{	-50,	-40,	-30,	-30,	-30,	-30,	-40,	-50	},
 };
 
-static const int bishop[8][8] = 
+static const char t_bishop[8][8] = 
 {
 	{	-20,	-10,	-10,	-10,	-10,	-10,	-10,	-20	},
 	{	-10,	0,	0,	0,	0,	0,	0,	-10	},
@@ -111,7 +111,7 @@ static const int bishop[8][8] =
 	{	-20,	-10,	-10,	-10,	-10,	-10,	-10,	-20	},
 };
 
-static const int rook[8][8] =
+static const char t_rook[8][8] =
 {
 	{	0,	0,	0,	0,	0,	0,	0,	0	},
 	{	5,	10,	10,	10,	10,	10,	10,	5	},
@@ -123,7 +123,7 @@ static const int rook[8][8] =
 	{	0,	0,	0,	5,	5,	0,	0,	0	}
 };
 
-static const int queen[8][8] =
+static const char t_queen[8][8] =
 {
 	{	-20,	-10,	-10,	-5,	-5,	-10,	-10,	-20	},
 	{	-10,	0,	0,	0,	0,	0,	0,	-10	},
@@ -135,7 +135,7 @@ static const int queen[8][8] =
 	{	-20,	-10,	-10,	-5,	-5,	-10,	-10,	-20 }
 };
 
-static const int kingO[8][8] =
+static const char t_kingO[8][8] =
 {
 	{	-30,	-40,	-40,	-50,	-50,	-40,	-40,	-30	},
 	{	-30,	-40,	-40,	-50,	-50,	-40,	-40,	-30	},
@@ -147,7 +147,7 @@ static const int kingO[8][8] =
 	{	20,	30,	10,	0,	0,	10,	30,	20	}
 };
 
-static const int kingE[8][8] =
+static const char t_kingE[8][8] =
 {
 	{	-50,	-40,	-30,	-20,	-20,	-30,	-40,	-50	},
 	{	-30,	-20,	-10,	0,	0,	-10,	-20,	-30	},
