@@ -33,7 +33,7 @@ static game galloc() {
 
 	int j=0;
 
-	while ((i & (1<<j)) == 0)
+	while ((freet[i] & (1<<j)) == 0)
 		j++;
 
 	freet[i] &= ~(1<<j);
@@ -126,21 +126,21 @@ static void fix(game g) {
 }
 
 game startingGame() {
-	game g = malloc(sizeof(*g));
+	game g = galloc();
 	*g = init;
 	fix(g);
 	return g;
 }
 
 game copyGame(game g) {
-	game ret = malloc(sizeof (*ret));
+	game ret = galloc();
 	memcpy(ret, g, sizeof *ret);
 
 	return ret;
 }
 
 void freeGame(game g) {
-	free(g);
+	gfree(g);
 }
 
 void printBoard(game g) {
