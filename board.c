@@ -3,7 +3,9 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
+#include "common.h"
 #include "move.h"
 #include "piece-square.h"
 
@@ -102,9 +104,8 @@ game startingGame() {
 
 game copyGame(game g) {
 	game ret = malloc(sizeof (*ret));
-	*ret = *g;
+	memcpy(ret, g, sizeof *ret);
 
-	assert(ret->turn == g->turn);
 	return ret;
 }
 
@@ -319,15 +320,17 @@ static int inCheck_diag(game g, int kr, int kc, int who) {
 }
 
 static int inCheck_knig(game g, int kr, int kc, int who) {
+	int enemy_kn = who == WHITE ? BKNIGHT : WKNIGHT;
+
 	/* Caballos */
-	if (kr >= 2 && kc >= 1 && canMove(g, kr-2, kc-1, kr, kc) && colorOf(g->board[kr-2][kc-1]) != who) return 1;
-	if (kr <= 5 && kc >= 1 && canMove(g, kr+2, kc-1, kr, kc) && colorOf(g->board[kr+2][kc-1]) != who) return 1;
-	if (kr >= 2 && kc <= 6 && canMove(g, kr-2, kc+1, kr, kc) && colorOf(g->board[kr-2][kc+1]) != who) return 1;
-	if (kr <= 5 && kc <= 6 && canMove(g, kr+2, kc+1, kr, kc) && colorOf(g->board[kr+2][kc+1]) != who) return 1;
-	if (kr >= 1 && kc >= 2 && canMove(g, kr-1, kc-2, kr, kc) && colorOf(g->board[kr-1][kc-2]) != who) return 1;
-	if (kr <= 6 && kc >= 2 && canMove(g, kr+1, kc-2, kr, kc) && colorOf(g->board[kr+1][kc-2]) != who) return 1;
-	if (kr >= 1 && kc <= 5 && canMove(g, kr-1, kc+2, kr, kc) && colorOf(g->board[kr-1][kc+2]) != who) return 1;
-	if (kr <= 6 && kc <= 5 && canMove(g, kr+1, kc+2, kr, kc) && colorOf(g->board[kr+1][kc+2]) != who) return 1;
+	if (kr >= 2 && kc >= 1 && g->board[kr-2][kc-1] == enemy_kn) return 1;
+	if (kr <= 5 && kc >= 1 && g->board[kr+2][kc-1] == enemy_kn) return 1;
+	if (kr >= 2 && kc <= 6 && g->board[kr-2][kc+1] == enemy_kn) return 1;
+	if (kr <= 5 && kc <= 6 && g->board[kr+2][kc+1] == enemy_kn) return 1;
+	if (kr >= 1 && kc >= 2 && g->board[kr-1][kc-2] == enemy_kn) return 1;
+	if (kr <= 6 && kc >= 2 && g->board[kr+1][kc-2] == enemy_kn) return 1;
+	if (kr >= 1 && kc <= 5 && g->board[kr-1][kc+2] == enemy_kn) return 1;
+	if (kr <= 6 && kc <= 5 && g->board[kr+1][kc+2] == enemy_kn) return 1;
 
 	return 0;
 }
@@ -439,7 +442,7 @@ int doMove(game g, move m) {
 
 	switch (m.move_type) {
 	case MOVE_REGULAR:
-		if (!doMoveRegular(g, m))
+		if (unlikely(!doMoveRegular(g, m)))
 			goto fail;
 
 		break;
@@ -482,16 +485,98 @@ int doMove(game g, move m) {
 	return 1;
 
 fail:
-	*g = *old_g;
+	memcpy(g, old_g, sizeof *g);
 	freeGame(old_g);
 
 	return 0;
 }
 
+/* Auxiliares de doMoveRegular */
+static void setPiece(game g, int r, int c, int piece);
+static int isValid(game g, move m);
+static void updKing(game g, move m);
+static void updCastling(game g, move m);
+static void epCapture(game g, move m);
+static void epCalc(game g, move m);
+static void calcPromotion(game g, move m);
+
+static void setPiece(game g, int r, int c, int piece) {
+	if (unlikely(g->board[r][c] != 0)) {
+		g->pieceScore -= scoreOf(g->board[r][c]);
+		g->totalScore -= absoluteScoreOf(g->board[r][c]);
+		g->pps_O      -= piece_square_val_O(g->board[r][c], r, c);
+		g->pps_E      -= piece_square_val_E(g->board[r][c], r, c);
+	}
+
+	g->board[r][c] = piece;
+
+	if (likely(piece)) {
+		g->pps_E      += piece_square_val_E(piece, r, c);
+		g->pps_O      += piece_square_val_O(piece, r, c);
+		g->totalScore += absoluteScoreOf(piece);
+		g->pieceScore += scoreOf(piece);
+	}
+}
 
 static int doMoveRegular(game g, move m) {
 	int piece = g->board[m.r][m.c];
 	int other = flipTurn(g->turn);
+
+	if (unlikely(!isValid(g, m)))
+		return 0;
+
+	/* Es válida */
+	memcpy(&g->lastmove, &m, sizeof m);
+	g->idlecount++;
+
+	updKing(g, m);
+	updCastling(g, m);
+
+	/* Los peones no son reversibles */
+	if (unlikely(isPawn(piece)))
+		g->idlecount = 0;
+
+	/* Actuar si es una captura al paso */
+	epCapture(g, m);
+
+	/* Recalcular en passant */
+	epCalc(g, m);
+
+	if (unlikely(g->board[m.R][m.C] != 0)) {
+		g->idlecount = 0;
+		g->lastmove.was_capture = 1;
+	} else {
+		g->lastmove.was_capture = 0;
+	}
+
+	setPiece(g, m.R, m.C, piece);
+	setPiece(g, m.r, m.c, 0);
+
+	calcPromotion(g, m);
+
+	/* Si es algún movimiento relevante al rey contrario
+	 * dropeamos la cache */
+	if (likely(g->inCheck[other] != -1))
+		if (likely(
+					!safe(g, m.r, m.c, g->kingx[other], g->kingy[other]) ||
+				!safe(g, m.R, m.C, g->kingx[other], g->kingy[other])
+				))
+			g->inCheck[other] = -1;
+
+	/* Necesitamos también (posiblemente) dropear la nuestra */
+	if (likely(g->inCheck[m.who] != -1))
+		if (likely(
+					isKing(piece) ||
+				!safe(g, m.r, m.c, g->kingx[m.who], g->kingy[m.who]) ||
+				!safe(g, m.R, m.C, g->kingx[m.who], g->kingy[m.who])
+				))
+			g->inCheck[m.who] = -1;
+
+	return 1;
+}
+
+static int isValid(game g, move m) {
+	int piece = g->board[m.r][m.c];
 
 	/* Siempre se mueve una pieza propia */
 	if (piece == 0 || colorOf(piece) != g->turn)
@@ -516,9 +601,11 @@ static int doMoveRegular(game g, move m) {
 		}
 	}
 
-	/* Es válida */
-	g->lastmove = m;
-	g->idlecount++;
+	return 1;
+}
+
+static void updKing(game g, move m) {
+	int piece = g->board[m.r][m.c];
 
 	if (isKing(piece)) {
 		g->kingx[colorOf(piece)] = m.R;
@@ -526,7 +613,9 @@ static int doMoveRegular(game g, move m) {
 		g->castle_king[m.who] = 0;
 		g->castle_queen[m.who] = 0;
 	}
+}
 
+static void updCastling(game g, move m) {
 	/* En vez de ver si se movió la torre
 	 * correspondiente, nos fijamos en la
 	 * casilla donde empieza la torre.
@@ -538,28 +627,23 @@ static int doMoveRegular(game g, move m) {
 		else if (m.c == 0)
 			g->castle_queen[m.who] = 0;
 	}
+}
 
-	/* Los peones no son reversibles */
-	if (isPawn(piece))
-		g->idlecount = 0;
+static void epCapture(game g, move m) {
+	int piece = g->board[m.r][m.c];
 
-	/* Es una captura al paso? */
 	if (isPawn(piece)
 			&& m.R == g->en_passant_x
 			&& m.C == g->en_passant_y) {
-		g->pieceScore -= scoreOf(g->board[m.r][m.C]);
-		g->totalScore -= absoluteScoreOf(g->board[m.r][m.C]);
-
-		g->pps_O -= piece_square_val_O(g->board[m.r][m.C], m.r, m.C);
-		g->pps_E -= piece_square_val_E(g->board[m.r][m.C], m.r, m.C);
-
-		g->board[m.r][m.C] = 0;
-
+		setPiece(g, m.r, m.C, 0);
 		g->inCheck[WHITE] = -1;
 		g->inCheck[BLACK] = -1;
 	}
+}
 
-	/* Recalcular en passant */
+static void epCalc(game g, move m) {
+	int piece = g->board[m.r][m.c];
+
 	if (isPawn(piece) && abs(m.r - m.R) == 2) {
 		assert (m.c == m.C);
 		g->en_passant_x = (m.r+m.R)/2;
@@ -568,61 +652,23 @@ static int doMoveRegular(game g, move m) {
 		g->en_passant_x = -1;
 		g->en_passant_y = -1;
 	}
+}
 
-	if (g->board[m.R][m.C] != 0) {
-		g->idlecount = 0;
-		g->lastmove.was_capture = 1;
-		g->pieceScore -= scoreOf(g->board[m.R][m.C]);
-		g->totalScore -= absoluteScoreOf(g->board[m.R][m.C]);
-		g->pps_O -= piece_square_val_O(g->board[m.R][m.C], m.R, m.C);
-		g->pps_E -= piece_square_val_E(g->board[m.R][m.C], m.R, m.C);
-	} else {
-		g->lastmove.was_capture = 0;
-	}
-
-	g->pps_O -= piece_square_val_O(piece, m.r, m.c);
-	g->pps_O += piece_square_val_O(piece, m.R, m.C);
-	g->pps_E -= piece_square_val_E(piece, m.r, m.c);
-	g->pps_E += piece_square_val_E(piece, m.R, m.C);
-
-	g->board[m.R][m.C] = g->board[m.r][m.c];
-	g->board[m.r][m.c] = 0;
+static void calcPromotion(game g, move m) {
+	/* se llama a calcPromotion LUEGO de hacer la movida,
+	 * por lo tanto usamos m.R y m.C */
+	int piece = g->board[m.R][m.C];
 
 	/* Es un peón que promueve? */
 	if (isPawn(piece)
 			&& m.R == (m.who == WHITE ? 0 : 7)) {
-		g->pieceScore -= scoreOf(g->board[m.R][m.C]);
-		g->totalScore -= absoluteScoreOf(g->board[m.R][m.C]);
-		g->pps_O      -= piece_square_val_O(g->board[m.R][m.C], m.R, m.C);
-		g->pps_E      -= piece_square_val_E(g->board[m.R][m.C], m.R, m.C);
+		int new_piece = m.who == WHITE ? m.promote : -m.promote;
 
-		g->board[m.R][m.C] = m.who == WHITE ? m.promote : -m.promote;
-
-		g->pps_E      += piece_square_val_E(g->board[m.R][m.C], m.R, m.C);
-		g->pps_O      += piece_square_val_O(g->board[m.R][m.C], m.R, m.C);
-		g->pieceScore += scoreOf(g->board[m.R][m.C]);
-		g->totalScore += absoluteScoreOf(g->board[m.R][m.C]);
-
+		setPiece(g, m.R, m.C, new_piece);
 		g->lastmove.was_promotion = 1;
 	} else {
 		g->lastmove.was_promotion = 0;
 	}
-
-	/* Si es algún movimiento relevante al rey contrario
-	 * dropeamos la cache */
-	if (g->inCheck[other] != -1)
-		if (!safe(g, m.r, m.c, g->kingx[other], g->kingy[other]) ||
-			!safe(g, m.R, m.C, g->kingx[other], g->kingy[other]))
-			g->inCheck[other] = -1;
-
-	/* Necesitamos también (posiblemente) dropear la nuestra */
-	if (g->inCheck[m.who] != -1)
-		if (isKing(piece) ||
-			!safe(g, m.r, m.c, g->kingx[m.who], g->kingy[m.who]) ||
-			!safe(g, m.R, m.C, g->kingx[m.who], g->kingy[m.who]))
-			g->inCheck[m.who] = -1;
-
-	return 1;
 }
 
 static int doMoveKCastle(game g, move m) {
@@ -669,21 +715,13 @@ static int doMoveKCastle(game g, move m) {
 	g->inCheck[0] = -1;
 	g->inCheck[1] = -1;
 
-	g->board[rank][4] = EMPTY;
-	g->board[rank][5] = rpiece;
-	g->board[rank][6] = kpiece;
-	g->board[rank][7] = EMPTY;
+	setPiece(g, rank, 4, 0);
+	setPiece(g, rank, 5, rpiece);
+	setPiece(g, rank, 6, kpiece);
+	setPiece(g, rank, 7, 0);
+
 	g->kingx[m.who] = rank;
 	g->kingy[m.who] = 6;
-
-	g->pps_E -= piece_square_val_E(kpiece, rank, 4);
-	g->pps_E += piece_square_val_E(kpiece, rank, 6);
-	g->pps_E -= piece_square_val_E(rpiece, rank, 7);
-	g->pps_E += piece_square_val_E(rpiece, rank, 5);
-	g->pps_O -= piece_square_val_O(kpiece, rank, 4);
-	g->pps_O += piece_square_val_O(kpiece, rank, 6);
-	g->pps_O -= piece_square_val_O(rpiece, rank, 7);
-	g->pps_O += piece_square_val_O(rpiece, rank, 5);
 
 	return 1;
 }
@@ -733,22 +771,14 @@ static int doMoveQCastle(game g, move m) {
 	g->inCheck[0] = -1;
 	g->inCheck[1] = -1;
 
-	g->board[rank][0] = EMPTY;
-	g->board[rank][1] = EMPTY;
-	g->board[rank][2] = kpiece;
-	g->board[rank][3] = rpiece;
-	g->board[rank][4] = EMPTY;
+	setPiece(g, rank, 0, 0);
+	setPiece(g, rank, 1, 0);
+	setPiece(g, rank, 2, kpiece);
+	setPiece(g, rank, 3, rpiece);
+	setPiece(g, rank, 4, 0);
+			
 	g->kingx[m.who] = rank;
 	g->kingy[m.who] = 2;
-
-	g->pps_E -= piece_square_val_E(kpiece, rank, 4);
-	g->pps_E += piece_square_val_E(kpiece, rank, 2);
-	g->pps_E -= piece_square_val_E(rpiece, rank, 0);
-	g->pps_E += piece_square_val_E(rpiece, rank, 3);
-	g->pps_O -= piece_square_val_O(kpiece, rank, 4);
-	g->pps_O += piece_square_val_O(kpiece, rank, 2);
-	g->pps_O -= piece_square_val_O(rpiece, rank, 0);
-	g->pps_O += piece_square_val_O(rpiece, rank, 3);
 
 	return 1;
 }
