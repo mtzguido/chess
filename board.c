@@ -18,6 +18,36 @@ static int doMoveRegular(game g, move m);
 static int doMoveKCastle(game g, move m);
 static int doMoveQCastle(game g, move m);
 
+#define MEMSZ 1024
+static struct game_struct boards[MEMSZ];
+static unsigned char freet[MEMSZ/8] = { [0 ... MEMSZ/8-1] = ~0 };
+
+static game galloc() {
+	int i;
+
+	for (i = 0; i < MEMSZ / 8 && freet[i] == 0; i++)
+		;
+
+	if (i == MEMSZ / 8)
+		abort();
+
+	int j=0;
+
+	while ((i & (1<<j)) == 0)
+		j++;
+
+	freet[i] &= ~(1<<j);
+
+	return &boards[8*i + j];
+}
+
+static void gfree(game g) {
+	int i = (g-&boards[0])/8;
+	int j = (g-&boards[0])&0x7;
+
+	freet[i] |= (1 << j);
+}
+
 inline static int sign(int a) {
 	if (a > 0) return 1;
 	if (a < 0) return -1;
