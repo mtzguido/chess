@@ -639,26 +639,22 @@ static int doMoveKCastle(game g, move m) {
 
 	{
 		game tg;
-		move tm;
 
 		tg = copyGame(g);
-		tm.who = m.who;
-		tm.move_type = MOVE_REGULAR;
-		tm.r = tm.R = rank;
-		tm.c = 4; tm.C = 5;
+		tg->board[rank][4] = 0;
+		tg->board[rank][5] = kpiece;
+		tg->kingy[m.who] = 5;
 
-		if (!doMove(tg, tm)) {
+		if (inCheck(tg, m.who)) {
 			freeGame(tg);
 			return 0;
 		}
 
-		tg->turn = flipTurn(tg->turn);
-		tm.who = m.who;
-		tm.move_type = MOVE_REGULAR;
-		tm.r = tm.R = rank;
-		tm.c = 5; tm.C = 6;
+		tg->board[rank][5] = 0;
+		tg->board[rank][6] = kpiece;
+		tg->kingy[m.who] = 6;
 
-		if (!doMove(tg, tm)) {
+		if (inCheck(tg, m.who)) {
 			freeGame(tg);
 			return 0;
 		}
@@ -707,26 +703,22 @@ static int doMoveQCastle(game g, move m) {
 
 	{
 		game tg;
-		move tm;
 
 		tg = copyGame(g);
-		tm.who = m.who;
-		tm.move_type = MOVE_REGULAR;
-		tm.r = tm.R = rank;
-		tm.c = 4; tm.C = 3;
+		tg->board[rank][4] = 0;
+		tg->board[rank][3] = kpiece;
+		tg->kingy[m.who] = 3;
 
-		if (!doMove(tg, tm)) {
+		if (inCheck(tg, m.who)) {
 			freeGame(tg);
 			return 0;
 		}
 
-		tg->turn = flipTurn(tg->turn);
-		tm.who = m.who;
-		tm.move_type = MOVE_REGULAR;
-		tm.r = tm.R = rank;
-		tm.c = 3; tm.C = 2;
+		tg->board[rank][3] = 0;
+		tg->board[rank][2] = kpiece;
+		tg->kingy[m.who] = 2;
 
-		if (!doMove(tg, tm)) {
+		if (inCheck(tg, m.who)) {
 			freeGame(tg);
 			return 0;
 		}
