@@ -4,6 +4,7 @@
 #include "board.h"
 
 extern int machineColor;
+extern int totalnopen;
 
 game machineMove(game start);
 

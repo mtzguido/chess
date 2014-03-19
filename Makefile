@@ -1,6 +1,6 @@
 .PHONY:clean all re run doc
 CFLAGS= -Wall -pg -g -funroll-loops -O99 -DNDEBUG $(CFLAGS_EXTRA)
-LFLAGS= -pg 
+LFLAGS= -pg
 SHELL=/bin/bash
 TARGET=chess
 CC=gcc
@@ -8,7 +8,7 @@ CC=gcc
 mods=main ai board move succs pgn
 objs=$(patsubst %,%.o,$(mods))
 
-all: $(TARGET) doc
+all: $(TARGET)
 
 $(TARGET): $(objs)
 	$(CC) $(LFLAGS) $(objs) -o $(TARGET)

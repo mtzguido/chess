@@ -1,4 +1,4 @@
-if false; then
+if true; then
 	CHESS_PROG=hoichess
 	CHESS_ARGS=-x
 else

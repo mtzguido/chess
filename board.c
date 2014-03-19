@@ -18,18 +18,26 @@ static int doMoveRegular(game g, move m);
 static int doMoveKCastle(game g, move m);
 static int doMoveQCastle(game g, move m);
 
+#define OWNMEM
+
+#ifdef OWNMEM
 #define MEMSZ 1024
 static struct game_struct boards[MEMSZ];
 static unsigned char freet[MEMSZ/8] = { [0 ... MEMSZ/8-1] = ~0 };
+int last = 0;
+#endif
 
 static game galloc() {
+#ifdef OWNMEM
 	int i;
 
-	for (i = 0; i < MEMSZ / 8 && freet[i] == 0; i++)
+	for (i = last; i != (last-1)%(MEMSZ/8) && freet[i] == 0; i = (i+1)%(MEMSZ/8))
 		;
 
-	if (i == MEMSZ / 8)
+	if (i == (last-1)%(MEMSZ/8))
 		abort();
+
+	last = i;
 
 	int j=0;
 
@@ -39,13 +47,20 @@ static game galloc() {
 	freet[i] &= ~(1<<j);
 
 	return &boards[8*i + j];
+#else
+	return malloc(sizeof (struct game_struct));
+#endif
 }
 
 static void gfree(game g) {
+#ifdef OWNMEM
 	int i = (g-&boards[0])/8;
 	int j = (g-&boards[0])&0x7;
 
 	freet[i] |= (1 << j);
+#else
+	free(g);
+#endif
 }
 
 inline static int sign(int a) {
@@ -531,11 +546,12 @@ static void epCalc(game g, move m);
 static void calcPromotion(game g, move m);
 
 static void setPiece(game g, int r, int c, int piece) {
-	if (unlikely(g->board[r][c] != 0)) {
-		g->pieceScore -= scoreOf(g->board[r][c]);
-		g->totalScore -= absoluteScoreOf(g->board[r][c]);
-		g->pps_O      -= piece_square_val_O(g->board[r][c], r, c);
-		g->pps_E      -= piece_square_val_E(g->board[r][c], r, c);
+	int old_piece = g->board[r][c];
+	if (likely(old_piece != 0)) {
+		g->pieceScore -= scoreOf(old_piece);
+		g->totalScore -= absoluteScoreOf(old_piece);
+		g->pps_O      -= piece_square_val_O(old_piece, r, c);
+		g->pps_E      -= piece_square_val_E(old_piece, r, c);
 	}
 
 	g->board[r][c] = piece;
@@ -572,7 +588,7 @@ static int doMoveRegular(game g, move m) {
 	/* Recalcular en passant */
 	epCalc(g, m);
 
-	if (unlikely(g->board[m.R][m.C] != 0)) {
+	if (likely(g->board[m.R][m.C] != 0)) {
 		g->idlecount = 0;
 		g->lastmove.was_capture = 1;
 	} else {

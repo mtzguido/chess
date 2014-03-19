@@ -3,6 +3,7 @@
 
 #include <stdlib.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 #define MOVE_REGULAR 0
 #define MOVE_KINGSIDE_CASTLE 1
@@ -21,7 +22,7 @@ typedef struct move {
 struct game_struct {
 	/* Tablero */
 	/* board [1][2] == C2 */
-	int8_t board[8][8];
+	char board[8][8];
 	unsigned char turn;
 
 	/* Última jugada */
@@ -29,18 +30,18 @@ struct game_struct {
 
 	/* Estado no visible */
 	uint8_t idlecount;
-	uint8_t castle_king[2];
-	uint8_t castle_queen[2];
-	uint8_t en_passant_x;
-	uint8_t en_passant_y;
+	bool castle_king[2];
+	bool castle_queen[2];
+	char en_passant_x;
+	char en_passant_y;
 
 	/* Optimizaciones */
 	/*   Posicion de los reyes */
-	uint8_t kingx[2];
-	uint8_t kingy[2];
+	char kingx[2];
+	char kingy[2];
 
 	/*   Caches de jaque */
-	int8_t inCheck[2];
+	char inCheck[2];
 	/*     inCheck[who] = -1 -> no conocido
 	 *     inCheck[who] = 0 -> libre
 	 *     inCheck[who] = 1 -> en jaque */
@@ -64,7 +65,7 @@ typedef struct game_struct *game;
 /* Players */
 #define BLACK	0
 #define WHITE	1
-#define flipTurn(t) ((t)==BLACK?WHITE:BLACK)
+#define flipTurn(t) (1-(t))
 
 /* Results */
 #define DRAW 1
