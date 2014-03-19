@@ -5,6 +5,23 @@ SHELL=/bin/bash
 TARGET=chess
 CC=gcc
 
+CONFIG_KILLER=y
+CONFIG_COUNTERMOVE=y
+CONFIG_EXTEND=y
+CONFIG_TRANSPOSITION=n
+
+ifeq (${CONFIG_KILLER},y)
+	CFLAGS += -DCFG_KILLER
+endif
+
+ifeq (${CONFIG_COUNTERMOVE},y)
+	CFLAGS += -DCFG_COUNTERMOVE
+endif
+
+ifeq (${CONFIG_EXTEND},y)
+	CFLAGS += -DCFG_DEPTH_EXTENSION
+endif
+
 mods=main ai board move succs pgn
 objs=$(patsubst %,%.o,$(mods))
 
@@ -13,7 +30,7 @@ all: $(TARGET)
 $(TARGET): $(objs)
 	$(CC) $(LFLAGS) $(objs) -o $(TARGET)
 
-%.o: %.c $(wildcard *.h)
+%.o: %.c $(wildcard *.h) Makefile
 	$(CC) $(CFLAGS) -c $<	-o $@
 
 clean:

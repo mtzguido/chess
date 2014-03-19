@@ -9,8 +9,18 @@
 #include <stdbool.h>
 #include <time.h>
 
-#define SEARCH_DEPTH	6
-#define KTABLE_SIZE	(SEARCH_DEPTH + 7)
+#define SEARCH_DEPTH	7
+
+#define EXTRA_CHECK	1
+#define EXTRA_CAPTURE	5
+#define EXTRA_PROMOTION	8
+
+#ifdef CFG_DEPTH_EXTENSION
+#define KTABLE_SIZE	(SEARCH_DEPTH + EXTRA_CHECK + EXTRA_CAPTURE + EXTRA_PROMOTION)
+#else
+#define KTABLE_SIZE	(SEARCH_DEPTH)
+#endif
+
 #define NKILLER	2
 
 typedef int score;
@@ -32,23 +42,31 @@ static int nopen;
 int totalnopen = 0;
 int totalms = 0;
 
+static int equalMove(move a, move b);
+
+#ifdef CFG_KILLER
 static move killerTable[KTABLE_SIZE][NKILLER];
-
-static move counterTable[2][8][8][8][8];
-
-static void counterNotify(game g, game next);
 static void killerNotify(game g, game next, int depth);
+#endif
+
+#ifdef CFG_COUNTERMOVE
+static move counterTable[2][8][8][8][8];
+static void counterNotify(game g, game next);
+#endif
 
 game machineMove(game start) {
 	game ret = NULL;
 	score t;
 	clock_t t1,t2;
-	int i, j;
 
+#ifdef CFG_KILLER
+	int i, j;
 	for (i=0; i<KTABLE_SIZE; i++)
 		for (j=0; j<NKILLER; j++)
 			killerTable[i][j].move_type = -1;
+#endif
 
+#ifdef CFG_COUNTERMOVE
 	/* ugh... */
 	int a, b, c, d, e;
 	for (a=0; a<2; a++)
@@ -57,6 +75,7 @@ game machineMove(game start) {
 	for (d=0; d<8; d++)
 	for (e=0; e<8; e++)
 		counterTable[a][b][c][d][e].move_type = -1;
+#endif
 
 	nopen = 0;
 	t1 = clock();
@@ -69,8 +88,6 @@ game machineMove(game start) {
 	totalms += 1000*(t2-t1)/CLOCKS_PER_SEC;
 
 	fprintf(stderr, "expected score: %i\n", t);
-//	printBoard(ret);
-	fflush(NULL);
 	return ret;
 }
 
@@ -78,13 +95,19 @@ static score machineMoveImpl(
 		game g, int maxDepth, int curDepth,
 		game *nb, score alpha, score beta) {
 	
-	int extraDepth = 
+#ifdef CFG_DEPTH_EXTENSION
+	const int extraDepth = 
 		  1 * inCheck(g, WHITE)
 		+ 1 * inCheck(g, BLACK)
-		+ 2 * g->lastmove.was_capture
-		+ 3 * g->lastmove.was_promotion;
+		+ 5 * g->lastmove.was_capture
+		+ 7 * g->lastmove.was_promotion;
+#else
+	const int extraDepth = 0;
+#endif
 
 	nopen++;
+
+	fprintf(stderr, "at prof %i: ", curDepth); pr_board(g);
 
 	/* Si el tablero es terminal */
 	int rc;
@@ -143,8 +166,12 @@ static score machineMoveImpl(
 
 			/* Alpha cut-off */
 			if (beta <= alpha) {
+#ifdef CFG_KILLER
 				killerNotify(g, succs[i], curDepth);
+#endif
+#ifdef CFG_COUNTERMOVE
 				counterNotify(g, succs[i]);
+#endif
 
 				break;
 			}
@@ -170,8 +197,12 @@ static score machineMoveImpl(
 
 			/* Beta cut-off */
 			if (beta <= alpha) {
+#ifdef CFG_KILLER
 				killerNotify(g, succs[i], curDepth);
+#endif
+#ifdef CFG_COUNTERMOVE
 				counterNotify(g, succs[i]);
+#endif
 
 				break;
 			}
@@ -214,15 +245,7 @@ static int succCmp(const void *bp, const void *ap) {
 	return 0;
 }
 
-static void killerMoves(game *succs, int n, int depth);
-static void counterMoves(game *succs, int n, game g);
-
-static void sortSuccs(game g, game *succs, int n, int depth) {
-	qsort(succs, n, sizeof (game), succCmp);
-
-	counterMoves(succs, n, g);
-	killerMoves(succs, n, depth);
-}
+#ifdef CFG_KILLER
 
 static void killerMoves(game *succs, int n, int depth) {
 	int kindex = 0;
@@ -252,6 +275,23 @@ static void killerMoves(game *succs, int n, int depth) {
 	}
 }
 
+static void killerNotify(game g, game next, int depth) {
+	int i;
+
+	for (i=0; i<NKILLER; i++)
+		if (equalMove(killerTable[depth][i], next->lastmove))
+			return;
+
+	for (i=NKILLER-1; i >= 1; i--)
+		killerTable[depth][i] = killerTable[depth][i-1];
+
+	killerTable[depth][0] = next->lastmove;
+}
+
+#endif
+
+#ifdef CFG_COUNTERMOVE
+
 static void counterMoves(game *succs, int n, game g) {
 	int i;
 
@@ -277,23 +317,37 @@ static void counterMoves(game *succs, int n, game g) {
 	}
 }
 
-static void killerNotify(game g, game next, int depth) {
-	int i;
-
-	for (i=0; i<NKILLER; i++)
-		if (equalMove(killerTable[depth][i], next->lastmove))
-			return;
-
-	for (i=NKILLER-1; i >= 1; i--)
-		killerTable[depth][i] = killerTable[depth][i-1];
-
-	killerTable[depth][0] = next->lastmove;
-}
-
 static void counterNotify(game g, game next) {
 	if (!next->lastmove.was_capture) {
 		move m = g->lastmove;
 		counterTable[g->turn][m.r][m.c][m.R][m.C] = next->lastmove;
 	}
+}
+
+#endif
+
+static void sortSuccs(game g, game *succs, int n, int depth) {
+	qsort(succs, n, sizeof (game), succCmp);
+
+#ifdef CFG_COUNTERMOVE
+	counterMoves(succs, n, g);
+#endif
+#ifdef CFG_KILLER
+	killerMoves(succs, n, depth);
+#endif
+}
+
+static int equalMove(move a, move b) {
+	if (a.move_type != b.move_type) return 0;
+	if (a.who != b.who) return 0;
+
+	if (a.move_type != MOVE_REGULAR)
+		return 1;
+
+	return a.r == b.r
+		&& a.c == b.c
+		&& a.R == b.R
+		&& a.C == b.C
+		&& a.promote == b.promote;
 }
 
