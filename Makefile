@@ -1,5 +1,5 @@
 .PHONY:clean all re run doc
-CFLAGS= -Wall -pg -g -funroll-loops -O99 -DNDEBUG $(CFLAGS_EXTRA)
+CFLAGS= -Wall -pg -g -funroll-loops $(CFLAGS_EXTRA)
 LFLAGS= -pg
 SHELL=/bin/bash
 TARGET=chess
@@ -20,6 +20,10 @@ endif
 
 ifeq (${CONFIG_EXTEND},y)
 	CFLAGS += -DCFG_DEPTH_EXTENSION
+endif
+
+ifeq (${CONFIG_TRANSPOSITION},y)
+	CFLAGS += -DCFG_TRANSPOSITION
 endif
 
 mods=main ai board move succs pgn

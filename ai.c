@@ -9,7 +9,7 @@
 #include <stdbool.h>
 #include <time.h>
 
-#define SEARCH_DEPTH	7
+#define SEARCH_DEPTH	4
 
 #define EXTRA_CHECK	1
 #define EXTRA_CAPTURE	5
@@ -23,7 +23,6 @@
 
 #define NKILLER	2
 
-int depths[30];
 
 typedef int score;
 
@@ -40,11 +39,13 @@ static const score maxScore =  1e7;
 
 static void sortSuccs(game g, game *succs, int n, int depth);
 
+int depths[30];
 static int nopen;
 int totalnopen = 0;
 int totalms = 0;
 
 static int equalMove(move a, move b);
+static int equalGame(game a, game b);
 
 #ifdef CFG_KILLER
 static move killerTable[KTABLE_SIZE][NKILLER];
@@ -54,6 +55,20 @@ static void killerNotify(game g, game next, int depth);
 #ifdef CFG_COUNTERMOVE
 static move counterTable[2][8][8][8][8];
 static void counterNotify(game g, game next);
+#endif
+
+#ifdef CFG_TRANSPOSITION
+#define TTABLE_SIZE 131101
+
+struct tt_entry {
+	score v;
+	game k;
+	int d;
+};
+
+struct tt_entry ttable[TTABLE_SIZE] = { [0 ... TTABLE_SIZE-1] = { .k = NULL } };
+
+static int gameHash(game g);
 #endif
 
 game machineMove(game start) {
@@ -83,6 +98,18 @@ game machineMove(game start) {
 	}
 #endif
 
+#ifdef CFG_TRANSPOSITION
+	{
+	int i;
+	
+	for (i=0; i<TTABLE_SIZE; i++)
+		if (ttable[i].k != NULL)
+			freeGame(ttable[i].k);
+
+		ttable[i].k = NULL;
+	}
+#endif
+
 	int i;
 
 	for (i = 0; i < 30; i++)
@@ -95,17 +122,35 @@ game machineMove(game start) {
 	totalnopen += nopen;
 	totalms += 1000*(t2-t1)/CLOCKS_PER_SEC;
 
+	fprintf(stderr, "%i nodes in %.3f seconds\n", nopen, 1.0*(t2-t1)/CLOCKS_PER_SEC);
 	fprintf(stderr, "depth:nnodes - ");
 	for (i = 0; i < 30; i++) 
 		fprintf(stderr, "%i:%i, ", i, depths[i]);
 
 	fprintf(stderr, "expected score: %i\n", t);
+	fflush(NULL);
 	return ret;
 }
 
 static score machineMoveImpl(
 		game g, int maxDepth, int curDepth,
 		game *nb, score alpha, score beta) {
+
+	score ret;
+
+#ifdef CFG_TRANSPOSITION
+	int gh = gameHash(g);
+
+	if (ttable[gh].k != NULL
+		&& ttable[gh].d == curDepth
+		//&& ttable[gh].d <= curDepth
+		&& equalGame(g, ttable[gh].k)) {
+		//fprintf(stderr, "trans: skipping node at %i\n", curDepth);
+
+		return ttable[gh].v;
+	}
+
+#endif
 	
 #ifdef CFG_DEPTH_EXTENSION
 	const int extraDepth = 
@@ -120,17 +165,23 @@ static score machineMoveImpl(
 	nopen++;
 	depths[curDepth]++;
 
+	game *succs = NULL;
+	score t;
+	int i, n;
+
 //	fprintf(stderr, "at prof %i: ", curDepth); pr_board(g);
 
 	/* Si el tablero es terminal */
 	int rc;
 	if ((rc=isFinished(g)) != -1) {
 		if (rc == WIN(machineColor))
-			return 1000000 - curDepth;
+			ret = 1000000 - curDepth;
 		else if (rc == DRAW)
-			return 0;
+			ret = 0;
 		else
-			return -1000000 + curDepth;
+			ret = -1000000 + curDepth;
+
+		goto out;
 	}
 
 	/* Si llegamos a la profundidad deseada */
@@ -138,22 +189,21 @@ static score machineMoveImpl(
 		if (nb != NULL)
 			*nb = copyGame(g);
 
-		return (machineColor == WHITE ?
-		            heur(g)
-			    : - heur(g));
+		ret = (machineColor == WHITE ?
+		           heur(g)
+			   : - heur(g));
+		goto out;
 	}
-
-	game *succs;
-	score t;
-	int i, n;
 
 	/* Generamos los sucesores del tablero */
 	n = genSuccs(g, &succs);
+	assert(succs != NULL);
 
 	/* No debería ocurrir nunca */
 	if (n == 0) {
 		printBoard(g);
 		fprintf(stderr, "--NO MOVES!!! ------\n");
+		fflush(NULL);
 		abort();
 	}
 
@@ -190,8 +240,8 @@ static score machineMoveImpl(
 			}
 		}
 
-		freeSuccs(succs, n);
-		return alpha;
+		ret = alpha;
+		goto out;
 	} else {
 		/* Minimizar */
 		for (i=0; i<n; i++) {
@@ -221,9 +271,28 @@ static score machineMoveImpl(
 			}
 		}
 
-		freeSuccs(succs, n);
-		return beta;
+		ret = beta;
+		goto out;
 	}
+
+out:
+
+#ifdef CFG_TRANSPOSITION
+	if (ttable[gh].k != NULL) {
+		//fprintf(stderr, "trans: collision at %i\n", curDepth);
+		freeGame(ttable[gh].k);
+	}
+
+	ttable[gh].k = copyGame(g);
+	ttable[gh].v = ret;
+	ttable[gh].d = curDepth;
+
+#endif
+
+	if (succs != NULL)
+		freeSuccs(succs, n);
+
+	return ret;
 }
 
 static int pieceScore(game g) {
@@ -361,5 +430,57 @@ static int equalMove(move a, move b) {
 		&& a.R == b.R
 		&& a.C == b.C
 		&& a.promote == b.promote;
+}
+
+#ifdef CFG_TRANSPOSITION
+static int gameHash(game g) {
+	uint64_t x = 5381;
+	int i, j;
+
+	for (i=0; i<8; i++)
+		for (j=0; j<8; j+=2) {
+			unsigned char c = ((g->board[i][j] & 0xF) ^ ((g->board[i][j+1] << 4) & 0xF0));
+			x = c + (x*33);
+		}
+
+			//x = ((6+g->board[i][j]) + (x*9)) % TTABLE_SIZE;
+
+	x = x % TTABLE_SIZE;
+
+	//fprintf(stderr, "gameHash returns %u\n", x);
+	return x;
+}
+#endif
+
+static int equalGame(game a, game b) {
+	if (a == NULL && b == NULL)
+		return 1;
+
+	if (a == NULL || b == NULL)
+		return 0;
+
+	if (a->turn != b->turn
+	 || a->idlecount != b->idlecount
+	 || a->en_passant_x != b->en_passant_x
+	 || a->en_passant_y != b->en_passant_y
+	 || a->kingx[0] != b->kingx[0]
+	 || a->kingx[1] != b->kingx[1]
+	 || a->pieceScore != b->pieceScore
+	 || a->totalScore != b->totalScore
+	 || a->pps_O != b->pps_O
+	 || a->pps_E != b->pps_E
+	 || a->castle_king[0] != b->castle_king[0]
+	 || a->castle_king[1] != b->castle_king[1]
+	)
+		return 0;
+
+	int i, j;
+
+	for (i=0; i<8; i++)
+		for (j=0; j<8; j++)
+			if (a->board[i][j] != b->board[i][j])
+				return 0;
+
+	return 1;
 }
 

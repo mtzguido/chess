@@ -29,7 +29,7 @@ void pr_board(game g) {
 #define OWNMEM
 
 #ifdef OWNMEM
-#define MEMSZ 1024
+#define MEMSZ (1<<20)
 static struct game_struct boards[MEMSZ];
 static unsigned char freet[MEMSZ/8] = { [0 ... MEMSZ/8-1] = ~0 };
 int last = 0;
@@ -42,8 +42,11 @@ static game galloc() {
 	for (i = last; i != (last-1)%(MEMSZ/8) && freet[i] == 0; i = (i+1)%(MEMSZ/8))
 		;
 
-	if (i == (last-1)%(MEMSZ/8))
+	if (i == (last-1)%(MEMSZ/8)) {
+		fprintf(stderr, "NO MORE MEMORY!!!\n");
+		fflush(NULL);
 		abort();
+	}
 
 	last = i;
 
@@ -636,6 +639,7 @@ static int isValid(game g, move m) {
 			&& m.R == (m.who == WHITE ? 0 : 7)) {
 		if (m.promote == 0) {
 			fprintf(stderr, "Esa movida requiere una promoción!!!\n");
+			fflush(NULL);
 			abort();
 			return 0;
 		}

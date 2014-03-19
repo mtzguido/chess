@@ -57,7 +57,7 @@ int main_trucho (int argc, char **argv) {
 
 		for (i = 0; i < n; i++) {
 			printBoard(arr[i]);
-			printf("move was: (%i,%i) -> (%i,%i)\n",
+			fprintf(stderr, "move was: (%i,%i) -> (%i,%i)\n",
 					arr[i]->lastmove.r,
 					arr[i]->lastmove.c,
 					arr[i]->lastmove.R,
