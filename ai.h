@@ -5,6 +5,7 @@
 
 extern int machineColor;
 extern int totalnopen;
+extern int totalms;
 
 game machineMove(game start);
 

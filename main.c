@@ -70,6 +70,13 @@ int main_trucho (int argc, char **argv) {
 	}
 #endif
 
+#if 0
+	{
+		machineMove(b);
+		return 0;
+	}
+#endif
+
 
 	move m;
 	char mbuf[500];
@@ -247,6 +254,7 @@ int main_trucho (int argc, char **argv) {
 int main (int argc, char **argv) {
 	int rc = main_trucho(argc, argv);
 	fprintf(stderr, "Total nodes: %i\n", totalnopen);
+	fprintf(stderr, "Total time: %ims\n", totalms);
 
 	return rc;
 }

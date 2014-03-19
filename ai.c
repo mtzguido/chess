@@ -9,7 +9,7 @@
 #include <stdbool.h>
 #include <time.h>
 
-#define SEARCH_DEPTH	4
+#define SEARCH_DEPTH	6
 #define KTABLE_SIZE	(SEARCH_DEPTH + 7)
 #define NKILLER	2
 
@@ -30,6 +30,7 @@ static void sortSuccs(game g, game *succs, int n, int depth);
 
 static int nopen;
 int totalnopen = 0;
+int totalms = 0;
 
 static move killerTable[KTABLE_SIZE][NKILLER];
 
@@ -63,7 +64,10 @@ game machineMove(game start) {
 	t2 = clock();
 
 	fprintf(stderr, "%i \t nodes in \t %.3fs\n", nopen, (t2-t1)*1.0/CLOCKS_PER_SEC);
+
 	totalnopen += nopen;
+	totalms += 1000*(t2-t1)/CLOCKS_PER_SEC;
+
 	fprintf(stderr, "expected score: %i\n", t);
 //	printBoard(ret);
 	fflush(NULL);
@@ -213,8 +217,7 @@ static int succCmp(const void *bp, const void *ap) {
 static void killerMoves(game *succs, int n, int depth);
 static void counterMoves(game *succs, int n, game g);
 
-static void sortSuccs(game g, game *succs, int n, int depth)
-{
+static void sortSuccs(game g, game *succs, int n, int depth) {
 	qsort(succs, n, sizeof (game), succCmp);
 
 	counterMoves(succs, n, g);
