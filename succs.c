@@ -313,6 +313,13 @@ int hasNextGame(game g) {
 
 	int ret = 1;
 
+	/* Chequeamos el rey primero,
+	 * es probable que tenga una movida
+	 * posible y ya tenemos su posicion */
+	kingSuccs(g->kingx[g->turn], g->kingy[g->turn], g, &arr, &alen);
+	if (alen > 0)
+		goto out;
+
 	for (i=0; i<8; i++) {
 		for (j=0; j<8; j++) {
 			char piece = g->board[i][j];
@@ -330,9 +337,9 @@ int hasNextGame(game g) {
 			} else if (isQueen(piece)) {
 				rookSuccs(i, j, g, &arr, &alen);
 				bishopSuccs(i, j, g, &arr, &alen);
-			} else if (isKing(piece)) {
-				kingSuccs(i, j, g, &arr, &alen);
 			}
+
+			/* El rey ya se chequeó */
 
 			if (alen > 0) goto out;
 
