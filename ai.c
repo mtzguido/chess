@@ -23,6 +23,8 @@
 
 #define NKILLER	2
 
+int depths[30];
+
 typedef int score;
 
 int machineColor = -1;
@@ -60,13 +62,16 @@ game machineMove(game start) {
 	clock_t t1,t2;
 
 #ifdef CFG_KILLER
+	{
 	int i, j;
 	for (i=0; i<KTABLE_SIZE; i++)
 		for (j=0; j<NKILLER; j++)
 			killerTable[i][j].move_type = -1;
+	}
 #endif
 
 #ifdef CFG_COUNTERMOVE
+	{
 	/* ugh... */
 	int a, b, c, d, e;
 	for (a=0; a<2; a++)
@@ -75,8 +80,13 @@ game machineMove(game start) {
 	for (d=0; d<8; d++)
 	for (e=0; e<8; e++)
 		counterTable[a][b][c][d][e].move_type = -1;
+	}
 #endif
 
+	int i;
+
+	for (i = 0; i < 30; i++)
+		depths[i] = 0;
 	nopen = 0;
 	t1 = clock();
 	t = machineMoveImpl(start, SEARCH_DEPTH, 0, &ret, minScore, maxScore);
@@ -84,6 +94,10 @@ game machineMove(game start) {
 
 	totalnopen += nopen;
 	totalms += 1000*(t2-t1)/CLOCKS_PER_SEC;
+
+	fprintf(stderr, "depth:nnodes - ");
+	for (i = 0; i < 30; i++) 
+		fprintf(stderr, "%i:%i, ", i, depths[i]);
 
 	fprintf(stderr, "expected score: %i\n", t);
 	return ret;
@@ -104,6 +118,7 @@ static score machineMoveImpl(
 #endif
 
 	nopen++;
+	depths[curDepth]++;
 
 //	fprintf(stderr, "at prof %i: ", curDepth); pr_board(g);
 
