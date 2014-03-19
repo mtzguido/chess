@@ -18,6 +18,14 @@ static int doMoveRegular(game g, move m);
 static int doMoveKCastle(game g, move m);
 static int doMoveQCastle(game g, move m);
 
+void pr_board(game g) {
+	int i;
+	fprintf(stderr, "BOARD: [");
+	for(i=0; i<64; i++)
+		fprintf(stderr, "%i,", g->board[i/8][i%8]);
+	fprintf(stderr, "]\n");
+}
+
 #define OWNMEM
 
 #ifdef OWNMEM
