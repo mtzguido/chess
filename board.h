@@ -65,7 +65,7 @@ typedef struct game_struct *game;
 /* Players */
 #define BLACK	0
 #define WHITE	1
-#define flipTurn(t) (1-(t))
+#define flipTurn(t) (1^(t))
 
 /* Results */
 #define DRAW 1
@@ -85,7 +85,7 @@ typedef struct game_struct *game;
 #define	BBISHOP	(-4)
 #define BQUEEN	(-5)
 #define	BKING	(-6)
-#define isEmpty(c)	((c)==0)
+#define isEmpty(c)	((c) == 0)
 #define isPawn(c)	(abs(c) == 1)
 #define isRook(c)	(abs(c) == 2)
 #define isKnight(c)	(abs(c) == 3)
