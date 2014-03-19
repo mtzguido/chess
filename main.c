@@ -36,7 +36,7 @@ static char pieceOf(char c) {
 	}   
 }
 
-int main (int argc, char **argv) {
+int main_trucho (int argc, char **argv) {
 	game b = startingGame();
 
 	if (argc > 1 && argv[1][0] == 'w')
@@ -111,8 +111,7 @@ int main (int argc, char **argv) {
 			freeGame(b);
 			b = nb;
 
-			m = nb->lastmove;
-
+			m = b->lastmove;
 			if (m.move_type == MOVE_KINGSIDE_CASTLE) {
 				if (m.who == BLACK) {
 					printf("e8g8\n");
@@ -245,3 +244,10 @@ int main (int argc, char **argv) {
 	return 0;
 }
 
+int main (int argc, char **argv) {
+	int rc = main_trucho(argc, argv);
+	fprintf(stderr, "Total nodes: %i\n", totalnopen);
+
+	return rc;
+}
+	
