@@ -111,7 +111,5 @@ void printBoard(game b);
 
 char charOf(int piece);
 
-int equalMove(move a, move b);
-
 #endif
 

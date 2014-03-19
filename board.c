@@ -438,20 +438,6 @@ void freeSuccs(game *arr, int len) {
 	free(arr);
 }
 
-int equalMove(move a, move b) {
-	if (a.who != b.who) return 0;
-	if (a.move_type != b.move_type) return 0;
-
-	if (a.move_type != MOVE_REGULAR)
-		return 1;
-
-	return a.r == b.r
-		&& a.c == b.c
-		&& a.R == b.R
-		&& a.C == b.C
-		&& a.promote == b.promote;
-}
-
 /*
  * Devuelve verdadero si un cambio en (r,c)
  * nunca puede causar una amenaza a (kr, kc),

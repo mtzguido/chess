@@ -13,7 +13,7 @@
 
 #define EXTRA_CHECK	1
 #define EXTRA_CAPTURE	5
-#define EXTRA_PROMOTION	8
+#define EXTRA_PROMOTION	99
 
 #ifdef CFG_DEPTH_EXTENSION
 #define KTABLE_SIZE	(SEARCH_DEPTH + EXTRA_CHECK + EXTRA_CAPTURE + EXTRA_PROMOTION)
@@ -82,8 +82,6 @@ game machineMove(game start) {
 	t = machineMoveImpl(start, SEARCH_DEPTH, 0, &ret, minScore, maxScore);
 	t2 = clock();
 
-	fprintf(stderr, "%i \t nodes in \t %.3fs\n", nopen, (t2-t1)*1.0/CLOCKS_PER_SEC);
-
 	totalnopen += nopen;
 	totalms += 1000*(t2-t1)/CLOCKS_PER_SEC;
 
@@ -97,17 +95,17 @@ static score machineMoveImpl(
 	
 #ifdef CFG_DEPTH_EXTENSION
 	const int extraDepth = 
-		  1 * inCheck(g, WHITE)
-		+ 1 * inCheck(g, BLACK)
-		+ 5 * g->lastmove.was_capture
-		+ 7 * g->lastmove.was_promotion;
+		  EXTRA_CHECK * inCheck(g, WHITE)
+		+ EXTRA_CHECK * inCheck(g, BLACK)
+		+ EXTRA_CAPTURE * g->lastmove.was_capture
+		+ EXTRA_PROMOTION * g->lastmove.was_promotion;
 #else
 	const int extraDepth = 0;
 #endif
 
 	nopen++;
 
-	fprintf(stderr, "at prof %i: ", curDepth); pr_board(g);
+//	fprintf(stderr, "at prof %i: ", curDepth); pr_board(g);
 
 	/* Si el tablero es terminal */
 	int rc;
@@ -216,7 +214,6 @@ static score machineMoveImpl(
 static int pieceScore(game g) {
 	int x = g->totalScore - 40000;
 	int pps = (x*(g->pps_O - g->pps_E))/7800 + g->pps_E;
-
 
 	return g->pieceScore + pps;
 }
