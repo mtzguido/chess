@@ -115,6 +115,7 @@ int main_trucho (int argc, char **argv) {
 			game nb;
 
 			nb = machineMove(b);
+			assert(nb != NULL);
 			freeGame(b);
 			b = nb;
 
