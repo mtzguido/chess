@@ -65,10 +65,13 @@ game machineMove(game start) {
 
 	for (i = 0; i < 30; i++)
 		depths[i] = 0;
+
 	nopen = 0;
 	t1 = clock();
 	t = machineMoveImpl(start, SEARCH_DEPTH, 0, &ret, minScore, maxScore);
 	t2 = clock();
+
+	assert(ret != NULL);
 
 	totalnopen += nopen;
 	totalms += 1000*(t2-t1)/CLOCKS_PER_SEC;
@@ -88,6 +91,8 @@ static score machineMoveImpl(
 		game *nb, score alpha, score beta) {
 
 	score ret;
+	score lalpha = alpha;
+	score lbeta = beta;
 
 	if (addon_notify_entry(g, curDepth, &ret))
 		return ret;
@@ -214,7 +219,6 @@ out:
 	if (succs != NULL)
 		freeSuccs(succs, n);
 
-	// fprintf(stderr, "mmimpl returns %i\n", ret);
 	return ret;
 }
 
