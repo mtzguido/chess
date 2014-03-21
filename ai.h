@@ -9,4 +9,8 @@ extern int totalms;
 
 game machineMove(game start);
 
+typedef int score;
+
+score heur(game g);
+
 #endif

@@ -32,7 +32,7 @@ static score machineMoveImpl(
 		game start, int maxDepth, int curDepth,
 		game *nb, score alpha, score beta);
 
-static score heur(game g);
+// static score heur(game g);
 
 static const score minScore = -1e7;
 static const score maxScore =  1e7;
@@ -175,11 +175,11 @@ static score machineMoveImpl(
 	int rc;
 	if ((rc=isFinished(g)) != -1) {
 		if (rc == WIN(machineColor))
-			ret = 1000000 - curDepth;
+			ret = 100000 - curDepth;
 		else if (rc == DRAW)
 			ret = 0;
 		else
-			ret = -1000000 + curDepth;
+			ret = -100000 + curDepth;
 
 		goto out;
 	}
@@ -189,9 +189,11 @@ static score machineMoveImpl(
 		if (nb != NULL)
 			*nb = copyGame(g);
 
-		ret = (machineColor == WHITE ?
-		           heur(g)
-			   : - heur(g));
+		if (machineColor == WHITE)
+			ret = heur(g - curDepth);
+		else
+			ret = - heur(g) + curDepth;
+				
 		goto out;
 	}
 
@@ -227,17 +229,20 @@ static score machineMoveImpl(
 				}
 			}
 
+#ifdef CFG_ALPHABETA
 			/* Alpha cut-off */
 			if (beta <= alpha) {
 #ifdef CFG_KILLER
 				killerNotify(g, succs[i], curDepth);
-#endif
+#endif /* CFG_KILLER */
+
 #ifdef CFG_COUNTERMOVE
 				counterNotify(g, succs[i]);
-#endif
+#endif /* CFG_COUNTERMOVE */
 
 				break;
 			}
+#endif /* CFG_ALPHABETA */
 		}
 
 		ret = alpha;
@@ -258,17 +263,20 @@ static score machineMoveImpl(
 				}
 			}
 
+#ifdef CFG_ALPHABETA
 			/* Beta cut-off */
 			if (beta <= alpha) {
 #ifdef CFG_KILLER
 				killerNotify(g, succs[i], curDepth);
-#endif
+#endif /* CFG_KILLER */
+
 #ifdef CFG_COUNTERMOVE
 				counterNotify(g, succs[i]);
-#endif
+#endif /* CFG_COUNTERMOVE */
 
 				break;
 			}
+#endif /* CFG_ALPHABETA */
 		}
 
 		ret = beta;
@@ -292,22 +300,21 @@ out:
 	if (succs != NULL)
 		freeSuccs(succs, n);
 
+	printf("mmimpl returns %i\n", ret);
 	return ret;
 }
 
 static int pieceScore(game g) {
 	int x = g->totalScore - 40000;
-	int pps = (x*(g->pps_O - g->pps_E))/7800 + g->pps_E;
+	int pps = (x*(g->pps_O - g->pps_E))/8000 + g->pps_E;
 
 	return g->pieceScore + pps;
 }
 
-static score heur(game g) {
+score heur(game g) {
 	score ret = 0;
 
 	ret = (pieceScore(g))
-		+ (inCheck(g, BLACK) ?  200 : 0)
-		+ (inCheck(g, WHITE) ? -200 : 0)
 		;
 
 	return ret;

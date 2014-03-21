@@ -9,6 +9,8 @@
 #include "move.h"
 #include "piece-square.h"
 
+#include "ai.h" // BORRAR!!
+
 char charOf(int piece);
 
 static int scoreOf(int piece);
@@ -225,6 +227,8 @@ void printBoard(game g) {
 	fprintf(stderr, "  inCheck = %i %i \n", g->inCheck[0], g->inCheck[1]);
 	fprintf(stderr, "  scores = %i %i\n", g->pieceScore, g->totalScore);
 	fprintf(stderr, "  pps o e = %i %i\n", g->pps_O, g->pps_E);
+	
+	fprintf(stderr," heur is = %i\n", heur(g));
 	fprintf(stderr, "]\n");
 
 
