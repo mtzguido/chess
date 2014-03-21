@@ -130,7 +130,7 @@ static score machineMoveImpl(
 			*nb = copyGame(g);
 
 		if (machineColor == WHITE)
-			ret = heur(g - curDepth);
+			ret = heur(g) - curDepth;
 		else
 			ret = - heur(g) + curDepth;
 				
