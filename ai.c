@@ -15,6 +15,12 @@
 #define EXTRA_CAPTURE	5
 #define EXTRA_PROMOTION	99
 
+#ifdef CFG_RANDOMIZE
+ const int flag_randomize = 1;
+#else
+ const int flag_randomize = 0;
+#endif
+
 typedef int score;
 
 int machineColor = -1;
@@ -43,6 +49,10 @@ static bool addon_notify_entry(game g, int depth, score *ret);
 static void addon_notify_return(game g, score s, int depth);
 static void addon_notify_cut(game g, game next, int depth);
 static void addon_sort(game g, game *succs, int nsucc, int depth);
+
+static int roll0(int n) {
+	return (rand()%n) == 0;
+}
 
 /*
  * Addons (heuristicas) en archivos
@@ -93,6 +103,7 @@ static score machineMoveImpl(
 	score ret;
 	score lalpha = alpha;
 	score lbeta = beta;
+	int rep_count = 1;
 
 	if (addon_notify_entry(g, curDepth, &ret))
 		return ret;
@@ -112,7 +123,7 @@ static score machineMoveImpl(
 
 	game *succs = NULL;
 	score t;
-	int i, n;
+	int i, n = 0;
 
 //	fprintf(stderr, "at prof %i: ", curDepth); pr_board(g);
 
@@ -138,7 +149,7 @@ static score machineMoveImpl(
 			ret = heur(g) - curDepth;
 		else
 			ret = - heur(g) + curDepth;
-				
+
 		goto out;
 	}
 
@@ -163,7 +174,12 @@ static score machineMoveImpl(
 		for (i=0; i<n; i++) {
 			t = machineMoveImpl(succs[i], maxDepth, curDepth+1, NULL, alpha, beta);
 
-			if (t > alpha) {
+			if (t > alpha || (flag_randomize && t == alpha && roll0(rep_count+1))) {
+				if (t > alpha)
+					rep_count = 1;
+				else
+					rep_count++;
+
 				alpha = t;
 
 				if (nb != NULL) {
@@ -189,7 +205,12 @@ static score machineMoveImpl(
 		for (i=0; i<n; i++) {
 			t = machineMoveImpl(succs[i], maxDepth, curDepth+1, NULL, alpha, beta);
 
-			if (t < beta) {
+			if (t < beta || (flag_randomize && t == beta && roll0(rep_count+1))) {
+				if (t < beta)
+					rep_count = 1;
+				else
+					rep_count++;
+
 				beta = t;
 
 				if (nb != NULL) {
