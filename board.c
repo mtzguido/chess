@@ -28,17 +28,15 @@ void pr_board(game g) {
 	fprintf(stderr, "]\n");
 }
 
-#define OWNMEM
+#ifdef CFG_OWNMEM
 
-#ifdef OWNMEM
 #define MEMSZ (1<<20)
+
 static struct game_struct boards[MEMSZ];
 static unsigned char freet[MEMSZ/8] = { [0 ... MEMSZ/8-1] = ~0 };
 int last = 0;
-#endif
 
 static game galloc() {
-#ifdef OWNMEM
 	int i;
 
 	for (i = last; i != (last-1)%(MEMSZ/8) && freet[i] == 0; i = (i+1)%(MEMSZ/8))
@@ -60,21 +58,23 @@ static game galloc() {
 	freet[i] &= ~(1<<j);
 
 	return &boards[8*i + j];
-#else
-	return malloc(sizeof (struct game_struct));
-#endif
 }
 
 static void gfree(game g) {
-#ifdef OWNMEM
-	int i = (g-&boards[0])/8;
+	int i = (g-&boards[0])>>3;
 	int j = (g-&boards[0])&0x7;
 
 	freet[i] |= (1 << j);
-#else
-	free(g);
-#endif
 }
+#else /* CFG_OWNMEM */
+static game galloc () {
+	return malloc(sizeof (struct game_struct));
+}
+
+static void gfree(game g) {
+	free(g);
+}
+#endif
 
 inline static int sign(int a) {
 	if (a > 0) return 1;
