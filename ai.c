@@ -15,15 +15,6 @@
 #define EXTRA_CAPTURE	5
 #define EXTRA_PROMOTION	99
 
-#ifdef CFG_DEPTH_EXTENSION
-#define KTABLE_SIZE	(SEARCH_DEPTH + EXTRA_CHECK + EXTRA_CAPTURE + EXTRA_PROMOTION)
-#else
-#define KTABLE_SIZE	(SEARCH_DEPTH)
-#endif
-
-#define NKILLER	2
-
-
 typedef int score;
 
 int machineColor = -1;
@@ -44,71 +35,31 @@ static int nopen;
 int totalnopen = 0;
 int totalms = 0;
 
-static int equalMove(move a, move b);
-static int equalGame(game a, game b);
+static int equalMove(move a, move b) __attribute__((unused));
+static int equalGame(game a, game b) __attribute__((unused));
 
-#ifdef CFG_KILLER
-static move killerTable[KTABLE_SIZE][NKILLER];
-static void killerNotify(game g, game next, int depth);
-#endif
+static void addon_init();
+static bool addon_notify_entry(game g, int depth, score *ret);
+static void addon_notify_return(game g, score s, int depth);
+static void addon_notify_cut(game g, game next, int depth);
+static void addon_sort(game g, game *succs, int nsucc, int depth);
 
-#ifdef CFG_COUNTERMOVE
-static move counterTable[2][8][8][8][8];
-static void counterNotify(game g, game next);
-#endif
-
-#ifdef CFG_TRANSPOSITION
-#define TTABLE_SIZE 131101
-
-struct tt_entry {
-	score v;
-	game k;
-	int d;
-};
-
-struct tt_entry ttable[TTABLE_SIZE] = { [0 ... TTABLE_SIZE-1] = { .k = NULL } };
-
-static int gameHash(game g);
-#endif
+/*
+ * Addons (heuristicas) en archivos
+ * separados. Se usan .h para poder
+ * aprovechar optimizaciones del 
+ * compilador en mayor medida
+ */
+#include "addon_trans.h"
+#include "addon_killer.h"
+#include "addon_cm.h"
 
 game machineMove(game start) {
 	game ret = NULL;
 	score t;
 	clock_t t1,t2;
 
-#ifdef CFG_KILLER
-	{
-	int i, j;
-	for (i=0; i<KTABLE_SIZE; i++)
-		for (j=0; j<NKILLER; j++)
-			killerTable[i][j].move_type = -1;
-	}
-#endif
-
-#ifdef CFG_COUNTERMOVE
-	{
-	/* ugh... */
-	int a, b, c, d, e;
-	for (a=0; a<2; a++)
-	for (b=0; b<8; b++)
-	for (c=0; c<8; c++)
-	for (d=0; d<8; d++)
-	for (e=0; e<8; e++)
-		counterTable[a][b][c][d][e].move_type = -1;
-	}
-#endif
-
-#ifdef CFG_TRANSPOSITION
-	{
-	int i;
-	
-	for (i=0; i<TTABLE_SIZE; i++)
-		if (ttable[i].k != NULL)
-			freeGame(ttable[i].k);
-
-		ttable[i].k = NULL;
-	}
-#endif
+	addon_init();
 
 	int i;
 
@@ -138,20 +89,9 @@ static score machineMoveImpl(
 
 	score ret;
 
-#ifdef CFG_TRANSPOSITION
-	int gh = gameHash(g);
+	if (addon_notify_entry(g, curDepth, &ret))
+		return ret;
 
-	if (ttable[gh].k != NULL
-		&& ttable[gh].d == curDepth
-		//&& ttable[gh].d <= curDepth
-		&& equalGame(g, ttable[gh].k)) {
-		//fprintf(stderr, "trans: skipping node at %i\n", curDepth);
-
-		return ttable[gh].v;
-	}
-
-#endif
-	
 #ifdef CFG_DEPTH_EXTENSION
 	const int extraDepth = 
 		  EXTRA_CHECK * inCheck(g, WHITE)
@@ -230,16 +170,8 @@ static score machineMoveImpl(
 			}
 
 #ifdef CFG_ALPHABETA
-			/* Alpha cut-off */
 			if (beta <= alpha) {
-#ifdef CFG_KILLER
-				killerNotify(g, succs[i], curDepth);
-#endif /* CFG_KILLER */
-
-#ifdef CFG_COUNTERMOVE
-				counterNotify(g, succs[i]);
-#endif /* CFG_COUNTERMOVE */
-
+				addon_notify_cut(g, succs[i], curDepth);
 				break;
 			}
 #endif /* CFG_ALPHABETA */
@@ -264,16 +196,8 @@ static score machineMoveImpl(
 			}
 
 #ifdef CFG_ALPHABETA
-			/* Beta cut-off */
 			if (beta <= alpha) {
-#ifdef CFG_KILLER
-				killerNotify(g, succs[i], curDepth);
-#endif /* CFG_KILLER */
-
-#ifdef CFG_COUNTERMOVE
-				counterNotify(g, succs[i]);
-#endif /* CFG_COUNTERMOVE */
-
+				addon_notify_cut(g, succs[i], curDepth);
 				break;
 			}
 #endif /* CFG_ALPHABETA */
@@ -285,22 +209,12 @@ static score machineMoveImpl(
 
 out:
 
-#ifdef CFG_TRANSPOSITION
-	if (ttable[gh].k != NULL) {
-		//fprintf(stderr, "trans: collision at %i\n", curDepth);
-		freeGame(ttable[gh].k);
-	}
-
-	ttable[gh].k = copyGame(g);
-	ttable[gh].v = ret;
-	ttable[gh].d = curDepth;
-
-#endif
+	addon_notify_return(g, ret, curDepth);
 
 	if (succs != NULL)
 		freeSuccs(succs, n);
 
-	printf("mmimpl returns %i\n", ret);
+	// fprintf(stderr, "mmimpl returns %i\n", ret);
 	return ret;
 }
 
@@ -333,96 +247,10 @@ static int succCmp(const void *bp, const void *ap) {
 	return 0;
 }
 
-#ifdef CFG_KILLER
-
-static void killerMoves(game *succs, int n, int depth) {
-	int kindex = 0;
-	int i, k;
-
-	/* Ordenamos las killer move al
-	 * principio
-	 *
-	 * usamos también las killers de 2
-	 * plies atrás. */
-
-	for (i=0; i<n; i++) {
-		for (k=0; k<NKILLER; k++) {
-			if (equalMove(succs[i]->lastmove, killerTable[depth][k])) {
-				game temp;
-
-				if (i > kindex) {
-					temp = succs[i];
-					succs[i] = succs[kindex];
-					succs[kindex] = temp;
-				}
-				kindex++;
-
-				break;
-			}
-		}
-	}
-}
-
-static void killerNotify(game g, game next, int depth) {
-	int i;
-
-	for (i=0; i<NKILLER; i++)
-		if (equalMove(killerTable[depth][i], next->lastmove))
-			return;
-
-	for (i=NKILLER-1; i >= 1; i--)
-		killerTable[depth][i] = killerTable[depth][i-1];
-
-	killerTable[depth][0] = next->lastmove;
-}
-
-#endif
-
-#ifdef CFG_COUNTERMOVE
-
-static void counterMoves(game *succs, int n, game g) {
-	int i;
-
-	/* Buscamos la counter move */
-	move l = g->lastmove;
-	move m = counterTable[g->turn][l.r][l.c][l.R][l.C];
-
-	if (m.move_type == -1)
-		return;
-
-	for (i=0; i<n; i++) {
-		if (equalMove(succs[i]->lastmove, m)) {
-			game temp;
-
-			if (i > 0) {
-				temp = succs[i];
-				succs[i] = succs[0];
-				succs[0] = temp;
-			}
-
-			break;
-		}
-	}
-}
-
-static void counterNotify(game g, game next) {
-	if (!next->lastmove.was_capture) {
-		move m = g->lastmove;
-		counterTable[g->turn][m.r][m.c][m.R][m.C] = next->lastmove;
-	}
-}
-
-#endif
-
 static void sortSuccs(game g, game *succs, int n, int depth) {
 	qsort(succs, n, sizeof (game), succCmp);
 
-#ifdef CFG_COUNTERMOVE
-	counterMoves(succs, n, g);
-#endif
-#ifdef CFG_KILLER
-	killerMoves(succs, n, depth);
-#endif
+	addon_sort(g, succs, n, depth);
 }
 
 static int equalMove(move a, move b) {
@@ -438,26 +266,6 @@ static int equalMove(move a, move b) {
 		&& a.C == b.C
 		&& a.promote == b.promote;
 }
-
-#ifdef CFG_TRANSPOSITION
-static int gameHash(game g) {
-	uint64_t x = 5381;
-	int i, j;
-
-	for (i=0; i<8; i++)
-		for (j=0; j<8; j+=2) {
-			unsigned char c = ((g->board[i][j] & 0xF) ^ ((g->board[i][j+1] << 4) & 0xF0));
-			x = c + (x*33);
-		}
-
-			//x = ((6+g->board[i][j]) + (x*9)) % TTABLE_SIZE;
-
-	x = x % TTABLE_SIZE;
-
-	//fprintf(stderr, "gameHash returns %u\n", x);
-	return x;
-}
-#endif
 
 static int equalGame(game a, game b) {
 	if (a == NULL && b == NULL)
@@ -489,5 +297,32 @@ static int equalGame(game a, game b) {
 				return 0;
 
 	return 1;
+}
+
+static void addon_init() {
+	killer_init();
+	cm_init();
+	trans_init();
+}
+
+static void addon_notify_return(game g, score s, int depth) {
+	trans_notify_return(g, s, depth);
+}
+
+static bool addon_notify_entry(game g, int depth, score *ret) {
+	if (trans_notify_entry(g, depth, ret))
+		return true;
+
+	return false;
+}
+
+static void addon_notify_cut(game g, game next, int depth) {
+	killer_notify_cut(g, next, depth);
+	cm_notify_cut(g, next, depth);
+}
+
+static void addon_sort(game g, game *succs, int nsucc, int depth) {
+	cm_sort(g, succs, nsucc, depth);
+	killer_sort(g, succs, nsucc, depth);
 }
 
