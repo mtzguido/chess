@@ -2,6 +2,8 @@
 #include <assert.h>
 #include <string.h>
 #include <ctype.h>
+#include <unistd.h>
+#include <time.h>
 
 #include "ai.h"
 #include "board.h"
@@ -37,6 +39,8 @@ static char pieceOf(char c) {
 }
 
 int main_trucho (int argc, char **argv) {
+
+	srand(time(NULL) + getpid());
 	game b = startingGame();
 
 	if (argc > 1 && argv[1][0] == 'w')
@@ -54,6 +58,7 @@ int main_trucho (int argc, char **argv) {
 		int i, n;
 
 		n = genSuccs(b, &arr);
+		fprintf(stderr, "N=%i\n", n);
 
 		for (i = 0; i < n; i++) {
 			printBoard(arr[i]);
@@ -72,7 +77,7 @@ int main_trucho (int argc, char **argv) {
 
 #if 0
 	{
-		machineMove(b);
+		printBoard(machineMove(b));
 		return 0;
 	}
 #endif
