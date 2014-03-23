@@ -107,8 +107,8 @@ static score machineMoveImpl(
 		game *nb, score alpha, score beta) {
 
 	score ret;
-	score lalpha = alpha;
-	score lbeta = beta;
+	score lalpha __attribute__((unused)) = alpha;
+	score lbeta __attribute__((unused)) = beta;
 	int rep_count = 1;
 
 	if (addon_notify_entry(g, curDepth, &ret))
