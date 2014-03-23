@@ -21,6 +21,12 @@
  const int flag_randomize = 0;
 #endif
 
+#ifdef CFG_ALPHABETA
+ const int alpha_beta = 1;
+#else
+ const int alpha_beta = 0;
+#endif
+
 typedef int score;
 
 int machineColor = -1;
@@ -190,12 +196,10 @@ static score machineMoveImpl(
 				}
 			}
 
-#ifdef CFG_ALPHABETA
-			if (beta <= alpha) {
+			if (alpha_beta && beta <= alpha) {
 				addon_notify_cut(g, succs[i], curDepth);
 				break;
 			}
-#endif /* CFG_ALPHABETA */
 		}
 
 		ret = alpha;
@@ -221,12 +225,10 @@ static score machineMoveImpl(
 				}
 			}
 
-#ifdef CFG_ALPHABETA
-			if (beta <= alpha) {
+			if (alpha_beta && beta <= alpha) {
 				addon_notify_cut(g, succs[i], curDepth);
 				break;
 			}
-#endif /* CFG_ALPHABETA */
 		}
 
 		ret = beta;
