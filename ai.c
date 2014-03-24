@@ -102,7 +102,23 @@ game machineMove(game start) {
 	return ret;
 }
 
+static score machineMoveImpl_(
+		game g, int maxDepth, int curDepth,
+		game *nb, score alpha, score beta);
+
 static score machineMoveImpl(
+		game g, int maxDepth, int curDepth,
+		game *nb, score alpha, score beta) {
+
+	score rc = machineMoveImpl_(g, maxDepth, curDepth, nb, alpha, beta);
+
+	/* Wrap de machineMoveImpl, para debug */
+	/* printf("mm (%i/%i) (a=%i, b=%i) returns %i\n", curDepth, maxDepth, alpha, beta, rc); */
+
+	return rc;
+}
+
+static score machineMoveImpl_(
 		game g, int maxDepth, int curDepth,
 		game *nb, score alpha, score beta) {
 
@@ -137,11 +153,11 @@ static score machineMoveImpl(
 	int rc;
 	if ((rc=isFinished(g)) != -1) {
 		if (rc == WIN(machineColor))
-			ret = 100000 - curDepth;
+			ret = 100000; // - curDepth;
 		else if (rc == DRAW)
 			ret = 0;
 		else
-			ret = -100000 + curDepth;
+			ret = -100000; // + curDepth;
 
 		goto out;
 	}
