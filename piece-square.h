@@ -31,13 +31,13 @@ static inline char piece_square_val_O(int piece, int r, int c) {
 	}
 
 	switch (p) {
-	case WPAWN: return m*(t_pawnO[r][c]);
+	case WPAWN:   return m*(t_pawnO[r][c]);
 	case WBISHOP: return m*(t_bishop[r][c]);
-	case WROOK: return m*(t_rook[r][c]);
+	case WROOK:   return m*(t_rook[r][c]);
 	case WKNIGHT: return m*(t_knight[r][c]);
-	case WQUEEN: return m*(t_queen[r][c]);
-	case WKING: return m*(t_kingO[r][c]);
-	default: return 0;
+	case WQUEEN:  return m*(t_queen[r][c]);
+	case WKING:   return m*(t_kingO[r][c]);
+	default:      return 0;
 	}
 }
 
@@ -52,13 +52,13 @@ static inline char piece_square_val_E(int piece, int r, int c) {
 	}
 
 	switch (p) {
-	case WPAWN: return m*(t_pawnE[r][c]);
+	case WPAWN:   return m*(t_pawnE[r][c]);
 	case WBISHOP: return m*(t_bishop[r][c]);
-	case WROOK: return m*(t_rook[r][c]);
+	case WROOK:   return m*(t_rook[r][c]);
 	case WKNIGHT: return m*(t_knight[r][c]);
-	case WQUEEN: return m*(t_queen[r][c]);
-	case WKING: return m*(t_kingE[r][c]);
-	default: return 0;
+	case WQUEEN:  return m*(t_queen[r][c]);
+	case WKING:   return m*(t_kingE[r][c]);
+	default:      return 0;
 	}
 }
 
