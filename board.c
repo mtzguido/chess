@@ -738,6 +738,7 @@ static int doMoveKCastle(game g, move m) {
 		tg->board[rank][4] = 0;
 		tg->board[rank][5] = kpiece;
 		tg->kingy[m.who] = 5;
+		tg->inCheck[m.who] = -1;
 
 		if (inCheck(tg, m.who)) {
 			freeGame(tg);
@@ -747,6 +748,7 @@ static int doMoveKCastle(game g, move m) {
 		tg->board[rank][5] = 0;
 		tg->board[rank][6] = kpiece;
 		tg->kingy[m.who] = 6;
+		tg->inCheck[m.who] = -1;
 
 		if (inCheck(tg, m.who)) {
 			freeGame(tg);
@@ -794,6 +796,7 @@ static int doMoveQCastle(game g, move m) {
 		tg->board[rank][4] = 0;
 		tg->board[rank][3] = kpiece;
 		tg->kingy[m.who] = 3;
+		tg->inCheck[m.who] = -1;
 
 		if (inCheck(tg, m.who)) {
 			freeGame(tg);
@@ -803,6 +806,7 @@ static int doMoveQCastle(game g, move m) {
 		tg->board[rank][3] = 0;
 		tg->board[rank][2] = kpiece;
 		tg->kingy[m.who] = 2;
+		tg->inCheck[m.who] = -1;
 
 		if (inCheck(tg, m.who)) {
 			freeGame(tg);
