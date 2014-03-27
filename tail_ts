@@ -1,1 +1,1 @@
-tail -f full_log | awk ' { print strftime("%Y-%m-%d %H:%M:%S"), $0; fflush(); }'
+tail -n 100 -f full_log | awk ' { print strftime("%Y-%m-%d %H:%M:%S"), $0; fflush(); }'
