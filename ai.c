@@ -131,6 +131,10 @@ static score machineMoveImpl_(
 	score ret;
 	score lalpha __attribute__((unused)) = alpha;
 	score lbeta __attribute__((unused)) = beta;
+
+	const score maxa = alpha;
+	const score maxb = beta;
+
 	int rep_count = 1;
 
 	if (addon_notify_entry(g, curDepth, &ret))
@@ -216,6 +220,9 @@ static score machineMoveImpl_(
 		for (i=0; i<n; i++) {
 			t = machineMoveImpl(succs[i], maxDepth, curDepth+1, NULL, alpha, beta);
 
+			if (t > maxa)
+				maxa = t;
+
 			if (t > alpha || (flag_randomize && t == alpha && roll0(rep_count+1))) {
 				if (t > alpha)
 					rep_count = 1;
@@ -239,11 +246,15 @@ static score machineMoveImpl_(
 		}
 
 		ret = alpha;
+		assert(ret == maxa);
 		goto out;
 	} else {
 		/* Minimizar */
 		for (i=0; i<n; i++) {
 			t = machineMoveImpl(succs[i], maxDepth, curDepth+1, NULL, alpha, beta);
+
+			if (t < maxb)
+				maxb = t;
 
 			if (t < beta || (flag_randomize && t == beta && roll0(rep_count+1))) {
 				if (t < beta)
@@ -268,6 +279,7 @@ static score machineMoveImpl_(
 		}
 
 		ret = beta;
+		assert(ret == maxb);
 		goto out;
 	}
 
