@@ -5,17 +5,7 @@ SHELL=/bin/bash
 TARGET=chess
 CC=gcc
 
-CONFIG_ALPHABETA=n
-CONFIG_KILLER=n
-CONFIG_COUNTERMOVE=n
-CONFIG_EXTEND=n
-CONFIG_RELEASE=n
-CONFIG_TRANSPOSITION=n
-CONFIG_OWNMEM=n
-CONFIG_RANDOMIZE=n
-CONFIG_SHUFFLE=y
-CONFIG_PROFILE=n
-CONFIG_DEBUG=n
+include .config
 
 ifeq (${CONFIG_ALPHABETA},y)
 	CFLAGS += -DCFG_ALPHABETA
@@ -62,6 +52,8 @@ ifeq (${CONFIG_DEBUG},y)
 	CFLAGS += -g
 endif
 
+CFLAGS += -DCFG_DEPTH=${CONFIG_DEPTH}
+
 mods=main ai board move succs pgn
 objs=$(patsubst %,%.o,$(mods))
 
@@ -70,7 +62,7 @@ all: $(TARGET)
 $(TARGET): $(objs)
 	$(CC) $(LFLAGS) $(objs) -o $(TARGET)
 
-%.o: %.c $(wildcard *.h) Makefile
+%.o: %.c $(wildcard *.h) .config
 	$(CC) $(CFLAGS) -c $<	-o $@
 
 clean:

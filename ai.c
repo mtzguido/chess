@@ -1,5 +1,6 @@
 #include "ai.h"
 #include "board.h"
+#include "config.h"
 
 #include <assert.h>
 #include <math.h> /* INFINITY */
@@ -8,30 +9,6 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <time.h>
-
-#define SEARCH_DEPTH	4
-
-#define EXTRA_CHECK	1
-#define EXTRA_CAPTURE	5
-#define EXTRA_PROMOTION	99
-
-#ifdef CFG_SHUFFLE
- const int flag_shuffle = 1;
-#else
- const int flag_shuffle = 0;
-#endif
-
-#ifdef CFG_RANDOMIZE
- const int flag_randomize = 1;
-#else
- const int flag_randomize = 0;
-#endif
-
-#ifdef CFG_ALPHABETA
- const int alpha_beta = 1;
-#else
- const int alpha_beta = 0;
-#endif
 
 typedef int score;
 
@@ -140,15 +117,11 @@ static score machineMoveImpl_(
 	if (addon_notify_entry(g, curDepth, &ret))
 		return ret;
 
-#ifdef CFG_DEPTH_EXTENSION
 	const int extraDepth = 
 		  EXTRA_CHECK * inCheck(g, WHITE)
 		+ EXTRA_CHECK * inCheck(g, BLACK)
 		+ EXTRA_CAPTURE * g->lastmove.was_capture
 		+ EXTRA_PROMOTION * g->lastmove.was_promotion;
-#else
-	const int extraDepth = 0;
-#endif
 
 	nopen++;
 	depths[curDepth]++;
