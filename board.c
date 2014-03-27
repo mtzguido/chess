@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "common.h"
 #include "move.h"
 #include "piece-square.h"
 
@@ -495,7 +494,7 @@ int doMove(game g, move m) {
 
 	switch (m.move_type) {
 	case MOVE_REGULAR:
-		if (unlikely(!doMoveRegular(g, m)))
+		if (!doMoveRegular(g, m))
 			goto fail;
 
 		break;
@@ -555,7 +554,7 @@ static void calcPromotion(game g, move m);
 
 static void setPiece(game g, int r, int c, int piece) {
 	int old_piece = g->board[r][c];
-	if (likely(old_piece != 0)) {
+	if (old_piece != 0) {
 		g->pieceScore -= scoreOf(old_piece);
 		g->totalScore -= absoluteScoreOf(old_piece);
 		g->pps_O      -= piece_square_val_O(old_piece, r, c);
@@ -564,7 +563,7 @@ static void setPiece(game g, int r, int c, int piece) {
 
 	g->board[r][c] = piece;
 
-	if (likely(piece)) {
+	if (piece) {
 		g->pps_E      += piece_square_val_E(piece, r, c);
 		g->pps_O      += piece_square_val_O(piece, r, c);
 		g->totalScore += absoluteScoreOf(piece);
@@ -576,7 +575,7 @@ static int doMoveRegular(game g, move m) {
 	int piece = g->board[m.r][m.c];
 	int other = flipTurn(g->turn);
 
-	if (unlikely(!isValid(g, m)))
+	if (!isValid(g, m))
 		return 0;
 
 	/* Es válida */
@@ -587,7 +586,7 @@ static int doMoveRegular(game g, move m) {
 	updCastling(g, m);
 
 	/* Los peones no son reversibles */
-	if (unlikely(isPawn(piece)))
+	if (isPawn(piece))
 		g->idlecount = 0;
 
 	/* Actuar si es una captura al paso */
@@ -596,7 +595,7 @@ static int doMoveRegular(game g, move m) {
 	/* Recalcular en passant */
 	epCalc(g, m);
 
-	if (likely(g->board[m.R][m.C] != 0)) {
+	if (g->board[m.R][m.C] != 0) {
 		g->idlecount = 0;
 		g->lastmove.was_capture = 1;
 	} else {
@@ -610,20 +609,16 @@ static int doMoveRegular(game g, move m) {
 
 	/* Si es algún movimiento relevante al rey contrario
 	 * dropeamos la cache */
-	if (likely(g->inCheck[other] != -1))
-		if (likely(
-					!safe(g, m.r, m.c, g->kingx[other], g->kingy[other]) ||
-				!safe(g, m.R, m.C, g->kingx[other], g->kingy[other])
-				))
+	if (g->inCheck[other] != -1)
+		if (!safe(g, m.r, m.c, g->kingx[other], g->kingy[other]) ||
+		    !safe(g, m.R, m.C, g->kingx[other], g->kingy[other]))
 			g->inCheck[other] = -1;
 
 	/* Necesitamos también (posiblemente) dropear la nuestra */
-	if (likely(g->inCheck[m.who] != -1))
-		if (likely(
-					isKing(piece) ||
-				!safe(g, m.r, m.c, g->kingx[m.who], g->kingy[m.who]) ||
-				!safe(g, m.R, m.C, g->kingx[m.who], g->kingy[m.who])
-				))
+	if (g->inCheck[m.who] != -1)
+		if (isKing(piece) ||
+		    !safe(g, m.r, m.c, g->kingx[m.who], g->kingy[m.who]) ||
+		    !safe(g, m.R, m.C, g->kingx[m.who], g->kingy[m.who]))
 			g->inCheck[m.who] = -1;
 
 	return 1;
