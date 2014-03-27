@@ -159,11 +159,11 @@ static score machineMoveImpl_(
 	int rc;
 	if ((rc=isFinished(g)) != -1) {
 		if (rc == WIN(machineColor))
-			ret = 100000; // - curDepth;
+			ret = 100000 - curDepth;
 		else if (rc == DRAW)
 			ret = 0;
 		else
-			ret = -100000; // + curDepth;
+			ret = -100000 + curDepth;
 
 		goto out;
 	}
@@ -174,9 +174,9 @@ static score machineMoveImpl_(
 			*nb = copyGame(g);
 
 		if (machineColor == WHITE)
-			ret = heur(g) - curDepth;
+			ret = heur(g);
 		else
-			ret = - heur(g) + curDepth;
+			ret = - heur(g);
 
 		goto out;
 	}
