@@ -33,38 +33,40 @@ void pr_board(game g) {
 #define MEMSZ (1<<20)
 
 static struct game_struct boards[MEMSZ];
-static unsigned char freet[MEMSZ/8] = { [0 ... MEMSZ/8-1] = ~0 };
-int last = 0;
+static int slab_list[MEMSZ];
+static int nfree = -1;
 
 static game galloc() {
-	int i;
+	if (nfree == -1) {
+		int i;
 
-	for (i = last; i != (last-1)%(MEMSZ/8) && freet[i] == 0; i = (i+1)%(MEMSZ/8))
-		;
+		for (i=0; i<MEMSZ; i++)
+			slab_list[i] = i;
 
-	if (i == (last-1)%(MEMSZ/8)) {
+		nfree = MEMSZ;
+	}
+
+	if (nfree == 0) {
 		fprintf(stderr, "NO MORE MEMORY!!!\n");
 		fflush(NULL);
 		abort();
 	}
 
-	last = i;
+	int t;
+	nfree--;
+	t = slab_list[nfree];
 
-	int j=0;
-
-	while ((freet[i] & (1<<j)) == 0)
-		j++;
-
-	freet[i] &= ~(1<<j);
-
-	return &boards[8*i + j];
+	return &boards[t];
 }
 
 static void gfree(game g) {
-	int i = (g-&boards[0])>>3;
-	int j = (g-&boards[0])&0x7;
+	int t = g - &boards[0];
 
-	freet[i] |= (1 << j);
+	/* redondeo... */
+	assert(&boards[t] == g);
+
+	slab_list[nfree] = t;
+	nfree++;
 }
 #else /* CFG_OWNMEM */
 static game galloc () {
