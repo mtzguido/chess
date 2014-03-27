@@ -129,11 +129,11 @@ static score machineMoveImpl_(
 		game *nb, score alpha, score beta) {
 
 	score ret;
-	score lalpha __attribute__((unused)) = alpha;
-	score lbeta __attribute__((unused)) = beta;
+	const score lalpha __attribute__((unused)) = alpha;
+	const score lbeta __attribute__((unused)) = beta;
 
-	const score maxa = alpha;
-	const score maxb = beta;
+	score maxa = alpha;
+	score maxb = beta;
 
 	int rep_count = 1;
 
