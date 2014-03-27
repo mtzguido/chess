@@ -239,20 +239,20 @@ void printBoard(game g) {
 
 char charOf(int piece) {
 	switch (piece) {
-		case EMPTY:   return '.';
-		case WPAWN:   return 'P';
-		case BPAWN:   return 'p';
-		case WROOK:   return 'R';
-		case BROOK:   return 'r';
-		case WKNIGHT: return 'N';
-		case BKNIGHT: return 'n';
-		case WBISHOP: return 'B';
-		case BBISHOP: return 'b';
-		case WQUEEN:  return 'Q';
-		case BQUEEN:  return 'q';
-		case WKING:	  return 'K';
-		case BKING:	  return 'k';
-		default:      assert(0);
+	case EMPTY:	return '.';
+	case WPAWN:	return 'P';
+	case BPAWN:	return 'p';
+	case WROOK:	return 'R';
+	case BROOK:	return 'r';
+	case WKNIGHT:	return 'N';
+	case BKNIGHT:	return 'n';
+	case WBISHOP:	return 'B';
+	case BBISHOP:	return 'b';
+	case WQUEEN:	return 'Q';
+	case BQUEEN:	return 'q';
+	case WKING:	return 'K';
+	case BKING:	return 'k';
+	default:	assert(0);
 	}
 
 	return 'x';
@@ -286,9 +286,9 @@ int inCheck(game g, int who) {
 
 	g->inCheck[who] = inCheck_diag(g, kr, kc, who)
 	                || inCheck_line(g, kr, kc, who)
-					|| inCheck_knig(g, kr, kc, who)
-					|| inCheck_pawn(g, kr, kc, who)
-					|| inCheck_king(g, kr, kc, who);
+			|| inCheck_knig(g, kr, kc, who)
+			|| inCheck_pawn(g, kr, kc, who)
+			|| inCheck_king(g, kr, kc, who);
 
 	return g->inCheck[who];
 }
