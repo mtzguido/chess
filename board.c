@@ -426,13 +426,13 @@ static int inCheck_pawn(game g, int kr, int kc, int who) {
 static int inCheck_king(game g, int kr, int kc, int who) {
 	const int dr[] = {  1, 1, 1, 0, -1, -1, -1,  0 };
 	const int dc[] = { -1, 0, 1, 1,  1,  0, -1, -1 };
-
 	const int enemy_k = who == WHITE ? BKING : WKING;
+
 	int i;
 
 	for (i = 0; i < sizeof dr / sizeof dr[0]; i++) {
-		register int R = kr + dr[i];
-		register int C = kc + dc[i];
+		int R = kr + dr[i];
+		int C = kc + dc[i];
 
 		if (R >= 0 && R < 8 && C >= 0 && C < 8)
 			if (g->board[R][C] == enemy_k)
