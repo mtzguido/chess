@@ -1,6 +1,6 @@
 .PHONY:clean all re run doc
-CFLAGS= -Wall -pg -g -funroll-loops $(CFLAGS_EXTRA)
-LFLAGS= -pg
+CFLAGS=-Wall -funroll-loops $(CFLAGS_EXTRA)
+LFLAGS=
 SHELL=/bin/bash
 TARGET=chess
 CC=gcc
@@ -13,6 +13,9 @@ CONFIG_RELEASE=n
 CONFIG_TRANSPOSITION=n
 CONFIG_OWNMEM=n
 CONFIG_RANDOMIZE=n
+CONFIG_SHUFFLE=y
+CONFIG_PROFILE=n
+CONFIG_DEBUG=n
 
 ifeq (${CONFIG_ALPHABETA},y)
 	CFLAGS += -DCFG_ALPHABETA
@@ -44,6 +47,19 @@ endif
 
 ifeq (${CONFIG_RANDOMIZE},y)
 	CFLAGS += -DCFG_RANDOMIZE
+endif
+
+ifeq (${CONFIG_SHUFFLE},y)
+	CFLAGS += -DCFG_SHUFFLE
+endif
+
+ifeq (${CONFIG_PROFILE},y)
+	LFLAGS += -pg
+	CFLAGS += -pg
+endif
+
+ifeq (${CONFIG_DEBUG},y)
+	CFLAGS += -g
 endif
 
 mods=main ai board move succs pgn

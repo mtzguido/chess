@@ -15,6 +15,12 @@
 #define EXTRA_CAPTURE	5
 #define EXTRA_PROMOTION	99
 
+#ifdef CFG_SHUFFLE
+ const int flag_shuffle = 1;
+#else
+ const int flag_shuffle = 0;
+#endif
+
 #ifdef CFG_RANDOMIZE
  const int flag_randomize = 1;
 #else
@@ -185,6 +191,20 @@ static score machineMoveImpl_(
 		fprintf(stderr, "--NO MOVES!!! ------\n");
 		fflush(NULL);
 		abort();
+	}
+
+	/* Shuffle */
+	if (flag_shuffle) {
+		int i, j;
+		game t;
+
+		for (i=0; i<n-1; i++) {
+			j = i + rand() % (n-i);
+
+			t = succs[i];
+			succs[i] = succs[j];
+			succs[j] = t;
+		}
 	}
 
 	/* Ordenamos los sucesores */
