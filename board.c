@@ -295,12 +295,15 @@ int inCheck(game g, int who) {
 
 static int inCheck_line(game g, int kr, int kc, int who) {
 	int i, j;
+	const int enemy_q = who == WHITE ? BQUEEN : WQUEEN;
+	const int enemy_r = who == WHITE ? BROOK : WROOK;
+
 	/* Columna */
 	j = kc;
 	for (i=kr+1; i<8; i++)
 		if (g->board[i][j] != 0) {
 			if (colorOf(g->board[i][j]) != who)
-				if (isQueen(g->board[i][j]) || isRook(g->board[i][j]))
+				if (g->board[i][j] == enemy_q || g->board[i][j] == enemy_r)
 					return 1;
 
 			break;
@@ -309,7 +312,7 @@ static int inCheck_line(game g, int kr, int kc, int who) {
 	for (i=kr-1; i>=0; i--)
 		if (g->board[i][j] != 0) {
 			if (colorOf(g->board[i][j]) != who)
-				if (isQueen(g->board[i][j]) || isRook(g->board[i][j]))
+				if (g->board[i][j] == enemy_q || g->board[i][j] == enemy_r)
 					return 1;
 
 			break;
@@ -320,7 +323,7 @@ static int inCheck_line(game g, int kr, int kc, int who) {
 	for (j=kc+1; j<8; j++)
 		if (g->board[i][j] != 0) {
 			if (colorOf(g->board[i][j]) != who)
-				if (isQueen(g->board[i][j]) || isRook(g->board[i][j]))
+				if (g->board[i][j] == enemy_q || g->board[i][j] == enemy_r)
 					return 1;
 
 			break;
@@ -329,7 +332,7 @@ static int inCheck_line(game g, int kr, int kc, int who) {
 	for (j=kc-1; j>=0; j--)
 		if (g->board[i][j] != 0) {
 			if (colorOf(g->board[i][j]) != who)
-				if (isQueen(g->board[i][j]) || isRook(g->board[i][j]))
+				if (g->board[i][j] == enemy_q || g->board[i][j] == enemy_r)
 					return 1;
 
 			break;
@@ -340,12 +343,14 @@ static int inCheck_line(game g, int kr, int kc, int who) {
 
 static int inCheck_diag(game g, int kr, int kc, int who) {
 	int i, j;
+	const int enemy_q = who == WHITE ? BQUEEN : WQUEEN;
+	const int enemy_b = who == WHITE ? BBISHOP : WBISHOP;
 
 	/* Diagonales */
 	for (i=kr-1, j=kc-1; i>=0 && j>=0; i--, j--)
 		if (g->board[i][j] != 0) {
 			if (colorOf(g->board[i][j]) != who)
-				if (isQueen(g->board[i][j]) || isBishop(g->board[i][j]))
+				if (g->board[i][j] == enemy_q || g->board[i][j] == enemy_b)
 					return 1;
 
 			break;
@@ -354,7 +359,7 @@ static int inCheck_diag(game g, int kr, int kc, int who) {
 	for (i=kr+1, j=kc+1; i<8 && j<8; i++, j++)
 		if (g->board[i][j] != 0) {
 			if (colorOf(g->board[i][j]) != who)
-				if (isQueen(g->board[i][j]) || isBishop(g->board[i][j]))
+				if (g->board[i][j] == enemy_q || g->board[i][j] == enemy_b)
 					return 1;
 
 			break;
@@ -363,7 +368,7 @@ static int inCheck_diag(game g, int kr, int kc, int who) {
 	for (i=kr+1, j=kc-1; i<8 && j>=0; i++, j--)
 		if (g->board[i][j] != 0) {
 			if (colorOf(g->board[i][j]) != who)
-				if (isQueen(g->board[i][j]) || isBishop(g->board[i][j]))
+				if (g->board[i][j] == enemy_q || g->board[i][j] == enemy_b)
 					return 1;
 
 			break;
@@ -372,7 +377,7 @@ static int inCheck_diag(game g, int kr, int kc, int who) {
 	for (i=kr-1, j=kc+1; i>=0 && j<8; i--, j++)
 		if (g->board[i][j] != 0) {
 			if (colorOf(g->board[i][j]) != who)
-				if (isQueen(g->board[i][j]) || isBishop(g->board[i][j]))
+				if (g->board[i][j] == enemy_q || g->board[i][j] == enemy_b)
 					return 1;
 
 			break;
@@ -382,7 +387,7 @@ static int inCheck_diag(game g, int kr, int kc, int who) {
 }
 
 static int inCheck_knig(game g, int kr, int kc, int who) {
-	int enemy_kn = who == WHITE ? BKNIGHT : WKNIGHT;
+	const int enemy_kn = who == WHITE ? BKNIGHT : WKNIGHT;
 
 	/* Caballos */
 	if (kr >= 2 && kc >= 1 && g->board[kr-2][kc-1] == enemy_kn) return 1;
@@ -420,8 +425,10 @@ static int inCheck_pawn(game g, int kr, int kc, int who) {
 }
 
 static int inCheck_king(game g, int kr, int kc, int who) {
-	static const int dr[] = {  1, 1, 1, 0, -1, -1, -1,  0 };
-	static const int dc[] = { -1, 0, 1, 1,  1,  0, -1, -1 };
+	const int dr[] = {  1, 1, 1, 0, -1, -1, -1,  0 };
+	const int dc[] = { -1, 0, 1, 1,  1,  0, -1, -1 };
+
+	const int enemy_k = who == WHITE ? BKING : WKING;
 	int i;
 
 	for (i = 0; i < sizeof dr / sizeof dr[0]; i++) {
@@ -429,10 +436,8 @@ static int inCheck_king(game g, int kr, int kc, int who) {
 		register int C = kc + dc[i];
 
 		if (R >= 0 && R < 8 && C >= 0 && C < 8)
-			if (isKing(g->board[R][C])) {
-				/* si o si debe ser el rey contrario */
+			if (g->board[R][C] == enemy_k)
 				return 1;
-			}
 	}
 
 	return 0;
