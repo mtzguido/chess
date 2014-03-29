@@ -36,6 +36,9 @@ struct game_struct {
 	char en_passant_y;
 
 	/* Optimizaciones */
+	/*   Zobrist hash */
+	uint32_t zobrist;
+
 	/*   Posicion de los reyes */
 	char kingx[2];
 	char kingy[2];

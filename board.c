@@ -1,5 +1,3 @@
-#include "board.h"
-
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -8,7 +6,8 @@
 #include "move.h"
 #include "piece-square.h"
 #include "mem.h"
-
+#include "board.h"
+#include "zobrist.h"
 #include "ai.h" // BORRAR!!
 
 char charOf(int piece);
@@ -79,6 +78,7 @@ static void fix(game g) {
 
 	g->pieceScore = 0;
 	g->totalScore = 0;
+	g->zobrist = 0;
 
 	for (i=0; i<8; i++) {
 		for (j=0; j<8; j++) {
@@ -91,6 +91,8 @@ static void fix(game g) {
 
 			g->pieceScore += scoreOf(piece);
 			g->totalScore += absoluteScoreOf(piece);
+
+			g->zobrist ^= ZOBR_PIECE(piece, i, j);
 		}
 	}
 
@@ -179,10 +181,9 @@ void printBoard(game g) {
 	fprintf(stderr, "  inCheck = %i %i \n", g->inCheck[0], g->inCheck[1]);
 	fprintf(stderr, "  scores = %i %i\n", g->pieceScore, g->totalScore);
 	fprintf(stderr, "  pps o e = %i %i\n", g->pps_O, g->pps_E);
-	
-	fprintf(stderr," heur is = %i\n", heur(g));
+	fprintf(stderr, "  zobrist = 0x%0x\n", g->zobrist);
+	fprintf(stderr, "  heur is = %i\n", heur(g));
 	fprintf(stderr, "]\n");
-
 
 	fflush(stdout);
 }
@@ -512,7 +513,9 @@ static void setPiece(game g, int r, int c, int piece) {
 		g->pps_E      -= piece_square_val_E(old_piece, r, c);
 	}
 
+	g->zobrist ^= ZOBR_PIECE(old_piece, r, c);
 	g->board[r][c] = piece;
+	g->zobrist ^= ZOBR_PIECE(piece, r, c);
 
 	if (piece) {
 		g->pps_E      += piece_square_val_E(piece, r, c);
