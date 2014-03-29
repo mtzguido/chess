@@ -8,6 +8,7 @@
 #include "ai.h"
 #include "board.h"
 #include "pgn.h"
+#include "mem.h"
 
 /* a prefijo de b */
 static int isPrefix(char *a, char *b) {
@@ -39,7 +40,7 @@ static char pieceOf(char c) {
 }
 
 int main_trucho (int argc, char **argv) {
-
+	init_mem();
 	srand(time(NULL) + getpid());
 	game b = startingGame();
 

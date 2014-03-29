@@ -53,8 +53,9 @@ ifeq (${CONFIG_DEBUG},y)
 endif
 
 CFLAGS += -DCFG_DEPTH=${CONFIG_DEPTH}
+CFLAGS += -DCFG_MEMSZ=${CONFIG_MEMSZ}
 
-mods=main ai board move succs pgn
+mods=main ai board move succs pgn mem
 objs=$(patsubst %,%.o,$(mods))
 
 all: $(TARGET)

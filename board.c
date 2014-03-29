@@ -7,6 +7,7 @@
 
 #include "move.h"
 #include "piece-square.h"
+#include "mem.h"
 
 #include "ai.h" // BORRAR!!
 
@@ -26,56 +27,6 @@ void pr_board(game g) {
 		fprintf(stderr, "%i,", g->board[i/8][i%8]);
 	fprintf(stderr, "]\n");
 }
-
-#ifdef CFG_OWNMEM
-
-#define MEMSZ (1<<20)
-
-static struct game_struct boards[MEMSZ];
-static int slab_list[MEMSZ];
-static int nfree = -1;
-
-static game galloc() {
-	if (nfree == -1) {
-		int i;
-
-		for (i=0; i<MEMSZ; i++)
-			slab_list[i] = i;
-
-		nfree = MEMSZ;
-	}
-
-	if (nfree == 0) {
-		fprintf(stderr, "NO MORE MEMORY!!!\n");
-		fflush(NULL);
-		abort();
-	}
-
-	int t;
-	nfree--;
-	t = slab_list[nfree];
-
-	return &boards[t];
-}
-
-static void gfree(game g) {
-	int t = g - &boards[0];
-
-	/* redondeo... */
-	assert(&boards[t] == g);
-
-	slab_list[nfree] = t;
-	nfree++;
-}
-#else /* CFG_OWNMEM */
-static game galloc () {
-	return malloc(sizeof (struct game_struct));
-}
-
-static void gfree(game g) {
-	free(g);
-}
-#endif
 
 inline static int sign(int a) {
 	if (a > 0) return 1;
