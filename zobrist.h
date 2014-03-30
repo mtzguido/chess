@@ -22,6 +22,9 @@ static inline uint32_t ZOBR_CASTLE_Q(int who) {
 }
 
 static inline uint32_t ZOBR_EP(int c) {
+	if (c == -1)
+		return 0;
+
 	return zobrist_keys[837 + c];
 }
 
