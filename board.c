@@ -15,10 +15,6 @@ char charOf(int piece);
 static int scoreOf(int piece);
 static int absoluteScoreOf(int piece);
 
-static int doMoveRegular(game g, move m);
-static int doMoveKCastle(game g, move m);
-static int doMoveQCastle(game g, move m);
-
 void pr_board(game g) {
 	int i;
 	fprintf(stderr, "BOARD: [");
@@ -95,6 +91,13 @@ static void fix(game g) {
 			g->zobrist ^= ZOBR_PIECE(piece, i, j);
 		}
 	}
+
+	if (g->turn == BLACK) g->zobrist ^= ZOBR_BLACK();
+
+	if (g->castle_king[WHITE])  g->zobrist ^= ZOBR_CASTLE_K(WHITE);
+	if (g->castle_king[BLACK])  g->zobrist ^= ZOBR_CASTLE_K(BLACK);
+	if (g->castle_queen[WHITE]) g->zobrist ^= ZOBR_CASTLE_Q(WHITE);
+	if (g->castle_queen[BLACK]) g->zobrist ^= ZOBR_CASTLE_Q(BLACK);
 
 	g->inCheck[BLACK] = -1;
 	g->inCheck[WHITE] = -1;
@@ -236,7 +239,7 @@ int inCheck(game g, int who) {
 	kc = g->kingy[who];
 
 	g->inCheck[who] = inCheck_diag(g, kr, kc, who)
-	                || inCheck_line(g, kr, kc, who)
+			|| inCheck_line(g, kr, kc, who)
 			|| inCheck_knig(g, kr, kc, who)
 			|| inCheck_pawn(g, kr, kc, who)
 			|| inCheck_king(g, kr, kc, who);
@@ -435,6 +438,39 @@ static int safe(game g, int r, int c, int kr, int kc) {
 	return 1;
 }
 
+/* 
+ * Auxiliares que deshabilitan el enroque,
+ * no existen sus inversas ya que nunca se
+ * habilita
+ */
+static void disable_castle_k(game g, int who) {
+	if (g->castle_king[who])
+		g->zobrist ^= ZOBR_CASTLE_K(who);
+
+	g->castle_king[who] = 0;
+}
+
+static void disable_castle_q(game g, int who) {
+	if (g->castle_queen[who])
+		g->zobrist ^= ZOBR_CASTLE_Q(who);
+
+	g->castle_queen[who] = 0;
+}
+
+/* Auxiliares de en_passant */
+static void set_ep(game g, int r, int c) {
+	g->zobrist ^= ZOBR_EP(g->en_passant_x);
+
+	g->en_passant_x = r;
+	g->en_passant_y = c;
+
+	g->zobrist ^= ZOBR_EP(g->en_passant_x);
+}
+
+static int doMoveRegular(game g, move m);
+static int doMoveKCastle(game g, move m);
+static int doMoveQCastle(game g, move m);
+
 /*
  * 1 : Ok
  * 0 : Movida no válida, deja a g intacto
@@ -454,8 +490,7 @@ int doMove(game g, move m) {
 		if (!doMoveKCastle(g, m))
 			goto fail;
 
-		g->en_passant_x = -1;
-		g->en_passant_y = -1;
+		set_ep(g, -1, -1);
 		g->idlecount = 0;
 		g->lastmove = m;
 
@@ -465,8 +500,7 @@ int doMove(game g, move m) {
 		if (!doMoveQCastle(g, m))
 			goto fail;
 
-		g->en_passant_x = -1;
-		g->en_passant_y = -1;
+		set_ep(g, -1, -1);
 		g->idlecount = 0;
 		g->lastmove = m;
 
@@ -483,6 +517,7 @@ int doMove(game g, move m) {
 	freeGame(old_g);
 
 	g->turn = flipTurn(g->turn);
+	g->zobrist ^= ZOBR_BLACK();
 	g->hasNext = -1;
 	g->nSucc = -1;
 
@@ -614,8 +649,9 @@ static void updKing(game g, move m) {
 	if (isKing(piece)) {
 		g->kingx[colorOf(piece)] = m.R;
 		g->kingy[colorOf(piece)] = m.C;
-		g->castle_king[m.who] = 0;
-		g->castle_queen[m.who] = 0;
+
+		disable_castle_k(g, m.who);
+		disable_castle_q(g, m.who);
 	}
 }
 
@@ -627,9 +663,9 @@ static void updCastling(game g, move m) {
 	 * se invalida para siempre. */
 	if (m.r == m.who*7) {
 		if (m.c == 7)
-			g->castle_king[m.who] = 0;
+			disable_castle_k(g, m.who);
 		else if (m.c == 0)
-			g->castle_queen[m.who] = 0;
+			disable_castle_q(g, m.who);
 	}
 }
 
@@ -650,11 +686,10 @@ static void epCalc(game g, move m) {
 
 	if (isPawn(piece) && abs(m.r - m.R) == 2) {
 		assert (m.c == m.C);
-		g->en_passant_x = (m.r+m.R)/2;
-		g->en_passant_y = m.c;
+
+		set_ep(g, (m.r+m.R)/2, m.c);
 	} else {
-		g->en_passant_x = -1;
-		g->en_passant_y = -1;
+		set_ep(g, -1, -1);
 	}
 }
 
@@ -714,8 +749,8 @@ static int doMoveKCastle(game g, move m) {
 		freeGame(tg);
 	}
 
-	g->castle_king[m.who] = 0;
-	g->castle_queen[m.who] = 0;
+	disable_castle_k(g, m.who);
+	disable_castle_q(g, m.who);
 
 	/* Dropeamos la cache de jaque */
 	g->inCheck[0] = -1;
@@ -772,8 +807,8 @@ static int doMoveQCastle(game g, move m) {
 		freeGame(tg);
 	}
 
-	g->castle_queen[m.who] = 0;
-	g->castle_king[m.who] = 0;
+	disable_castle_k(g, m.who);
+	disable_castle_q(g, m.who);
 
 	/* Dropeamos la cache de jaque */
 	g->inCheck[0] = -1;
