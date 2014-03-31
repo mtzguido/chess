@@ -48,6 +48,7 @@ init = {
 	.idlecount = 0,
 	.castle_king = { 1, 1 },
 	.castle_queen = { 1, 1 },
+	.castled = { 0, 0 },
 };
 #else
 static const struct game_struct
@@ -67,6 +68,7 @@ init = {
 	.idlecount = 0,
 	.castle_king = { 1, 1 },
 	.castle_queen = { 1, 1 },
+	.castled = { 0, 0 },
 };
 
 #endif
@@ -105,6 +107,9 @@ static void fix(game g) {
 	g->inCheck[WHITE] = -1;
 	g->en_passant_x = -1;
 	g->en_passant_y = -1;
+
+	g->castled[WHITE] = 0;
+	g->castled[BLACK] = 0;
 	
 	g->hasNext = -1;
 	g->nSucc = -1;
@@ -478,6 +483,7 @@ int doMove(game g, move m) {
 		set_ep(g, -1, -1);
 		g->idlecount = 0;
 		g->lastmove = m;
+		g->castled[m.who] = 1;
 
 		break;
 	
@@ -488,6 +494,7 @@ int doMove(game g, move m) {
 		set_ep(g, -1, -1);
 		g->idlecount = 0;
 		g->lastmove = m;
+		g->castled[m.who] = 1;
 
 		break;
 	default:

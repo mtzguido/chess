@@ -35,6 +35,9 @@ struct game_struct {
 	char en_passant_x;
 	char en_passant_y;
 
+	/* Si se hizo enroque */
+	int castled[2];
+
 	/* Optimizaciones */
 	/*   Zobrist hash */
 	uint32_t zobrist;
