@@ -305,6 +305,13 @@ score heur(game g) {
 			ret += 8;
 	}
 
+	/*
+	 * Acercamos a 0 los tableros que tengan
+	 * muchos movimientos idle
+	 */
+	if (g->idlecount >= 34)
+		ret = (ret * (50 - g->idlecount))/16;
+
 	return ret;
 }
 
