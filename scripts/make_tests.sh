@@ -19,11 +19,15 @@ while [ $n -lt $total ]; do
 	${CHESS_PROG} ${CHESS_ARGS} <wpipe | tee fairylog >bpipe &
 	./chess w 2>&1 >wpipe <bpipe | tee -a full_log | grep -E '^RES:' | tee -a FINISHLOG
 
-	echo -n "waiting.."
-	wait
-	echo ok
+	wait # wait for opponent
 
 	cp gamelog_w gamelog_$n
-	echo "$n/$total games"
+	cp fairylog fairylog_$n
+
+	lose=$(grep Lose FINISHLOG | wc -l)
+	draw=$(grep Draw FINISHLOG | wc -l)
+	win=$(grep Win FINISHLOG | wc -l)
+	
+	echo "$n/$total games (results: $lose/$draw/$win)"
 done
 

@@ -284,8 +284,8 @@ score heur(game g) {
 	score ret = 0;
 
 	ret = (pieceScore(g))
-	    + (inCheck(g, WHITE) ? -200 : 0)
-	    + (inCheck(g, BLACK) ?  200 : 0);
+	    + (inCheck(g, WHITE) ? -30 : 0)
+	    + (inCheck(g, BLACK) ?  30 : 0);
 
 	if (!g->castled[WHITE]) {
 		if (!g->castle_king[WHITE] && !g->castle_queen[WHITE])
