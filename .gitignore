@@ -5,4 +5,4 @@ doc/*.aux
 doc/*.log
 doc/*.pdf
 *.swp
-
+tags
