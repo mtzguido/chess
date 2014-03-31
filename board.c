@@ -481,7 +481,6 @@ int doMove(game g, move m) {
 			goto fail;
 
 		set_ep(g, -1, -1);
-		g->idlecount = 0;
 		g->lastmove = m;
 		g->castled[m.who] = 1;
 
@@ -492,7 +491,6 @@ int doMove(game g, move m) {
 			goto fail;
 
 		set_ep(g, -1, -1);
-		g->idlecount = 0;
 		g->lastmove = m;
 		g->castled[m.who] = 1;
 
