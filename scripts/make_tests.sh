@@ -17,12 +17,13 @@ while [ $n -lt $total ]; do
 	n=$((n+1))
 
 	${CHESS_PROG} ${CHESS_ARGS} <wpipe | tee fairylog >bpipe &
-	./chess w 2>&1 >wpipe <bpipe | tee -a full_log | grep -E '^RES:' | tee -a FINISHLOG
+	./chess w 2>&1 >wpipe <bpipe | tee chesslog | grep -E '^RES:' | tee -a FINISHLOG
 
 	wait # wait for opponent
 
-	cp gamelog_w gamelog_$n
-	cp fairylog fairylog_$n
+	cp gamelog_w games/gamelog_$n
+	cp fairylog  games/fairylog_$n
+	cp chesslog  games/chesslog_$n
 
 	lose=$(grep Lose FINISHLOG | wc -l)
 	draw=$(grep Draw FINISHLOG | wc -l)
