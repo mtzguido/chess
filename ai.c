@@ -170,7 +170,7 @@ static score machineMoveImpl_(
 		printBoard(g);
 		fprintf(stderr, "--NO MOVES!!! ------\n");
 		fflush(NULL);
-		abort();
+		assert(0);
 	}
 
 	/* Shuffle */

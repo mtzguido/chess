@@ -635,7 +635,7 @@ static int isValid(game g, move m) {
 		if (m.promote == 0) {
 			fprintf(stderr, "Esa movida requiere una promoción!!!\n");
 			fflush(NULL);
-			abort();
+			assert(0);
 			return 0;
 		}
 	}
@@ -879,9 +879,11 @@ int equalGame(game a, game b) {
 	int rc = memcmp(a->board, b->board, sizeof a->board) == 0;
 
 	if (a->zobrist == b->zobrist && rc == 0) {
+		fprintf(stderr, "COLISION DE ZOBRIST!!!!\n");
 		printBoard(a);
+		fprintf(stderr, "_--------------------------------------\n");
 		printBoard(b);
-		abort();
+		fprintf(stderr, "_--------------------------------------\n");
 	}
 
 	return rc;
