@@ -53,14 +53,14 @@ init = {
 static const struct game_struct
 init = {
 	.board= {
-		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, BKING },
+		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, BKING, EMPTY },
+		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, BPAWN, EMPTY },
 		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
+		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, WKING, WQUEEN },
+		{ EMPTY, BROOK, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
+		{ BQUEEN, EMPTY, EMPTY, BBISHOP, EMPTY, EMPTY, EMPTY, EMPTY },
 		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
-		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
-		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
-		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
-		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
-		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, WKING }
+		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY }
 	},
 	.turn = WHITE,
 	.lastmove = { 0 },
@@ -68,6 +68,7 @@ init = {
 	.castle_king = { 1, 1 },
 	.castle_queen = { 1, 1 },
 };
+
 #endif
 
 static void fix(game g) {
@@ -260,18 +261,16 @@ static int inCheck_line(game g, int kr, int kc, int who) {
 	j = kc;
 	for (i=kr+1; i<8; i++)
 		if (g->board[i][j] != 0) {
-			if (colorOf(g->board[i][j]) != who)
-				if (g->board[i][j] == enemy_q || g->board[i][j] == enemy_r)
-					return 1;
+			if (g->board[i][j] == enemy_q || g->board[i][j] == enemy_r)
+				return 1;
 
 			break;
 		}
 
 	for (i=kr-1; i>=0; i--)
 		if (g->board[i][j] != 0) {
-			if (colorOf(g->board[i][j]) != who)
-				if (g->board[i][j] == enemy_q || g->board[i][j] == enemy_r)
-					return 1;
+			if (g->board[i][j] == enemy_q || g->board[i][j] == enemy_r)
+				return 1;
 
 			break;
 		}
@@ -280,18 +279,16 @@ static int inCheck_line(game g, int kr, int kc, int who) {
 	i = kr;
 	for (j=kc+1; j<8; j++)
 		if (g->board[i][j] != 0) {
-			if (colorOf(g->board[i][j]) != who)
-				if (g->board[i][j] == enemy_q || g->board[i][j] == enemy_r)
-					return 1;
+			if (g->board[i][j] == enemy_q || g->board[i][j] == enemy_r)
+				return 1;
 
 			break;
 		}
 
 	for (j=kc-1; j>=0; j--)
 		if (g->board[i][j] != 0) {
-			if (colorOf(g->board[i][j]) != who)
-				if (g->board[i][j] == enemy_q || g->board[i][j] == enemy_r)
-					return 1;
+			if (g->board[i][j] == enemy_q || g->board[i][j] == enemy_r)
+				return 1;
 
 			break;
 		}
@@ -307,36 +304,32 @@ static int inCheck_diag(game g, int kr, int kc, int who) {
 	/* Diagonales */
 	for (i=kr-1, j=kc-1; i>=0 && j>=0; i--, j--)
 		if (g->board[i][j] != 0) {
-			if (colorOf(g->board[i][j]) != who)
-				if (g->board[i][j] == enemy_q || g->board[i][j] == enemy_b)
-					return 1;
+			if (g->board[i][j] == enemy_q || g->board[i][j] == enemy_b)
+				return 1;
 
 			break;
 		}
 
 	for (i=kr+1, j=kc+1; i<8 && j<8; i++, j++)
 		if (g->board[i][j] != 0) {
-			if (colorOf(g->board[i][j]) != who)
-				if (g->board[i][j] == enemy_q || g->board[i][j] == enemy_b)
-					return 1;
+			if (g->board[i][j] == enemy_q || g->board[i][j] == enemy_b)
+				return 1;
 
 			break;
 		}
 
 	for (i=kr+1, j=kc-1; i<8 && j>=0; i++, j--)
 		if (g->board[i][j] != 0) {
-			if (colorOf(g->board[i][j]) != who)
-				if (g->board[i][j] == enemy_q || g->board[i][j] == enemy_b)
-					return 1;
+			if (g->board[i][j] == enemy_q || g->board[i][j] == enemy_b)
+				return 1;
 
 			break;
 		}
 
 	for (i=kr-1, j=kc+1; i>=0 && j<8; i--, j++)
 		if (g->board[i][j] != 0) {
-			if (colorOf(g->board[i][j]) != who)
-				if (g->board[i][j] == enemy_q || g->board[i][j] == enemy_b)
-					return 1;
+			if (g->board[i][j] == enemy_q || g->board[i][j] == enemy_b)
+				return 1;
 
 			break;
 		}
@@ -523,13 +516,13 @@ fail:
 }
 
 /* Auxiliares de doMoveRegular */
-static void setPiece(game g, int r, int c, int piece);
+static inline void setPiece(game g, int r, int c, int piece);
 static int isValid(game g, move m);
-static void updKing(game g, move m);
-static void updCastling(game g, move m);
-static void epCapture(game g, move m);
-static void epCalc(game g, move m);
-static void calcPromotion(game g, move m);
+static inline void updKing(game g, move m);
+static inline void updCastling(game g, move m);
+static inline void epCapture(game g, move m);
+static inline void epCalc(game g, move m);
+static inline void calcPromotion(game g, move m);
 
 static void setPiece(game g, int r, int c, int piece) {
 	int old_piece = g->board[r][c];
@@ -563,18 +556,23 @@ static int doMoveRegular(game g, move m) {
 	memcpy(&g->lastmove, &m, sizeof m);
 	g->idlecount++;
 
-	updKing(g, m);
+	if (isKing(piece))
+		updKing(g, m);
+
 	updCastling(g, m);
 
 	/* Los peones no son reversibles */
-	if (isPawn(piece))
+	if (isPawn(piece)) {
 		g->idlecount = 0;
 
-	/* Actuar si es una captura al paso */
-	epCapture(g, m);
+		/* Actuar si es una captura al paso */
+		epCapture(g, m);
 
-	/* Recalcular en passant */
-	epCalc(g, m);
+		/* Recalcular en passant */
+		epCalc(g, m);
+	} else {
+		set_ep(g, -1, -1);
+	}
 
 	if (g->board[m.R][m.C] != 0) {
 		g->idlecount = 0;
@@ -586,7 +584,12 @@ static int doMoveRegular(game g, move m) {
 	setPiece(g, m.R, m.C, piece);
 	setPiece(g, m.r, m.c, 0);
 
-	calcPromotion(g, m);
+	if (isPawn(piece)) {
+		/* Es un peón que promueve? */
+		calcPromotion(g, m);
+	} else {
+		g->lastmove.was_promotion = 0;
+	}
 
 	/* Si es algún movimiento relevante al rey contrario
 	 * dropeamos la cache */
@@ -638,13 +641,11 @@ static int isValid(game g, move m) {
 static void updKing(game g, move m) {
 	int piece = g->board[m.r][m.c];
 
-	if (isKing(piece)) {
-		g->kingx[colorOf(piece)] = m.R;
-		g->kingy[colorOf(piece)] = m.C;
+	g->kingx[colorOf(piece)] = m.R;
+	g->kingy[colorOf(piece)] = m.C;
 
-		disable_castle_k(g, m.who);
-		disable_castle_q(g, m.who);
-	}
+	disable_castle_k(g, m.who);
+	disable_castle_q(g, m.who);
 }
 
 static void updCastling(game g, move m) {
@@ -662,11 +663,7 @@ static void updCastling(game g, move m) {
 }
 
 static void epCapture(game g, move m) {
-	int piece = g->board[m.r][m.c];
-
-	if (isPawn(piece)
-			&& m.R == g->en_passant_x
-			&& m.C == g->en_passant_y) {
+	if (m.R == g->en_passant_x && m.C == g->en_passant_y) {
 		setPiece(g, m.r, m.C, 0);
 		g->inCheck[WHITE] = -1;
 		g->inCheck[BLACK] = -1;
@@ -674,11 +671,8 @@ static void epCapture(game g, move m) {
 }
 
 static void epCalc(game g, move m) {
-	int piece = g->board[m.r][m.c];
-
-	if (isPawn(piece) && abs(m.r - m.R) == 2) {
+	if (abs(m.r - m.R) == 2) {
 		assert (m.c == m.C);
-
 		set_ep(g, (m.r+m.R)/2, m.c);
 	} else {
 		set_ep(g, -1, -1);
@@ -686,13 +680,7 @@ static void epCalc(game g, move m) {
 }
 
 static void calcPromotion(game g, move m) {
-	/* se llama a calcPromotion LUEGO de hacer la movida,
-	 * por lo tanto usamos m.R y m.C */
-	int piece = g->board[m.R][m.C];
-
-	/* Es un peón que promueve? */
-	if (isPawn(piece)
-			&& m.R == (m.who == WHITE ? 0 : 7)) {
+	if (m.R == (m.who == WHITE ? 0 : 7)) {
 		int new_piece = m.who == WHITE ? m.promote : -m.promote;
 
 		setPiece(g, m.R, m.C, new_piece);
@@ -885,8 +873,11 @@ int equalGame(game a, game b) {
 
 	int rc = memcmp(a->board, b->board, sizeof a->board) == 0;
 
-	if (a->zobrist == b->zobrist && rc == 0)
+	if (a->zobrist == b->zobrist && rc == 0) {
+		printBoard(a);
+		printBoard(b);
 		abort();
+	}
 
 	return rc;
 }
