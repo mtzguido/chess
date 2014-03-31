@@ -54,8 +54,9 @@ endif
 
 CFLAGS += -DCFG_DEPTH=${CONFIG_DEPTH}
 CFLAGS += -DCFG_MEMSZ=${CONFIG_MEMSZ}
+CFLAGS += -DCFG_ZTABLE_SIZE=${CONFIG_ZTABLE_SIZE}
 
-mods=main ai board move succs pgn mem
+mods=main ai board move succs pgn mem ztable
 objs=$(patsubst %,%.o,$(mods))
 
 all: $(TARGET)

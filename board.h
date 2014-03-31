@@ -112,6 +112,9 @@ int isFinished(game g);
 
 void printBoard(game b);
 
+int equalGame(game a, game b);
+int equalMove(move a, move b);
+
 char charOf(int piece);
 
 #endif

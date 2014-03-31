@@ -8,6 +8,7 @@
 #include "mem.h"
 #include "board.h"
 #include "zobrist.h"
+#include "ztable.h"
 #include "ai.h" // BORRAR!!
 
 char charOf(int piece);
@@ -53,13 +54,13 @@ static const struct game_struct
 init = {
 	.board= {
 		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, BKING },
-		{ EMPTY, EMPTY, BPAWN, EMPTY, EMPTY, BPAWN, EMPTY, EMPTY },
-		{ EMPTY, EMPTY, EMPTY, BBISHOP, EMPTY, EMPTY, EMPTY, BPAWN },
-		{ BPAWN, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
-		{ WPAWN, EMPTY, BPAWN, EMPTY, EMPTY, EMPTY, WROOK, WKING },
-		{ EMPTY, EMPTY, WPAWN, BBISHOP, EMPTY, BROOK, EMPTY, WPAWN },
-		{ EMPTY, WPAWN, EMPTY, EMPTY, BROOK, EMPTY, EMPTY, EMPTY },
-		{ WROOK, EMPTY, WBISHOP, WKNIGHT, EMPTY, EMPTY, EMPTY, EMPTY }
+		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
+		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
+		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
+		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
+		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
+		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
+		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, WKING }
 	},
 	.turn = WHITE,
 	.lastmove = { 0 },
@@ -213,7 +214,9 @@ char charOf(int piece) {
 }
 
 int isFinished(game g) {
-	if (g->idlecount >= 50)
+	if (reps(g) >= 3)
+		return DRAW;
+	else if (g->idlecount >= 50)
 		return DRAW;
 	else if (hasNextGame(g))
 		return -1;
@@ -379,22 +382,10 @@ static int inCheck_pawn(game g, int kr, int kc, int who) {
 }
 
 static int inCheck_king(game g, int kr, int kc, int who) {
-	const int dr[] = {  1, 1, 1, 0, -1, -1, -1,  0 };
-	const int dc[] = { -1, 0, 1, 1,  1,  0, -1, -1 };
-	const int enemy_k = who == WHITE ? BKING : WKING;
+	/* Simplemente viendo la distancia */
 
-	int i;
-
-	for (i = 0; i < sizeof dr / sizeof dr[0]; i++) {
-		int R = kr + dr[i];
-		int C = kc + dc[i];
-
-		if (R >= 0 && R < 8 && C >= 0 && C < 8)
-			if (g->board[R][C] == enemy_k)
-				return 1;
-	}
-
-	return 0;
+	return     abs(g->kingx[0] - g->kingx[1]) <= 1
+		&& abs(g->kingy[0] - g->kingy[1]) <= 1;
 }
 
 void freeSuccs(game *arr, int len) {
@@ -852,3 +843,50 @@ static int scoreOf(int piece) {
 static int absoluteScoreOf(int piece) {
 	return abs(scoreTab[piece]);
 }
+
+int equalMove(move a, move b) {
+	if (a.move_type != b.move_type) return 0;
+	if (a.who != b.who) return 0;
+
+	if (a.move_type != MOVE_REGULAR)
+		return 1;
+
+	return a.r == b.r
+		&& a.c == b.c
+		&& a.R == b.R
+		&& a.C == b.C
+		&& a.promote == b.promote;
+}
+
+int equalGame(game a, game b) {
+	if (a == NULL && b == NULL)
+		return 1;
+
+	if (a == NULL || b == NULL)
+		return 0;
+
+	if (a->zobrist != b->zobrist)
+		return 0;
+
+	if (a->turn != b->turn
+	 || a->en_passant_x != b->en_passant_x
+	 || a->en_passant_y != b->en_passant_y
+	 || a->kingx[0] != b->kingx[0]
+	 || a->kingx[1] != b->kingx[1]
+	 || a->pieceScore != b->pieceScore
+	 || a->totalScore != b->totalScore
+	 || a->pps_O != b->pps_O
+	 || a->pps_E != b->pps_E
+	 || a->castle_king[0] != b->castle_king[0]
+	 || a->castle_king[1] != b->castle_king[1]
+	)
+		return 0;
+
+	int rc = memcmp(a->board, b->board, sizeof a->board) == 0;
+
+	if (a->zobrist == b->zobrist && rc == 0)
+		abort();
+
+	return rc;
+}
+

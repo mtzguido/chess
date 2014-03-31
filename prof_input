@@ -1,97 +1,66 @@
-HoiChess 0.10.3 (May 22 2012 22:33:43)
-Copyright (C) 2004-2007 Holger Ruckdeschel <holger@hoicher.de>
-This program is free software and comes with ABSOLUTELY NO WARRANTY.
-See the GNU General Public License for more details.
-
-Platform: unix
-Compiler: GCC 4.7.0
-
-
-Failed to open opening book.
-Hash table size: 1677721 entries (32.0 MiB)
-Hash table usage: 0 entries (0%)
-Hash table replacement scheme: always replace
-Pawn hash table size: 116508 entries (4.0 MiB)
-Pawn hash table usage: 0 entries (0%)
-Evaluation cache size: 349525 entries (4.0 MiB)
-Evaluation cache usage: 0 entries (0%)
-move d7d5
+tellics say     Fairy-Max 4.8Q
+tellics say     by H.G. Muller
+tellics say Gothic Chess is protected by U.S. patent #6,481,716 by Ed Trice.
+tellics say Falcon Chess is protected by U.S. patent #5,690,334 by George W. Duke
+move g8h6
 move b8c6
-move c8d7
-move e7e6
-move g8f6
-move f8d6
-move d7c6
-move d6e5
-move f6d7
-move a7a5
-move c6b5
-move e8g8
-move b5c4
-move c7c6
-move d7c5
-move c4a6
-move c5e4
-move e4d2
-move a6b5
-move b5c4
-move d8a5
-move f8e8
-move e8f8
-move h7h6
-move f8b8
-move b8c8
-move a8a6
-move c4a2
-move a6a8
-move a5c7
-move g8f8
-move c8c7
-move f7g6
-move a8c8
-move c7a7
-move f8f7
-move g6g5
-move h6g5
-move c8h8
-move f7g6
-move g6f5
-move h8h4
-move h4g4
-move f5g4
-move g4g3
-move g3g2
-move g5g4
-move g2h2
-move g4g3
-move g3g2
+move d7d6
 move a7a6
-move g2g1q
-move g1g4
-move g4f3
-move f3e4
-move e4b7
-move b7e7
-move e7d7
-move d7g4
-move g4g3
-move g3e1
-move e1f2
-move f2c2
+move b7c6
+move c8e6
+move d8d7
+move f7f6
 move g7g5
-move c2b2
-move b2b7
+move f8g7
+move e8g8
+move f8b8
+move a6a5
 move g5g4
-move h2h3
-move g4g3
-move b7b4
-move b4b1
-move h3g4
-move g3g2
-move g2g1q
-move g1e1
-move e1e8
-move e8c6
-move c6c1
-move c1e1
+move e6c4
+move h6g4
+move e7e5
+move b8d8
+move c6c5
+move d6c5
+move d8d7
+move g7f8
+move c4e6
+move d7d1
+move c7c6
+move g4h2
+move c5c4
+move a8b8
+move f6e5
+move f8d6
+move h7h5
+move d6c5
+move c5d4
+move b8b7
+move d4b2
+move b7d7
+move d7g7
+move e6g4
+move g4h5
+move g7g2
+move c6c5
+move g2c2
+move c2a2
+move a2a3
+move h5f7
+move a3f3
+move a5a4
+move a4a3
+move f7e6
+move a3a2
+move f3d3
+move d3d2
+move c4c3
+move d2d6
+move c3c2
+move c2c1q
+move d6e6
+move e6e4
+move c1c4
+move e4e2
+move a2a1q
 0-1 {Black mates}

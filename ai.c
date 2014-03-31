@@ -1,7 +1,9 @@
 #include "ai.h"
 #include "board.h"
 #include "config.h"
+#include "ztable.h"
 
+#include <stdint.h>
 #include <assert.h>
 #include <math.h> /* INFINITY */
 #include <stdio.h>
@@ -10,29 +12,27 @@
 #include <stdbool.h>
 #include <time.h>
 
+/* Score definition */
 typedef int score;
+static const score minScore = -1e7;
+static const score maxScore =  1e7;
 
+/* Color to play */
 int machineColor = -1;
 
 static score machineMoveImpl(
 		game start, int maxDepth, int curDepth,
 		game *nb, score alpha, score beta);
 
-// static score heur(game g);
-
-static const score minScore = -1e7;
-static const score maxScore =  1e7;
-
 static void sortSuccs(game g, game *succs, int n, int depth);
 
+/* Stats */
 int depths[30];
 static int nopen;
 int totalnopen = 0;
 int totalms = 0;
 
-static int equalMove(move a, move b) __attribute__((unused));
-static int equalGame(game a, game b) __attribute__((unused));
-
+/* Addon functions */
 static void addon_init();
 static bool addon_notify_entry(game g, int depth, score *ret);
 static void addon_notify_return(game g, score s, int depth);
@@ -62,23 +62,29 @@ game machineMove(game start) {
 
 	int i;
 
+	n_collision = 0;
+	nopen = 0;
 	for (i = 0; i < 30; i++)
 		depths[i] = 0;
 
-	nopen = 0;
+	mark(start);
+
 	t1 = clock();
 	t = machineMoveImpl(start, SEARCH_DEPTH, 0, &ret, minScore, maxScore);
 	t2 = clock();
 
 	assert(ret != NULL);
+	mark(ret);
 
 	totalnopen += nopen;
 	totalms += 1000*(t2-t1)/CLOCKS_PER_SEC;
 
 	fprintf(stderr, "%i nodes in %.3f seconds\n", nopen, 1.0*(t2-t1)/CLOCKS_PER_SEC);
 	fprintf(stderr, "depth:nnodes - ");
-	for (i = 0; i < 30; i++) 
+	for (i = 0; i < 15; i++) 
 		fprintf(stderr, "%i:%i, ", i, depths[i]);
+
+	fprintf(stderr, "Number of hash collisions: %i\n", n_collision);
 
 	fprintf(stderr, "expected score: %i\n", t);
 	fflush(NULL);
@@ -191,7 +197,9 @@ static score machineMoveImpl_(
 	if (g->turn == machineColor) {
 		/* Maximizar */
 		for (i=0; i<n; i++) {
+			mark(succs[i]);
 			t = machineMoveImpl(succs[i], maxDepth, curDepth+1, NULL, alpha, beta);
+			unmark(succs[i]);
 
 			if (t > maxa)
 				maxa = t;
@@ -224,7 +232,9 @@ static score machineMoveImpl_(
 	} else {
 		/* Minimizar */
 		for (i=0; i<n; i++) {
+			mark(succs[i]);
 			t = machineMoveImpl(succs[i], maxDepth, curDepth+1, NULL, alpha, beta);
+			unmark(succs[i]);
 
 			if (t < maxb)
 				maxb = t;
@@ -299,52 +309,6 @@ static void sortSuccs(game g, game *succs, int n, int depth) {
 	qsort(succs, n, sizeof (game), succCmp);
 
 	addon_sort(g, succs, n, depth);
-}
-
-static int equalMove(move a, move b) {
-	if (a.move_type != b.move_type) return 0;
-	if (a.who != b.who) return 0;
-
-	if (a.move_type != MOVE_REGULAR)
-		return 1;
-
-	return a.r == b.r
-		&& a.c == b.c
-		&& a.R == b.R
-		&& a.C == b.C
-		&& a.promote == b.promote;
-}
-
-static int equalGame(game a, game b) {
-	if (a == NULL && b == NULL)
-		return 1;
-
-	if (a == NULL || b == NULL)
-		return 0;
-
-	if (a->turn != b->turn
-	 || a->idlecount != b->idlecount
-	 || a->en_passant_x != b->en_passant_x
-	 || a->en_passant_y != b->en_passant_y
-	 || a->kingx[0] != b->kingx[0]
-	 || a->kingx[1] != b->kingx[1]
-	 || a->pieceScore != b->pieceScore
-	 || a->totalScore != b->totalScore
-	 || a->pps_O != b->pps_O
-	 || a->pps_E != b->pps_E
-	 || a->castle_king[0] != b->castle_king[0]
-	 || a->castle_king[1] != b->castle_king[1]
-	)
-		return 0;
-
-	int i, j;
-
-	for (i=0; i<8; i++)
-		for (j=0; j<8; j++)
-			if (a->board[i][j] != b->board[i][j])
-				return 0;
-
-	return 1;
 }
 
 static void addon_init() {
