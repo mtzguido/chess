@@ -285,8 +285,25 @@ score heur(game g) {
 
 	ret = (pieceScore(g))
 	    + (inCheck(g, WHITE) ? -200 : 0)
-	    + (inCheck(g, BLACK) ?  200 : 0)
-		;
+	    + (inCheck(g, BLACK) ?  200 : 0);
+
+	if (!g->castled[WHITE]) {
+		if (!g->castle_king[WHITE] && !g->castle_queen[WHITE])
+			ret -= 15;
+		else if (!g->castle_king[WHITE])
+			ret -= 12;
+		else if (!g->castle_queen[WHITE])
+			ret -= 8;
+	}
+
+	if (!g->castled[BLACK]) {
+		if (!g->castle_king[BLACK] && !g->castle_queen[BLACK])
+			ret += 15;
+		else if (!g->castle_king[BLACK])
+			ret += 12;
+		else if (!g->castle_queen[BLACK])
+			ret += 8;
+	}
 
 	return ret;
 }
