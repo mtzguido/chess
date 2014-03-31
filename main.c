@@ -9,6 +9,7 @@
 #include "board.h"
 #include "pgn.h"
 #include "mem.h"
+#include "ztable.h"
 
 /* a prefijo de b */
 static int isPrefix(char *a, char *b) {
@@ -92,22 +93,30 @@ int main_trucho (int argc, char **argv) {
 	if (machineColor != WHITE) 
 		printf("go\n");
 
+	mark(b);
+
 	while(1) {
+
 		int rc = isFinished(b);
 		if (rc > 0) {
 			if (rc == WIN(machineColor)) {
-				fprintf(stderr, "RES: I won\n");
+				fprintf(stderr, "RES: Win (checkmate)\n");
 				return 12;
 			} else if (rc == WIN(flipTurn(machineColor))) {
-				fprintf(stderr, "RES: I lost..\n");
+				fprintf(stderr, "RES: Lose (checkmate)\n");
 				return 10;
-			} else if (rc == DRAW) {
-				fprintf(stderr, "RES: It's a draw!!\n");
+			} else if (rc == DRAW_3FOLD) {
+				fprintf(stderr, "RES: Draw (threefold)\n");
+				return 11;
+			} else if (rc == DRAW_50MOVE) {
+				fprintf(stderr, "RES: Draw (fifty move)\n");
+				return 11;
+			} else if (rc == DRAW_STALE) {
+				fprintf(stderr, "RES: Draw (stalemate)\n");
 				return 11;
 			} else {
 				assert(0);
 			}
-
 
 			break;
 		}
@@ -153,7 +162,6 @@ int main_trucho (int argc, char **argv) {
 					fprintf(stderr, "%c%c%c%c\n", m.c + 'a', '8'-m.r, m.C + 'a', '8'-m.R);
 				}
 			}
-
 		} else {
 			int r, R;
 			char c, C;
@@ -163,7 +171,6 @@ int main_trucho (int argc, char **argv) {
 			size_t crap = 0;
 
 			m.who = flipTurn(machineColor);
-
 
 			getline(&line, &crap, stdin);
 			line[strlen(line)-1] = 0;
@@ -237,6 +244,8 @@ int main_trucho (int argc, char **argv) {
 				continue;
 			}
 		}
+
+		mark(b);
 
 		pp = toPGN(t, m);
 		freeGame(t);

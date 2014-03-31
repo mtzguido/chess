@@ -67,14 +67,11 @@ game machineMove(game start) {
 	for (i = 0; i < 30; i++)
 		depths[i] = 0;
 
-	mark(start);
-
 	t1 = clock();
 	t = machineMoveImpl(start, SEARCH_DEPTH, 0, &ret, minScore, maxScore);
 	t2 = clock();
 
 	assert(ret != NULL);
-	mark(ret);
 
 	totalnopen += nopen;
 	totalms += 1000*(t2-t1)/CLOCKS_PER_SEC;
@@ -143,7 +140,7 @@ static score machineMoveImpl_(
 	if ((rc=isFinished(g)) != -1) {
 		if (rc == WIN(machineColor))
 			ret = 100000 - curDepth;
-		else if (rc == DRAW)
+		else if (rc == DRAW_STALE || rc == DRAW_50MOVE || rc == DRAW_3FOLD)
 			ret = 0;
 		else
 			ret = -100000 + curDepth;
@@ -287,6 +284,8 @@ score heur(game g) {
 	score ret = 0;
 
 	ret = (pieceScore(g))
+	    + (inCheck(g, WHITE) ? -200 : 0)
+	    + (inCheck(g, BLACK) ?  200 : 0)
 		;
 
 	return ret;

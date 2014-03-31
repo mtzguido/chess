@@ -187,6 +187,7 @@ void printBoard(game g) {
 	fprintf(stderr, "  pps o e = %i %i\n", g->pps_O, g->pps_E);
 	fprintf(stderr, "  zobrist = 0x%0x\n", g->zobrist);
 	fprintf(stderr, "  heur is = %i\n", heur(g));
+	fprintf(stderr, "  idlecount = %i\n", g->idlecount);
 	fprintf(stderr, "]\n");
 
 	fflush(stdout);
@@ -215,15 +216,15 @@ char charOf(int piece) {
 
 int isFinished(game g) {
 	if (reps(g) >= 3)
-		return DRAW;
+		return DRAW_3FOLD;
 	else if (g->idlecount >= 50)
-		return DRAW;
+		return DRAW_50MOVE;
 	else if (hasNextGame(g))
 		return -1;
 	else if (inCheck(g, g->turn))
-		return WIN(flipTurn(g->turn)); /* Jaque mate al jugador actual */
+		return WIN(flipTurn(g->turn));
 	else
-		return DRAW; /* Ahogado (Stalemate) */
+		return DRAW_STALE;
 }
 
 static int inCheck_diag(game g, int kr, int kc, int who);
