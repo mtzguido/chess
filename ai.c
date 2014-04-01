@@ -110,8 +110,6 @@ static score machineMoveImpl_(
 
 	score maxa = alpha;
 
-	int rep_count = 1;
-
 	if (addon_notify_entry(g, curDepth, &ret))
 		return ret;
 
@@ -131,7 +129,7 @@ static score machineMoveImpl_(
 	/* Si el tablero es terminal */
 	int rc;
 	if ((rc=isFinished(g)) != -1) {
-		if (rc == WIN(machineColor))
+		if (rc == WIN(color))
 			ret = 100000 - curDepth;
 		else if (rc == DRAW_STALE || rc == DRAW_50MOVE || rc == DRAW_3FOLD)
 			ret = 0;
@@ -146,7 +144,7 @@ static score machineMoveImpl_(
 		if (nb != NULL)
 			*nb = copyGame(g);
 
-		if (machineColor == WHITE)
+		if (color == WHITE)
 			ret = heur(g);
 		else
 			ret = - heur(g);
@@ -186,18 +184,14 @@ static score machineMoveImpl_(
 	/* Itero por los sucesores, maximizando */
 	for (i=0; i<n; i++) {
 		mark(succs[i]);
-		t = - machineMoveImpl(succs[i], maxDepth, curDepth+1, NULL, -beta, -alpha);
+		t = - machineMoveImpl(succs[i], maxDepth, curDepth+1, NULL,
+				      -beta, -alpha, flipTurn(color));
 		unmark(succs[i]);
 
 		if (t > maxa)
 			maxa = t;
 
 		if (t > alpha) {
-			if (t > alpha)
-				rep_count = 1;
-			else
-				rep_count++;
-
 			alpha = t;
 
 			if (nb != NULL) {
