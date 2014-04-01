@@ -39,10 +39,6 @@ static void addon_notify_return(game g, score s, int depth);
 static void addon_notify_cut(game g, game next, int depth);
 static void addon_sort(game g, game *succs, int nsucc, int depth);
 
-static int roll0(int n) {
-	return (rand()%n) == 0;
-}
-
 /*
  * Addons (heuristicas) en archivos
  * separados. Se usan .h para poder
@@ -201,7 +197,7 @@ static score machineMoveImpl_(
 			if (t > maxa)
 				maxa = t;
 
-			if (t > alpha || (flag_randomize && t == alpha && roll0(rep_count+1))) {
+			if (t > alpha) {
 				if (t > alpha)
 					rep_count = 1;
 				else
@@ -236,7 +232,7 @@ static score machineMoveImpl_(
 			if (t < maxb)
 				maxb = t;
 
-			if (t < beta || (flag_randomize && t == beta && roll0(rep_count+1))) {
+			if (t < beta) {
 				if (t < beta)
 					rep_count = 1;
 				else

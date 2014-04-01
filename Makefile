@@ -35,10 +35,6 @@ ifeq (${CONFIG_RELEASE},y)
 	CFLAGS += -O99 -DNDEBUG
 endif
 
-ifeq (${CONFIG_RANDOMIZE},y)
-	CFLAGS += -DCFG_RANDOMIZE
-endif
-
 ifeq (${CONFIG_SHUFFLE},y)
 	CFLAGS += -DCFG_SHUFFLE
 endif
