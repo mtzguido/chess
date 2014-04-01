@@ -55,7 +55,7 @@ static const struct game_struct
 init = {
 	.board= {
 		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, BKING, EMPTY },
-		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, BPAWN, EMPTY },
+		{ WPAWN, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, BPAWN, EMPTY },
 		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
 		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, WKING, WQUEEN },
 		{ EMPTY, BROOK, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
@@ -531,7 +531,7 @@ static inline void calcPromotion(game g, move m);
 
 static void setPiece(game g, int r, int c, int piece) {
 	int old_piece = g->board[r][c];
-	if (old_piece != 0) {
+	if (old_piece) {
 		g->pieceScore -= scoreOf(old_piece);
 		g->totalScore -= absoluteScoreOf(old_piece);
 		g->pps_O      -= piece_square_val_O(old_piece, r, c);
@@ -551,8 +551,8 @@ static void setPiece(game g, int r, int c, int piece) {
 }
 
 static int doMoveRegular(game g, move m) {
-	int piece = g->board[m.r][m.c];
-	int other = flipTurn(g->turn);
+	const int piece = g->board[m.r][m.c];
+	const int other = flipTurn(g->turn);
 
 	if (!isValid(g, m))
 		return 0;
@@ -575,8 +575,12 @@ static int doMoveRegular(game g, move m) {
 
 		/* Recalcular en passant */
 		epCalc(g, m);
+
+		/* Es un peón que promueve? */
+		calcPromotion(g, m);
 	} else {
 		set_ep(g, -1, -1);
+		g->lastmove.was_promotion = 0;
 	}
 
 	if (g->board[m.R][m.C] != 0) {
@@ -586,15 +590,12 @@ static int doMoveRegular(game g, move m) {
 		g->lastmove.was_capture = 0;
 	}
 
-	setPiece(g, m.R, m.C, piece);
-	setPiece(g, m.r, m.c, 0);
+	if (g->lastmove.was_promotion)
+		setPiece(g, m.R, m.C, g->board[m.r][m.c]);
+	else
+		setPiece(g, m.R, m.C, piece);
 
-	if (isPawn(piece)) {
-		/* Es un peón que promueve? */
-		calcPromotion(g, m);
-	} else {
-		g->lastmove.was_promotion = 0;
-	}
+	setPiece(g, m.r, m.c, 0);
 
 	/* Si es algún movimiento relevante al rey contrario
 	 * dropeamos la cache */
@@ -688,7 +689,7 @@ static void calcPromotion(game g, move m) {
 	if (m.R == (m.who == WHITE ? 0 : 7)) {
 		int new_piece = m.who == WHITE ? m.promote : -m.promote;
 
-		setPiece(g, m.R, m.C, new_piece);
+		setPiece(g, m.r, m.c, new_piece);
 		g->lastmove.was_promotion = 1;
 	} else {
 		g->lastmove.was_promotion = 0;
