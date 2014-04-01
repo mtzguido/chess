@@ -22,7 +22,7 @@ int machineColor = -1;
 
 static score machineMoveImpl(
 		game start, int maxDepth, int curDepth,
-		game *nb, score alpha, score beta);
+		game *nb, score alpha, score beta, int color);
 
 static void sortSuccs(game g, game *succs, int n, int depth);
 
@@ -64,7 +64,7 @@ game machineMove(game start) {
 		depths[i] = 0;
 
 	t1 = clock();
-	t = machineMoveImpl(start, SEARCH_DEPTH, 0, &ret, minScore, maxScore);
+	t = machineMoveImpl(start, SEARCH_DEPTH, 0, &ret, minScore, maxScore, machineColor);
 	t2 = clock();
 
 	assert(ret != NULL);
@@ -86,13 +86,13 @@ game machineMove(game start) {
 
 static score machineMoveImpl_(
 		game g, int maxDepth, int curDepth,
-		game *nb, score alpha, score beta);
+		game *nb, score alpha, score beta, int color);
 
 static score machineMoveImpl(
 		game g, int maxDepth, int curDepth,
-		game *nb, score alpha, score beta) {
+		game *nb, score alpha, score beta, int color) {
 
-	score rc = machineMoveImpl_(g, maxDepth, curDepth, nb, alpha, beta);
+	score rc = machineMoveImpl_(g, maxDepth, curDepth, nb, alpha, beta, color);
 
 	/* Wrap de machineMoveImpl, para debug */
 	/* printf("mm (%i/%i) (a=%i, b=%i) returns %i\n", curDepth, maxDepth, alpha, beta, rc); */
@@ -102,14 +102,13 @@ static score machineMoveImpl(
 
 static score machineMoveImpl_(
 		game g, int maxDepth, int curDepth,
-		game *nb, score alpha, score beta) {
+		game *nb, score alpha, score beta, int color) {
 
 	score ret;
 	const score lalpha __attribute__((unused)) = alpha;
 	const score lbeta __attribute__((unused)) = beta;
 
 	score maxa = alpha;
-	score maxb = beta;
 
 	int rep_count = 1;
 
@@ -128,8 +127,6 @@ static score machineMoveImpl_(
 	game *succs = NULL;
 	score t;
 	int i, n = 0;
-
-//	fprintf(stderr, "at prof %i: ", curDepth); pr_board(g);
 
 	/* Si el tablero es terminal */
 	int rc;
@@ -186,78 +183,40 @@ static score machineMoveImpl_(
 	/* Ordenamos los sucesores */
 	sortSuccs(g, succs, n, curDepth);
 
-	/* Itero por los sucesores */
-	if (g->turn == machineColor) {
-		/* Maximizar */
-		for (i=0; i<n; i++) {
-			mark(succs[i]);
-			t = machineMoveImpl(succs[i], maxDepth, curDepth+1, NULL, alpha, beta);
-			unmark(succs[i]);
+	/* Itero por los sucesores, maximizando */
+	for (i=0; i<n; i++) {
+		mark(succs[i]);
+		t = - machineMoveImpl(succs[i], maxDepth, curDepth+1, NULL, -beta, -alpha);
+		unmark(succs[i]);
 
-			if (t > maxa)
-				maxa = t;
+		if (t > maxa)
+			maxa = t;
 
-			if (t > alpha) {
-				if (t > alpha)
-					rep_count = 1;
-				else
-					rep_count++;
+		if (t > alpha) {
+			if (t > alpha)
+				rep_count = 1;
+			else
+				rep_count++;
 
-				alpha = t;
+			alpha = t;
 
-				if (nb != NULL) {
-					if (*nb != NULL)
-						freeGame(*nb);
+			if (nb != NULL) {
+				if (*nb != NULL)
+					freeGame(*nb);
 
-					*nb = copyGame(succs[i]);
-				}
-			}
-
-			if (alpha_beta && beta <= alpha) {
-				addon_notify_cut(g, succs[i], curDepth);
-				break;
+				*nb = copyGame(succs[i]);
 			}
 		}
 
-		ret = alpha;
-		assert(ret == maxa);
-		goto out;
-	} else {
-		/* Minimizar */
-		for (i=0; i<n; i++) {
-			mark(succs[i]);
-			t = machineMoveImpl(succs[i], maxDepth, curDepth+1, NULL, alpha, beta);
-			unmark(succs[i]);
-
-			if (t < maxb)
-				maxb = t;
-
-			if (t < beta) {
-				if (t < beta)
-					rep_count = 1;
-				else
-					rep_count++;
-
-				beta = t;
-
-				if (nb != NULL) {
-					if (*nb != NULL)
-						freeGame(*nb);
-
-					*nb = copyGame(succs[i]);
-				}
-			}
-
-			if (alpha_beta && beta <= alpha) {
-				addon_notify_cut(g, succs[i], curDepth);
-				break;
-			}
+		if (alpha_beta && beta <= alpha) {
+			addon_notify_cut(g, succs[i], curDepth);
+			break;
 		}
-
-		ret = beta;
-		assert(ret == maxb);
-		goto out;
 	}
+
+	ret = alpha;
+	assert(ret == maxa);
+	goto out;
 
 out:
 
