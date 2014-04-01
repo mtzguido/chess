@@ -172,7 +172,8 @@ int kingSuccs(int r, int c, game g, game **arr, int *alen) {
 		register int C = c + dc[i];
 
 		if (R >= 0 && R < 8 && C >= 0 && C < 8)
-			addToRet(g, makeRegularMove(g->turn, r, c, R, C), arr, alen);
+			if (g->board[R][C] == 0 || colorOf(g->board[R][C]) != g->turn)
+				addToRet(g, makeRegularMove(g->turn, r, c, R, C), arr, alen);
 	}
 
 	return *alen > n;
@@ -247,11 +248,13 @@ static void addToRet2(game g, move m, game **arr, int *len) {
 	assert(isPawn(g->board[m.r][m.c]));
 
 	if (m.R == (m.who == WHITE ? 0 : 7)) {
-		/* Caballo */
-		do {
+		int i;
+
+		for (i=0; i<2; i++) {
 			game t = copyGame(g);
 
-			m.promote = WKNIGHT;
+			m.promote = i == 0 ? WQUEEN : WKNIGHT;
+
 			if (!doMove(t, m)) {
 				freeGame(t);
 				break;
@@ -259,21 +262,7 @@ static void addToRet2(game g, move m, game **arr, int *len) {
 
 			(*arr)[*len] = t;
 			(*len)++;
-		} while (0);
-
-		/* Reina */
-		do {
-			game t = copyGame(g);
-
-			m.promote = WQUEEN;
-			if (!doMove(t, m)) {
-				freeGame(t);
-				break;
-			}
-
-			(*arr)[*len] = t;
-			(*len)++;
-		} while (0);
+		}
 	} else {
 		addToRet(g, m, arr, len);
 	}
