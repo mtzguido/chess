@@ -19,12 +19,6 @@
  const int flag_shuffle = 0;
 #endif
 
-#ifdef CFG_RANDOMIZE
- const int flag_randomize = 1;
-#else
- const int flag_randomize = 0;
-#endif
-
 #ifdef CFG_ALPHABETA
  const int alpha_beta = 1;
 #else
