@@ -532,6 +532,7 @@ static inline void calcPromotion(game g, move m);
 
 static void setPiece(game g, int r, int c, int piece) {
 	int old_piece = g->board[r][c];
+
 	if (old_piece) {
 		g->pieceScore -= scoreOf(old_piece);
 		g->totalScore -= absoluteScoreOf(old_piece);
@@ -562,13 +563,8 @@ static int doMoveRegular(game g, move m) {
 	memcpy(&g->lastmove, &m, sizeof m);
 	g->idlecount++;
 
-	if (isKing(piece))
-		updKing(g, m);
-
-	updCastling(g, m);
-
-	/* Los peones no son reversibles */
 	if (isPawn(piece)) {
+		/* Los peones no son reversibles */
 		g->idlecount = 0;
 
 		/* Actuar si es una captura al paso */
@@ -580,22 +576,28 @@ static int doMoveRegular(game g, move m) {
 		/* Es un peón que promueve? */
 		calcPromotion(g, m);
 	} else {
+		if (isKing(piece))
+			updKing(g, m);
+		else if (isRook(piece))
+			updCastling(g, m);
+
 		set_ep(g, -1, -1);
 		g->lastmove.was_promotion = 0;
 	}
 
-	if (g->board[m.R][m.C] != 0) {
+	if (g->lastmove.was_ep || g->board[m.R][m.C] != 0) {
 		g->idlecount = 0;
 		g->lastmove.was_capture = 1;
 	} else {
 		g->lastmove.was_capture = 0;
 	}
 
-	if (g->lastmove.was_promotion)
-		setPiece(g, m.R, m.C, g->board[m.r][m.c]);
-	else
-		setPiece(g, m.R, m.C, piece);
-
+	/*
+	 * No podemos usar piece, porque
+	 * calcPromotion puede haber
+	 * cambiado la pieza 
+	 */
+	setPiece(g, m.R, m.C, g->board[m.r][m.c]);
 	setPiece(g, m.r, m.c, 0);
 
 	/* Si es algún movimiento relevante al rey contrario
@@ -661,12 +663,10 @@ static void updCastling(game g, move m) {
 	 * casilla donde empieza la torre.
 	 * Apenas hay un movimiento el enroque
 	 * se invalida para siempre. */
-	if (m.r == m.who*7) {
-		if (m.c == 7)
-			disable_castle_k(g, m.who);
-		else if (m.c == 0)
-			disable_castle_q(g, m.who);
-	}
+	if (m.c == 7)
+		disable_castle_k(g, m.who);
+	else if (m.c == 0)
+		disable_castle_q(g, m.who);
 }
 
 static void epCapture(game g, move m) {
@@ -674,6 +674,9 @@ static void epCapture(game g, move m) {
 		setPiece(g, m.r, m.C, 0);
 		g->inCheck[WHITE] = -1;
 		g->inCheck[BLACK] = -1;
+		g->lastmove.was_ep = true;
+	} else {
+		g->lastmove.was_ep = false;
 	}
 }
 

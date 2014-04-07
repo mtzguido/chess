@@ -10,6 +10,7 @@
 #include "pgn.h"
 #include "mem.h"
 #include "ztable.h"
+#include "addon_list.h"
 
 /* a prefijo de b */
 static int isPrefix(char *a, char *b) {
@@ -52,6 +53,8 @@ int main_trucho (int argc, char **argv) {
 
 	int movenum = 1;
 
+	start_all_addons();
+
 	FILE *game_log = fopen(machineColor == WHITE ? "gamelog_w" : "gamelog_b", "w");
 
 #if 0
@@ -77,7 +80,7 @@ int main_trucho (int argc, char **argv) {
 	}
 #endif
 
-#if 0
+#if 1
 	{
 		printBoard(machineMove(b));
 		return 0;

@@ -2,6 +2,7 @@
 #include "board.h"
 #include "config.h"
 #include "ztable.h"
+#include "addon.h"
 
 #include <stdint.h>
 #include <assert.h>
@@ -13,53 +14,35 @@
 #include <time.h>
 
 /* Score definition */
-typedef int score;
 static const score minScore = -1e7;
 static const score maxScore =  1e7;
 
 /* Color to play */
 int machineColor = -1;
 
-static score machineMoveImpl(
-		game start, int maxDepth, int curDepth,
-		game *nb, score alpha, score beta, int color);
-
 static void sortSuccs(game g, game *succs, int n, int depth);
+static score machineMoveImpl(game start, int maxDepth, int curDepth,
+			     game *nb, score alpha, score beta, int color);
 
 /* Stats */
 int depths[30];
 static int nopen;
+static int ngen;
 int totalnopen = 0;
 int totalms = 0;
-
-/* Addon functions */
-static void addon_init();
-static bool addon_notify_entry(game g, int depth, score *ret);
-static void addon_notify_return(game g, score s, int depth);
-static void addon_notify_cut(game g, game next, int depth);
-static void addon_sort(game g, game *succs, int nsucc, int depth);
-
-/*
- * Addons (heuristicas) en archivos
- * separados. Se usan .h para poder
- * aprovechar optimizaciones del 
- * compilador en mayor medida
- */
-#include "addon_trans.h"
-#include "addon_killer.h"
-#include "addon_cm.h"
 
 game machineMove(game start) {
 	game ret = NULL;
 	score t;
 	clock_t t1,t2;
 
-	addon_init();
+	addon_reset();
 
 	int i;
 
 	n_collision = 0;
 	nopen = 0;
+	ngen = 0;
 	for (i = 0; i < 30; i++)
 		depths[i] = 0;
 
@@ -72,12 +55,13 @@ game machineMove(game start) {
 	totalnopen += nopen;
 	totalms += 1000*(t2-t1)/CLOCKS_PER_SEC;
 
-	fprintf(stderr, "%i nodes in %.3f seconds\n", nopen, 1.0*(t2-t1)/CLOCKS_PER_SEC);
-	fprintf(stderr, "depth:nnodes - ");
-	for (i = 0; i < 15; i++) 
+	fprintf(stderr, "stats: searched %i nodes in %.3f seconds\n", nopen, 1.0*(t2-t1)/CLOCKS_PER_SEC);
+	fprintf(stderr, "stats: total nodes generated: %i\n", ngen);
+	fprintf(stderr, "stats: depth:n_nodes - ");
+	for (i = 0; depths[i] != 0; i++) 
 		fprintf(stderr, "%i:%i, ", i, depths[i]);
 
-	fprintf(stderr, "Number of hash collisions: %i\n", n_collision);
+	fprintf(stderr, "stats: Number of hash collisions: %i\n", n_collision);
 
 	fprintf(stderr, "expected score: %i\n", t);
 	fflush(NULL);
@@ -107,10 +91,9 @@ static score machineMoveImpl_(
 	score ret;
 	const score lalpha __attribute__((unused)) = alpha;
 	const score lbeta __attribute__((unused)) = beta;
+	int best = 0;
 
-	score maxa = alpha;
-
-	if (addon_notify_entry(g, curDepth, &ret))
+	if (nb == NULL && addon_notify_entry(g, curDepth, &ret))
 		return ret;
 
 	const int extraDepth = 
@@ -155,6 +138,7 @@ static score machineMoveImpl_(
 	/* Generamos los sucesores del tablero */
 	n = genSuccs(g, &succs);
 	assert(succs != NULL);
+	ngen += n;
 
 	/* No debería ocurrir nunca */
 	if (n == 0) {
@@ -188,11 +172,9 @@ static score machineMoveImpl_(
 				      -beta, -alpha, flipTurn(color));
 		unmark(succs[i]);
 
-		if (t > maxa)
-			maxa = t;
-
 		if (t > alpha) {
 			alpha = t;
+			best = i;
 
 			if (nb != NULL) {
 				if (*nb != NULL)
@@ -203,18 +185,15 @@ static score machineMoveImpl_(
 		}
 
 		if (alpha_beta && beta <= alpha) {
-			addon_notify_cut(g, succs[i], curDepth);
+			addon_notify_cut(g, succs[i]->lastmove, curDepth);
 			break;
 		}
 	}
 
 	ret = alpha;
-	assert(ret == maxa);
-	goto out;
+	addon_notify_return(g, succs[best]->lastmove, ret, curDepth);
 
 out:
-
-	addon_notify_return(g, ret, curDepth);
 
 	if (succs != NULL)
 		freeSuccs(succs, n);
@@ -264,6 +243,7 @@ score heur(game g) {
 	return ret;
 }
 
+/*
 static int succCmp(const void *bp, const void *ap) {
 	game a = *((game*)ap);
 	game b = *((game*)bp);
@@ -276,34 +256,34 @@ static int succCmp(const void *bp, const void *ap) {
 
 	return 0;
 }
+	qsort(succs, n, sizeof (game), succCmp);
+*/
 
 static void sortSuccs(game g, game *succs, int n, int depth) {
-	qsort(succs, n, sizeof (game), succCmp);
+	score *vals = malloc(n * sizeof (score));
+	int i, j;
 
-	addon_sort(g, succs, n, depth);
+	for (i=0; i<n; i++)
+		vals[i] = 0;
+
+	addon_score_succs(g, succs, vals, n, depth);
+
+	for (i=1; i<n; i++) {
+		for (j=i; j>0; j--) {
+			if (vals[j-1] < vals[j]) {
+				score ts;
+				game tg;
+
+				ts = vals[j-1];
+				vals[j-1] = vals[j];
+				vals[j] = ts;
+
+				tg = succs[j-1];
+				succs[j-1] = succs[j];
+				succs[j] = tg;
+			} else break;
+		}
+	}
+
+	free(vals);
 }
-
-static void addon_init() {
-	killer_init();
-	cm_init();
-	trans_init();
-}
-
-static void addon_notify_return(game g, score s, int depth) {
-}
-
-static bool addon_notify_entry(game g, int depth, score *ret) {
-}
-
-static void addon_notify_cut(game g, game next, int depth) {
-	killer_notify_cut(g, next, depth);
-	cm_notify_cut(g, next, depth);
-	trans_notify_cut(g, next, depth);
-}
-
-static void addon_sort(game g, game *succs, int nsucc, int depth) {
-	cm_sort(g, succs, nsucc, depth);
-	killer_sort(g, succs, nsucc, depth);
-	trans_sort(g, succs, nsucc, depth);
-}
-

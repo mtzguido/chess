@@ -6,3 +6,4 @@ doc/*.log
 doc/*.pdf
 *.swp
 tags
+.config

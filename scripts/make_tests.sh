@@ -1,3 +1,7 @@
+#!/bin/bash
+
+set -ue
+
 if false; then
 	CHESS_PROG=hoichess
 	CHESS_ARGS=-x

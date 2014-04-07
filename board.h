@@ -15,8 +15,9 @@ typedef struct move {
 	int r, c, R, C; /* (r,c) -> (R,C) */
 	int promote;
 
-	int was_capture;
-	int was_promotion;
+	bool was_capture;
+	bool was_promotion;
+	bool was_ep;
 } move;
 
 struct game_struct {
@@ -64,6 +65,10 @@ struct game_struct {
 	 *  de terminación */
 	int hasNext;
 	int nSucc;
+
+	/*  Información de generación
+	 *  de sucesores */
+	int succ_r, succ_c;
 };
 
 typedef struct game_struct *game;

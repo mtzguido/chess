@@ -1,4 +1,6 @@
 #include "mem.h"
+#include "addon.h"
+
 #include <stdlib.h>
 
 #ifdef CFG_OWNMEM
@@ -21,6 +23,12 @@ void init_mem() {
 
 game galloc() {
 	int t;
+
+#ifdef CFG_TRANSPOSITION
+	if (nfree == 0) {
+		addon_free_mem();
+	}
+#endif
 
 	assert(nfree > 0);
 	nfree--;

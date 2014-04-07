@@ -5,6 +5,10 @@ SHELL=/bin/bash
 TARGET=chess
 CC=gcc
 
+.config:
+	@echo USING DEFAULT CONFIG
+	./scripts/defconfig
+
 include .config
 
 ifeq (${CONFIG_ALPHABETA},y)
@@ -51,8 +55,21 @@ endif
 CFLAGS += -DCFG_DEPTH=${CONFIG_DEPTH}
 CFLAGS += -DCFG_MEMSZ=${CONFIG_MEMSZ}
 CFLAGS += -DCFG_ZTABLE_SIZE=${CONFIG_ZTABLE_SIZE}
+CFLAGS += -DCFG_TTABLE_SIZE=${CONFIG_TTABLE_SIZE}
 
-mods=main ai board move succs pgn mem ztable
+mods=	main	\
+	ai	\
+	board	\
+	move	\
+	succs	\
+	pgn	\
+	mem	\
+	ztable	\
+	addon_trans	\
+	addon_killer	\
+	addon_cm	\
+	addon
+
 objs=$(patsubst %,%.o,$(mods))
 
 all: $(TARGET)
