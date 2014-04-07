@@ -13,6 +13,10 @@ total=${1:-100} # $1 o 100, por defecto
 rm -f wpipe bpipe full_log
 mkfifo wpipe bpipe
 
+if ! [ -d games ]; then
+	mkdir games
+fi
+
 while [ $n -lt $total ]; do
 	n=$((n+1))
 
