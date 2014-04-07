@@ -290,23 +290,20 @@ static void addon_init() {
 }
 
 static void addon_notify_return(game g, score s, int depth) {
-	trans_notify_return(g, s, depth);
 }
 
 static bool addon_notify_entry(game g, int depth, score *ret) {
-	if (trans_notify_entry(g, depth, ret))
-		return true;
-
-	return false;
 }
 
 static void addon_notify_cut(game g, game next, int depth) {
 	killer_notify_cut(g, next, depth);
 	cm_notify_cut(g, next, depth);
+	trans_notify_cut(g, next, depth);
 }
 
 static void addon_sort(game g, game *succs, int nsucc, int depth) {
 	cm_sort(g, succs, nsucc, depth);
 	killer_sort(g, succs, nsucc, depth);
+	trans_sort(g, succs, nsucc, depth);
 }
 
