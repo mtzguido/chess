@@ -92,7 +92,8 @@ static void fix(game g) {
 			g->pieceScore += scoreOf(piece);
 			g->totalScore += absoluteScoreOf(piece);
 
-			g->zobrist ^= ZOBR_PIECE(piece, i, j);
+			if (piece)
+				g->zobrist ^= ZOBR_PIECE(piece, i, j);
 		}
 	}
 
@@ -536,13 +537,13 @@ static void setPiece(game g, int r, int c, int piece) {
 		g->totalScore -= absoluteScoreOf(old_piece);
 		g->pps_O      -= piece_square_val_O(old_piece, r, c);
 		g->pps_E      -= piece_square_val_E(old_piece, r, c);
+		g->zobrist    ^= ZOBR_PIECE(old_piece, r, c);
 	}
 
-	g->zobrist ^= ZOBR_PIECE(old_piece, r, c);
 	g->board[r][c] = piece;
-	g->zobrist ^= ZOBR_PIECE(piece, r, c);
 
 	if (piece) {
+		g->zobrist    ^= ZOBR_PIECE(piece, r, c);
 		g->pps_E      += piece_square_val_E(piece, r, c);
 		g->pps_O      += piece_square_val_O(piece, r, c);
 		g->totalScore += absoluteScoreOf(piece);
