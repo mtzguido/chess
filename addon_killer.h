@@ -49,6 +49,9 @@ static void killer_sort(game g, game *succs, int nsucc, int depth) {
 static void killer_notify_cut(game g, game next, int depth) {
 	int i;
 
+	if (depth > KTABLE_SIZE)
+		return;
+
 	for (i=0; i<NKILLER; i++)
 		if (equalMove(killerTable[depth][i], next->lastmove))
 			return;
@@ -58,8 +61,6 @@ static void killer_notify_cut(game g, game next, int depth) {
 
 	killerTable[depth][0] = next->lastmove;
 }
-
-
 
 #else
 
