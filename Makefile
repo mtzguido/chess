@@ -65,6 +65,7 @@ mods=	main	\
 	pgn	\
 	mem	\
 	ztable	\
+	zobrist	\
 	addon_trans	\
 	addon_killer	\
 	addon_cm	\
