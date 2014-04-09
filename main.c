@@ -80,7 +80,7 @@ int main_trucho (int argc, char **argv) {
 	}
 #endif
 
-#if 1
+#if 0
 	{
 		printBoard(machineMove(b));
 		return 0;

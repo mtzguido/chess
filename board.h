@@ -65,10 +65,6 @@ struct game_struct {
 	 *  de terminación */
 	int hasNext;
 	int nSucc;
-
-	/*  Información de generación
-	 *  de sucesores */
-	int succ_r, succ_c;
 };
 
 typedef struct game_struct *game;

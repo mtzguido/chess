@@ -111,7 +111,8 @@ static bool trans_notify_entry(game g, int depth, score *ret) {
 	if (!p)
 		return false;
 
-	return p->s;
+	*ret = p->s;
+	return true;
 }
 
 static struct addon trans_addon __attribute__((unused)) = {
@@ -119,7 +120,7 @@ static struct addon trans_addon __attribute__((unused)) = {
 	.score_succs = trans_sort_succs,
 	.notify_return = trans_notify_return,
 	.free_mem = trans_free_mem,
-	.notify_entry = trans_notify_entry
+//	.notify_entry = trans_notify_entry
 };
 
 void addon_trans_init() {
