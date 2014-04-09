@@ -109,7 +109,7 @@ int main_trucho (int argc, char **argv) {
 	}
 #endif
 
-#if 1
+#if 0
 	zobrist_test(b, 0);
 	return 0;
 #endif
