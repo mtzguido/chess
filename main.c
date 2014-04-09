@@ -41,6 +41,28 @@ static char pieceOf(char c) {
 	}   
 }
 
+static void zobrist_test(game b, int d) {
+	mark(b);
+	game *succs;
+	int i;
+
+	totalnopen++;
+
+	if (rand() > rand())
+		return;
+
+	if (d >= CFG_DEPTH)
+		return;
+
+	int n = genSuccs(b, &succs);
+
+	for (i=0; i<n; i++) {
+		zobrist_test(succs[i], d+1);
+	}
+
+	freeSuccs(succs, n);
+}
+
 int main_trucho (int argc, char **argv) {
 	init_mem();
 	srand(time(NULL) + getpid());
@@ -87,6 +109,10 @@ int main_trucho (int argc, char **argv) {
 	}
 #endif
 
+#if 1
+	zobrist_test(b, 0);
+	return 0;
+#endif
 
 	move m;
 	char mbuf[500];
@@ -273,6 +299,7 @@ int main_trucho (int argc, char **argv) {
 int main (int argc, char **argv) {
 	int rc = main_trucho(argc, argv);
 	fprintf(stderr, "Total nodes: %i\n", totalnopen);
+	fprintf(stderr, "Total unique nodes: %i\n", NN);
 	fprintf(stderr, "Total time: %ims\n", totalms);
 
 	return rc;

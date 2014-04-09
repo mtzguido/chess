@@ -3,6 +3,8 @@
 
 #include "board.h"
 
+extern int NN;
+
 struct bucket {
 	game g;
 	int n;

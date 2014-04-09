@@ -4,6 +4,8 @@
 
 int n_collision = 0;
 
+int NN;
+
 struct bucket * ztable[CFG_ZTABLE_SIZE];
 
 void mark(game g) {
@@ -19,6 +21,7 @@ void mark(game g) {
 	if (p) {
 		p->n++;
 	} else {
+		NN++;
 		p = malloc(sizeof *p);
 		p->g = copyGame(g);
 		p->n = 1;

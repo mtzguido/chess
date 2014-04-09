@@ -108,21 +108,21 @@ typedef struct game_struct *game;
 
 game startingGame(void);
 
-int doMove(game g, move m); /* Actua sobre g */
+bool doMove(game g, move m); /* Actua sobre g */
 game copyGame(game g);
 void freeGame(game g);
 
 #include "succs.h"
 
-int inCheck(game g, int who);
+bool inCheck(game g, int who);
 
 void freeSuccs(game *arr, int len);
 int isFinished(game g);
 
 void printBoard(game b);
 
-int equalGame(game a, game b);
-int equalMove(move a, move b);
+bool equalGame(game a, game b);
+bool equalMove(move a, move b);
 
 char charOf(int piece);
 

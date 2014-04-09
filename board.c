@@ -234,14 +234,14 @@ int isFinished(game g) {
 		return DRAW_STALE;
 }
 
-static int inCheck_diag(game g, int kr, int kc, int who);
-static int inCheck_line(game g, int kr, int kc, int who);
-static int inCheck_knig(game g, int kr, int kc, int who);
-static int inCheck_pawn(game g, int kr, int kc, int who);
-static int inCheck_king(game g, int kr, int kc, int who);
+static bool inCheck_diag(game g, int kr, int kc, int who);
+static bool inCheck_line(game g, int kr, int kc, int who);
+static bool inCheck_knig(game g, int kr, int kc, int who);
+static bool inCheck_pawn(game g, int kr, int kc, int who);
+static bool inCheck_king(game g, int kr, int kc, int who);
 
-int inCheck(game g, int who) {
-	int kr, kc;
+bool inCheck(game g, int who) {
+	u8 kr, kc;
 
 	if (g->inCheck[who] != -1)
 		return g->inCheck[who];
@@ -258,10 +258,10 @@ int inCheck(game g, int who) {
 	return g->inCheck[who];
 }
 
-static int inCheck_line(game g, int kr, int kc, int who) {
+static bool inCheck_line(game g, int kr, int kc, int who) {
 	int i, j;
-	const int enemy_q = who == WHITE ? BQUEEN : WQUEEN;
-	const int enemy_r = who == WHITE ? BROOK : WROOK;
+	const i8 enemy_q = who == WHITE ? BQUEEN : WQUEEN;
+	const i8 enemy_r = who == WHITE ? BROOK : WROOK;
 
 	/* Columna */
 	j = kc;
@@ -302,10 +302,10 @@ static int inCheck_line(game g, int kr, int kc, int who) {
 	return 0;
 }
 
-static int inCheck_diag(game g, int kr, int kc, int who) {
+static bool inCheck_diag(game g, int kr, int kc, int who) {
 	int i, j;
-	const int enemy_q = who == WHITE ? BQUEEN : WQUEEN;
-	const int enemy_b = who == WHITE ? BBISHOP : WBISHOP;
+	const i8 enemy_q = who == WHITE ? BQUEEN : WQUEEN;
+	const i8 enemy_b = who == WHITE ? BBISHOP : WBISHOP;
 
 	/* Diagonales */
 	for (i=kr-1, j=kc-1; i>=0 && j>=0; i--, j--)
@@ -343,8 +343,8 @@ static int inCheck_diag(game g, int kr, int kc, int who) {
 	return 0;
 }
 
-static int inCheck_knig(game g, int kr, int kc, int who) {
-	const int enemy_kn = who == WHITE ? BKNIGHT : WKNIGHT;
+static bool inCheck_knig(game g, int kr, int kc, int who) {
+	const i8 enemy_kn = who == WHITE ? BKNIGHT : WKNIGHT;
 
 	/* Caballos */
 	if (kr >= 2 && kc >= 1 && g->board[kr-2][kc-1] == enemy_kn) return 1;
@@ -359,7 +359,7 @@ static int inCheck_knig(game g, int kr, int kc, int who) {
 	return 0;
 }
 
-static int inCheck_pawn(game g, int kr, int kc, int who) {
+static bool inCheck_pawn(game g, int kr, int kc, int who) {
 	if (who == WHITE) {
 		if (kr > 0) {
 			if (kc > 0 && g->board[kr-1][kc-1] == BPAWN)
@@ -381,7 +381,7 @@ static int inCheck_pawn(game g, int kr, int kc, int who) {
 	}
 }
 
-static int inCheck_king(game g, int kr, int kc, int who) {
+static bool inCheck_king(game g, int kr, int kc, int who) {
 	/* Simplemente viendo la distancia */
 
 	return     abs(g->kingx[0] - g->kingx[1]) <= 1
@@ -413,7 +413,7 @@ void freeSuccs(game *arr, int len) {
  * en donde mover el caballo causa un jaque aún
  * cuando no lo amenaza
  */
-static int safe(game g, int r, int c, int kr, int kc) {
+static u8 safe(game g, u8 r, u8 c, u8 kr, u8 kc) {
 	if (r == kr || c == kc) {
 		return 0;
 	} else {
@@ -449,7 +449,7 @@ static void disable_castle_q(game g, int who) {
 }
 
 /* Auxiliares de en_passant */
-static void set_ep(game g, int r, int c) {
+static void set_ep(game g, u8 r, u8 c) {
 	g->zobrist ^= ZOBR_EP(g->en_passant_x);
 
 	g->en_passant_x = r;
@@ -458,15 +458,15 @@ static void set_ep(game g, int r, int c) {
 	g->zobrist ^= ZOBR_EP(g->en_passant_x);
 }
 
-static int doMoveRegular(game g, move m);
-static int doMoveKCastle(game g, move m);
-static int doMoveQCastle(game g, move m);
+static bool doMoveRegular(game g, move m);
+static bool doMoveKCastle(game g, move m);
+static bool doMoveQCastle(game g, move m);
 
 /*
  * 1 : Ok
  * 0 : Movida no válida, deja a g intacto
  */
-int doMove(game g, move m) {
+bool doMove(game g, move m) {
 	assert(m.who == g->turn);
 
 	game old_g = copyGame(g);
@@ -522,16 +522,16 @@ fail:
 }
 
 /* Auxiliares de doMoveRegular */
-static inline void setPiece(game g, int r, int c, int piece);
-static int isValid(game g, move m);
+static inline void setPiece(game g, u8 r, u8 c, i8 piece);
+static bool isValid(game g, move m);
 static inline void updKing(game g, move m);
 static inline void updCastling(game g, move m);
 static inline void epCapture(game g, move m);
 static inline void epCalc(game g, move m);
 static inline void calcPromotion(game g, move m);
 
-static void setPiece(game g, int r, int c, int piece) {
-	int old_piece = g->board[r][c];
+static void setPiece(game g, u8 r, u8 c, i8 piece) {
+	i8 old_piece = g->board[r][c];
 
 	if (old_piece) {
 		g->pieceScore -= scoreOf(old_piece);
@@ -552,9 +552,9 @@ static void setPiece(game g, int r, int c, int piece) {
 	}
 }
 
-static int doMoveRegular(game g, move m) {
-	const int piece = g->board[m.r][m.c];
-	const int other = flipTurn(g->turn);
+static bool doMoveRegular(game g, move m) {
+	const i8 piece = g->board[m.r][m.c];
+	const u8 other = flipTurn(g->turn);
 
 	if (!isValid(g, m))
 		return 0;
@@ -617,8 +617,8 @@ static int doMoveRegular(game g, move m) {
 	return 1;
 }
 
-static int isValid(game g, move m) {
-	int piece = g->board[m.r][m.c];
+static bool isValid(game g, move m) {
+	i8 piece = g->board[m.r][m.c];
 
 	/* Siempre se mueve una pieza propia */
 	if (piece == 0 || colorOf(piece) != g->turn)
@@ -648,10 +648,8 @@ static int isValid(game g, move m) {
 }
 
 static void updKing(game g, move m) {
-	int piece = g->board[m.r][m.c];
-
-	g->kingx[colorOf(piece)] = m.R;
-	g->kingy[colorOf(piece)] = m.C;
+	g->kingx[m.who] = m.R;
+	g->kingy[m.who] = m.C;
 
 	disable_castle_k(g, m.who);
 	disable_castle_q(g, m.who);
@@ -691,7 +689,7 @@ static void epCalc(game g, move m) {
 
 static void calcPromotion(game g, move m) {
 	if (m.R == (m.who == WHITE ? 0 : 7)) {
-		int new_piece = m.who == WHITE ? m.promote : -m.promote;
+		i8 new_piece = m.who == WHITE ? m.promote : -m.promote;
 
 		setPiece(g, m.r, m.c, new_piece);
 		g->lastmove.was_promotion = 1;
@@ -700,10 +698,10 @@ static void calcPromotion(game g, move m) {
 	}
 }
 
-static int doMoveKCastle(game g, move m) {
-	const int rank = m.who == WHITE ? 7 : 0;
-	const int kpiece = m.who == WHITE ? WKING : BKING;
-	const int rpiece = m.who == WHITE ? WROOK : BROOK;
+static bool doMoveKCastle(game g, move m) {
+	const u8 rank = m.who == WHITE ? 7 : 0;
+	const i8 kpiece = m.who == WHITE ? WKING : BKING;
+	const i8 rpiece = m.who == WHITE ? WROOK : BROOK;
 
 	if (!(g->castle_king[m.who] && ! inCheck(g, m.who)
 		&& g->board[rank][7] == rpiece && g->board[rank][6] == EMPTY
@@ -757,10 +755,10 @@ static int doMoveKCastle(game g, move m) {
 	return 1;
 }
 
-static int doMoveQCastle(game g, move m) {
-	const int rank = m.who == WHITE ? 7 : 0;
-	const int kpiece = m.who == WHITE ? WKING : BKING;
-	const int rpiece = m.who == WHITE ? WROOK : BROOK;
+static bool doMoveQCastle(game g, move m) {
+	const u8 rank = m.who == WHITE ? 7 : 0;
+	const i8 kpiece = m.who == WHITE ? WKING : BKING;
+	const i8 rpiece = m.who == WHITE ? WROOK : BROOK;
 
 	if (!(g->castle_queen[m.who] && ! inCheck(g, m.who)
 		&& g->board[rank][0] == rpiece && g->board[rank][1] == EMPTY
@@ -843,7 +841,7 @@ static int absoluteScoreOf(int piece) {
 	return abs(scoreTab[piece]);
 }
 
-int equalMove(move a, move b) {
+bool equalMove(move a, move b) {
 	if (a.move_type != b.move_type) return 0;
 	if (a.who != b.who) return 0;
 
@@ -857,7 +855,7 @@ int equalMove(move a, move b) {
 		&& a.promote == b.promote;
 }
 
-int equalGame(game a, game b) {
+bool equalGame(game a, game b) {
 	if (a->zobrist != b->zobrist)
 		return 0;
 
