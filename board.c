@@ -846,7 +846,7 @@ bool equalMove(move a, move b) {
 	if (a.who != b.who) return 0;
 
 	if (a.move_type != MOVE_REGULAR)
-		return 1;
+		return true;
 
 	return a.r == b.r
 		&& a.c == b.c
@@ -857,7 +857,9 @@ bool equalMove(move a, move b) {
 
 bool equalGame(game a, game b) {
 	if (a->zobrist != b->zobrist)
-		return 0;
+		return false;
+
+	return true;
 
 	if (a->turn != b->turn
 	 || a->en_passant_x != b->en_passant_x
@@ -871,7 +873,7 @@ bool equalGame(game a, game b) {
 	 || a->castle_king[0] != b->castle_king[0]
 	 || a->castle_king[1] != b->castle_king[1]
 	)
-		return 0;
+		return false;
 
 	int rc = memcmp(a->board, b->board, sizeof a->board) == 0;
 
