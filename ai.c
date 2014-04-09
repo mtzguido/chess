@@ -2,6 +2,7 @@
 #include "board.h"
 #include "config.h"
 #include "ztable.h"
+#include "mem.h"
 #include "addon.h"
 
 #include <stdint.h>
@@ -135,6 +136,48 @@ static score machineMoveImpl_(
 		goto out;
 	}
 
+	/*
+	 * Antes de generar los sucesores usamos las
+	 * sugerencias de las heurísticas. Tal vez
+	 * tengamos un corte temprano.
+	 */
+	{
+		if (nb != NULL)
+			goto asd;
+
+		move arr[10];
+		int n;
+		game succ = galloc();
+
+		n = addon_suggest(g, arr, curDepth);
+//		n = 0;
+
+		/* Itero por los sucesores, maximizando */
+		for (i=0; i<n; i++) {
+			*succ = *g;
+			doMove(succ, arr[i]);
+
+			mark(succ);
+			t = - machineMoveImpl(succ, maxDepth, curDepth+1, NULL,
+					-beta, -alpha, flipTurn(color));
+			unmark(succ);
+
+			if (t > alpha) {
+				alpha = t;
+				best = i;
+			}
+
+			if (alpha_beta && beta <= alpha) {
+				addon_notify_cut(g, arr[i], curDepth);
+				ret = alpha;
+				addon_notify_return(g, arr[i], ret, curDepth);
+				goto out;
+			}
+		}
+	}
+
+asd:
+
 	/* Generamos los sucesores del tablero */
 	n = genSuccs(g, &succs);
 	assert(succs != NULL);
@@ -191,7 +234,8 @@ static score machineMoveImpl_(
 	}
 
 	ret = alpha;
-	addon_notify_return(g, succs[best]->lastmove, ret, curDepth);
+	if (i < n)
+		addon_notify_return(g, succs[best]->lastmove, ret, curDepth);
 
 out:
 
