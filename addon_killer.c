@@ -48,11 +48,32 @@ static void killer_notify_cut(game g, move m, int depth) {
 	killerTable[depth][0] = m;
 }
 
+static int killer_suggest(game g, move *arr, int depth) {
+	int i, c;
+
+	if (depth > KTABLE_SIZE)
+		return 0;
+
+	c = 0;
+	for (i=0; i<KILLER_WIDTH; i++) {
+		if (killerTable[depth][i].move_type == -1)
+			continue;
+
+		if (killerTable[depth][i].who != g->turn)
+			continue;
+
+		arr[c++] = killerTable[depth][i];
+	}
+
+	return c;
+}
+
 static struct addon killer_addon __attribute__((unused)) =
 {
 	.reset = killer_reset,
 	.score_succs = killer_sort,
-	.notify_cut = killer_notify_cut
+	.notify_cut = killer_notify_cut,
+	.suggest = killer_suggest,
 };
 
 void addon_killer_init() {

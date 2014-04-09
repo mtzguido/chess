@@ -26,6 +26,9 @@ static void trans_notify_return(game g, move m, score s, int depth) {
 
 	struct tt_bucket *p = tt_table[idx];
 
+	assert(m.move_type != -1);
+	assert(m.who == g->turn);
+
 	while (p && !equalGame(g, p->g))
 		p = p->next;
 
@@ -115,12 +118,29 @@ static bool trans_notify_entry(game g, int depth, score *ret) {
 	return true;
 }
 
+static int trans_suggest(game g, move *arr, int depth) {
+	int idx = g->zobrist % CFG_TTABLE_SIZE;
+	struct tt_bucket *p = tt_table[idx];
+
+	while (p && !equalGame(g, p->g))
+		p = p->next;
+
+	if (!p)
+		return 0;
+
+	*arr = p->m;
+
+	assert(p->m.who == g->turn);
+	return 1;
+}
+
 static struct addon trans_addon __attribute__((unused)) = {
 	.reset = trans_reset,
 	.score_succs = trans_sort_succs,
 	.notify_return = trans_notify_return,
 	.free_mem = trans_free_mem,
-//	.notify_entry = trans_notify_entry
+	.suggest = trans_suggest,
+//	.notify_entry = trans_notify_entry,
 };
 
 void addon_trans_init() {

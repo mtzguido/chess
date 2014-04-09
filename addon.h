@@ -12,6 +12,7 @@ struct addon {
 	void (*score_succs)(game g, const game *succs,
 			    score *vals, int nsucc, int depth);
 	void (*free_mem)(void);
+	int  (*suggest)(game g, move *arr, int depth);
 };
 
 void addon_register(struct addon sa);
@@ -23,6 +24,7 @@ void addon_notify_cut(game g, move m, int depth);
 void addon_score_succs(game g, const game *succs,
 		      score *vals, int nsucc, int depth);
 void addon_free_mem(void);
+int  addon_suggest(game g, move *arr, int depth);
 
 #endif
 

@@ -80,3 +80,16 @@ void addon_free_mem() {
 			a.free_mem();
 	}
 }
+
+int addon_suggest(game g, move *arr, int depth) {
+	int i, n = 0;
+
+	for (i=0; i<n_addon; i++) {
+		struct addon a = enabled_addons[i];
+
+		if (a.suggest != NULL)
+			n += a.suggest(g, arr+n, depth);
+	}
+
+	return n;
+}

@@ -6,9 +6,9 @@
 #include "addon_trans.h"
 
 static inline void start_all_addons() {
-	addon_cm_init();
-	addon_killer_init();
 	addon_trans_init();
+	addon_killer_init();
+	addon_cm_init();
 }
 
 #endif
