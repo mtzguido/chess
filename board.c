@@ -388,15 +388,6 @@ static bool inCheck_king(game g, int kr, int kc, int who) {
 		&& abs(g->kingy[0] - g->kingy[1]) <= 1;
 }
 
-void freeSuccs(game *arr, int len) {
-	int i;
-
-	for (i=0; i<len; i++)
-		freeGame(arr[i]);
-
-	free(arr);
-}
-
 /*
  * Devuelve verdadero si un cambio en (r,c)
  * nunca puede causar una amenaza a (kr, kc),
@@ -512,13 +503,13 @@ bool doMove(game g, move m) {
 	g->hasNext = -1;
 	g->nSucc = -1;
 
-	return 1;
+	return true;
 
 fail:
 	memcpy(g, old_g, sizeof *g);
 	freeGame(old_g);
 
-	return 0;
+	return false;
 }
 
 /* Auxiliares de doMoveRegular */

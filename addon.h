@@ -9,7 +9,7 @@ struct addon {
 	void (*notify_return)(game g, move m, score s, int depth);
 	bool (*notify_entry)(game g, int depth, score *ret);
 	void (*notify_cut)(game g, move m, int depth);
-	void (*score_succs)(game g, const game *succs,
+	void (*score_succs)(game g, const move *succs,
 			    score *vals, int nsucc, int depth);
 	void (*free_mem)(void);
 	int  (*suggest)(game g, move *arr, int depth);
@@ -21,7 +21,7 @@ void addon_reset(void);
 void addon_notify_return(game g, move m, score s, int depth);
 bool addon_notify_entry(game g, int depth, score *ret);
 void addon_notify_cut(game g, move m, int depth);
-void addon_score_succs(game g, const game *succs,
+void addon_score_succs(game g, const move *succs,
 		      score *vals, int nsucc, int depth);
 void addon_free_mem(void);
 int  addon_suggest(game g, move *arr, int depth);

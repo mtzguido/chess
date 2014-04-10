@@ -58,7 +58,7 @@ void addon_notify_cut(game g, move m, int depth) {
 	}
 }
 
-void addon_score_succs(game g, const game *succs,
+void addon_score_succs(game g, const move *succs,
 		       score *vals, int nsucc, int depth) {
 	int i;
 

@@ -21,7 +21,7 @@ static const score maxScore =  1e7;
 /* Color to play */
 int machineColor = -1;
 
-static void sortSuccs(game g, game *succs, int n, int depth);
+static void sortSuccs(game g, move *succs, int n, int depth);
 static score machineMoveImpl(game start, int maxDepth, int curDepth,
 			     game *nb, score alpha, score beta, int color);
 
@@ -106,7 +106,8 @@ static score machineMoveImpl_(
 	nopen++;
 	depths[curDepth]++;
 
-	game *succs = NULL;
+	game ng = galloc();
+	move *succs = NULL;
 	score t;
 	int i, n = 0;
 
@@ -186,20 +187,13 @@ asd:
 	/* Generamos los sucesores del tablero */
 	n = genSuccs(g, &succs);
 	assert(succs != NULL);
+	assert(n > 0);
 	ngen += n;
-
-	/* No debería ocurrir nunca */
-	if (n == 0) {
-		printBoard(g);
-		fprintf(stderr, "--NO MOVES!!! ------\n");
-		fflush(NULL);
-		assert(0);
-	}
 
 	/* Shuffle */
 	if (flag_shuffle) {
 		int i, j;
-		game t;
+		move t;
 
 		for (i=0; i<n-1; i++) {
 			j = i + rand() % (n-i);
@@ -215,10 +209,20 @@ asd:
 
 	/* Itero por los sucesores, maximizando */
 	for (i=0; i<n; i++) {
-		mark(succs[i]);
-		t = - machineMoveImpl(succs[i], maxDepth, curDepth+1, NULL,
+		*ng = *g;
+
+		/*
+		 * Admitimos que genSuccs nos dé
+		 * movidas inválidas.
+		 */
+		if (! doMove(ng, succs[i]))
+			continue;
+
+
+		mark(ng);
+		t = - machineMoveImpl(ng, maxDepth, curDepth+1, NULL,
 				      -beta, -alpha, flipTurn(color));
-		unmark(succs[i]);
+		unmark(ng);
 
 		if (t > alpha) {
 			alpha = t;
@@ -228,19 +232,19 @@ asd:
 				if (*nb != NULL)
 					freeGame(*nb);
 
-				*nb = copyGame(succs[i]);
+				*nb = copyGame(ng);
 			}
 		}
 
 		if (alpha_beta && beta <= alpha) {
-			addon_notify_cut(g, succs[i]->lastmove, curDepth);
+			addon_notify_cut(g, succs[i], curDepth);
 			break;
 		}
 	}
 
 	ret = alpha;
 	if (i < n)
-		addon_notify_return(g, succs[best]->lastmove, ret, curDepth);
+		addon_notify_return(g, succs[best], ret, curDepth);
 
 out:
 
@@ -308,7 +312,7 @@ static int succCmp(const void *bp, const void *ap) {
 	qsort(succs, n, sizeof (game), succCmp);
 */
 
-static void sortSuccs(game g, game *succs, int n, int depth) {
+static void sortSuccs(game g, move *succs, int n, int depth) {
 	score *vals = malloc(n * sizeof (score));
 	int i, j;
 
@@ -321,15 +325,15 @@ static void sortSuccs(game g, game *succs, int n, int depth) {
 		for (j=i; j>0; j--) {
 			if (vals[j-1] < vals[j]) {
 				score ts;
-				game tg;
+				move tm;
 
 				ts = vals[j-1];
 				vals[j-1] = vals[j];
 				vals[j] = ts;
 
-				tg = succs[j-1];
+				tm = succs[j-1];
 				succs[j-1] = succs[j];
-				succs[j] = tg;
+				succs[j] = tm;
 			} else break;
 		}
 	}

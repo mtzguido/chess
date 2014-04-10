@@ -14,7 +14,7 @@ static void killer_reset() {
 			killerTable[i][j].move_type = -1;
 }
 
-static void killer_sort(game g, const game *succs, score *vals,
+static void killer_sort(game g, const move *succs, score *vals,
 			int nsucc, int depth) {
 	int i, k;
 
@@ -24,7 +24,7 @@ static void killer_sort(game g, const game *succs, score *vals,
 	 * */
 	for (k=0; k<KILLER_WIDTH; k++) {
 		for (i=0; i<nsucc; i++) {
-			if (equalMove(succs[i]->lastmove, killerTable[depth][k])) {
+			if (equalMove(succs[i], killerTable[depth][k])) {
 				vals[i] += KILLER_SCORE;
 				break;
 			}

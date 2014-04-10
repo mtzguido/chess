@@ -46,7 +46,7 @@ static void trans_notify_return(game g, move m, score s, int depth) {
 	}
 }
 
-static void trans_sort_succs(game g, const game *succs, score *vals, int nsucc, int depth) {
+static void trans_sort_succs(game g, const move *succs, score *vals, int nsucc, int depth) {
 	int idx = g->zobrist % CFG_TTABLE_SIZE;
 
 	struct tt_bucket *p = tt_table[idx];
@@ -60,7 +60,7 @@ static void trans_sort_succs(game g, const game *succs, score *vals, int nsucc, 
 	int i;
 
 	for (i=0; i<nsucc; i++) {
-		if (equalMove(p->m, succs[i]->lastmove)) {
+		if (equalMove(p->m, succs[i])) {
 			p->seq = seq++;
 			vals[i] += TRANS_SCORE;
 			return;

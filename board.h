@@ -115,8 +115,6 @@ void freeGame(game g);
 #include "succs.h"
 
 bool inCheck(game g, int who);
-
-void freeSuccs(game *arr, int len);
 int isFinished(game g);
 
 void printBoard(game b);

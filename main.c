@@ -43,7 +43,7 @@ static char pieceOf(char c) {
 
 static void zobrist_test(game b, int d) {
 	mark(b);
-	game *succs;
+	move *succs;
 	int i;
 
 	totalnopen++;
@@ -57,7 +57,12 @@ static void zobrist_test(game b, int d) {
 	int n = genSuccs(b, &succs);
 
 	for (i=0; i<n; i++) {
-		zobrist_test(succs[i], d+1);
+		game t = copyGame(b);
+		if (!doMove(t, succs[i]))
+			continue;
+
+		zobrist_test(t, d+1);
+		freeGame(t);
 	}
 
 	freeSuccs(succs, n);

@@ -4,11 +4,11 @@
 #include <stdio.h>
 #include <assert.h>
 
-static void addToRet (game g, move m, game **arr, int *len);
-static void addToRet2(game g, move m, game **arr, int *len);
+static void addToRet (game g, move m, move **arr, int *len);
+static void addToRet2(game g, move m, move **arr, int *len);
 static move makeRegularMove(int who, int r, int c, int R, int C);
 
-int pawnSuccs(int r, int c, game g, game **arr, int *alen) {
+int pawnSuccs(int r, int c, game g, move **arr, int *alen) {
 	int n = *alen;
 
 	if (g->turn == BLACK && r < 7) {
@@ -42,7 +42,7 @@ int pawnSuccs(int r, int c, game g, game **arr, int *alen) {
 	return *alen > n;
 }
 
-int knightSuccs(int r, int c, game g, game **arr, int *alen) {
+int knightSuccs(int r, int c, game g, move **arr, int *alen) {
 	int R, C;
 	int i;
 	int n = *alen;
@@ -61,7 +61,7 @@ int knightSuccs(int r, int c, game g, game **arr, int *alen) {
 	return *alen > n;
 }
 
-int rookSuccs(int r, int c, game g, game **arr, int *alen) {
+int rookSuccs(int r, int c, game g, move **arr, int *alen) {
 	int R, C;
 	int n = *alen;
 
@@ -112,7 +112,7 @@ int rookSuccs(int r, int c, game g, game **arr, int *alen) {
 	return *alen > n;
 }
 
-int bishopSuccs(int r, int c, game g, game **arr, int *alen) {
+int bishopSuccs(int r, int c, game g, move **arr, int *alen) {
 	int R, C;
 	int n = *alen;
 
@@ -160,7 +160,7 @@ int bishopSuccs(int r, int c, game g, game **arr, int *alen) {
 	return *alen > n;
 }
 
-int kingSuccs(int r, int c, game g, game **arr, int *alen) {
+int kingSuccs(int r, int c, game g, move **arr, int *alen) {
 	int n = *alen;
 
 	int i;
@@ -179,15 +179,15 @@ int kingSuccs(int r, int c, game g, game **arr, int *alen) {
 	return *alen > n;
 }
 
-int genSuccs(game g, game **arr_ret) {
+int genSuccs(game g, move **arr_ret) {
 	int i, j;
 	int alen, asz;
-	game *arr;
+	move *arr;
 	move m = {0};
 
 	alen = 0;
 	asz = 128;
-	arr = malloc(asz * sizeof g);
+	arr = malloc(asz * sizeof arr[0]);
 	assert(arr != NULL);
 
 	for (i=0; i<8; i++) {
@@ -223,26 +223,18 @@ int genSuccs(game g, game **arr_ret) {
 	if (g->castle_queen[g->turn])
 		addToRet(g, m, &arr, &alen);
 
-	*arr_ret = arr;
-
 	assert(alen <= asz);
 
+	*arr_ret = arr;
 	return alen;
 }
 
-static void addToRet(game g, move m, game **arr, int *len) {
-	game t = copyGame(g);
-
-	if (!doMove(t, m)) {
-		freeGame(t);
-		return;
-	}
-
-	(*arr)[*len] = t;
+static void addToRet(game g, move m, move **arr, int *len) {
+	(*arr)[*len] = m;
 	(*len)++;
 }
 
-static void addToRet2(game g, move m, game **arr, int *len) {
+static void addToRet2(game g, move m, move **arr, int *len) {
 	/* Aca agregamos ambos casos si es un peón que promueve.
 	 * es una chanchada, si. */
 	assert(isPawn(g->board[m.r][m.c]));
@@ -251,16 +243,9 @@ static void addToRet2(game g, move m, game **arr, int *len) {
 		int i;
 
 		for (i=0; i<2; i++) {
-			game t = copyGame(g);
-
 			m.promote = i == 0 ? WQUEEN : WKNIGHT;
 
-			if (!doMove(t, m)) {
-				freeGame(t);
-				break;
-			}
-
-			(*arr)[*len] = t;
+			(*arr)[*len] = m;
 			(*len)++;
 		}
 	} else {
@@ -285,7 +270,7 @@ static move makeRegularMove(int who, int r, int c, int R, int C) {
 int hasNextGame(game g) {
 	int i, j;
 	int alen, asz;
-	game *arr;
+	move *arr;
 
 	if (g->hasNext != -1)
 		return g->hasNext;
@@ -297,7 +282,7 @@ int hasNextGame(game g) {
 
 	alen = 0;
 	asz = 128;
-	arr = malloc(asz * sizeof g);
+	arr = malloc(asz * sizeof arr[0]);
 	assert(arr != NULL);
 
 	int ret = 1;
@@ -363,7 +348,7 @@ int nSucc(game g) {
 	if (g->nSucc != -1)
 		return g->nSucc;
 
-	game *arr;
+	move *arr;
 	int n;
 
 	n = genSuccs(g, &arr);
@@ -371,5 +356,9 @@ int nSucc(game g) {
 
 	g->nSucc = n;
 	return n;
+}
+
+void freeSuccs(move *arr, int len) {
+	free(arr);
 }
 
