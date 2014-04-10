@@ -1,5 +1,5 @@
 .PHONY:clean all re run doc
-CFLAGS=-Wall -funroll-loops $(CFLAGS_EXTRA)
+CFLAGS=-Wall -Wextra -Wno-unused-parameter -funroll-loops $(CFLAGS_EXTRA)
 LFLAGS=
 SHELL=/bin/bash
 TARGET=chess
