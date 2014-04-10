@@ -234,11 +234,15 @@ int isFinished(game g) {
 		return DRAW_STALE;
 }
 
+/*
+ * Rompemos la simetría en el caso de los reyes,
+ * para optimizar un poco.
+ */
 static bool inCheck_diag(game g, int kr, int kc, int who);
 static bool inCheck_line(game g, int kr, int kc, int who);
 static bool inCheck_knig(game g, int kr, int kc, int who);
 static bool inCheck_pawn(game g, int kr, int kc, int who);
-static bool inCheck_king(game g, int kr, int kc, int who);
+static bool inCheck_king(game g);
 
 bool inCheck(game g, int who) {
 	u8 kr, kc;
@@ -253,7 +257,7 @@ bool inCheck(game g, int who) {
 			|| inCheck_line(g, kr, kc, who)
 			|| inCheck_knig(g, kr, kc, who)
 			|| inCheck_pawn(g, kr, kc, who)
-			|| inCheck_king(g, kr, kc, who);
+			|| inCheck_king(g);
 
 	return g->inCheck[who];
 }
@@ -268,7 +272,7 @@ static bool inCheck_line(game g, int kr, int kc, int who) {
 	for (i=kr+1; i<8; i++)
 		if (g->board[i][j] != 0) {
 			if (g->board[i][j] == enemy_q || g->board[i][j] == enemy_r)
-				return 1;
+				return true;
 
 			break;
 		}
@@ -276,7 +280,7 @@ static bool inCheck_line(game g, int kr, int kc, int who) {
 	for (i=kr-1; i>=0; i--)
 		if (g->board[i][j] != 0) {
 			if (g->board[i][j] == enemy_q || g->board[i][j] == enemy_r)
-				return 1;
+				return true;
 
 			break;
 		}
@@ -286,7 +290,7 @@ static bool inCheck_line(game g, int kr, int kc, int who) {
 	for (j=kc+1; j<8; j++)
 		if (g->board[i][j] != 0) {
 			if (g->board[i][j] == enemy_q || g->board[i][j] == enemy_r)
-				return 1;
+				return true;
 
 			break;
 		}
@@ -294,12 +298,12 @@ static bool inCheck_line(game g, int kr, int kc, int who) {
 	for (j=kc-1; j>=0; j--)
 		if (g->board[i][j] != 0) {
 			if (g->board[i][j] == enemy_q || g->board[i][j] == enemy_r)
-				return 1;
+				return true;
 
 			break;
 		}
 
-	return 0;
+	return false;
 }
 
 static bool inCheck_diag(game g, int kr, int kc, int who) {
@@ -311,7 +315,7 @@ static bool inCheck_diag(game g, int kr, int kc, int who) {
 	for (i=kr-1, j=kc-1; i>=0 && j>=0; i--, j--)
 		if (g->board[i][j] != 0) {
 			if (g->board[i][j] == enemy_q || g->board[i][j] == enemy_b)
-				return 1;
+				return true;
 
 			break;
 		}
@@ -319,7 +323,7 @@ static bool inCheck_diag(game g, int kr, int kc, int who) {
 	for (i=kr+1, j=kc+1; i<8 && j<8; i++, j++)
 		if (g->board[i][j] != 0) {
 			if (g->board[i][j] == enemy_q || g->board[i][j] == enemy_b)
-				return 1;
+				return true;
 
 			break;
 		}
@@ -327,7 +331,7 @@ static bool inCheck_diag(game g, int kr, int kc, int who) {
 	for (i=kr+1, j=kc-1; i<8 && j>=0; i++, j--)
 		if (g->board[i][j] != 0) {
 			if (g->board[i][j] == enemy_q || g->board[i][j] == enemy_b)
-				return 1;
+				return true;
 
 			break;
 		}
@@ -335,53 +339,53 @@ static bool inCheck_diag(game g, int kr, int kc, int who) {
 	for (i=kr-1, j=kc+1; i>=0 && j<8; i--, j++)
 		if (g->board[i][j] != 0) {
 			if (g->board[i][j] == enemy_q || g->board[i][j] == enemy_b)
-				return 1;
+				return true;
 
 			break;
 		}
 
-	return 0;
+	return false;
 }
 
 static bool inCheck_knig(game g, int kr, int kc, int who) {
 	const i8 enemy_kn = who == WHITE ? BKNIGHT : WKNIGHT;
 
 	/* Caballos */
-	if (kr >= 2 && kc >= 1 && g->board[kr-2][kc-1] == enemy_kn) return 1;
-	if (kr <= 5 && kc >= 1 && g->board[kr+2][kc-1] == enemy_kn) return 1;
-	if (kr >= 2 && kc <= 6 && g->board[kr-2][kc+1] == enemy_kn) return 1;
-	if (kr <= 5 && kc <= 6 && g->board[kr+2][kc+1] == enemy_kn) return 1;
-	if (kr >= 1 && kc >= 2 && g->board[kr-1][kc-2] == enemy_kn) return 1;
-	if (kr <= 6 && kc >= 2 && g->board[kr+1][kc-2] == enemy_kn) return 1;
-	if (kr >= 1 && kc <= 5 && g->board[kr-1][kc+2] == enemy_kn) return 1;
-	if (kr <= 6 && kc <= 5 && g->board[kr+1][kc+2] == enemy_kn) return 1;
+	if (kr >= 2 && kc >= 1 && g->board[kr-2][kc-1] == enemy_kn) return true; 
+	if (kr <= 5 && kc >= 1 && g->board[kr+2][kc-1] == enemy_kn) return true; 
+	if (kr >= 2 && kc <= 6 && g->board[kr-2][kc+1] == enemy_kn) return true; 
+	if (kr <= 5 && kc <= 6 && g->board[kr+2][kc+1] == enemy_kn) return true; 
+	if (kr >= 1 && kc >= 2 && g->board[kr-1][kc-2] == enemy_kn) return true; 
+	if (kr <= 6 && kc >= 2 && g->board[kr+1][kc-2] == enemy_kn) return true; 
+	if (kr >= 1 && kc <= 5 && g->board[kr-1][kc+2] == enemy_kn) return true; 
+	if (kr <= 6 && kc <= 5 && g->board[kr+1][kc+2] == enemy_kn) return true; 
 
-	return 0;
+	return false;
 }
 
 static bool inCheck_pawn(game g, int kr, int kc, int who) {
 	if (who == WHITE) {
 		if (kr > 0) {
 			if (kc > 0 && g->board[kr-1][kc-1] == BPAWN)
-				return 1;
+				return true;
 			if (kc < 7 && g->board[kr-1][kc+1] == BPAWN)
-				return 1;
+				return true;
 		}
 
 		return 0;
 	} else {
 		if (kr < 7) {
 			if (kc > 0 && g->board[kr+1][kc-1] == WPAWN)
-				return 1;
+				return true;
 			if (kc < 7 && g->board[kr+1][kc+1] == WPAWN)
-				return 1;
+				return true;
 		}
 
-		return 0;
+		return false;
 	}
 }
 
-static bool inCheck_king(game g, int kr, int kc, int who) {
+static bool inCheck_king(game g) {
 	/* Simplemente viendo la distancia */
 
 	return     abs(g->kingx[0] - g->kingx[1]) <= 1
@@ -404,9 +408,9 @@ static bool inCheck_king(game g, int kr, int kc, int who) {
  * en donde mover el caballo causa un jaque aún
  * cuando no lo amenaza
  */
-static u8 safe(game g, u8 r, u8 c, u8 kr, u8 kc) {
+static bool safe(game g __attribute__((unused)), u8 r, u8 c, u8 kr, u8 kc) {
 	if (r == kr || c == kc) {
-		return 0;
+		return false;
 	} else {
 		int dx, dy;
 
@@ -414,10 +418,10 @@ static u8 safe(game g, u8 r, u8 c, u8 kr, u8 kc) {
 		dy = abs(c-kc);
 
 		if (dx == dy || dx + dy == 3)
-			return 0;
+			return false;
 	}
 
-	return 1;
+	return true;
 }
 
 /* 
@@ -548,7 +552,7 @@ static bool doMoveRegular(game g, move m) {
 	const u8 other = flipTurn(g->turn);
 
 	if (!isValid(g, m))
-		return 0;
+		return false;
 
 	/* Es válida */
 	memcpy(&g->lastmove, &m, sizeof m);
@@ -605,7 +609,7 @@ static bool doMoveRegular(game g, move m) {
 		    !safe(g, m.R, m.C, g->kingx[m.who], g->kingy[m.who]))
 			g->inCheck[m.who] = -1;
 
-	return 1;
+	return true;
 }
 
 static bool isValid(game g, move m) {
@@ -613,29 +617,27 @@ static bool isValid(game g, move m) {
 
 	/* Siempre se mueve una pieza propia */
 	if (piece == 0 || colorOf(piece) != g->turn)
-		return 0;
+		return false;
 
 	/* La pieza debe poder moverse al destino */
-	if (m.r < 0 || m.r > 7
-		|| m.c < 0 || m.c > 7
-		|| m.R < 0 || m.R > 7
-		|| m.C < 0 || m.C > 7
-		|| (m.r == m.R && m.c == m.C)
-		|| !canMove(g, m.r, m.c, m.R, m.C))
-		return 0;
+	if (m.r > 7 || m.c > 7
+	 || m.R > 7 || m.C > 7
+	 || (m.r == m.R && m.c == m.C)
+	 || !canMove(g, m.r, m.c, m.R, m.C))
+		return false;
 
 	/* Es un peón que promueve? */
 	if (isPawn(piece)
-			&& m.R == (m.who == WHITE ? 0 : 7)) {
+	 && m.R == (m.who == WHITE ? 0 : 7)) {
 		if (m.promote == 0) {
 			fprintf(stderr, "Esa movida requiere una promoción!!!\n");
 			fflush(NULL);
 			assert(0);
-			return 0;
+			return false;
 		}
 	}
 
-	return 1;
+	return true;
 }
 
 static void updKing(game g, move m) {
@@ -683,9 +685,9 @@ static void calcPromotion(game g, move m) {
 		i8 new_piece = m.who == WHITE ? m.promote : -m.promote;
 
 		setPiece(g, m.r, m.c, new_piece);
-		g->lastmove.was_promotion = 1;
+		g->lastmove.was_promotion = true;
 	} else {
-		g->lastmove.was_promotion = 0;
+		g->lastmove.was_promotion = false;
 	}
 }
 
@@ -698,7 +700,7 @@ static bool doMoveKCastle(game g, move m) {
 		&& g->board[rank][7] == rpiece && g->board[rank][6] == EMPTY
 		&& g->board[rank][5] == EMPTY  && g->board[rank][4] == kpiece)) {
 
-		return 0;
+		return false;
 	}
 
 	{
@@ -712,7 +714,7 @@ static bool doMoveKCastle(game g, move m) {
 
 		if (inCheck(tg, m.who)) {
 			freeGame(tg);
-			return 0;
+			return false;
 		}
 
 		tg->board[rank][5] = 0;
@@ -722,7 +724,7 @@ static bool doMoveKCastle(game g, move m) {
 
 		if (inCheck(tg, m.who)) {
 			freeGame(tg);
-			return 0;
+			return false;
 		}
 
 		freeGame(tg);
@@ -743,7 +745,7 @@ static bool doMoveKCastle(game g, move m) {
 	g->kingx[m.who] = rank;
 	g->kingy[m.who] = 6;
 
-	return 1;
+	return true;
 }
 
 static bool doMoveQCastle(game g, move m) {
@@ -756,7 +758,7 @@ static bool doMoveQCastle(game g, move m) {
 		&& g->board[rank][2] == EMPTY  && g->board[rank][3] == EMPTY
 		&& g->board[rank][4] == kpiece)) {
 
-		return 0;
+		return false;
 	}
 
 	{
@@ -770,7 +772,7 @@ static bool doMoveQCastle(game g, move m) {
 
 		if (inCheck(tg, m.who)) {
 			freeGame(tg);
-			return 0;
+			return false;
 		}
 
 		tg->board[rank][3] = 0;
@@ -780,7 +782,7 @@ static bool doMoveQCastle(game g, move m) {
 
 		if (inCheck(tg, m.who)) {
 			freeGame(tg);
-			return 0;
+			return false;
 		}
 
 		freeGame(tg);
@@ -802,7 +804,7 @@ static bool doMoveQCastle(game g, move m) {
 	g->kingx[m.who] = rank;
 	g->kingy[m.who] = 2;
 
-	return 1;
+	return true;
 }
 
 static const int __scoreTab[] =

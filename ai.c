@@ -92,7 +92,7 @@ static score machineMoveImpl_(
 	score ret;
 	const score lalpha __attribute__((unused)) = alpha;
 	const score lbeta __attribute__((unused)) = beta;
-	int best = 0;
+	int best = -1;
 
 	if (nb == NULL && addon_notify_entry(g, curDepth, &ret))
 		return ret;
@@ -142,10 +142,12 @@ static score machineMoveImpl_(
 	 * sugerencias de las heurísticas. Tal vez
 	 * tengamos un corte temprano.
 	 */
+#if 0
 	{
 		/* DESHABILITADO POR AHORA */
 		/* TODO: Unir todo! */
 		goto asd;
+
 		if (nb != NULL)
 			goto asd;
 
@@ -183,6 +185,7 @@ static score machineMoveImpl_(
 	}
 
 asd:
+#endif
 
 	/* Generamos los sucesores del tablero */
 	n = genSuccs(g, &succs);
@@ -243,6 +246,7 @@ asd:
 	}
 
 	ret = alpha;
+	assert((best != -1) == (i < n));
 	if (i < n)
 		addon_notify_return(g, succs[best], ret, curDepth);
 
@@ -250,6 +254,8 @@ out:
 
 	if (succs != NULL)
 		freeSuccs(succs, n);
+
+	freeGame(ng);
 
 	return ret;
 }

@@ -14,7 +14,8 @@ static void killer_reset() {
 			killerTable[i][j].move_type = -1;
 }
 
-static void killer_sort(game g, const move *succs, score *vals,
+static void killer_sort(game g __attribute__((unused)),
+			const move *succs, score *vals,
 			int nsucc, int depth) {
 	int i, k;
 
@@ -32,7 +33,8 @@ static void killer_sort(game g, const move *succs, score *vals,
 	}
 }
 
-static void killer_notify_cut(game g, move m, int depth) {
+static void killer_notify_cut(game g __attribute__((unused)),
+			      move m, int depth) {
 	int i;
 
 	if (depth > KTABLE_SIZE)

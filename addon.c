@@ -12,7 +12,7 @@ void addon_register(struct addon sa) {
 }
 
 void addon_reset() {
-	int i;
+	unsigned i;
 
 	for (i=0; i<n_addon; i++) {
 		struct addon a = enabled_addons[i];
@@ -23,7 +23,7 @@ void addon_reset() {
 }
 
 void addon_notify_return(game g, move m, score s, int depth) {
-	int i;
+	unsigned i;
 
 	for (i=0; i<n_addon; i++) {
 		struct addon a = enabled_addons[i];
@@ -34,7 +34,7 @@ void addon_notify_return(game g, move m, score s, int depth) {
 }
 
 bool addon_notify_entry(game g, int depth, score *ret) {
-	int i;
+	unsigned i;
 
 	for (i=0; i<n_addon; i++) {
 		struct addon a = enabled_addons[i];
@@ -48,7 +48,7 @@ bool addon_notify_entry(game g, int depth, score *ret) {
 }
 
 void addon_notify_cut(game g, move m, int depth) {
-	int i;
+	unsigned i;
 
 	for (i=0; i<n_addon; i++) {
 		struct addon a = enabled_addons[i];
@@ -60,7 +60,7 @@ void addon_notify_cut(game g, move m, int depth) {
 
 void addon_score_succs(game g, const move *succs,
 		       score *vals, int nsucc, int depth) {
-	int i;
+	unsigned i;
 
 	for (i=0; i<n_addon; i++) {
 		struct addon a = enabled_addons[i];
@@ -71,7 +71,7 @@ void addon_score_succs(game g, const move *succs,
 }
 
 void addon_free_mem() {
-	int i;
+	unsigned i;
 
 	for (i=0; i<n_addon; i++) {
 		struct addon a = enabled_addons[i];
@@ -82,7 +82,8 @@ void addon_free_mem() {
 }
 
 int addon_suggest(game g, move *arr, int depth) {
-	int i, n = 0;
+	unsigned i;
+	int n = 0;
 
 	for (i=0; i<n_addon; i++) {
 		struct addon a = enabled_addons[i];
