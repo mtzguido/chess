@@ -142,6 +142,9 @@ static score machineMoveImpl_(
 	 * tengamos un corte temprano.
 	 */
 	{
+		/* DESHABILITADO POR AHORA */
+		/* TODO: Unir todo! */
+		goto asd;
 		if (nb != NULL)
 			goto asd;
 
@@ -150,7 +153,6 @@ static score machineMoveImpl_(
 		game succ = galloc();
 
 		n = addon_suggest(g, arr, curDepth);
-//		n = 0;
 
 		/* Itero por los sucesores, maximizando */
 		for (i=0; i<n; i++) {
@@ -171,9 +173,12 @@ static score machineMoveImpl_(
 				addon_notify_cut(g, arr[i], curDepth);
 				ret = alpha;
 				addon_notify_return(g, arr[i], ret, curDepth);
+				freeGame(succ);
 				goto out;
 			}
 		}
+
+		freeGame(succ);
 	}
 
 asd:
