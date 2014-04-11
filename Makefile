@@ -5,6 +5,9 @@ SHELL=/bin/bash
 TARGET=chess
 CC=gcc
 
+Q = @
+SAY = echo
+
 .config:
 	@echo USING DEFAULT CONFIG
 	./scripts/defconfig
@@ -76,16 +79,19 @@ objs=$(patsubst %,%.o,$(mods))
 all: $(TARGET)
 
 $(TARGET): $(objs)
-	$(CC) $(LFLAGS) $(objs) -o $(TARGET)
+	$(Q)$(SAY) "LD	$@"
+	$(Q) $(CC) $(LFLAGS) $(objs) -o $(TARGET)
 
 %.o: %.c $(wildcard *.h) .config
-	$(CC) $(CFLAGS) -c $<	-o $@
+	$(Q)$(SAY) "CC	$<"
+	$(Q)$(CC) $(CFLAGS) -c $<	-o $@
 
 clean:
-	rm -f $(TARGET) $(objs) gmon.out
-	rm -f bpipe wpipe
-	$(MAKE) -C doc clean
-	rm -f FINISHLOG full_log gamelog_*
+	$(Q)$(SAY) "CLEAN"
+	$(Q)rm -f $(TARGET) $(objs) gmon.out
+	$(Q)rm -f bpipe wpipe
+	$(Q)$(MAKE) -C doc clean
+	$(Q)rm -f FINISHLOG full_log gamelog_*
 
 re: clean all
 
