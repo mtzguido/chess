@@ -1,24 +1,10 @@
-#if 0
-	int rc;
-	if ((rc=isFinished(g)) != -1) {
-		if (rc == WIN(color))
-			ret = 100000 - curDepth;
-		else if (rc == DRAW_STALE || rc == DRAW_50MOVE || rc == DRAW_3FOLD)
-			ret = 0;
-		else
-			ret = -100000 + curDepth;
-
-		goto out;
-	}
-#endif
-
-
 #include "ai.h"
 #include "board.h"
 #include "config.h"
 #include "ztable.h"
 #include "mem.h"
 #include "addon.h"
+#include "succs.h"
 
 #include <stdint.h>
 #include <assert.h>
@@ -296,6 +282,8 @@ static int succCmp(const void *bp, const void *ap) {
 static void sortSuccs(game g, move *succs, int n, int depth) {
 	score *vals = malloc(n * sizeof (score));
 	int i, j;
+	score ts;
+	move tm;
 
 	/* Shuffle */
 	shuffleSuccs(g, succs, n);
@@ -308,9 +296,6 @@ static void sortSuccs(game g, move *succs, int n, int depth) {
 	for (i=1; i<n; i++) {
 		for (j=i; j>0; j--) {
 			if (vals[j-1] < vals[j]) {
-				score ts;
-				move tm;
-
 				ts = vals[j-1];
 				vals[j-1] = vals[j];
 				vals[j] = ts;

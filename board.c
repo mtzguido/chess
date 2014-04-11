@@ -10,6 +10,7 @@
 #include "zobrist.h"
 #include "ztable.h"
 #include "ai.h" // BORRAR!!
+#include "succs.h"
 
 char charOf(int piece);
 
@@ -231,9 +232,29 @@ int isFinished(game g) {
 		return DRAW_3FOLD;
 	else if (g->idlecount >= 50)
 		return DRAW_50MOVE;
-	else if (hasNextGame(g))
-		return -1;
-	else if (inCheck(g, g->turn))
+
+	move *succs;
+	int i, n;
+	game ng = copyGame(g);
+
+	n = genSuccs(g, &succs);
+
+	for (i=0; i<n; i++) {
+		/*
+		 * Si hay un sucesor válido,
+		 * el juego no terminó
+		 */
+		if (doMove(ng, succs[i])) {
+			freeGame(ng);
+			freeSuccs(succs, n);
+			return -1;
+		}
+	}
+
+	freeGame(ng);
+	freeSuccs(succs, n);
+
+	if (inCheck(g, g->turn))
 		return WIN(flipTurn(g->turn));
 	else
 		return DRAW_STALE;
@@ -846,18 +867,16 @@ bool equalMove(move a, move b) {
 	if (a.move_type != MOVE_REGULAR)
 		return true;
 
-	return a.r == b.r
-		&& a.c == b.c
-		&& a.R == b.R
-		&& a.C == b.C
-		&& a.promote == b.promote;
+	return    a.r == b.r
+	       && a.c == b.c
+	       && a.R == b.R
+	       && a.C == b.C
+	       && a.promote == b.promote;
 }
 
 bool equalGame(game a, game b) {
 	if (a->zobrist != b->zobrist)
 		return false;
-
-	return true;
 
 	if (a->turn != b->turn
 	 || a->en_passant_x != b->en_passant_x

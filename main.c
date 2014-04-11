@@ -11,6 +11,7 @@
 #include "mem.h"
 #include "ztable.h"
 #include "addon_list.h"
+#include "succs.h"
 
 /* a prefijo de b */
 static int isPrefix(char *a, char *b) {

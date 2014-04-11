@@ -191,23 +191,24 @@ int genSuccs(game g, move **arr_ret) {
 
 	for (i=0; i<8; i++) {
 		for (j=0; j<8; j++) {
-			char piece = g->board[i][j];
+			i8 piece = g->board[i][j];
 
-			if (piece == 0 || colorOf(piece) != g->turn)
+			if (piece == 0 || colorOf(piece) != g->turn) {
 				continue; /* Can't be moved */
-			else if (isPawn(piece))
+			} else if (isPawn(piece)) {
 				pawnSuccs(i, j, g, &arr, &alen);
-			else if (isKnight(piece))
+			} else if (isKnight(piece)) {
 				knightSuccs(i, j, g, &arr, &alen);
-			else if (isRook(piece))
+			} else if (isRook(piece)) {
 				rookSuccs(i, j, g, &arr, &alen);
-			else if (isBishop(piece))
+			} else if (isBishop(piece)) {
 				bishopSuccs(i, j, g, &arr, &alen);
-			else if (isQueen(piece)) {
+			} else if (isQueen(piece)) {
 				rookSuccs(i, j, g, &arr, &alen);
 				bishopSuccs(i, j, g, &arr, &alen);
-			} else if (isKing(piece)) 
+			} else if (isKing(piece)) {
 				kingSuccs(i, j, g, &arr, &alen);
+			}
 
 			assert(arr != NULL);
 		}

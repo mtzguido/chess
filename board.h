@@ -112,8 +112,6 @@ bool doMove(game g, move m); /* Actua sobre g */
 game copyGame(game g);
 void freeGame(game g);
 
-#include "succs.h"
-
 bool inCheck(game g, int who);
 int isFinished(game g);
 bool isDraw(game g);
