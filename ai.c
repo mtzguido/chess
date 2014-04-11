@@ -27,6 +27,12 @@ static void sortSuccs(game g, move *succs, int n, int depth);
 static score machineMoveImpl(game start, int maxDepth, int curDepth,
 			     game *nb, score alpha, score beta, int color);
 
+typedef int (*succgen_t)(game, move**, int);
+
+static int genSuccs_wrap(game g, move **arr, int depth) {
+	return genSuccs(g, arr);
+}
+
 /* Stats */
 int depths[30];
 static int nopen;
@@ -73,30 +79,46 @@ game machineMove(game start) {
 
 static score machineMoveImpl_(
 		game g, int maxDepth, int curDepth,
-		game *nb, score alpha, score beta, int color);
+		game *nb, score alpha, score beta, int color, bool doguiBreak);
 
 static score machineMoveImpl(
 		game g, int maxDepth, int curDepth,
 		game *nb, score alpha, score beta, int color) {
 
-	score rc = machineMoveImpl_(g, maxDepth, curDepth, nb, alpha, beta, color);
+	score rc1 = machineMoveImpl_(g, maxDepth, curDepth, nb, alpha, beta, color, true);
+	score rc2 = machineMoveImpl_(g, maxDepth, curDepth, nb, alpha, beta, color, false);
+	assert(rc1 == rc2);
 
 	/* Wrap de machineMoveImpl, para debug */
 	/* printf("mm (%i/%i) (a=%i, b=%i) returns %i\n", curDepth, maxDepth, alpha, beta, rc); */
 
-	return rc;
+	return rc1;
 }
+
+const succgen_t gen_funs[] = {
+	addon_suggest,
+	genSuccs_wrap,
+};
 
 static score machineMoveImpl_(
 		game g, int maxDepth, int curDepth,
-		game *nb, score alpha, score beta, int color) {
+		game *nb, score alpha, score beta, int color, bool doguiBreak) {
 
-	score ret;
-	const score lalpha __attribute__((unused)) = alpha;
-	const score lbeta __attribute__((unused)) = beta;
+	score ret = minScore;
 
-	if (nb == NULL && addon_notify_entry(g, curDepth, &ret))
+	if (nb == NULL && addon_notify_entry(g, curDepth, &ret)) {
+		assert(0);
 		return ret;
+	}
+
+	bool cut = false;
+	game ng = galloc();
+	move *succs = NULL;
+	score t;
+	int i, n = 0;
+	int nvalid = 0;
+	move best;
+	best.move_type = -1;
 
 	const int extraDepth = 
 		  EXTRA_CHECK * inCheck(g, WHITE)
@@ -107,23 +129,21 @@ static score machineMoveImpl_(
 	nopen++;
 	depths[curDepth]++;
 
-	game ng = galloc();
-	move *succs = NULL;
-	score t;
-	int i, n = 0;
-	int nvalid = 0;
-	move best;
-	best.move_type = -1;
-
 	/* Si el tablero es terminal */
 	if (isDraw(g)) {
 		ret = 0;
 		goto out;
 	}
+
+	if (beta <= alpha) {
+		ret = alpha;
+//		assert(0);
+		goto out;
+	}
+
 	/* Si llegamos a la profundidad deseada */
 	if (curDepth >= maxDepth + extraDepth) {
-		if (nb != NULL)
-			*nb = copyGame(g);
+		assert(nb == NULL);
 
 		if (color == WHITE)
 			ret = heur(g);
@@ -133,56 +153,79 @@ static score machineMoveImpl_(
 		goto out;
 	}
 
-	/*
-	 * Antes de generar los sucesores usamos las
-	 * sugerencias de las heurísticas. Tal vez
-	 * tengamos un corte temprano.
-	 */
 
-	/* TODO */
-
-	/* Generamos los sucesores del tablero */
-	n = genSuccs(g, &succs);
-	assert(succs != NULL);
-	assert(n > 0);
-	ngen += n;
-
-	/* Ordenamos los sucesores */
-	sortSuccs(g, succs, n, curDepth);
-
-	/* Itero por los sucesores, maximizando */
-	for (i=0; i<n; i++) {
-		*ng = *g;
-
+	unsigned ii;
+	for (ii = 0; ii < sizeof gen_funs / sizeof gen_funs[0]; ii++) {
 		/*
-		 * Admitimos que genSuccs nos dé
-		 * movidas inválidas y simplemente
-		 * las ignoramos.
+		 * Generamos los sucesores del tablero
+		 * según la función generadora actual
 		 */
-		if (! doMove(ng, succs[i]))
+
+		n = gen_funs[ii](g, &succs, curDepth);
+		assert(succs != NULL);
+
+		if (n == 0) {
+			freeSuccs(succs, n);
 			continue;
+		}
 
-		nvalid++;
+		assert(n > 0);
+		ngen += n;
 
-		mark(ng);
-		t = - machineMoveImpl(ng, maxDepth, curDepth+1, NULL,
-				      -beta, -alpha, flipTurn(color));
-		unmark(ng);
+		/* Ordenamos los sucesores */
+		sortSuccs(g, succs, n, curDepth);
 
-		if (t > alpha) {
-			alpha = t;
-			best = succs[i];
+		/* Itero por los sucesores, maximizando */
+		for (i=0; i<n; i++) {
+			*ng = *g;
 
-			if (nb != NULL) {
-				if (*nb != NULL)
-					freeGame(*nb);
+			/*
+			 * Admitimos que genSuccs nos dé
+			 * movidas inválidas y simplemente
+			 * las ignoramos.
+			 */
+			assert(succs[i].who == g->turn);
+			if (! doMove(ng, succs[i]))
+				continue;
 
-				*nb = copyGame(ng);
+			nvalid++;
+
+			mark(ng);
+			t = - machineMoveImpl(ng, maxDepth, curDepth+1, NULL,
+					-beta, -alpha, flipTurn(color));
+			unmark(ng);
+
+			if (t > alpha) {
+				alpha = t;
+				best = succs[i];
+
+				if (nb != NULL) {
+					if (*nb != NULL)
+						freeGame(*nb);
+
+					*nb = copyGame(ng);
+				}
+			}
+
+			if (alpha_beta && beta <= alpha) {
+				cut = true;
+				addon_notify_cut(g, succs[i], curDepth);
+				break;
 			}
 		}
 
-		if (alpha_beta && beta <= alpha) {
-			addon_notify_cut(g, succs[i], curDepth);
+		freeSuccs(succs, n);
+
+		/*
+		 * Si ocurrió un corte, sabemos que *nada*
+		 * puede cambiar el resultado. Por lo tanto
+		 * no seguimos con las nuevas generadoras
+		 */
+		assert(cut == (beta <= alpha));
+		if (doguiBreak && alpha_beta && beta <= alpha) {
+			printf("doguicortando.. %i %i %i %i\n", curDepth, alpha, beta, 0);
+			assert(cut);
+			assert(nvalid > 0);
 			break;
 		}
 	}
@@ -197,7 +240,7 @@ static score machineMoveImpl_(
 		assert(best.move_type == -1);
 
 		if (inCheck(g, color))
-			ret = -100000 + curDepth;
+			ret = -10000 + curDepth;
 		else
 			ret = 0;
 
@@ -213,11 +256,7 @@ static score machineMoveImpl_(
 
 out:
 
-	if (succs != NULL)
-		freeSuccs(succs, n);
-
 	freeGame(ng);
-
 	return ret;
 }
 

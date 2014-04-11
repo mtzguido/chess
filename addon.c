@@ -81,15 +81,17 @@ void addon_free_mem() {
 	}
 }
 
-int addon_suggest(game g, move *arr, int depth) {
+int addon_suggest(game g, move **arr, int depth) {
 	unsigned i;
 	int n = 0;
+
+	*arr = malloc(64 * sizeof (*arr)[0]);
 
 	for (i=0; i<n_addon; i++) {
 		struct addon a = enabled_addons[i];
 
 		if (a.suggest != NULL)
-			n += a.suggest(g, arr+n, depth);
+			n += a.suggest(g, (*arr)+n, depth);
 	}
 
 	return n;

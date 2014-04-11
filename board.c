@@ -642,7 +642,9 @@ static bool isValid(game g, move m) {
 	i8 piece = g->board[m.r][m.c];
 
 	/* Siempre se mueve una pieza propia */
-	if (piece == 0 || colorOf(piece) != g->turn)
+	if (m.who != g->turn ||
+	    piece == 0 ||
+	    colorOf(piece) != g->turn)
 		return false;
 
 	/* La pieza debe poder moverse al destino */
