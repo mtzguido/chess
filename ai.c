@@ -1,3 +1,18 @@
+#if 0
+	int rc;
+	if ((rc=isFinished(g)) != -1) {
+		if (rc == WIN(color))
+			ret = 100000 - curDepth;
+		else if (rc == DRAW_STALE || rc == DRAW_50MOVE || rc == DRAW_3FOLD)
+			ret = 0;
+		else
+			ret = -100000 + curDepth;
+
+		goto out;
+	}
+#endif
+
+
 #include "ai.h"
 #include "board.h"
 #include "config.h"
@@ -21,6 +36,7 @@ static const score maxScore =  1e7;
 /* Color to play */
 int machineColor = -1;
 
+static void shuffleSuccs(game g, move *succs, int n);
 static void sortSuccs(game g, move *succs, int n, int depth);
 static score machineMoveImpl(game start, int maxDepth, int curDepth,
 			     game *nb, score alpha, score beta, int color);
@@ -92,7 +108,6 @@ static score machineMoveImpl_(
 	score ret;
 	const score lalpha __attribute__((unused)) = alpha;
 	const score lbeta __attribute__((unused)) = beta;
-	int best = -1;
 
 	if (nb == NULL && addon_notify_entry(g, curDepth, &ret))
 		return ret;
@@ -110,20 +125,15 @@ static score machineMoveImpl_(
 	move *succs = NULL;
 	score t;
 	int i, n = 0;
+	int nvalid = 0;
+	move best;
+	best.move_type = -1;
 
 	/* Si el tablero es terminal */
-	int rc;
-	if ((rc=isFinished(g)) != -1) {
-		if (rc == WIN(color))
-			ret = 100000 - curDepth;
-		else if (rc == DRAW_STALE || rc == DRAW_50MOVE || rc == DRAW_3FOLD)
-			ret = 0;
-		else
-			ret = -100000 + curDepth;
-
+	if (isDraw(g)) {
+		ret = 0;
 		goto out;
 	}
-
 	/* Si llegamos a la profundidad deseada */
 	if (curDepth >= maxDepth + extraDepth) {
 		if (nb != NULL)
@@ -142,70 +152,14 @@ static score machineMoveImpl_(
 	 * sugerencias de las heurísticas. Tal vez
 	 * tengamos un corte temprano.
 	 */
-#if 0
-	{
-		/* DESHABILITADO POR AHORA */
-		/* TODO: Unir todo! */
-		goto asd;
 
-		if (nb != NULL)
-			goto asd;
-
-		move arr[10];
-		int n;
-		game succ = galloc();
-
-		n = addon_suggest(g, arr, curDepth);
-
-		/* Itero por los sucesores, maximizando */
-		for (i=0; i<n; i++) {
-			*succ = *g;
-			doMove(succ, arr[i]);
-
-			mark(succ);
-			t = - machineMoveImpl(succ, maxDepth, curDepth+1, NULL,
-					-beta, -alpha, flipTurn(color));
-			unmark(succ);
-
-			if (t > alpha) {
-				alpha = t;
-				best = i;
-			}
-
-			if (alpha_beta && beta <= alpha) {
-				addon_notify_cut(g, arr[i], curDepth);
-				ret = alpha;
-				addon_notify_return(g, arr[i], ret, curDepth);
-				freeGame(succ);
-				goto out;
-			}
-		}
-
-		freeGame(succ);
-	}
-
-asd:
-#endif
+	/* TODO */
 
 	/* Generamos los sucesores del tablero */
 	n = genSuccs(g, &succs);
 	assert(succs != NULL);
 	assert(n > 0);
 	ngen += n;
-
-	/* Shuffle */
-	if (flag_shuffle) {
-		int i, j;
-		move t;
-
-		for (i=0; i<n-1; i++) {
-			j = i + rand() % (n-i);
-
-			t = succs[i];
-			succs[i] = succs[j];
-			succs[j] = t;
-		}
-	}
 
 	/* Ordenamos los sucesores */
 	sortSuccs(g, succs, n, curDepth);
@@ -216,11 +170,13 @@ asd:
 
 		/*
 		 * Admitimos que genSuccs nos dé
-		 * movidas inválidas.
+		 * movidas inválidas y simplemente
+		 * las ignoramos.
 		 */
 		if (! doMove(ng, succs[i]))
 			continue;
 
+		nvalid++;
 
 		mark(ng);
 		t = - machineMoveImpl(ng, maxDepth, curDepth+1, NULL,
@@ -229,7 +185,7 @@ asd:
 
 		if (t > alpha) {
 			alpha = t;
-			best = i;
+			best = succs[i];
 
 			if (nb != NULL) {
 				if (*nb != NULL)
@@ -246,9 +202,28 @@ asd:
 	}
 
 	ret = alpha;
-	assert((best != -1) == (i < n));
-	if (i < n)
-		addon_notify_return(g, succs[best], ret, curDepth);
+
+	/*
+	 * Si no pudimos encontrar un sucesor
+	 * estamos en un tablero terminal.
+	 */
+	if (nvalid == 0) {
+		assert(best.move_type == -1);
+
+		if (inCheck(g, color))
+			ret = -100000 + curDepth;
+		else
+			ret = 0;
+
+		goto out;
+	}
+	
+	/*
+	 * Si hubo una movida que superó el alpha,
+	 * la notificamos.
+	 */
+	if (best.move_type != -1)
+		addon_notify_return(g, best, ret, curDepth);
 
 out:
 
@@ -322,6 +297,9 @@ static void sortSuccs(game g, move *succs, int n, int depth) {
 	score *vals = malloc(n * sizeof (score));
 	int i, j;
 
+	/* Shuffle */
+	shuffleSuccs(g, succs, n);
+
 	for (i=0; i<n; i++)
 		vals[i] = 0;
 
@@ -345,4 +323,19 @@ static void sortSuccs(game g, move *succs, int n, int depth) {
 	}
 
 	free(vals);
+}
+
+static void shuffleSuccs(game g, move *succs, int n) {
+	if (flag_shuffle) {
+		int i, j;
+		move t;
+
+		for (i=0; i<n-1; i++) {
+			j = i + rand() % (n-i);
+
+			t = succs[i];
+			succs[i] = succs[j];
+			succs[j] = t;
+		}
+	}
 }

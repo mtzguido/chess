@@ -107,7 +107,7 @@ int main_trucho (int argc, char **argv) {
 	}
 #endif
 
-#if 0
+#if 1
 	{
 		printBoard(machineMove(b));
 		return 0;

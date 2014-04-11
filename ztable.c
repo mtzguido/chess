@@ -4,12 +4,20 @@
 
 int n_collision = 0;
 
+int NINSIDE = 0;
+
+struct bucket {
+	game g;
+	int n;
+	struct bucket *next;
+};
+
 int NN;
 
-struct bucket * ztable[CFG_ZTABLE_SIZE];
+struct bucket * ztable[CFG_ZTABLE_SIZE] __attribute__((aligned(0x1000)));
 
 void mark(game g) {
-	int idx = g->zobrist % CFG_ZTABLE_SIZE;
+	u64 idx = g->zobrist % CFG_ZTABLE_SIZE;
 
 	struct bucket *p = ztable[idx];
 
@@ -31,7 +39,7 @@ void mark(game g) {
 }
 
 void unmark(game g) {
-	int idx = g->zobrist % CFG_ZTABLE_SIZE;
+	u64 idx = g->zobrist % CFG_ZTABLE_SIZE;
 
 	struct bucket *p = ztable[idx];
 
@@ -62,7 +70,7 @@ void unmark(game g) {
 }
 
 int reps(game g) {
-	int idx = g->zobrist % CFG_ZTABLE_SIZE;
+	u64 idx = g->zobrist % CFG_ZTABLE_SIZE;
 
 	struct bucket *p = ztable[idx];
 

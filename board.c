@@ -221,6 +221,11 @@ char charOf(int piece) {
 	return 'x';
 }
 
+/* No usa info de sucesores */
+bool isDraw(game g) {
+	return g->idlecount >= 50 || reps(g) >= 3;
+}
+
 int isFinished(game g) {
 	if (reps(g) >= 3)
 		return DRAW_3FOLD;

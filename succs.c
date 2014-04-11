@@ -185,7 +185,7 @@ int genSuccs(game g, move **arr_ret) {
 	move m = {0};
 
 	alen = 0;
-	asz = 128;
+	asz = 64;
 	arr = malloc(asz * sizeof arr[0]);
 	assert(arr != NULL);
 
@@ -214,13 +214,15 @@ int genSuccs(game g, move **arr_ret) {
 	}
 
 	m.who = g->turn;
-	m.move_type = MOVE_KINGSIDE_CASTLE;
-	if (g->castle_king[g->turn])
+	if (g->castle_king[g->turn]) {
+		m.move_type = MOVE_KINGSIDE_CASTLE;
 		addToRet(m, &arr, &alen);
+	}
 
-	m.move_type = MOVE_QUEENSIDE_CASTLE;
-	if (g->castle_queen[g->turn])
+	if (g->castle_queen[g->turn]) {
+		m.move_type = MOVE_QUEENSIDE_CASTLE;
 		addToRet(m, &arr, &alen);
+	}
 
 	assert(alen <= asz);
 
@@ -318,7 +320,7 @@ int hasNextGame(game g) {
 		}
 	}
 
-	move m;
+	move m = {0};
 
 	m.who = g->turn;
 

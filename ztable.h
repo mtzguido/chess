@@ -5,14 +5,6 @@
 
 extern int NN;
 
-struct bucket {
-	game g;
-	int n;
-	struct bucket *next;
-};
-
-extern struct bucket * ztable[CFG_ZTABLE_SIZE];
-
 extern int n_collision;
 
 void mark(game g);
