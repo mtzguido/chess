@@ -12,31 +12,31 @@ int pawnSuccs(int r, int c, game g, move **arr, int *alen) {
 	int n = *alen;
 
 	if (g->turn == BLACK && r < 7) {
-		if (g->board[r+1][c] == 0)
-			addToRet2(makeRegularMove(g->turn, r, c, r+1, c), arr, alen);
-		if (r == 1 && g->board[r+1][c] == 0 && g->board[r+2][c] == 0)
+		if (r == 1)
 			addToRet(makeRegularMove(g->turn, r, c, r+2, c), arr, alen);
-		if (c < 7 && g->board[r+1][c+1] != 0 && colorOf(g->board[r+1][c+1]) != g->turn)
+
+		if (r == 6) {
+			addToRet2(makeRegularMove(g->turn, r, c, r+1, c), arr, alen);
 			addToRet2(makeRegularMove(g->turn, r, c, r+1, c+1), arr, alen);
-		if (c > 0 && g->board[r+1][c-1] != 0 && colorOf(g->board[r+1][c-1]) != g->turn)
 			addToRet2(makeRegularMove(g->turn, r, c, r+1, c-1), arr, alen);
-		if (r < 7 && c > 0 && g->en_passant_x == r+1 && g->en_passant_y == c-1)
+		} else {
+			addToRet(makeRegularMove(g->turn, r, c, r+1, c), arr, alen);
 			addToRet(makeRegularMove(g->turn, r, c, r+1, c-1), arr, alen);
-		if (r < 7 && c < 7 && g->en_passant_x == r+1 && g->en_passant_y == c+1)
 			addToRet(makeRegularMove(g->turn, r, c, r+1, c+1), arr, alen);
+		}
+
 	} else if (g->turn == WHITE && r > 0) {
-		if (g->board[r-1][c] == 0)
-			addToRet2(makeRegularMove(g->turn, r, c, r-1, c), arr, alen);
-		if (r == 6 && g->board[r-1][c] == 0 && g->board[r-2][c] == 0)
+		if (r == 6)
 			addToRet(makeRegularMove(g->turn, r, c, r-2, c), arr, alen);
-		if (c < 7 && g->board[r-1][c+1] != 0 && colorOf(g->board[r-1][c+1]) != g->turn)
+
+		if (r == 1) {
+			addToRet2(makeRegularMove(g->turn, r, c, r-1, c), arr, alen);
 			addToRet2(makeRegularMove(g->turn, r, c, r-1, c+1), arr, alen);
-		if (c > 0 && g->board[r-1][c-1] != 0 && colorOf(g->board[r-1][c-1]) != g->turn)
 			addToRet2(makeRegularMove(g->turn, r, c, r-1, c-1), arr, alen);
-		if (r > 0 && c > 0 && g->en_passant_x == r-1 && g->en_passant_y == c-1)
+		} else {
 			addToRet(makeRegularMove(g->turn, r, c, r-1, c-1), arr, alen);
-		if (r > 0 && c < 8 && g->en_passant_x == r-1 && g->en_passant_y == c+1)
 			addToRet(makeRegularMove(g->turn, r, c, r-1, c+1), arr, alen);
+		}
 	}
 
 	return *alen > n;
@@ -53,9 +53,7 @@ int knightSuccs(int r, int c, game g, move **arr, int *alen) {
 		R = r + dr[i];
 		C = c + dc[i];
 
-		if (R >= 0 && R < 8 && C >= 0 && C < 8)
-			if (g->board[R][C] == 0 || colorOf(g->board[R][C] != g->turn))
-					addToRet(makeRegularMove(g->turn, r, c, R, C), arr, alen);
+		addToRet(makeRegularMove(g->turn, r, c, R, C), arr, alen);
 	}
 
 	return *alen > n;
@@ -170,9 +168,7 @@ int kingSuccs(int r, int c, game g, move **arr, int *alen) {
 		register int R = r + dr[i];
 		register int C = c + dc[i];
 
-		if (R >= 0 && R < 8 && C >= 0 && C < 8)
-			if (g->board[R][C] == 0 || colorOf(g->board[R][C]) != g->turn)
-				addToRet(makeRegularMove(g->turn, r, c, R, C), arr, alen);
+		addToRet(makeRegularMove(g->turn, r, c, R, C), arr, alen);
 	}
 
 	return *alen > n;
