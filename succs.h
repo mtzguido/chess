@@ -5,6 +5,5 @@
 
 int genSuccs(game g, move **arr);
 void freeSuccs(move *arr, int n);
-int nSucc(game g);
 
 #endif

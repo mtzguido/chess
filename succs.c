@@ -4,9 +4,9 @@
 #include <stdio.h>
 #include <assert.h>
 
-static void addToRet (move m, move **arr, int *len);
-static void addToRet2(move m, move **arr, int *len);
-static move makeRegularMove(int who, int r, int c, int R, int C);
+inline static void addToRet (move m, move **arr, int *len);
+inline static void addToRet2(move m, move **arr, int *len);
+inline static move makeRegularMove(int who, int r, int c, int R, int C);
 
 int pawnSuccs(int r, int c, game g, move **arr, int *alen) {
 	int n = *alen;
@@ -189,21 +189,35 @@ int genSuccs(game g, move **arr_ret) {
 		for (j=0; j<8; j++) {
 			i8 piece = g->board[i][j];
 
-			if (piece == 0 || colorOf(piece) != g->turn) {
+			if (piece == 0 || colorOf(piece) != g->turn)
 				continue; /* Can't be moved */
-			} else if (isPawn(piece)) {
+
+			switch (piece) {
+			case WPAWN:
+			case BPAWN:
 				pawnSuccs(i, j, g, &arr, &alen);
-			} else if (isKnight(piece)) {
+				break;
+			case WKNIGHT:
+			case BKNIGHT:
 				knightSuccs(i, j, g, &arr, &alen);
-			} else if (isRook(piece)) {
+				break;
+			case WROOK:
+			case BROOK:
 				rookSuccs(i, j, g, &arr, &alen);
-			} else if (isBishop(piece)) {
+				break;
+			case WBISHOP:
+			case BBISHOP:
 				bishopSuccs(i, j, g, &arr, &alen);
-			} else if (isQueen(piece)) {
+				break;
+			case WQUEEN:
+			case BQUEEN:
 				rookSuccs(i, j, g, &arr, &alen);
 				bishopSuccs(i, j, g, &arr, &alen);
-			} else if (isKing(piece)) {
+				break;
+			case WKING:
+			case BKING:
 				kingSuccs(i, j, g, &arr, &alen);
+				break;
 			}
 
 			assert(arr != NULL);
@@ -227,12 +241,12 @@ int genSuccs(game g, move **arr_ret) {
 	return alen;
 }
 
-static void addToRet(move m, move **arr, int *len) {
+static inline void addToRet(move m, move **arr, int *len) {
 	(*arr)[*len] = m;
 	(*len)++;
 }
 
-static void addToRet2(move m, move **arr, int *len) {
+static inline void addToRet2(move m, move **arr, int *len) {
 	/* Aca agregamos ambos casos si es un peón que promueve.
 	 * es una chanchada, si. */
 	if (m.R == (m.who == WHITE ? 0 : 7)) {
@@ -249,7 +263,7 @@ static void addToRet2(move m, move **arr, int *len) {
 	}
 }
 
-static move makeRegularMove(int who, int r, int c, int R, int C) {
+static inline move makeRegularMove(int who, int r, int c, int R, int C) {
 	move ret;
 
 	ret.who = who;
@@ -261,20 +275,6 @@ static move makeRegularMove(int who, int r, int c, int R, int C) {
 	ret.promote = 0;
 
 	return ret;
-}
-
-int nSucc(game g) {
-	if (g->nSucc != -1)
-		return g->nSucc;
-
-	move *arr;
-	int n;
-
-	n = genSuccs(g, &arr);
-	freeSuccs(arr, n);
-
-	g->nSucc = n;
-	return n;
 }
 
 void freeSuccs(move *arr, int len __attribute__((unused))) {

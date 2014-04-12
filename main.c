@@ -110,7 +110,7 @@ int main_trucho (int argc, char **argv) {
 	}
 #endif
 
-#if 0
+#if 1
 	while (isFinished(b) == -1) {
 		b = machineMove(b);
 		move m = b->lastmove;
