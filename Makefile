@@ -26,10 +26,6 @@ ifeq (${CONFIG_COUNTERMOVE},y)
 	CFLAGS += -DCFG_COUNTERMOVE
 endif
 
-ifeq (${CONFIG_EXTEND},y)
-	CFLAGS += -DCFG_DEPTH_EXTENSION
-endif
-
 ifeq (${CONFIG_TRANSPOSITION},y)
 	CFLAGS += -DCFG_TRANSPOSITION
 endif
@@ -53,6 +49,10 @@ endif
 
 ifeq (${CONFIG_DEBUG},y)
 	CFLAGS += -g
+endif
+
+ifeq (${CONFIG_SUGGEST},y)
+	CFLAGS += -DCFG_SUGG
 endif
 
 CFLAGS += -DCFG_DEPTH=${CONFIG_DEPTH}

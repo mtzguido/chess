@@ -19,13 +19,11 @@
 static const score minScore = -1e7;
 static const score maxScore =  1e7;
 
-/* Color to play */
-int machineColor = -1;
 
 static void shuffleSuccs(game g, move *succs, int n);
-static void sortSuccs(game g, move *succs, int n, int depth);
+static void sortSuccs(game g, move *succs, int n, int depth, int maxDepth);
 static score machineMoveImpl(game start, int maxDepth, int curDepth,
-			     game *nb, score alpha, score beta, int color);
+			     game nb, score alpha, score beta);
 
 typedef int (*succgen_t)(game, move**, int);
 
@@ -34,14 +32,10 @@ static int genSuccs_wrap(game g, move **arr, int depth) {
 }
 
 /* Stats */
-int depths[30];
-static int nopen;
-static int ngen;
-int totalnopen = 0;
-int totalms = 0;
+struct stats stats;
 
 game machineMove(game start) {
-	game ret = NULL;
+	game ret = galloc();
 	score t;
 	clock_t t1,t2;
 
@@ -50,44 +44,41 @@ game machineMove(game start) {
 	int i;
 
 	n_collision = 0;
-	nopen = 0;
-	ngen = 0;
+	stats.nopen = 0;
+	stats.ngen = 0;
 	for (i = 0; i < 30; i++)
-		depths[i] = 0;
+		stats.depthsn[i] = 0;
 
 	t1 = clock();
-	t = machineMoveImpl(start, SEARCH_DEPTH, 0, &ret, minScore, maxScore, machineColor);
+	t = machineMoveImpl(start, SEARCH_DEPTH, 0, ret, minScore, maxScore);
 	t2 = clock();
 
 	assert(ret != NULL);
 
-	totalnopen += nopen;
-	totalms += 1000*(t2-t1)/CLOCKS_PER_SEC;
+	stats.totalopen += stats.nopen;
+	stats.totalms += 1000*(t2-t1)/CLOCKS_PER_SEC;
 
-	fprintf(stderr, "stats: searched %i nodes in %.3f seconds\n", nopen, 1.0*(t2-t1)/CLOCKS_PER_SEC);
-	fprintf(stderr, "stats: total nodes generated: %i\n", ngen);
+	fprintf(stderr, "stats: searched %i nodes in %.3f seconds\n", stats.nopen, 1.0*(t2-t1)/CLOCKS_PER_SEC);
+	fprintf(stderr, "stats: total nodes generated: %i\n", stats.ngen);
 	fprintf(stderr, "stats: depth:n_nodes - ");
-	for (i = 0; depths[i] != 0; i++) 
-		fprintf(stderr, "%i:%i, ", i, depths[i]);
+	for (i = 0; stats.depthsn[i] != 0; i++) 
+		fprintf(stderr, "%i:%i, ", i, stats.depthsn[i]);
 
 	fprintf(stderr, "stats: Number of hash collisions: %i\n", n_collision);
 
-	fprintf(stderr, "expected score: %i\n", t);
+	fprintf(stderr, "expected score: %i (i am %i)\n", t, start->turn);
 	fflush(NULL);
 	return ret;
 }
 
 static score machineMoveImpl_(
 		game g, int maxDepth, int curDepth,
-		game *nb, score alpha, score beta, int color, bool doguiBreak);
+		game nb, score alpha, score beta);
 
 static score machineMoveImpl(
 		game g, int maxDepth, int curDepth,
-		game *nb, score alpha, score beta, int color) {
-
-	score rc1 = machineMoveImpl_(g, maxDepth, curDepth, nb, alpha, beta, color, true);
-	score rc2 = machineMoveImpl_(g, maxDepth, curDepth, nb, alpha, beta, color, false);
-	assert(rc1 == rc2);
+		game nb, score alpha, score beta) {
+	score rc1 = machineMoveImpl_(g, maxDepth, curDepth, nb, alpha, beta);
 
 	/* Wrap de machineMoveImpl, para debug */
 	/* printf("mm (%i/%i) (a=%i, b=%i) returns %i\n", curDepth, maxDepth, alpha, beta, rc); */
@@ -96,167 +87,113 @@ static score machineMoveImpl(
 }
 
 const succgen_t gen_funs[] = {
+#ifdef CFG_SUGG
 	addon_suggest,
+#endif
 	genSuccs_wrap,
 };
 
+#define ARRSIZE(a) ((sizeof (a))/(sizeof ((a)[0])))
+
 static score machineMoveImpl_(
 		game g, int maxDepth, int curDepth,
-		game *nb, score alpha, score beta, int color, bool doguiBreak) {
+		game nb, score alpha, score beta) {
 
-	score ret = minScore;
-
-	if (nb == NULL && addon_notify_entry(g, curDepth, &ret)) {
-		assert(0);
-		return ret;
-	}
-
-	bool cut = false;
-	game ng = galloc();
-	move *succs = NULL;
-	score t;
-	int i, n = 0;
+	score t, ret, best;
+	move *succs;
+	int i, nsucc;
 	int nvalid = 0;
-	move best;
-	best.move_type = -1;
+	int COPIED = 0;
+	game ng;
 
-	const int extraDepth = 
-		  EXTRA_CHECK * inCheck(g, WHITE)
-		+ EXTRA_CHECK * inCheck(g, BLACK)
-		+ EXTRA_CAPTURE * g->lastmove.was_capture
-		+ EXTRA_PROMOTION * g->lastmove.was_promotion;
+	stats.nopen++;
 
-	nopen++;
-	depths[curDepth]++;
-
-	/* Si el tablero es terminal */
 	if (isDraw(g)) {
+		if (nb != NULL) {
+			*nb = *g;
+			COPIED = 1;
+		}
+		assert(nb == NULL);
 		ret = 0;
 		goto out;
 	}
 
-	if (beta <= alpha) {
-		ret = alpha;
-//		assert(0);
-		goto out;
-	}
-
-	/* Si llegamos a la profundidad deseada */
-	if (curDepth >= maxDepth + extraDepth) {
+	if (curDepth >= maxDepth) {
+		if (nb != NULL) {
+			*nb = *g;
+			COPIED = 1;
+		}
 		assert(nb == NULL);
-
-		if (color == WHITE)
-			ret = heur(g);
-		else
-			ret = - heur(g);
-
+		ret = (g->turn == WHITE ? heur(g) : - heur(g));
 		goto out;
 	}
-
 
 	unsigned ii;
-	for (ii = 0; ii < sizeof gen_funs / sizeof gen_funs[0]; ii++) {
-		/*
-		 * Generamos los sucesores del tablero
-		 * según la función generadora actual
-		 */
+	best = minScore;
+	for (ii = 0; ii < ARRSIZE(gen_funs); ii++) {
 
-		n = gen_funs[ii](g, &succs, curDepth);
+		assert(ii<2);
+		nsucc = gen_funs[ii](g, &succs, curDepth);
+
+		if (nsucc == 0)
+			goto loop;
+
+		assert(nsucc > 0);
 		assert(succs != NULL);
+		stats.ngen += nsucc;
 
-		if (n == 0) {
-			freeSuccs(succs, n);
-			continue;
-		}
+		sortSuccs(g, succs, nsucc, curDepth, maxDepth);
 
-		assert(n > 0);
-		ngen += n;
-
-		/* Ordenamos los sucesores */
-		sortSuccs(g, succs, n, curDepth);
-
-		/* Itero por los sucesores, maximizando */
-		for (i=0; i<n; i++) {
+		ng = galloc();
+		for (i=0; i<nsucc; i++) {
 			*ng = *g;
 
-			/*
-			 * Admitimos que genSuccs nos dé
-			 * movidas inválidas y simplemente
-			 * las ignoramos.
-			 */
-			assert(succs[i].who == g->turn);
-			if (! doMove(ng, succs[i]))
+			if (!doMove(ng, succs[i]))
 				continue;
 
 			nvalid++;
 
 			mark(ng);
-			t = - machineMoveImpl(ng, maxDepth, curDepth+1, NULL,
-					-beta, -alpha, flipTurn(color));
+			t = -machineMoveImpl(ng, maxDepth, curDepth+1,
+					     NULL, -beta, -alpha);
 			unmark(ng);
 
-			if (t > alpha) {
-				alpha = t;
-				best = succs[i];
-
+			if (t > best) {
+				best = t;
 				if (nb != NULL) {
-					if (*nb != NULL)
-						freeGame(*nb);
-
-					*nb = copyGame(ng);
+					*nb = *ng;
+					COPIED = 1;
 				}
 			}
 
+			if (t > alpha)
+				alpha = t;
+
 			if (alpha_beta && beta <= alpha) {
-				cut = true;
 				addon_notify_cut(g, succs[i], curDepth);
 				break;
 			}
 		}
+		freeGame(ng);
 
-		freeSuccs(succs, n);
-
-		/*
-		 * Si ocurrió un corte, sabemos que *nada*
-		 * puede cambiar el resultado. Por lo tanto
-		 * no seguimos con las nuevas generadoras
-		 */
-		assert(cut == (beta <= alpha));
-		if (doguiBreak && alpha_beta && beta <= alpha) {
-			printf("doguicortando.. %i %i %i %i\n", curDepth, alpha, beta, 0);
-			assert(cut);
-			assert(nvalid > 0);
-			break;
-		}
+loop:	
+		freeSuccs(succs, nsucc);
 	}
 
-	ret = alpha;
-
-	/*
-	 * Si no pudimos encontrar un sucesor
-	 * estamos en un tablero terminal.
-	 */
 	if (nvalid == 0) {
-		assert(best.move_type == -1);
-
-		if (inCheck(g, color))
-			ret = -10000 + curDepth;
+		if (inCheck(g, g->turn))
+			ret = -100000 + curDepth;
 		else
-			ret = 0;
-
-		goto out;
+			ret = 0; /* Stalemate */
+	} else {
+		ret = alpha;
 	}
-	
-	/*
-	 * Si hubo una movida que superó el alpha,
-	 * la notificamos.
-	 */
-	if (best.move_type != -1)
-		addon_notify_return(g, best, ret, curDepth);
 
 out:
 
-	freeGame(ng);
+	if (nb != NULL)
+		assert(COPIED);
+
 	return ret;
 }
 
@@ -264,7 +201,7 @@ static int pieceScore(game g) {
 	int x = g->totalScore - 40000;
 	int pps = (x*(g->pps_O - g->pps_E))/8000 + g->pps_E;
 
-	return g->pieceScore + pps;
+	return g->pieceScore  + pps;
 }
 
 score heur(game g) {
@@ -318,15 +255,18 @@ static int succCmp(const void *bp, const void *ap) {
 	qsort(succs, n, sizeof (game), succCmp);
 */
 
-static void sortSuccs(game g, move *succs, int n, int depth) {
-	score *vals = malloc(n * sizeof (score));
+static void sortSuccs(game g, move *succs, int n, int depth, int maxDepth) {
+	score *vals;
 	int i, j;
 	score ts;
 	move tm;
 
+	if (depth+2 >= maxDepth)
+		return;
 	/* Shuffle */
 	shuffleSuccs(g, succs, n);
 
+	vals = malloc(n * sizeof (score));
 	for (i=0; i<n; i++)
 		vals[i] = 0;
 

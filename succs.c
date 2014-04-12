@@ -185,7 +185,7 @@ int genSuccs(game g, move **arr_ret) {
 	move m = {0};
 
 	alen = 0;
-	asz = 64;
+	asz = 128;
 	arr = malloc(asz * sizeof arr[0]);
 	assert(arr != NULL);
 
@@ -263,83 +263,6 @@ static move makeRegularMove(int who, int r, int c, int R, int C) {
 	ret.R = R;
 	ret.C = C;
 	ret.promote = 0;
-
-	return ret;
-}
-
-int hasNextGame(game g) {
-	int i, j;
-	int alen, asz;
-	move *arr;
-
-	if (g->hasNext != -1)
-		return g->hasNext;
-
-	if (g->nSucc != -1) {
-		g->hasNext = g->nSucc != 0;
-		return g->hasNext;
-	}
-
-	alen = 0;
-	asz = 128;
-	arr = malloc(asz * sizeof arr[0]);
-	assert(arr != NULL);
-
-	int ret = 1;
-
-	/* Chequeamos el rey primero,
-	 * es probable que tenga una movida
-	 * posible y ya tenemos su posicion */
-	kingSuccs(g->kingx[g->turn], g->kingy[g->turn], g, &arr, &alen);
-	if (alen > 0)
-		goto out;
-
-	for (i=0; i<8; i++) {
-		for (j=0; j<8; j++) {
-			char piece = g->board[i][j];
-
-			if (piece == 0 || colorOf(piece) != g->turn) {
-				continue; /* Can't be moved */
-			} else if (isPawn(piece)) {
-				pawnSuccs(i, j, g, &arr, &alen);
-			} else if (isKnight(piece)) {
-				knightSuccs(i, j, g, &arr, &alen);
-			} else if (isRook(piece)) {
-				rookSuccs(i, j, g, &arr, &alen);
-			} else if (isBishop(piece)) {
-				bishopSuccs(i, j, g, &arr, &alen);
-			} else if (isQueen(piece)) {
-				rookSuccs(i, j, g, &arr, &alen);
-				bishopSuccs(i, j, g, &arr, &alen);
-			}
-
-			/* El rey ya se chequeó */
-
-			if (alen > 0) goto out;
-
-			assert(arr != NULL);
-		}
-	}
-
-	move m = {0};
-
-	m.who = g->turn;
-
-	m.move_type = MOVE_KINGSIDE_CASTLE;
-	addToRet(m, &arr, &alen);
-	if (alen > 0) goto out;
-
-	m.move_type = MOVE_QUEENSIDE_CASTLE;
-	addToRet(m, &arr, &alen);
-	if (alen > 0) goto out;
-
-	ret = 0;
-
-out:
-	assert(alen <= asz);
-	freeSuccs(arr, alen);
-
-	g->hasNext = ret;
 
 	return ret;
 }

@@ -12,7 +12,7 @@
 #define MOVE_QUEENSIDE_CASTLE 2
 
 typedef struct move {
-	i8 who;
+	u8 who;
 	i8 move_type;
 	u8 r, c, R, C; /* (r,c) -> (R,C) */
 	i8 promote;
@@ -65,7 +65,6 @@ struct game_struct {
 
 	/*  Número de sucesores y estado
 	 *  de terminación */
-	int hasNext;
 	int nSucc;
 } __attribute__((packed));
 

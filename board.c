@@ -113,7 +113,6 @@ static void fix(game g) {
 	g->castled[WHITE] = 0;
 	g->castled[BLACK] = 0;
 	
-	g->hasNext = -1;
 	g->nSucc = -1;
 
 	piecePosFullRecalc(g);
@@ -530,7 +529,6 @@ bool doMove(game g, move m) {
 
 	g->turn = flipTurn(g->turn);
 	g->zobrist ^= ZOBR_BLACK();
-	g->hasNext = -1;
 	g->nSucc = -1;
 
 	return true;
@@ -580,8 +578,13 @@ static bool doMoveRegular(game g, move m) {
 	if (!isValid(g, m))
 		return false;
 
+	/* No pisar piezas propias */
+	if (g->board[m.R][m.C] != 0
+	 && colorOf(g->board[m.R][m.C]) == m.who)
+		return false;
+
 	/* Es válida */
-	memcpy(&g->lastmove, &m, sizeof m);
+	g->lastmove = m;
 	g->idlecount++;
 
 	if (isPawn(piece)) {
@@ -604,6 +607,7 @@ static bool doMoveRegular(game g, move m) {
 
 		set_ep(g, -1, -1);
 		g->lastmove.was_promotion = 0;
+		g->lastmove.was_ep = 0;
 	}
 
 	if (g->lastmove.was_ep || g->board[m.R][m.C] != 0) {
@@ -863,8 +867,8 @@ static int absoluteScoreOf(int piece) {
 }
 
 bool equalMove(move a, move b) {
-	if (a.move_type != b.move_type) return 0;
-	if (a.who != b.who) return 0;
+	if (a.move_type != b.move_type) return false;
+	if (a.who != b.who) return false;
 
 	if (a.move_type != MOVE_REGULAR)
 		return true;

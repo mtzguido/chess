@@ -100,6 +100,7 @@ static void trans_free_mem() {
 	flush = threshold;
 }
 
+#if 0
 static bool trans_notify_entry(game g, int depth, score *ret) {
 	int idx = g->zobrist % CFG_TTABLE_SIZE;
 
@@ -117,6 +118,7 @@ static bool trans_notify_entry(game g, int depth, score *ret) {
 	*ret = p->s;
 	return true;
 }
+#endif
 
 static int trans_suggest(game g, move *arr, int depth) {
 	int idx = g->zobrist % CFG_TTABLE_SIZE;

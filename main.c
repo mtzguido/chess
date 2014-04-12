@@ -42,12 +42,13 @@ static char pieceOf(char c) {
 	}   
 }
 
+static void zobrist_test(game b, int d) __attribute__((unused));
 static void zobrist_test(game b, int d) {
 	mark(b);
 	move *succs;
 	int i;
 
-	totalnopen++;
+	stats.totalopen++;
 
 	if (rand() > rand())
 		return;
@@ -73,6 +74,7 @@ int main_trucho (int argc, char **argv) {
 	init_mem();
 	srand(time(NULL) + getpid());
 	game b = startingGame();
+	int machineColor;
 
 	if (argc > 1 && argv[1][0] == 'w')
 		machineColor = WHITE;
@@ -108,7 +110,44 @@ int main_trucho (int argc, char **argv) {
 	}
 #endif
 
-#if 1
+#if 0
+	while (isFinished(b) == -1) {
+		b = machineMove(b);
+		move m = b->lastmove;
+ 
+		if (m.move_type == MOVE_KINGSIDE_CASTLE) {
+			if (m.who == BLACK) {
+				printf("e8g8\n");
+				fprintf(stderr, "e8g8\n");
+			} else {
+				printf("e1g1\n");
+				fprintf(stderr, "e1g1\n");
+			}
+		} else if (m.move_type == MOVE_QUEENSIDE_CASTLE) {
+			if (m.who == BLACK) {
+				printf("e8c8\n");
+				fprintf(stderr, "e8c8\n");
+			} else {
+				printf("e1c1\n");
+				fprintf(stderr, "e1c1\n");
+			}
+		} else {
+			assert(m.move_type == MOVE_REGULAR);
+
+			if (m.was_promotion) {
+				printf("%c%c%c%c%c\n", m.c + 'a', '8'-m.r, m.C + 'a', '8'-m.R, tolower(charOf(m.promote)));
+				fprintf(stderr, "%c%c%c%c%c\n", m.c + 'a', '8'-m.r, m.C + 'a', '8'-m.R, tolower(charOf(m.promote)));
+			} else {
+				printf("%c%c%c%c\n", m.c + 'a', '8'-m.r, m.C + 'a', '8'-m.R);
+				fprintf(stderr, "%c%c%c%c\n", m.c + 'a', '8'-m.r, m.C + 'a', '8'-m.R);
+			}
+		}
+
+		printBoard(b);
+	}
+#endif
+
+#if 0
 	{
 		printBoard(machineMove(b));
 		return 0;
@@ -304,10 +343,9 @@ int main_trucho (int argc, char **argv) {
 
 int main (int argc, char **argv) {
 	int rc = main_trucho(argc, argv);
-	fprintf(stderr, "Total nodes: %i\n", totalnopen);
+	fprintf(stderr, "Total nodes: %i\n", stats.totalopen);
 	fprintf(stderr, "Total unique nodes: %i\n", NN);
-	fprintf(stderr, "Total time: %ims\n", totalms);
+	fprintf(stderr, "Total time: %ims\n", stats.totalms);
 
 	return rc;
 }
-	

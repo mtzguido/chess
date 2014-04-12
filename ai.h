@@ -3,9 +3,15 @@
 
 #include "board.h"
 
-extern int machineColor;
-extern int totalnopen;
-extern int totalms;
+
+/* Stats */
+extern struct stats {
+	int depthsn[30];
+	int nopen;
+	int ngen;
+	int totalopen;
+	int totalms;
+} stats;
 
 game machineMove(game start);
 
