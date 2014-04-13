@@ -660,13 +660,9 @@ static bool isValid(game g, move m) {
 
 	/* Es un peón que promueve? */
 	if (isPawn(piece)
-	 && m.R == (m.who == WHITE ? 0 : 7)) {
-		if (m.promote == 0) {
-			fprintf(stderr, "Esa movida requiere una promoción!!!\n");
-			fflush(NULL);
-			assert(0);
+	 && m.R == (m.who == WHITE ? 0 : 7)
+	 && m.promote == 0) {
 			return false;
-		}
 	}
 
 	return true;

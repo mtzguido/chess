@@ -366,6 +366,6 @@ int main(int argc, char **argv) {
 	fprintf(stderr, "Total unique nodes: %i\n", NN);
 	fprintf(stderr, "Total time: %ims\n", stats.totalms);
 
-	printf("program returned %i\n", rc);
+	fprintf(stderr, "program returned %i\n", rc);
 	return 0;
 }

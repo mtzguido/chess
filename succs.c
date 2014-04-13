@@ -4,11 +4,11 @@
 #include <stdio.h>
 #include <assert.h>
 
-inline static void addToRet (move m, move **arr, int *len);
-inline static void addToRet2(move m, move **arr, int *len);
+inline static void addToRet (move m, move *arr, int *len);
+inline static void addToRet2(move m, move *arr, int *len);
 inline static move makeRegularMove(int who, int r, int c, int R, int C);
 
-int pawnSuccs(int r, int c, game g, move **arr, int *alen) {
+int pawnSuccs(int r, int c, game g, move *arr, int *alen) {
 	int n = *alen;
 
 	if (g->turn == BLACK && r < 7) {
@@ -43,7 +43,7 @@ int pawnSuccs(int r, int c, game g, move **arr, int *alen) {
 	return *alen > n;
 }
 
-int knightSuccs(int r, int c, game g, move **arr, int *alen) {
+int knightSuccs(int r, int c, game g, move *arr, int *alen) {
 	int R, C;
 	int n = *alen;
 	const int dr[] = { 2,  2, -2, -2, 1,  1, -1, -1 };
@@ -60,7 +60,7 @@ int knightSuccs(int r, int c, game g, move **arr, int *alen) {
 	return *alen > n;
 }
 
-int rookSuccs(int r, int c, game g, move **arr, int *alen) {
+int rookSuccs(int r, int c, game g, move *arr, int *alen) {
 	int R, C;
 	int n = *alen;
 
@@ -111,7 +111,7 @@ int rookSuccs(int r, int c, game g, move **arr, int *alen) {
 	return *alen > n;
 }
 
-int bishopSuccs(int r, int c, game g, move **arr, int *alen) {
+int bishopSuccs(int r, int c, game g, move *arr, int *alen) {
 	int R, C;
 	int n = *alen;
 
@@ -159,7 +159,7 @@ int bishopSuccs(int r, int c, game g, move **arr, int *alen) {
 	return *alen > n;
 }
 
-int kingSuccs(int r, int c, game g, move **arr, int *alen) {
+int kingSuccs(int r, int c, game g, move *arr, int *alen) {
 	int n = *alen;
 	const int dr[] = {  1, 1,  1, 0, -1, -1, -1, 0  };
 	const int dc[] = { -1, 0,  1, 1,  1,  0, -1, -1 };
@@ -178,8 +178,8 @@ int kingSuccs(int r, int c, game g, move **arr, int *alen) {
 int genSuccs(game g, move **arr_ret) {
 	int i, j;
 	int alen, asz;
-	move *arr;
 	move m = {0};
+	move *arr;
 
 	alen = 0;
 	asz = 128;
@@ -196,28 +196,28 @@ int genSuccs(game g, move **arr_ret) {
 			switch (piece) {
 			case WPAWN:
 			case BPAWN:
-				pawnSuccs(i, j, g, &arr, &alen);
+				pawnSuccs(i, j, g, arr, &alen);
 				break;
 			case WKNIGHT:
 			case BKNIGHT:
-				knightSuccs(i, j, g, &arr, &alen);
+				knightSuccs(i, j, g, arr, &alen);
 				break;
 			case WROOK:
 			case BROOK:
-				rookSuccs(i, j, g, &arr, &alen);
+				rookSuccs(i, j, g, arr, &alen);
 				break;
 			case WBISHOP:
 			case BBISHOP:
-				bishopSuccs(i, j, g, &arr, &alen);
+				bishopSuccs(i, j, g, arr, &alen);
 				break;
 			case WQUEEN:
 			case BQUEEN:
-				rookSuccs(i, j, g, &arr, &alen);
-				bishopSuccs(i, j, g, &arr, &alen);
+				rookSuccs(i, j, g, arr, &alen);
+				bishopSuccs(i, j, g, arr, &alen);
 				break;
 			case WKING:
 			case BKING:
-				kingSuccs(i, j, g, &arr, &alen);
+				kingSuccs(i, j, g, arr, &alen);
 				break;
 			}
 
@@ -228,12 +228,12 @@ int genSuccs(game g, move **arr_ret) {
 	m.who = g->turn;
 	if (g->castle_king[g->turn]) {
 		m.move_type = MOVE_KINGSIDE_CASTLE;
-		addToRet(m, &arr, &alen);
+		addToRet(m, arr, &alen);
 	}
 
 	if (g->castle_queen[g->turn]) {
 		m.move_type = MOVE_QUEENSIDE_CASTLE;
-		addToRet(m, &arr, &alen);
+		addToRet(m, arr, &alen);
 	}
 
 	assert(alen <= asz);
@@ -242,26 +242,23 @@ int genSuccs(game g, move **arr_ret) {
 	return alen;
 }
 
-static inline void addToRet(move m, move **arr, int *len) {
-	(*arr)[*len] = m;
+static inline void addToRet(move m, move *arr, int *len) {
+	arr[*len] = m;
 	(*len)++;
 }
 
-static inline void addToRet2(move m, move **arr, int *len) {
-	/* Aca agregamos ambos casos si es un peón que promueve.
-	 * es una chanchada, si. */
-	if (m.R == (m.who == WHITE ? 0 : 7)) {
-		int i;
+static inline void addToRet2(move m, move *arr, int *len) {
+	/*
+	 * Aca agregamos ambos casos si es un peón que promueve.
+	 * es una chanchada, si.
+	 */
+	int i;
 
-		for (i=0; i<2; i++) {
-			m.promote = i == 0 ? WQUEEN : WKNIGHT;
+	for (i=0; i<2; i++) {
+		m.promote = i == 0 ? WQUEEN : WKNIGHT;
 
-			(*arr)[*len] = m;
-			(*len)++;
-		}
-	} else {
-		assert(0);
-		addToRet(m, arr, len);
+		arr[*len] = m;
+		(*len)++;
 	}
 }
 
