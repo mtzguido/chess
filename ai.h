@@ -8,6 +8,7 @@
 extern struct stats {
 	int depthsn[30];
 	int nopen;
+	int nbranch;
 	int ngen;
 	int totalopen;
 	int totalms;

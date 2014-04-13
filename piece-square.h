@@ -11,8 +11,7 @@
  * http://chessprogramming.wikispaces.com/Simplified+evaluation+function
  */
 
-static const char t_pawnO[8][8];
-static const char t_pawnE[8][8];
+static const char t_pawn[8][8];
 static const char t_bishop[8][8];
 static const char t_knight[8][8];
 static const char t_rook[8][8];
@@ -31,7 +30,7 @@ static inline char piece_square_val_O(int piece, int r, int c) {
 	}
 
 	switch (p) {
-	case WPAWN:   return m*(t_pawnO[r][c]);
+	case WPAWN:   return m*(t_pawn[r][c]);
 	case WBISHOP: return m*(t_bishop[r][c]);
 	case WROOK:   return m*(t_rook[r][c]);
 	case WKNIGHT: return m*(t_knight[r][c]);
@@ -52,7 +51,7 @@ static inline char piece_square_val_E(int piece, int r, int c) {
 	}
 
 	switch (p) {
-	case WPAWN:   return m*(t_pawnE[r][c]);
+	case WPAWN:   return m*(t_pawn[r][c]);
 	case WBISHOP: return m*(t_bishop[r][c]);
 	case WROOK:   return m*(t_rook[r][c]);
 	case WKNIGHT: return m*(t_knight[r][c]);
@@ -76,30 +75,17 @@ static void piecePosFullRecalc(game g) {
 		}
 }
 
-static const char t_pawnO[8][8] = 
+static const char t_pawn[8][8] =
 {
-	{	0,	0,	0,	0,	0,	0,	0,	0	},
-	{	50,	50,	50,	50,	50,	50,	50,	50	},
-	{	10,	10,	20,	30,	30,	20,	10,	10	},
-	{	5,	5,	10,	25,	25,	10,	5,	5	},
-	{	0,	0,	0,	20,	20,	0,	0,	0	},
-	{	5,	-5,	-10,	0,	0,	-10,	-5,	5	},
-	{	5,	10,	10,	-20,	-20,	10,	10,	5	},
-	{	0,	0,	0,	0,	0,	0,	0,	0	}
+	{       0,	0,	0,	0,	0,	0,	0,	0	},
+	{       50,	50,	50,	50,	50,	50,	50,	50	},
+	{       10,	10,	20,	30,	30,	20,	10,	10	},
+	{       5,	5,	10,	25,	25,	10,	5,	5	},
+	{       0,	0,	0,	20,	20,	0,	0,	0	},
+	{       5,	-5,	-10,	0,	0,	-10,	-5,	5	},
+	{       5,	10,	10,	-20,	-20,	10,	10,	5	},
+	{       0,	0,	0,	0,	0,	0,	0,	0	}
 };
-
-static const char t_pawnE[8][8] = 
-{
-	{	0,	0,	0,	0,	0,	0,	0,	0	},
-	{	50,	50,	50,	50,	50,	50,	50,	50	},
-	{	10,	10,	20,	30,	30,	20,	10,	10	},
-	{	5,	5,	10,	25,	25,	10,	5,	5	},
-	{	0,	0,	0,	20,	20,	0,	0,	0	},
-	{	5,	-5,	-10,	0,	0,	-10,	-5,	5	},
-	{	5,	10,	10,	-20,	-20,	10,	10,	5	},
-	{	0,	0,	0,	0,	0,	0,	0,	0	}
-};
-
 
 static const char t_knight[8][8] =
 {

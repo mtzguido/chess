@@ -46,6 +46,7 @@ game machineMove(game start) {
 	n_collision = 0;
 	stats.nopen = 0;
 	stats.ngen = 0;
+	stats.nbranch = 0;
 	for (i = 0; i < 30; i++)
 		stats.depthsn[i] = 0;
 
@@ -59,6 +60,7 @@ game machineMove(game start) {
 	stats.totalms += 1000*(t2-t1)/CLOCKS_PER_SEC;
 
 	fprintf(stderr, "stats: searched %i nodes in %.3f seconds\n", stats.nopen, 1.0*(t2-t1)/CLOCKS_PER_SEC);
+	fprintf(stderr, "stats: branching aprox: %.3f\n", 1.0 * stats.nbranch / stats.nopen);
 	fprintf(stderr, "stats: total nodes generated: %i\n", stats.ngen);
 	fprintf(stderr, "stats: depth:n_nodes - ");
 	for (i = 0; stats.depthsn[i] != 0; i++) 
@@ -106,8 +108,6 @@ static score machineMoveImpl_(
 	int COPIED = 0;
 	game ng;
 
-	stats.nopen++;
-
 	if (isDraw(g)) {
 		if (nb != NULL) {
 			*nb = *g;
@@ -124,9 +124,15 @@ static score machineMoveImpl_(
 			COPIED = 1;
 		}
 		assert(nb == NULL);
-		ret = (g->turn == WHITE ? heur(g) : - heur(g));
+		if (g->turn == WHITE)
+			ret = heur(g);
+		else
+			ret = - heur(g);
+
 		goto out;
 	}
+
+	stats.nopen++;
 
 	unsigned ii;
 	best = minScore;
@@ -179,6 +185,8 @@ static score machineMoveImpl_(
 loop:	
 		freeSuccs(succs, nsucc);
 	}
+
+	stats.nbranch += nvalid;
 
 	if (nvalid == 0) {
 		if (inCheck(g, g->turn))
@@ -274,15 +282,16 @@ static void sortSuccs(game g, move *succs, int n, int depth, int maxDepth) {
 
 	for (i=1; i<n; i++) {
 		for (j=i; j>0; j--) {
-			if (vals[j-1] < vals[j]) {
-				ts = vals[j-1];
-				vals[j-1] = vals[j];
-				vals[j] = ts;
+			if (vals[j-1] >= vals[j])
+				break;
 
-				tm = succs[j-1];
-				succs[j-1] = succs[j];
-				succs[j] = tm;
-			} else break;
+			ts = vals[j-1];
+			vals[j-1] = vals[j];
+			vals[j] = ts;
+
+			tm = succs[j-1];
+			succs[j-1] = succs[j];
+			succs[j] = tm;
 		}
 	}
 

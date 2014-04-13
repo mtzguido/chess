@@ -100,26 +100,6 @@ static void trans_free_mem() {
 	flush = threshold;
 }
 
-#if 0
-static bool trans_notify_entry(game g, int depth, score *ret) {
-	int idx = g->zobrist % CFG_TTABLE_SIZE;
-
-	/* Anda esto, sin el alpha-beta?
-	 * tiene sentido? */
-
-	struct tt_bucket *p = tt_table[idx];
-
-	while (p && !equalGame(g, p->g))
-		p = p->next;
-
-	if (!p)
-		return false;
-
-	*ret = p->s;
-	return true;
-}
-#endif
-
 static int trans_suggest(game g, move *arr, int depth) {
 	int idx = g->zobrist % CFG_TTABLE_SIZE;
 	struct tt_bucket *p = tt_table[idx];
@@ -142,7 +122,6 @@ static struct addon trans_addon __attribute__((unused)) = {
 	.notify_return = trans_notify_return,
 	.free_mem = trans_free_mem,
 	.suggest = trans_suggest,
-//	.notify_entry = trans_notify_entry,
 };
 
 void addon_trans_init() {
