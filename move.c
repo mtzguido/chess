@@ -8,13 +8,13 @@ static int sign(int a) {
 	return 0;
 }
 
-int pawnMove(game g, int r, int c, int R, int C);
-int rookMove(game g, int r, int c, int R, int C);
-int kingMove(game g, int r, int c, int R, int C);
-int knightMove(game g, int r, int c, int R, int C);
-int bishopMove(game g, int r, int c, int R, int C);
+bool pawnMove(game g, int r, int c, int R, int C);
+bool rookMove(game g, int r, int c, int R, int C);
+bool kingMove(game g, int r, int c, int R, int C);
+bool knightMove(game g, int r, int c, int R, int C);
+bool bishopMove(game g, int r, int c, int R, int C);
 
-int pawnMove(game g, int r, int c, int R, int C) {
+bool pawnMove(game g, int r, int c, int R, int C) {
 	if (colorOf(g->board[r][c]) == WHITE) {
 		if (c == C) {
 			if (R == r-1 && g->board[R][C] == 0)
@@ -52,7 +52,7 @@ int pawnMove(game g, int r, int c, int R, int C) {
 	return 0;
 }
 
-int knightMove(game g, int r, int c, int R, int C) {
+bool knightMove(game g, int r, int c, int R, int C) {
 	if (abs(r-R) + abs(c-C) != 3 || abs(r-R) == 0 || abs(c-C) == 0)
 		return 0;
 
@@ -62,7 +62,7 @@ int knightMove(game g, int r, int c, int R, int C) {
 		return 0;
 }
 
-int bishopMove(game g, int r, int c, int R, int C) {
+bool bishopMove(game g, int r, int c, int R, int C) {
 	int dr, dc;
 	int i, j;
 	if (abs(r-R) != abs(c-C))
@@ -81,7 +81,7 @@ int bishopMove(game g, int r, int c, int R, int C) {
 	return 1;
 }
 
-int rookMove(game g, int r, int c, int R, int C) {
+bool rookMove(game g, int r, int c, int R, int C) {
 	if (r == R) {
 		int i;
 		int dc = sign(C-c);
@@ -108,7 +108,7 @@ int rookMove(game g, int r, int c, int R, int C) {
 		return 0;
 }
 
-int kingMove(game g, int r, int c, int R, int C) {
+bool kingMove(game g, int r, int c, int R, int C) {
 	if (abs(C-c) > 1) return 0;
 	if (abs(R-r) > 1) return 0;
 	if (g->board[R][C] != 0 && colorOf(g->board[R][C]) == colorOf(g->board[r][c]))

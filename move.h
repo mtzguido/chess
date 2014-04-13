@@ -5,18 +5,19 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
-int pawnMove(game g, int r, int c, int R, int C);
-int rookMove(game g, int r, int c, int R, int C);
-int kingMove(game g, int r, int c, int R, int C);
-int knightMove(game g, int r, int c, int R, int C);
-int bishopMove(game g, int r, int c, int R, int C);
+bool pawnMove(game g, int r, int c, int R, int C);
+bool rookMove(game g, int r, int c, int R, int C);
+bool kingMove(game g, int r, int c, int R, int C);
+bool knightMove(game g, int r, int c, int R, int C);
+bool bishopMove(game g, int r, int c, int R, int C);
 
-static inline int canMove(game g, int r, int c, int R, int C) {
+static inline bool canMove(game g, int r, int c, int R, int C) {
 	const int piece = g->board[r][c];
 	switch(piece) {
 	case 0:
-		return 0;
+		return false;
 	case WPAWN:
 	case BPAWN:
 		return pawnMove(g, r, c, R, C);
@@ -31,19 +32,16 @@ static inline int canMove(game g, int r, int c, int R, int C) {
 		return rookMove(g, r, c, R, C);
 	case WQUEEN:
 	case BQUEEN:
-	  return rookMove(g, r, c, R, C)
-	  	|| bishopMove(g, r, c, R, C);
+		return rookMove(g, r, c, R, C)
+		    || bishopMove(g, r, c, R, C);
 	case WKING:
 	case BKING:
 		return kingMove(g, r, c, R, C);
 	default:
-	  fprintf(stderr, "!!!!!!!! (%i)\n", g->board[r][c]);
-	  abort();
+		fprintf(stderr, "!!!!!!!! (%i)\n", g->board[r][c]);
+		abort();
 	}
-
-	return -1;
 }
-
 
 #endif
 
