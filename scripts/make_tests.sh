@@ -14,7 +14,7 @@ rm -f FINISHLOG
 n=0
 total=${1:-100} # $1 o 100, por defecto
 
-rm -f wpipe bpipe full_log
+rm -f wpipe bpipe full_log gmon.sum
 mkfifo wpipe bpipe
 
 if ! [ -d games ]; then
@@ -29,6 +29,12 @@ while [ $n -lt $total ]; do
 
 	wait # wait for opponent
 
+	if [ $n -eq 1 ]; then
+		mv gmon.out gmon.sum
+	else
+		gprof -s chess gmon.out gmon.sum
+	fi
+
 	cp gamelog_w games/gamelog_$n
 	cp fairylog  games/fairylog_$n
 	cp chesslog  games/chesslog_$n
@@ -38,5 +44,11 @@ while [ $n -lt $total ]; do
 	win=$(grep Win FINISHLOG | wc -l)
 	
 	echo "$n/$total games (results: $lose/$draw/$win)"
+
+	if [ $((lose + draw + win)) -ne $n ]; then
+		echo 'wat!'
+		break;
+	fi
 done
 
+gprof chess gmon.sum > tests_profile

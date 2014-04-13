@@ -1,6 +1,6 @@
 .PHONY:clean all re run doc
 CFLAGS=-Wall -Wextra -Wno-unused-parameter -funroll-loops $(CFLAGS_EXTRA)
-LFLAGS=
+LFLAGS=-lsigsegv
 SHELL=/bin/bash
 TARGET=chess
 CC=gcc

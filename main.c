@@ -13,6 +13,22 @@
 #include "addon_list.h"
 #include "succs.h"
 
+#include <execinfo.h>
+#include <signal.h>
+
+void handler(int sig) {
+	void *array[100];
+	size_t size;
+
+	// get void*'s for all entries on the stack
+	size = backtrace(array, 100);
+
+	// print out all the frames to stderr
+	fprintf(stderr, "Error: signal %d:\n", sig);
+	backtrace_symbols_fd(array, size, STDERR_FILENO);
+	exit(1);
+}
+
 /* a prefijo de b */
 static int isPrefix(char *a, char *b) {
 	while (*a && *a++ == *b++)
@@ -110,7 +126,7 @@ int main_trucho (int argc, char **argv) {
 	}
 #endif
 
-#if 1
+#if 0
 	while (isFinished(b) == -1) {
 		b = machineMove(b);
 		move m = b->lastmove;
@@ -341,11 +357,15 @@ int main_trucho (int argc, char **argv) {
 	return 0;
 }
 
-int main (int argc, char **argv) {
+int main(int argc, char **argv) {
+	signal(SIGSEGV, handler);
+
 	int rc = main_trucho(argc, argv);
+
 	fprintf(stderr, "Total nodes: %i\n", stats.totalopen);
 	fprintf(stderr, "Total unique nodes: %i\n", NN);
 	fprintf(stderr, "Total time: %ims\n", stats.totalms);
 
-	return rc;
+	printf("program returned %i\n", rc);
+	return 0;
 }
