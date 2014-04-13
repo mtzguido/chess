@@ -21,8 +21,8 @@ int pawnSuccs(int r, int c, game g, move **arr, int *alen) {
 			addToRet2(makeRegularMove(g->turn, r, c, r+1, c-1), arr, alen);
 		} else {
 			addToRet(makeRegularMove(g->turn, r, c, r+1, c), arr, alen);
-			addToRet(makeRegularMove(g->turn, r, c, r+1, c-1), arr, alen);
 			addToRet(makeRegularMove(g->turn, r, c, r+1, c+1), arr, alen);
+			addToRet(makeRegularMove(g->turn, r, c, r+1, c-1), arr, alen);
 		}
 
 	} else if (g->turn == WHITE && r > 0) {
@@ -34,8 +34,9 @@ int pawnSuccs(int r, int c, game g, move **arr, int *alen) {
 			addToRet2(makeRegularMove(g->turn, r, c, r-1, c+1), arr, alen);
 			addToRet2(makeRegularMove(g->turn, r, c, r-1, c-1), arr, alen);
 		} else {
-			addToRet(makeRegularMove(g->turn, r, c, r-1, c-1), arr, alen);
+			addToRet(makeRegularMove(g->turn, r, c, r-1, c), arr, alen);
 			addToRet(makeRegularMove(g->turn, r, c, r-1, c+1), arr, alen);
+			addToRet(makeRegularMove(g->turn, r, c, r-1, c-1), arr, alen);
 		}
 	}
 
@@ -259,6 +260,7 @@ static inline void addToRet2(move m, move **arr, int *len) {
 			(*len)++;
 		}
 	} else {
+		assert(0);
 		addToRet(m, arr, len);
 	}
 }
