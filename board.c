@@ -686,6 +686,9 @@ static void updCastling(game g, move m) {
 	 * casilla donde empieza la torre.
 	 * Apenas hay un movimiento el enroque
 	 * se invalida para siempre. */
+	if (m.r != (m.who == WHITE ? 7 : 0))
+		return;
+
 	if (m.c == 7)
 		disable_castle_k(g, m.who);
 	else if (m.c == 0)
