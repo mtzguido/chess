@@ -22,7 +22,7 @@ static const score maxScore =  1e7;
 
 static void shuffleSuccs(game g, move *succs, int n);
 static void sortSuccs(game g, move *succs, int n, int depth, int maxDepth);
-static score machineMoveImpl(game start, int maxDepth, int curDepth,
+static score negamax(game start, int maxDepth, int curDepth,
 			     move *mm, score alpha, score beta);
 
 typedef int (*succgen_t)(game, move**, int);
@@ -68,7 +68,7 @@ move machineMove(game start) {
 	reset_stats();
 
 	t1 = clock();
-	t = machineMoveImpl(start, SEARCH_DEPTH, 0, &ret, minScore, maxScore);
+	t = negamax(start, SEARCH_DEPTH, 0, &ret, minScore, maxScore);
 	t2 = clock();
 
 	stats.totalopen += stats.nopen;
@@ -81,16 +81,16 @@ move machineMove(game start) {
 	return ret;
 }
 
-static score machineMoveImpl_(
+static score negamax_(
 		game g, int maxDepth, int curDepth,
 		move *mm, score alpha, score beta);
 
-static score machineMoveImpl(
+static score negamax(
 		game g, int maxDepth, int curDepth,
 		move *mm, score alpha, score beta) {
-	score rc1 = machineMoveImpl_(g, maxDepth, curDepth, mm, alpha, beta);
+	score rc1 = negamax_(g, maxDepth, curDepth, mm, alpha, beta);
 
-	/* Wrap de machineMoveImpl, para debug */
+	/* Wrap de negamax, para debug */
 	/* printf("mm (%i/%i) (a=%i, b=%i) returns %i\n", curDepth, maxDepth, alpha, beta, rc); */
 
 	return rc1;
@@ -105,7 +105,7 @@ const succgen_t gen_funs[] = {
 
 #define ARRSIZE(a) ((sizeof (a))/(sizeof ((a)[0])))
 
-static score machineMoveImpl_(
+static score negamax_(
 		game g, int maxDepth, int curDepth,
 		move *mm, score alpha, score beta) {
 
@@ -168,8 +168,8 @@ static score machineMoveImpl_(
 			nvalid++;
 
 			mark(ng);
-			t = -machineMoveImpl(ng, maxDepth, curDepth+1,
-					     NULL, -beta, -alpha);
+			t = -negamax(ng, maxDepth, curDepth+1,
+				     NULL, -beta, -alpha);
 			unmark(ng);
 
 			if (t > best) {
