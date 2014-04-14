@@ -34,6 +34,28 @@ static int genSuccs_wrap(game g, move **arr, int depth) {
 /* Stats */
 struct stats stats;
 
+void reset_stats() {
+	n_collision = 0;
+	stats.nopen = 0;
+	stats.ngen = 0;
+	stats.nbranch = 0;
+	for (i = 0; i < 30; i++)
+		stats.depthsn[i] = 0;
+}
+
+void print_stats() {
+	fprintf(stderr, "stats: searched %i nodes in %.3f seconds\n", stats.nopen, 1.0*(t2-t1)/CLOCKS_PER_SEC);
+	fprintf(stderr, "stats: branching aprox: %.3f\n", 1.0 * stats.nbranch / stats.nopen);
+	fprintf(stderr, "stats: total nodes generated: %i\n", stats.ngen);
+	fprintf(stderr, "stats: depth:n_nodes - ");
+	fprintf(stderr, "expected score: %i (i am %i)\n", t, start->turn);
+	for (i = 0; stats.depthsn[i] != 0; i++) 
+		fprintf(stderr, "%i:%i, ", i, stats.depthsn[i]);
+
+	fprintf(stderr, "\n");
+
+}
+
 move machineMove(game start) {
 	move ret;
 	score t;
@@ -43,12 +65,7 @@ move machineMove(game start) {
 
 	int i;
 
-	n_collision = 0;
-	stats.nopen = 0;
-	stats.ngen = 0;
-	stats.nbranch = 0;
-	for (i = 0; i < 30; i++)
-		stats.depthsn[i] = 0;
+	reset_stats();
 
 	t1 = clock();
 	t = machineMoveImpl(start, SEARCH_DEPTH, 0, &ret, minScore, maxScore);
@@ -57,16 +74,9 @@ move machineMove(game start) {
 	stats.totalopen += stats.nopen;
 	stats.totalms += 1000*(t2-t1)/CLOCKS_PER_SEC;
 
-	fprintf(stderr, "stats: searched %i nodes in %.3f seconds\n", stats.nopen, 1.0*(t2-t1)/CLOCKS_PER_SEC);
-	fprintf(stderr, "stats: branching aprox: %.3f\n", 1.0 * stats.nbranch / stats.nopen);
-	fprintf(stderr, "stats: total nodes generated: %i\n", stats.ngen);
-	fprintf(stderr, "stats: depth:n_nodes - ");
-	for (i = 0; stats.depthsn[i] != 0; i++) 
-		fprintf(stderr, "%i:%i, ", i, stats.depthsn[i]);
+	print_stats();
 
 	fprintf(stderr, "stats: Number of hash collisions: %i\n", n_collision);
-
-	fprintf(stderr, "expected score: %i (i am %i)\n", t, start->turn);
 	fflush(NULL);
 	return ret;
 }
