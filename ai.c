@@ -116,7 +116,7 @@ static score machineMoveImpl_(
 		goto out;
 	}
 
-	if (curDepth >= maxDepth) {
+	if (curDepth >= maxDepth && !inCheck(g, g->turn)) {
 		if (mm != NULL) {
 			mm->move_type = -1;
 			COPIED = 1;
