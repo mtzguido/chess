@@ -7,7 +7,7 @@ int n_collision = 0;
 int NINSIDE = 0;
 
 struct bucket {
-	game g;
+	u64 key;
 	int n;
 	struct bucket *next;
 };
@@ -15,11 +15,12 @@ struct bucket {
 struct bucket * ztable[CFG_ZTABLE_SIZE] __attribute__((aligned(0x1000)));
 
 void mark(game g) {
-	u64 idx = g->zobrist % CFG_ZTABLE_SIZE;
+	u64 key = g->zobrist;
+	u64 idx = key % CFG_ZTABLE_SIZE;
 
 	struct bucket *p = ztable[idx];
 
-	while (p && !equalGame(g, p->g)) {
+	while (p && key != p->key) {
 		n_collision++;
 		p = p->next;
 	}
@@ -28,7 +29,7 @@ void mark(game g) {
 		p->n++;
 	} else {
 		p = malloc(sizeof *p);
-		p->g = copyGame(g);
+		p->key = g->zobrist;
 		p->n = 1;
 		p->next = ztable[idx];
 		ztable[idx] = p;
@@ -36,22 +37,22 @@ void mark(game g) {
 }
 
 void unmark(game g) {
-	u64 idx = g->zobrist % CFG_ZTABLE_SIZE;
+	u64 key = g->zobrist;
+	u64 idx = key % CFG_ZTABLE_SIZE;
 
 	struct bucket *p = ztable[idx];
 
 	assert(p);
-	if (equalGame(p->g, g)) {
+	if (p->key == key) {
 		p->n--;
 
 		if (p->n == 0) {
 			struct bucket *t = p->next;
-			freeGame(p->g);
 			free(p);
 			ztable[idx] = t;
 		}
 	} else {
-		while (p->next && !equalGame(g, p->next->g))
+		while (p->next && key != p->next->key)
 			p = p->next;
 
 		assert(p->next);
@@ -59,7 +60,6 @@ void unmark(game g) {
 		p->next->n--;
 		if (p->next->n == 0) {
 			struct bucket *t = p->next->next;
-			freeGame(p->next->g);
 			free(p->next);
 			p->next = t;
 		}
@@ -67,11 +67,12 @@ void unmark(game g) {
 }
 
 int reps(game g) {
-	u64 idx = g->zobrist % CFG_ZTABLE_SIZE;
+	u64 key = g->zobrist;
+	u64 idx = key % CFG_ZTABLE_SIZE;
 
 	struct bucket *p = ztable[idx];
 
-	while (p && !equalGame(g, p->g))
+	while (p && key != p->key)
 		p = p->next;
 
 	if (p)
@@ -79,4 +80,3 @@ int reps(game g) {
 	else
 		return 0;
 }
-
