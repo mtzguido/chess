@@ -35,6 +35,8 @@ static int genSuccs_wrap(game g, move **arr, int depth) {
 struct stats stats;
 
 void reset_stats() {
+	int i;
+
 	n_collision = 0;
 	stats.nopen = 0;
 	stats.ngen = 0;
@@ -43,12 +45,14 @@ void reset_stats() {
 		stats.depthsn[i] = 0;
 }
 
-void print_stats() {
+void print_stats(score exp, clock_t t1, clock_t t2) {
+	int i;
+
 	fprintf(stderr, "stats: searched %i nodes in %.3f seconds\n", stats.nopen, 1.0*(t2-t1)/CLOCKS_PER_SEC);
 	fprintf(stderr, "stats: branching aprox: %.3f\n", 1.0 * stats.nbranch / stats.nopen);
 	fprintf(stderr, "stats: total nodes generated: %i\n", stats.ngen);
 	fprintf(stderr, "stats: depth:n_nodes - ");
-	fprintf(stderr, "expected score: %i (i am %i)\n", t, start->turn);
+	fprintf(stderr, "expected score: %i\n", exp);
 	for (i = 0; stats.depthsn[i] != 0; i++) 
 		fprintf(stderr, "%i:%i, ", i, stats.depthsn[i]);
 
@@ -62,9 +66,6 @@ move machineMove(game start) {
 	clock_t t1,t2;
 
 	addon_reset();
-
-	int i;
-
 	reset_stats();
 
 	t1 = clock();
@@ -74,7 +75,7 @@ move machineMove(game start) {
 	stats.totalopen += stats.nopen;
 	stats.totalms += 1000*(t2-t1)/CLOCKS_PER_SEC;
 
-	print_stats();
+	print_stats(t, t1, t2);
 
 	fprintf(stderr, "stats: Number of hash collisions: %i\n", n_collision);
 	fflush(NULL);
@@ -144,6 +145,7 @@ static score negamax_(
 
 	unsigned ii;
 	best = minScore;
+	ng = galloc();
 	for (ii = 0; ii < ARRSIZE(gen_funs); ii++) {
 
 		assert(ii<2);
@@ -158,7 +160,6 @@ static score negamax_(
 
 		sortSuccs(g, succs, nsucc, curDepth, maxDepth);
 
-		ng = galloc();
 		for (i=0; i<nsucc; i++) {
 			*ng = *g;
 
@@ -188,11 +189,11 @@ static score negamax_(
 				break;
 			}
 		}
-		freeGame(ng);
 
 loop:	
 		freeSuccs(succs, nsucc);
 	}
+	freeGame(ng);
 
 	stats.nbranch += nvalid;
 
