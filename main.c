@@ -178,6 +178,8 @@ int fairy_play(int machineColor) {
 		}
 		printBoard(g);
 
+		game prev = copyGame(g);
+
 		if (g->turn == machineColor) {
 			m = machineMove(g);
 			assert(doMove(g, m));
@@ -188,7 +190,8 @@ int fairy_play(int machineColor) {
 			assert(doMove(g, m));
 		}
 
-		logToBook(g, g->lastmove);
+		logToBook(prev, g->lastmove);
+		freeGame(prev);
 	}
 
 	printf("quit\n");
