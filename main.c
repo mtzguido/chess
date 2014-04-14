@@ -51,7 +51,7 @@ ok:
 
 void logToBook(game g, move m) {
 	static FILE *game_log = NULL;
-	static int movenum = 0;
+	static int movenum = 1;
 	struct pgn pp;
 	char mbuf[10];
 
