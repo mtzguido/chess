@@ -9,7 +9,7 @@ static inline void addToRet2(move m, move *arr, int *len);
 static inline move makeRegularMove(int who, int r, int c, int R, int C);
 
 void pawnSuccs(int r, int c, game g, move *arr, int *alen) {
-	move m;
+	move m = {0};
 	m.who = g->turn;
 	m.move_type = MOVE_REGULAR;
 	m.r = r;
@@ -52,7 +52,7 @@ void knightSuccs(int r, int c, game g, move *arr, int *alen) {
 	const int dc[] = { 1, -1,  1, -1, 2, -2,  2, -2 };
 	unsigned i;
 
-	move m;
+	move m = {0};
 	m.who = g->turn;
 	m.move_type = MOVE_REGULAR;
 	m.r = r;
@@ -69,7 +69,7 @@ void knightSuccs(int r, int c, game g, move *arr, int *alen) {
 void rookSuccs(int r, int c, game g, move *arr, int *alen) {
 	int R, C;
 
-	move m;
+	move m = {0};
 	m.who = g->turn;
 	m.move_type = MOVE_REGULAR;
 	m.r = r;
@@ -132,7 +132,7 @@ void rookSuccs(int r, int c, game g, move *arr, int *alen) {
 void bishopSuccs(int r, int c, game g, move *arr, int *alen) {
 	int R, C;
 
-	move m;
+	move m = {0};
 	m.who = g->turn;
 	m.move_type = MOVE_REGULAR;
 	m.r = r;
@@ -196,7 +196,7 @@ void kingSuccs(int r, int c, game g, move *arr, int *alen) {
 	const int dc[] = { -1, 0,  1, 1,  1,  0, -1, -1 };
 	unsigned i;
 
-	move m;
+	move m = {0};
 	m.who = g->turn;
 	m.move_type = MOVE_REGULAR;
 	m.r = r;
@@ -255,8 +255,6 @@ int genSuccs(game g, move **arr_ret) {
 				kingSuccs(i, j, g, arr, &alen);
 				break;
 			}
-
-			assert(arr != NULL);
 		}
 	}
 

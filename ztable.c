@@ -1,4 +1,5 @@
 #include "ztable.h"
+#include "common.h"
 #include <stdlib.h>
 #include <assert.h>
 

@@ -182,12 +182,15 @@ int fairy_play(int machineColor) {
 
 		if (g->turn == machineColor) {
 			m = machineMove(g);
-			assert(doMove(g, m));
+			int rc = doMove(g, m); 
+			assert(rc);
 			printMove(g->lastmove);
 		} else {
 			m = playerMove(g);
+			//m = machineMove(g);
 			checkMove(g, m);
-			assert(doMove(g, m));
+			int rc = doMove(g, m); 
+			assert(rc);
 		}
 
 		logToBook(prev, g->lastmove);

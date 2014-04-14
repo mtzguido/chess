@@ -5,8 +5,13 @@ SHELL=/bin/bash
 TARGET=chess
 CC=gcc
 
-Q = @
-SAY = echo
+ifeq (${V},1)
+	Q=
+	SAY= echo
+else
+	Q = @
+	SAY = echo
+endif
 
 .config:
 	@echo USING DEFAULT CONFIG
@@ -35,7 +40,7 @@ ifeq (${CONFIG_OWNMEM},y)
 endif
 
 ifeq (${CONFIG_RELEASE},y)
-	CFLAGS += -O99 -DNDEBUG
+	CFLAGS += -O99
 endif
 
 ifeq (${CONFIG_SHUFFLE},y)

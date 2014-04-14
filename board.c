@@ -223,22 +223,24 @@ char charOf(int piece) {
 bool isDraw(game g) {
 	assert(reps(g) > 0);
 
-	return g->idlecount >= 50 || reps(g) >= 3;
+	return g->idlecount >= 100 || reps(g) >= 3;
 }
 
 int isFinished(game g) {
+	move *succs;
+	int i, n;
+	game ng;
+
 	assert(reps(g) > 0);
+	assert(reps(g) <= 3);
 
 	if (reps(g) >= 3)
 		return DRAW_3FOLD;
-	else if (g->idlecount >= 50)
+	else if (g->idlecount >= 100)
 		return DRAW_50MOVE;
 
-	move *succs;
-	int i, n;
-	game ng = copyGame(g);
-
 	n = genSuccs(g, &succs);
+	ng = copyGame(g);
 
 	for (i=0; i<n; i++) {
 		/*
@@ -523,6 +525,12 @@ bool doMove(game g, move m) {
 
 	default:
 		assert(0);
+
+		/*
+		 * Necesario!! el compilador
+		 * puede optimizar si no está esto!
+		 */
+		return false;
 	}
 
 	/* Nunca podemos quedar en jaque */

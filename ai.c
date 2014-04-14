@@ -111,7 +111,7 @@ static score negamax_(
 		move *mm, score alpha, score beta) {
 
 	score t, ret, best;
-	move *succs;
+	move *succs = NULL;
 	int i, nsucc;
 	int nvalid = 0;
 	int COPIED = 0;
@@ -148,7 +148,6 @@ static score negamax_(
 	ng = galloc();
 	for (ii = 0; ii < ARRSIZE(gen_funs); ii++) {
 
-		assert(ii<2);
 		nsucc = gen_funs[ii](g, &succs, curDepth);
 
 		if (nsucc == 0)
@@ -250,8 +249,8 @@ score heur(game g) {
 	 * Acercamos a 0 los tableros que tengan
 	 * muchos movimientos idle
 	 */
-	if (g->idlecount >= 34)
-		ret = (ret * (50 - g->idlecount))/16;
+	if (g->idlecount >= 68)
+		ret = (ret * (100 - g->idlecount))/32;
 
 	return ret;
 }
