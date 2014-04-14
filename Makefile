@@ -72,7 +72,9 @@ mods=	main	\
 	addon_trans	\
 	addon_killer	\
 	addon_cm	\
-	addon
+	addon	\
+	common	\
+	user_input
 
 objs=$(patsubst %,%.o,$(mods))
 

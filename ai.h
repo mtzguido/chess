@@ -14,7 +14,7 @@ extern struct stats {
 	int totalms;
 } stats;
 
-game machineMove(game start);
+move machineMove(game start);
 
 typedef int score;
 

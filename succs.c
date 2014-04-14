@@ -4,83 +4,98 @@
 #include <stdio.h>
 #include <assert.h>
 
-inline static void addToRet (move m, move *arr, int *len);
-inline static void addToRet2(move m, move *arr, int *len);
-inline static move makeRegularMove(int who, int r, int c, int R, int C);
+static inline void addToRet (move m, move *arr, int *len);
+static inline void addToRet2(move m, move *arr, int *len);
+static inline move makeRegularMove(int who, int r, int c, int R, int C);
 
-int pawnSuccs(int r, int c, game g, move *arr, int *alen) {
-	int n = *alen;
+void pawnSuccs(int r, int c, game g, move *arr, int *alen) {
+	move m;
+	m.who = g->turn;
+	m.move_type = MOVE_REGULAR;
+	m.r = r;
+	m.c = c;
 
 	if (g->turn == BLACK && r < 7) {
-		if (r == 1)
-			addToRet(makeRegularMove(g->turn, r, c, r+2, c), arr, alen);
-
 		if (r == 6) {
-			addToRet2(makeRegularMove(g->turn, r, c, r+1, c), arr, alen);
-			addToRet2(makeRegularMove(g->turn, r, c, r+1, c+1), arr, alen);
-			addToRet2(makeRegularMove(g->turn, r, c, r+1, c-1), arr, alen);
+			m.R = r+1; m.C = c;   addToRet2(m, arr, alen);
+			m.R = r+1; m.C = c+1; addToRet2(m, arr, alen);
+			m.R = r+1; m.C = c-1; addToRet2(m, arr, alen);
 		} else {
-			addToRet(makeRegularMove(g->turn, r, c, r+1, c), arr, alen);
-			addToRet(makeRegularMove(g->turn, r, c, r+1, c+1), arr, alen);
-			addToRet(makeRegularMove(g->turn, r, c, r+1, c-1), arr, alen);
+			if (r == 1) {
+				m.R = r+2; m.C = c;
+				addToRet(m, arr, alen);
+			}
+			m.R = r+1; m.C = c;   addToRet(m, arr, alen);
+			m.R = r+1; m.C = c+1; addToRet(m, arr, alen);
+			m.R = r+1; m.C = c-1; addToRet(m, arr, alen);
 		}
 
 	} else if (g->turn == WHITE && r > 0) {
-		if (r == 6)
-			addToRet(makeRegularMove(g->turn, r, c, r-2, c), arr, alen);
-
 		if (r == 1) {
-			addToRet2(makeRegularMove(g->turn, r, c, r-1, c), arr, alen);
-			addToRet2(makeRegularMove(g->turn, r, c, r-1, c+1), arr, alen);
-			addToRet2(makeRegularMove(g->turn, r, c, r-1, c-1), arr, alen);
+			m.R = r-1; m.C = c;   addToRet2(m, arr, alen);
+			m.R = r-1; m.C = c+1; addToRet2(m, arr, alen);
+			m.R = r-1; m.C = c-1; addToRet2(m, arr, alen);
 		} else {
-			addToRet(makeRegularMove(g->turn, r, c, r-1, c), arr, alen);
-			addToRet(makeRegularMove(g->turn, r, c, r-1, c+1), arr, alen);
-			addToRet(makeRegularMove(g->turn, r, c, r-1, c-1), arr, alen);
+			if (r == 6) {
+				m.R = r-2; m.C = c;
+				addToRet(m, arr, alen);
+			}
+			m.R = r-1; m.C = c;   addToRet(m, arr, alen);
+			m.R = r-1; m.C = c+1; addToRet(m, arr, alen);
+			m.R = r-1; m.C = c-1; addToRet(m, arr, alen);
 		}
 	}
-
-	return *alen > n;
 }
 
-int knightSuccs(int r, int c, game g, move *arr, int *alen) {
-	int R, C;
-	int n = *alen;
+void knightSuccs(int r, int c, game g, move *arr, int *alen) {
 	const int dr[] = { 2,  2, -2, -2, 1,  1, -1, -1 };
 	const int dc[] = { 1, -1,  1, -1, 2, -2,  2, -2 };
 	unsigned i;
 
+	move m;
+	m.who = g->turn;
+	m.move_type = MOVE_REGULAR;
+	m.r = r;
+	m.c = c;
+
 	for (i=0; i< sizeof dr / sizeof dr[0]; i++) {
-		R = r + dr[i];
-		C = c + dc[i];
+		m.R = r + dr[i];
+		m.C = c + dc[i];
 
-		addToRet(makeRegularMove(g->turn, r, c, R, C), arr, alen);
+		addToRet(m, arr, alen);
 	}
-
-	return *alen > n;
 }
 
-int rookSuccs(int r, int c, game g, move *arr, int *alen) {
+void rookSuccs(int r, int c, game g, move *arr, int *alen) {
 	int R, C;
-	int n = *alen;
+
+	move m;
+	m.who = g->turn;
+	m.move_type = MOVE_REGULAR;
+	m.r = r;
+	m.c = c;
 
 	R = r;
 	for (C=c+1; C<8; C++) {
-		if (g->board[R][C] == 0)
-			addToRet(makeRegularMove(g->turn, r, c, R, C), arr, alen);
-		else {
+		if (g->board[R][C] == 0) {
+			m.R = R; m.C = C;
+			addToRet(m, arr, alen);
+		} else {
 			if (colorOf(g->board[R][C]) != g->turn) {
-				addToRet(makeRegularMove(g->turn, r, c, R, C), arr, alen);
+				m.R = R; m.C = C;
+				addToRet(m, arr, alen);
 			}
 			break;
 		}
 	}
 	for (C=c-1; C>=0; C--) {
-		if (g->board[R][C] == 0)
-			addToRet(makeRegularMove(g->turn, r, c, R, C), arr, alen);
-		else {
+		if (g->board[R][C] == 0) {
+			m.R = R; m.C = C;
+			addToRet(m, arr, alen);
+		} else {
 			if (colorOf(g->board[R][C]) != g->turn) {
-				addToRet(makeRegularMove(g->turn, r, c, R, C), arr, alen);
+				m.R = R; m.C = C;
+				addToRet(m, arr, alen);
 			}
 			break;
 		}
@@ -88,91 +103,111 @@ int rookSuccs(int r, int c, game g, move *arr, int *alen) {
 
 	C = c;
 	for (R=r+1; R<8; R++) {
-		if (g->board[R][C] == 0)
-			addToRet(makeRegularMove(g->turn, r, c, R, C), arr, alen);
-		else {
+		if (g->board[R][C] == 0) {
+			m.R = R; m.C = C;
+			addToRet(m, arr, alen);
+		} else {
 			if (colorOf(g->board[R][C]) != g->turn) {
-				addToRet(makeRegularMove(g->turn, r, c, R, C), arr, alen);
-			}
-			break;
-		}
-	}
-	for (R=r-1; R>=0; R--) {
-		if (g->board[R][C] == 0)
-			addToRet(makeRegularMove(g->turn, r, c, R, C), arr, alen);
-		else {
-			if (colorOf(g->board[R][C]) != g->turn) {
-				addToRet(makeRegularMove(g->turn, r, c, R, C), arr, alen);
+				m.R = R; m.C = C;
+				addToRet(m, arr, alen);
 			}
 			break;
 		}
 	}
 
-	return *alen > n;
+	for (R=r-1; R>=0; R--) {
+		if (g->board[R][C] == 0) {
+			m.R = R; m.C = C;
+			addToRet(m, arr, alen);
+		} else {
+			if (colorOf(g->board[R][C]) != g->turn) {
+				m.R = R; m.C = C;
+				addToRet(m, arr, alen);
+			}
+			break;
+		}
+	}
 }
 
-int bishopSuccs(int r, int c, game g, move *arr, int *alen) {
+void bishopSuccs(int r, int c, game g, move *arr, int *alen) {
 	int R, C;
-	int n = *alen;
+
+	move m;
+	m.who = g->turn;
+	m.move_type = MOVE_REGULAR;
+	m.r = r;
+	m.c = c;
 
 	for (R=r+1, C=c+1; R<8 && C<8; R++, C++) {
-		if (g->board[R][C] == 0)
-			addToRet(makeRegularMove(g->turn, r, c, R, C), arr, alen);
-		else {
+		if (g->board[R][C] == 0) {
+			m.R = R; m.C = C;
+			addToRet(m, arr, alen);
+		} else {
 			if (colorOf(g->board[R][C]) != g->turn) {
-				addToRet(makeRegularMove(g->turn, r, c, R, C), arr, alen);
-			}
-			break;
-		}
-	}
-	for (R=r-1, C=c+1; R>=0 && C<8; R--, C++) {
-		if (g->board[R][C] == 0)
-			addToRet(makeRegularMove(g->turn, r, c, R, C), arr, alen);
-		else {
-			if (colorOf(g->board[R][C]) != g->turn) {
-				addToRet(makeRegularMove(g->turn, r, c, R, C), arr, alen);
-			}
-			break;
-		}
-	}
-	for (R=r+1, C=c-1; R<8 && C>=0; R++, C--) {
-		if (g->board[R][C] == 0)
-			addToRet(makeRegularMove(g->turn, r, c, R, C), arr, alen);
-		else {
-			if (colorOf(g->board[R][C]) != g->turn) {
-				addToRet(makeRegularMove(g->turn, r, c, R, C), arr, alen);
-			}
-			break;
-		}
-	}
-	for (R=r-1, C=c-1; R>=0 && C>=0; R--, C--) {
-		if (g->board[R][C] == 0)
-			addToRet(makeRegularMove(g->turn, r, c, R, C), arr, alen);
-		else {
-			if (colorOf(g->board[R][C]) != g->turn) {
-				addToRet(makeRegularMove(g->turn, r, c, R, C), arr, alen);
+				m.R = R; m.C = C;
+				addToRet(m, arr, alen);
 			}
 			break;
 		}
 	}
 
-	return *alen > n;
+	for (R=r-1, C=c+1; R>=0 && C<8; R--, C++) {
+		if (g->board[R][C] == 0) {
+			m.R = R; m.C = C;
+			addToRet(m, arr, alen);
+		} else {
+			if (colorOf(g->board[R][C]) != g->turn) {
+				m.R = R; m.C = C;
+				addToRet(m, arr, alen);
+			}
+			break;
+		}
+	}
+
+	for (R=r+1, C=c-1; R<8 && C>=0; R++, C--) {
+		if (g->board[R][C] == 0) {
+			m.R = R; m.C = C;
+			addToRet(m, arr, alen);
+		} else {
+			if (colorOf(g->board[R][C]) != g->turn) {
+				m.R = R; m.C = C;
+				addToRet(m, arr, alen);
+			}
+			break;
+		}
+	}
+
+	for (R=r-1, C=c-1; R>=0 && C>=0; R--, C--) {
+		if (g->board[R][C] == 0) {
+			m.R = R; m.C = C;
+			addToRet(m, arr, alen);
+		} else {
+			if (colorOf(g->board[R][C]) != g->turn) {
+				m.R = R; m.C = C;
+				addToRet(m, arr, alen);
+			}
+			break;
+		}
+	}
 }
 
-int kingSuccs(int r, int c, game g, move *arr, int *alen) {
-	int n = *alen;
+void kingSuccs(int r, int c, game g, move *arr, int *alen) {
 	const int dr[] = {  1, 1,  1, 0, -1, -1, -1, 0  };
 	const int dc[] = { -1, 0,  1, 1,  1,  0, -1, -1 };
 	unsigned i;
 
+	move m;
+	m.who = g->turn;
+	m.move_type = MOVE_REGULAR;
+	m.r = r;
+	m.c = c;
+
 	for (i=0; i < sizeof dr / sizeof dr[0]; i++) {
-		register int R = r + dr[i];
-		register int C = c + dc[i];
+		m.R = r + dr[i];
+		m.C = c + dc[i];
 
-		addToRet(makeRegularMove(g->turn, r, c, R, C), arr, alen);
+		addToRet(m, arr, alen);
 	}
-
-	return *alen > n;
 }
 
 int genSuccs(game g, move **arr_ret) {

@@ -35,7 +35,7 @@ while [ $n -lt $total ]; do
 		gprof -s chess gmon.out gmon.sum
 	fi
 
-	cp gamelog_w games/gamelog_$n
+	cp gamelog games/gamelog_$n
 	cp fairylog  games/fairylog_$n
 	cp chesslog  games/chesslog_$n
 

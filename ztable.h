@@ -3,8 +3,6 @@
 
 #include "board.h"
 
-extern int NN;
-
 extern int n_collision;
 
 void mark(game g);

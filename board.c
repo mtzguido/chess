@@ -113,8 +113,6 @@ static void fix(game g) {
 	g->castled[WHITE] = 0;
 	g->castled[BLACK] = 0;
 	
-	g->nSucc = -1;
-
 	piecePosFullRecalc(g);
 }
 
@@ -223,10 +221,14 @@ char charOf(int piece) {
 
 /* No usa info de sucesores */
 bool isDraw(game g) {
+	assert(reps(g) > 0);
+
 	return g->idlecount >= 50 || reps(g) >= 3;
 }
 
 int isFinished(game g) {
+	assert(reps(g) > 0);
+
 	if (reps(g) >= 3)
 		return DRAW_3FOLD;
 	else if (g->idlecount >= 50)
@@ -516,6 +518,9 @@ bool doMove(game g, move m) {
 		g->castled[m.who] = 1;
 
 		break;
+	case -1:
+		return false;
+
 	default:
 		assert(0);
 	}
@@ -529,7 +534,6 @@ bool doMove(game g, move m) {
 
 	g->turn = flipTurn(g->turn);
 	g->zobrist ^= ZOBR_BLACK();
-	g->nSucc = -1;
 
 	return true;
 
@@ -877,6 +881,8 @@ bool equalMove(move a, move b) {
 }
 
 bool equalGame(game a, game b) {
+	return a->zobrist == b->zobrist;
+#if 0
 	if (a->zobrist != b->zobrist)
 		return false;
 
@@ -905,5 +911,6 @@ bool equalGame(game a, game b) {
 	}
 
 	return rc;
+#endif
 }
 

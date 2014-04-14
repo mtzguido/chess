@@ -2,30 +2,34 @@
 #define __ZOBRIST_H__
 
 #include "common.h"
+#include <assert.h>
 
-extern const u64 zobrist_keys[];
+extern const u64 zobrist_keys[794];
 
 static inline u64 ZOBR_PIECE(int piece, int r, int c) {
-	return zobrist_keys[r*8*13 + c*13 + piece + 6];
+	assert(piece != 0);
+
+	const int p = piece > 0 ? piece - 1 : 12 + piece;
+	return zobrist_keys[r*8*12 + c*12 + p];
 }
 
 static inline u64 ZOBR_BLACK() {
-	return zobrist_keys[832];
+	return zobrist_keys[781];
 }
 
 static inline u64 ZOBR_CASTLE_K(int who) {
-	return zobrist_keys[833 + who];
+	return zobrist_keys[782 + who];
 }
 
 static inline u64 ZOBR_CASTLE_Q(int who) {
-	return zobrist_keys[835 + who];
+	return zobrist_keys[784 + who];
 }
 
 static inline u64 ZOBR_EP(int c) {
 	if (c == -1)
 		return 0;
 
-	return zobrist_keys[837 + c];
+	return zobrist_keys[786 + c];
 }
 
 #endif

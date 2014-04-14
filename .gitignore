@@ -1,6 +1,7 @@
 *.o
 chess
 gmon.out
+gmon.sum
 doc/*.aux
 doc/*.log
 doc/*.pdf

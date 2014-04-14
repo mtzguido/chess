@@ -23,7 +23,7 @@ static const score maxScore =  1e7;
 static void shuffleSuccs(game g, move *succs, int n);
 static void sortSuccs(game g, move *succs, int n, int depth, int maxDepth);
 static score machineMoveImpl(game start, int maxDepth, int curDepth,
-			     game nb, score alpha, score beta);
+			     move *mm, score alpha, score beta);
 
 typedef int (*succgen_t)(game, move**, int);
 
@@ -34,8 +34,8 @@ static int genSuccs_wrap(game g, move **arr, int depth) {
 /* Stats */
 struct stats stats;
 
-game machineMove(game start) {
-	game ret = galloc();
+move machineMove(game start) {
+	move ret;
 	score t;
 	clock_t t1,t2;
 
@@ -51,10 +51,8 @@ game machineMove(game start) {
 		stats.depthsn[i] = 0;
 
 	t1 = clock();
-	t = machineMoveImpl(start, SEARCH_DEPTH, 0, ret, minScore, maxScore);
+	t = machineMoveImpl(start, SEARCH_DEPTH, 0, &ret, minScore, maxScore);
 	t2 = clock();
-
-	assert(ret != NULL);
 
 	stats.totalopen += stats.nopen;
 	stats.totalms += 1000*(t2-t1)/CLOCKS_PER_SEC;
@@ -75,12 +73,12 @@ game machineMove(game start) {
 
 static score machineMoveImpl_(
 		game g, int maxDepth, int curDepth,
-		game nb, score alpha, score beta);
+		move *mm, score alpha, score beta);
 
 static score machineMoveImpl(
 		game g, int maxDepth, int curDepth,
-		game nb, score alpha, score beta) {
-	score rc1 = machineMoveImpl_(g, maxDepth, curDepth, nb, alpha, beta);
+		move *mm, score alpha, score beta) {
+	score rc1 = machineMoveImpl_(g, maxDepth, curDepth, mm, alpha, beta);
 
 	/* Wrap de machineMoveImpl, para debug */
 	/* printf("mm (%i/%i) (a=%i, b=%i) returns %i\n", curDepth, maxDepth, alpha, beta, rc); */
@@ -99,7 +97,7 @@ const succgen_t gen_funs[] = {
 
 static score machineMoveImpl_(
 		game g, int maxDepth, int curDepth,
-		game nb, score alpha, score beta) {
+		move *mm, score alpha, score beta) {
 
 	score t, ret, best;
 	move *succs;
@@ -109,21 +107,21 @@ static score machineMoveImpl_(
 	game ng;
 
 	if (isDraw(g)) {
-		if (nb != NULL) {
-			*nb = *g;
+		if (mm != NULL) {
+			mm->move_type = -1;
 			COPIED = 1;
 		}
-		assert(nb == NULL);
+		assert(mm == NULL);
 		ret = 0;
 		goto out;
 	}
 
 	if (curDepth >= maxDepth) {
-		if (nb != NULL) {
-			*nb = *g;
+		if (mm != NULL) {
+			mm->move_type = -1;
 			COPIED = 1;
 		}
-		assert(nb == NULL);
+		assert(mm == NULL);
 		if (g->turn == WHITE)
 			ret = heur(g);
 		else
@@ -166,8 +164,8 @@ static score machineMoveImpl_(
 
 			if (t > best) {
 				best = t;
-				if (nb != NULL) {
-					*nb = *ng;
+				if (mm != NULL) {
+					*mm = succs[i];
 					COPIED = 1;
 				}
 			}
@@ -199,7 +197,7 @@ loop:
 
 out:
 
-	if (nb != NULL)
+	if (mm != NULL)
 		assert(COPIED);
 
 	return ret;

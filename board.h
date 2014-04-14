@@ -62,10 +62,6 @@ struct game_struct {
 	 *   endgame, se interpolan luego */
 	int pps_O;
 	int pps_E;
-
-	/*  Número de sucesores y estado
-	 *  de terminación */
-	int nSucc;
 } __attribute__((packed));
 
 typedef struct game_struct *game;

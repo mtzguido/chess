@@ -12,8 +12,6 @@ struct bucket {
 	struct bucket *next;
 };
 
-int NN;
-
 struct bucket * ztable[CFG_ZTABLE_SIZE] __attribute__((aligned(0x1000)));
 
 void mark(game g) {
@@ -29,7 +27,6 @@ void mark(game g) {
 	if (p) {
 		p->n++;
 	} else {
-		NN++;
 		p = malloc(sizeof *p);
 		p->g = copyGame(g);
 		p->n = 1;
