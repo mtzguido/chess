@@ -21,11 +21,12 @@ if ! [ -d games ]; then
 	mkdir games
 fi
 
+echo "	l/d/w		score (min - max)"
 while [ $n -lt $total ]; do
 	n=$((n+1))
 
 	${CHESS_PROG} ${CHESS_ARGS} <wpipe | tee fairylog >bpipe &
-	./chess w 2>&1 >wpipe <bpipe | tee chesslog | grep -E '^RES:' | tee -a FINISHLOG
+	./chess w 2>&1 >wpipe <bpipe | tee chesslog | grep -E '^RES:' >> FINISHLOG
 
 	wait # wait for opponent
 
@@ -42,11 +43,11 @@ while [ $n -lt $total ]; do
 	lose=$(grep Lose FINISHLOG | wc -l)
 	draw=$(grep Draw FINISHLOG | wc -l)
 	win=$(grep Win FINISHLOG | wc -l)
-	score=$(( (2*win + draw)/ (2*n) ))
-	min_score=$(( (2*win + draw) / (2*total) ))
-	max_score=$(( (2*win + draw + 2 * (total-n)) / (2*total) ))
+	score=$(bc -l <<< "scale=2; (2*$win + $draw)/ (2*$n)")
+	min_score=$(bc -l <<< "scale=2; (2*$win + $draw)/ (2*$total)")
+	max_score=$(bc -l <<< "scale=2; (2*$win + $draw + 2*($total - $n))/ (2*$total)")
 	
-	echo "$n/$total games (results: $lose/$draw/$win. Score=$score (min/max: $min_score/$max_score))"
+	echo "$n/$total	$lose/$draw/$win		$score ($min_score - $max_score)"
 
 	if [ $((lose + draw + win)) -ne $n ]; then
 		echo 'wat!'
