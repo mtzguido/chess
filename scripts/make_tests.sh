@@ -43,8 +43,10 @@ while [ $n -lt $total ]; do
 	draw=$(grep Draw FINISHLOG | wc -l)
 	win=$(grep Win FINISHLOG | wc -l)
 	score=$(( (2*win + draw)/ (2*n) ))
+	min_score=$(( (2*win + draw) / (2*total) ))
+	max_score=$(( (2*win + draw + 2 * (total-n)) / (2*total) ))
 	
-	echo "$n/$total games (results: $lose/$draw/$win. Score=$score)"
+	echo "$n/$total games (results: $lose/$draw/$win. Score=$score (min/max: $min_score/$max_score))"
 
 	if [ $((lose + draw + win)) -ne $n ]; then
 		echo 'wat!'
