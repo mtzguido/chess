@@ -42,8 +42,9 @@ while [ $n -lt $total ]; do
 	lose=$(grep Lose FINISHLOG | wc -l)
 	draw=$(grep Draw FINISHLOG | wc -l)
 	win=$(grep Win FINISHLOG | wc -l)
+	score=$(( (2*win + draw)/ (2*n) ))
 	
-	echo "$n/$total games (results: $lose/$draw/$win)"
+	echo "$n/$total games (results: $lose/$draw/$win. Score=$score)"
 
 	if [ $((lose + draw + win)) -ne $n ]; then
 		echo 'wat!'
