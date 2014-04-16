@@ -16,6 +16,12 @@
 #include <execinfo.h>
 #include <signal.h>
 
+struct player {
+	void (*start)(int color);
+	move (*getMove)(game);
+	void (*notify)(game, move);
+};
+
 void checkMove(game g, move m) {
 	game t = galloc();
 	game ng = galloc();
@@ -139,15 +145,12 @@ static void zobrist_test(game b, int d) {
 	freeSuccs(succs, n);
 }
 
-int fairy_play(int machineColor) {
+int match(struct player pwhite, struct player pblack) {
 	move m;
 	game g = startingGame();
 
-	start_all_addons();
-
-	printf("new\n");
-	if (machineColor != WHITE) 
-		printf("go\n");
+	pwhite.start(WHITE);
+	pblack.start(BLACK);
 
 	while(1) {
 		int rc;
@@ -156,10 +159,10 @@ int fairy_play(int machineColor) {
 
 		rc = isFinished(g);
 		if (rc > 0) {
-			if (rc == WIN(machineColor)) {
+			if (rc == WIN(WHITE)) {
 				fprintf(stderr, "RES: Win (checkmate)\n");
 				return 12;
-			} else if (rc == WIN(flipTurn(machineColor))) {
+			} else if (rc == WIN(BLACK)) {
 				fprintf(stderr, "RES: Lose (checkmate)\n");
 				return 10;
 			} else if (rc == DRAW_3FOLD) {
@@ -181,17 +184,18 @@ int fairy_play(int machineColor) {
 
 		game prev = copyGame(g);
 
-		if (g->turn == machineColor) {
-			m = machineMove(g);
-			int rc = doMove(g, m); 
-			assert(rc);
-			printMove(g->lastmove);
-		} else {
-			m = playerMove(g);
-			//m = machineMove(g);
+		if (g->turn == WHITE) {
+			m = pwhite.getMove(g);
 			checkMove(g, m);
 			int rc = doMove(g, m); 
 			assert(rc);
+			pblack.notify(g, g->lastmove);
+		} else {
+			m = pblack.getMove(g);
+			checkMove(g, m);
+			int rc = doMove(g, m); 
+			assert(rc);
+			pwhite.notify(g, g->lastmove);
 		}
 
 		logToBook(prev, g->lastmove);
@@ -206,6 +210,55 @@ int fairy_play(int machineColor) {
 	return 0;
 }
 
+enum play_mode {
+	self,
+	fairy,
+	onemove
+};
+
+struct {
+	enum play_mode mode;
+} behaviour;
+
+
+int self_play() { return 0; };
+int one_move() { return 0; };
+
+void parse_opt(int argc, char **argv) {
+	behaviour.mode = self;
+}
+
+void printMove_wrap(game g, move m) {
+	printMove(m);
+}
+
+void fairy_start(int col) {
+	printf("new\n");
+	if (col == WHITE) 
+		printf("go\n");
+}
+
+struct player fairy_player =
+{
+	.getMove = playerMove,
+	.notify = printMove_wrap,
+	.start = fairy_start,
+};
+
+void ai_start() {
+	start_all_addons();
+}
+
+void nothing() {
+}
+
+struct player ai_player =
+{
+	.start = ai_start,
+	.getMove = machineMove,
+	.notify = nothing,
+};
+
 int main(int argc, char **argv) {
 	int rc;
 
@@ -213,10 +266,19 @@ int main(int argc, char **argv) {
 	srand(time(NULL) + getpid());
 	init_mem();
 
-	//self_play();
-	rc = fairy_play(WHITE);
-	//zobrist_test();
-	//one_move();
+	parse_opt(argc, argv);
+
+	switch (behaviour.mode) {
+	case self:
+		rc = match(ai_player, ai_player);
+		break;
+	case fairy:
+		rc = match(ai_player, fairy_player);
+		break;
+	case onemove:
+		rc = one_move();
+		break;
+	}
 
 	fprintf(stderr, "Total nodes: %i\n", stats.totalopen);
 	fprintf(stderr, "Total time: %ims\n", stats.totalms);
