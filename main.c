@@ -23,7 +23,8 @@ void checkMove(game g, move m) {
 	move *succs;
 
 	*ng = *g;
-	assert(doMove(ng, m));
+	int rc = doMove(ng, m);
+	assert(rc);
 
 	nsucc = genSuccs(g, &succs);
 
