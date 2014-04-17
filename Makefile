@@ -98,7 +98,7 @@ clean:
 	$(Q)$(SAY) "CLEAN"
 	$(Q)rm -f $(TARGET) $(objs) gmon.out
 	$(Q)rm -f bpipe wpipe
-	$(Q)$(MAKE) -C doc clean
+	$(Q)$(MAKE) -s -C doc clean
 	$(Q)rm -f FINISHLOG full_log gamelog_*
 
 re: clean all
@@ -117,4 +117,5 @@ test: | $(TARGET)
 	./scripts/make_tests.sh
 
 doc:
-	$(MAKE) -C doc
+	$(Q)$(SAY) "DOC     "
+	$(Q)$(MAKE) -s -C doc

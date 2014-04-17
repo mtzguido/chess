@@ -117,6 +117,8 @@ static score negamax_(
 	__maybe_unused int COPIED = 0;
 	game ng;
 
+	const score alpha_orig = alpha;
+
 	if (isDraw(g)) {
 		if (mm != NULL) {
 			mm->move_type = -1;
@@ -141,6 +143,14 @@ static score negamax_(
 		goto out;
 	}
 
+	if (mm == NULL)
+		addon_notify_entry(g, curDepth, &alpha, &beta);
+
+	if (alpha >= beta) {
+		ret = alpha;
+		goto out;
+	}
+
 	stats.nopen++;
 
 	unsigned ii;
@@ -150,8 +160,10 @@ static score negamax_(
 
 		nsucc = gen_funs[ii](g, &succs, curDepth);
 
-		if (nsucc == 0)
-			goto loop;
+		if (nsucc == 0) {
+			freeSuccs(succs, nsucc);
+			continue;
+		}
 
 		assert(nsucc > 0);
 		assert(succs != NULL);
@@ -189,7 +201,6 @@ static score negamax_(
 			}
 		}
 
-loop:	
 		freeSuccs(succs, nsucc);
 	}
 	freeGame(ng);
@@ -204,6 +215,17 @@ loop:
 	} else {
 		ret = alpha;
 	}
+
+	flag_t flag;
+
+	if (best <= alpha_orig)
+		flag = FLAG_UPPER_BOUND;
+	else if (best > beta)
+		flag = FLAG_LOWER_BOUND;
+	else
+		flag = FLAG_EXACT;
+
+	addon_notify_return(g, g->lastmove, curDepth, ret, flag);
 
 out:
 

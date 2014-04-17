@@ -225,7 +225,7 @@ int self_play() { return 0; };
 int one_move() { return 0; };
 
 void parse_opt(int argc, char **argv) {
-	behaviour.mode = fairy;
+	behaviour.mode = self;
 }
 
 void printMove_wrap(game g, move m) {

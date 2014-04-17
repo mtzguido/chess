@@ -22,29 +22,26 @@ void addon_reset() {
 	}
 }
 
-void addon_notify_return(game g, move m, score s, int depth) {
+void addon_notify_return(game g, move m, int depth, score score, flag_t flag) {
 	unsigned i;
 
 	for (i=0; i<n_addon; i++) {
 		struct addon a = enabled_addons[i];
 
 		if (a.notify_return != NULL)
-			a.notify_return(g, m, s, depth);
+			a.notify_return(g, m, depth, score, flag);
 	}
 }
 
-bool addon_notify_entry(game g, int depth, score *ret) {
+void addon_notify_entry(game g, int depth, score *alpha, score *beta) {
 	unsigned i;
 
 	for (i=0; i<n_addon; i++) {
 		struct addon a = enabled_addons[i];
 
 		if (a.notify_entry != NULL)
-			if (a.notify_entry(g, depth, ret))
-				return true;
+			a.notify_entry(g, depth, alpha, beta);
 	}
-
-	return false;
 }
 
 void addon_notify_cut(game g, move m, int depth) {

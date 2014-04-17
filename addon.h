@@ -4,10 +4,16 @@
 #include "board.h"
 #include "ai.h"
 
+typedef enum {
+	FLAG_EXACT,
+	FLAG_LOWER_BOUND,
+	FLAG_UPPER_BOUND
+} flag_t;
+
 struct addon {
 	void (*reset)(void);
-	void (*notify_return)(game g, move m, score s, int depth);
-	bool (*notify_entry)(game g, int depth, score *ret);
+	void (*notify_return)(game g, move m, int depth, score s, flag_t flag);
+	void (*notify_entry)(game g, int depth, score *alpha, score *beta);
 	void (*notify_cut)(game g, move m, int depth);
 	void (*score_succs)(game g, const move *succs,
 			    score *vals, int nsucc, int depth);
@@ -18,8 +24,8 @@ struct addon {
 void addon_register(struct addon sa);
 
 void addon_reset(void);
-void addon_notify_return(game g, move m, score s, int depth);
-bool addon_notify_entry(game g, int depth, score *ret);
+void addon_notify_return(game g, move m, int depth, score s, flag_t flag);
+void addon_notify_entry(game g, int depth, score *alpha, score *beta);
 void addon_notify_cut(game g, move m, int depth);
 void addon_score_succs(game g, const move *succs,
 		      score *vals, int nsucc, int depth);
