@@ -79,7 +79,8 @@ mods=	main	\
 	addon_cm	\
 	addon	\
 	common	\
-	user_input
+	user_input	\
+	piece-square
 
 objs=$(patsubst %,%.o,$(mods))
 
