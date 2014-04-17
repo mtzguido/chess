@@ -134,9 +134,9 @@ static score negamax_(
 		}
 		assert(mm == NULL);
 		if (g->turn == WHITE)
-			ret = heur(g);
+			ret = boardEval(g);
 		else
-			ret = - heur(g);
+			ret = -boardEval(g);
 
 		goto out;
 	}
@@ -220,7 +220,7 @@ static int pieceScore(game g) {
 	return g->pieceScore  + pps;
 }
 
-score heur(game g) {
+score boardEval(game g) {
 	score ret = 0;
 
 	ret = pieceScore(g);

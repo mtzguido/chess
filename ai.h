@@ -18,6 +18,6 @@ move machineMove(game start);
 
 typedef int score;
 
-score heur(game g);
+score boardEval(game g);
 
 #endif
