@@ -309,7 +309,7 @@ static inline move makeRegularMove(int who, int r, int c, int R, int C) {
 	return ret;
 }
 
-void freeSuccs(move *arr, int len __attribute__((unused))) {
+void freeSuccs(move *arr, int len __maybe_unused) {
 	free(arr);
 }
 

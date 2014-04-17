@@ -191,7 +191,7 @@ void printBoard(game g) {
 	fprintf(stderr, "  scores = %i %i\n", g->pieceScore, g->totalScore);
 	fprintf(stderr, "  pps o e = %i %i\n", g->pps_O, g->pps_E);
 	fprintf(stderr, "  zobrist = 0x%0lx\n", g->zobrist);
-	fprintf(stderr, "  heur is = %i\n", heur(g));
+	fprintf(stderr, "  boardEval is = %i\n", boardEval(g));
 	fprintf(stderr, "  idlecount = %i\n", g->idlecount);
 	fprintf(stderr, "]\n");
 
@@ -437,7 +437,7 @@ static bool inCheck_king(game g) {
  * en donde mover el caballo causa un jaque aún
  * cuando no lo amenaza
  */
-static bool safe(game g __attribute__((unused)), u8 r, u8 c, u8 kr, u8 kc) {
+static bool safe(game g __maybe_unused, u8 r, u8 c, u8 kr, u8 kc) {
 	if (r == kr || c == kc) {
 		return false;
 	} else {

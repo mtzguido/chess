@@ -116,7 +116,7 @@ static int trans_suggest(game g, move *arr, int depth) {
 	return 1;
 }
 
-static struct addon trans_addon __attribute__((unused)) = {
+static struct addon trans_addon __maybe_unused = {
 	.reset = trans_reset,
 	.score_succs = trans_sort_succs,
 	.notify_return = trans_notify_return,

@@ -56,7 +56,7 @@ static int cm_suggest(game g, move *arr, int depth) {
 	return 1;
 }
 
-static struct addon cm_addon __attribute__((unused)) = {
+static struct addon cm_addon __maybe_unused = {
 	.reset = cm_reset,
 	.score_succs = cm_score_succs,
 	.notify_cut = cm_notify_cut,

@@ -29,7 +29,7 @@ void checkMove(game g, move m) {
 	move *succs;
 
 	*ng = *g;
-	int rc = doMove(ng, m);
+	__maybe_unused int rc = doMove(ng, m);
 	assert(rc);
 
 	nsucc = genSuccs(g, &succs);
@@ -118,7 +118,7 @@ move playerMove(game g) {
 	return m;
 }
 
-static void zobrist_test(game b, int d) {
+__maybe_unused static void zobrist_test(game b, int d) {
 	mark(b);
 	move *succs;
 	int i;
@@ -187,13 +187,13 @@ int match(struct player pwhite, struct player pblack) {
 		if (g->turn == WHITE) {
 			m = pwhite.getMove(g);
 			checkMove(g, m);
-			int rc = doMove(g, m); 
+			__maybe_unused int rc = doMove(g, m); 
 			assert(rc);
 			pblack.notify(g, g->lastmove);
 		} else {
 			m = pblack.getMove(g);
 			checkMove(g, m);
-			int rc = doMove(g, m); 
+			__maybe_unused int rc = doMove(g, m); 
 			assert(rc);
 			pwhite.notify(g, g->lastmove);
 		}
@@ -225,7 +225,7 @@ int self_play() { return 0; };
 int one_move() { return 0; };
 
 void parse_opt(int argc, char **argv) {
-	behaviour.mode = self;
+	behaviour.mode = fairy;
 }
 
 void printMove_wrap(game g, move m) {

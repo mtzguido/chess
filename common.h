@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+#define __maybe_unused  __attribute__((unused))
+
 typedef	uint64_t	u64;
 typedef	uint32_t	u32;
 typedef	uint16_t	u16;

@@ -114,7 +114,7 @@ static score negamax_(
 	move *succs = NULL;
 	int i, nsucc;
 	int nvalid = 0;
-	int COPIED = 0;
+	__maybe_unused int COPIED = 0;
 	game ng;
 
 	if (isDraw(g)) {
