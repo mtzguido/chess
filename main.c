@@ -221,11 +221,25 @@ struct {
 } behaviour;
 
 
-int self_play() { return 0; };
-int one_move() { return 0; };
+int one_move() {
+	game g;
+	move m;
+
+
+	g = startingGame();
+	mark(g);
+
+	start_all_addons();
+	m = machineMove(g);
+	doMove(g, m);
+
+	printBoard(g);
+
+	return 0;
+};
 
 void parse_opt(int argc, char **argv) {
-	behaviour.mode = self;
+	behaviour.mode = onemove;
 }
 
 void printMove_wrap(game g, move m) {
