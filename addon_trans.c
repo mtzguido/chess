@@ -9,14 +9,21 @@
 static inline score max(score a, score b) { return a > b ? a : b; }
 static inline score min(score a, score b) { return a < b ? a : b; }
 
+static int seq = 0;
+
 struct tt_entry {
 	u64    key;
 	int    depth;
 	score  score;
 	u8     flag;
+	int seq;
 };
 
 struct tt_entry tt[CFG_TTABLE_SIZE] __attribute__((aligned(4096)));
+
+static void trans_reset() {
+	seq++;
+}
 
 static void trans_notify_return(game g, move m, int depth, score score, flag_t flag) {
 	u64 key = g->zobrist;
@@ -28,11 +35,15 @@ static void trans_notify_return(game g, move m, int depth, score score, flag_t f
 	tt[idx].score = score;
 	tt[idx].depth = depth;
 	tt[idx].flag  = flag;
+	tt[idx].seq   = seq;
 }
 
 static void trans_notify_entry(game g, int depth, score *alpha, score *beta) {
 	u64 key = g->zobrist;
 	u64 idx = key % CFG_TTABLE_SIZE;
+
+	if (tt[idx].seq < seq)
+		return;
 
 	if (tt[idx].key != key)
 		return;
@@ -54,9 +65,6 @@ static void trans_notify_entry(game g, int depth, score *alpha, score *beta) {
 }
 
 #if 0
-static void trans_reset() {
-}
-
 static void trans_score_succs(game g, const move *succs, score *vals, int nsucc, int depth) {
 }
 
@@ -69,8 +77,9 @@ static int trans_suggest(game g, move *arr, int depth) {
 #endif
 
 static struct addon trans_addon __maybe_unused = {
-	.notify_return = trans_notify_return,
-	.notify_entry  = trans_notify_entry,
+	.reset		= trans_reset,
+	.notify_return	= trans_notify_return,
+	.notify_entry	= trans_notify_entry,
 };
 
 void addon_trans_init() {
