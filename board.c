@@ -673,16 +673,16 @@ static bool doMoveRegular(game g, move m) {
 
 	/* Si es algún movimiento relevante al rey contrario
 	 * dropeamos la cache */
-//	if (g->inCheck[other] != -1)
-//		if (!safe(g, m.r, m.c, g->kingx[other], g->kingy[other]) ||
-//		    !safe(g, m.R, m.C, g->kingx[other], g->kingy[other]))
+	if (g->inCheck[other] != -1)
+		if (!safe(g, m.r, m.c, g->kingx[other], g->kingy[other]) ||
+		    !safe(g, m.R, m.C, g->kingx[other], g->kingy[other]))
 			g->inCheck[other] = -1;
 
 	/* Necesitamos también (posiblemente) dropear la nuestra */
-//	if (g->inCheck[m.who] != -1)
-//		if (isKing(piece) ||
-//		    !safe(g, m.r, m.c, g->kingx[m.who], g->kingy[m.who]) ||
-//		    !safe(g, m.R, m.C, g->kingx[m.who], g->kingy[m.who]))
+	if (g->inCheck[m.who] != -1)
+		if (isKing(piece) ||
+		    !safe(g, m.r, m.c, g->kingx[m.who], g->kingy[m.who]) ||
+		    !safe(g, m.R, m.C, g->kingx[m.who], g->kingy[m.who]))
 			g->inCheck[m.who] = -1;
 
 	return true;
