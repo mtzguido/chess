@@ -118,6 +118,7 @@ static score negamax_(
 	game ng;
 
 	const score alpha_orig = alpha;
+	__maybe_unused const score beta_orig = beta;
 
 	if (isDraw(g)) {
 		if (mm != NULL) {
@@ -228,7 +229,6 @@ static score negamax_(
 	addon_notify_return(g, g->lastmove, curDepth, ret, flag);
 
 out:
-
 	if (mm != NULL)
 		assert(COPIED);
 
@@ -274,22 +274,6 @@ score boardEval(game g) {
 
 	return ret;
 }
-
-/*
-static int succCmp(const void *bp, const void *ap) {
-	game a = *((game*)ap);
-	game b = *((game*)bp);
-
-	if (a->lastmove.was_capture != b->lastmove.was_capture)
-		return a->lastmove.was_capture - b->lastmove.was_capture;
-
-	if (a->lastmove.was_promotion != b->lastmove.was_promotion)
-		return a->lastmove.was_promotion - b->lastmove.was_promotion;
-
-	return 0;
-}
-	qsort(succs, n, sizeof (game), succCmp);
-*/
 
 static void sortSuccs(game g, move *succs, int n, int depth, int maxDepth) {
 	score *vals;

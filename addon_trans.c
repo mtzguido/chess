@@ -16,7 +16,7 @@ struct tt_entry {
 	int    depth;
 	score  score;
 	u8     flag;
-	int seq;
+	int	seq;
 };
 
 struct tt_entry tt[CFG_TTABLE_SIZE] __attribute__((aligned(4096)));
@@ -63,18 +63,6 @@ static void trans_notify_entry(game g, int depth, score *alpha, score *beta) {
 		break;
 	}
 }
-
-#if 0
-static void trans_score_succs(game g, const move *succs, score *vals, int nsucc, int depth) {
-}
-
-static void trans_free_mem() {
-}
-
-static int trans_suggest(game g, move *arr, int depth) {
-	return 0;
-}
-#endif
 
 static struct addon trans_addon __maybe_unused = {
 	.reset		= trans_reset,

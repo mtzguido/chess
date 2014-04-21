@@ -35,6 +35,10 @@ ifeq (${CONFIG_TRANSPOSITION},y)
 	CFLAGS += -DCFG_TRANSPOSITION
 endif
 
+ifeq (${CONFIG_TRIVIAL},y)
+	CFLAGS += -DCFG_TRIVIAL
+endif
+
 ifeq (${CONFIG_OWNMEM},y)
 	CFLAGS += -DCFG_OWNMEM
 endif
@@ -77,6 +81,7 @@ mods=	main	\
 	addon_trans	\
 	addon_killer	\
 	addon_cm	\
+	addon_trivial	\
 	addon	\
 	common	\
 	user_input	\

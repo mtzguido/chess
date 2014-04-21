@@ -553,7 +553,7 @@ fail:
 }
 
 /* Auxiliares de doMoveRegular */
-static inline void setPiece(game g, u8 r, u8 c, i8 piece);
+static inline void setPiece(game g, i8 r, i8 c, i8 piece);
 static bool isValid(game g, move m);
 static inline void updKing(game g, move m);
 static inline void updCastling(game g, move m);
@@ -561,7 +561,7 @@ static inline void epCapture(game g, move m);
 static inline void epCalc(game g, move m);
 static inline void calcPromotion(game g, move m);
 
-static void setPiece(game g, u8 r, u8 c, i8 piece) {
+static void setPiece(game g, i8 r, i8 c, i8 piece) {
 	i8 old_piece = g->board[r][c];
 
 	if (old_piece) {
@@ -580,6 +580,41 @@ static void setPiece(game g, u8 r, u8 c, i8 piece) {
 		g->pps_O      += piece_square_val_O(piece, r, c);
 		g->totalScore += absoluteScoreOf(piece);
 		g->pieceScore += scoreOf(piece);
+	}
+}
+
+/*
+ * movePiece(g, r, c, R, C) es equivalente a :
+ *   setPiece(g, R, C, g->board[r][c]);
+ *   setPiece(g, r, c, 0);
+ *
+ * pero ahorra llamadas innecesarias a scoreOf y 
+ * anda mas rápido
+ */
+static void movePiece(game g, i8 r, i8 c, i8 R, i8 C) {
+	i8 from, to;
+
+	from = g->board[r][c];
+	to   = g->board[R][C];
+
+	assert(from != EMPTY);
+
+	g->pps_O      -= piece_square_val_O(from, r, c);
+	g->pps_O      += piece_square_val_O(from, R, C);
+	g->pps_E      += piece_square_val_E(from, R, C);
+	g->pps_E      -= piece_square_val_E(from, r, c);
+	g->zobrist    ^= ZOBR_PIECE(from, r, c);
+	g->zobrist    ^= ZOBR_PIECE(from, R, C);
+
+	g->board[r][c] = EMPTY;
+	g->board[R][C] = from;
+
+	if (to) {
+		g->pieceScore -= scoreOf(to);
+		g->totalScore -= absoluteScoreOf(to);
+		g->pps_O      -= piece_square_val_O(to, R, C);
+		g->pps_E      -= piece_square_val_E(to, R, C);
+		g->zobrist    ^= ZOBR_PIECE(to, R, C);
 	}
 }
 
@@ -634,21 +669,20 @@ static bool doMoveRegular(game g, move m) {
 	 * calcPromotion puede haber
 	 * cambiado la pieza 
 	 */
-	setPiece(g, m.R, m.C, g->board[m.r][m.c]);
-	setPiece(g, m.r, m.c, 0);
+	movePiece(g, m.r, m.c, m.R, m.C);
 
 	/* Si es algún movimiento relevante al rey contrario
 	 * dropeamos la cache */
-	if (g->inCheck[other] != -1)
-		if (!safe(g, m.r, m.c, g->kingx[other], g->kingy[other]) ||
-		    !safe(g, m.R, m.C, g->kingx[other], g->kingy[other]))
+//	if (g->inCheck[other] != -1)
+//		if (!safe(g, m.r, m.c, g->kingx[other], g->kingy[other]) ||
+//		    !safe(g, m.R, m.C, g->kingx[other], g->kingy[other]))
 			g->inCheck[other] = -1;
 
 	/* Necesitamos también (posiblemente) dropear la nuestra */
-	if (g->inCheck[m.who] != -1)
-		if (isKing(piece) ||
-		    !safe(g, m.r, m.c, g->kingx[m.who], g->kingy[m.who]) ||
-		    !safe(g, m.R, m.C, g->kingx[m.who], g->kingy[m.who]))
+//	if (g->inCheck[m.who] != -1)
+//		if (isKing(piece) ||
+//		    !safe(g, m.r, m.c, g->kingx[m.who], g->kingy[m.who]) ||
+//		    !safe(g, m.R, m.C, g->kingx[m.who], g->kingy[m.who]))
 			g->inCheck[m.who] = -1;
 
 	return true;
@@ -664,7 +698,9 @@ static bool isValid(game g, move m) {
 		return false;
 
 	/* La pieza debe poder moverse al destino */
-	if (m.r > 7 || m.c > 7
+	if (m.r < 0 || m.c < 0
+	 || m.R < 0 || m.C < 0
+	 || m.r > 7 || m.c > 7
 	 || m.R > 7 || m.C > 7
 	 || (m.r == m.R && m.c == m.C)
 	 || !canMove(g, m.r, m.c, m.R, m.C))
@@ -780,10 +816,10 @@ static bool doMoveKCastle(game g, move m) {
 	g->inCheck[0] = -1;
 	g->inCheck[1] = -1;
 
-	setPiece(g, rank, 4, 0);
-	setPiece(g, rank, 5, rpiece);
-	setPiece(g, rank, 6, kpiece);
-	setPiece(g, rank, 7, 0);
+	/* Mover rey */
+	movePiece(g, rank, 4, rank, 6);
+	/* Mover torre */
+	movePiece(g, rank, 7, rank, 5);
 
 	g->kingx[m.who] = rank;
 	g->kingy[m.who] = 6;
@@ -838,12 +874,11 @@ static bool doMoveQCastle(game g, move m) {
 	g->inCheck[0] = -1;
 	g->inCheck[1] = -1;
 
-	setPiece(g, rank, 0, 0);
-	setPiece(g, rank, 1, 0);
-	setPiece(g, rank, 2, kpiece);
-	setPiece(g, rank, 3, rpiece);
-	setPiece(g, rank, 4, 0);
-			
+	/* Mover rey */
+	movePiece(g, rank, 4, rank, 2);
+	/* Mover torre */
+	movePiece(g, rank, 0, rank, 3);
+
 	g->kingx[m.who] = rank;
 	g->kingy[m.who] = 2;
 

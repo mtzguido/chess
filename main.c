@@ -225,14 +225,18 @@ int one_move() {
 	game g;
 	move m;
 
+	start_all_addons();
 
 	g = startingGame();
-	mark(g);
 
-	start_all_addons();
+	mark(g);
 	m = machineMove(g);
 	doMove(g, m);
+	printBoard(g);
 
+	mark(g);
+	m = machineMove(g);
+	doMove(g, m);
 	printBoard(g);
 
 	return 0;

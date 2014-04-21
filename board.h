@@ -14,7 +14,7 @@
 typedef struct move {
 	u8 who;
 	i8 move_type;
-	u8 r, c, R, C; /* (r,c) -> (R,C) */
+	i8 r, c, R, C; /* (r,c) -> (R,C) */
 	i8 promote;
 
 	bool was_capture;
@@ -117,6 +117,10 @@ bool equalGame(game a, game b);
 bool equalMove(move a, move b);
 
 char charOf(int piece);
+
+static inline bool enemy_of(i8 piece, u8 who) {
+	return piece != EMPTY && colorOf(piece) != who;
+}
 
 #endif
 
