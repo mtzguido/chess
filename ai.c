@@ -97,7 +97,7 @@ static score negamax(
 	return rc1;
 }
 
-const succgen_t gen_funs[] = {
+static const succgen_t gen_funs[] = {
 #ifdef CFG_SUGG
 	addon_suggest,
 #endif
