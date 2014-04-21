@@ -26,16 +26,9 @@ static void trans_reset() {
 	seq++;
 }
 
-static void notify_coll()
-{
-}
-
 static void trans_notify_return(game g, move move, int depth, score score, flag_t flag) {
 	u64 key = g->zobrist;
 	u64 idx = key % CFG_TTABLE_SIZE;
-
-	if (tt[idx].seq == seq)
-		notify_coll();
 
 	tt[idx].key   = key;
 	tt[idx].score = score;
@@ -51,10 +44,6 @@ static void trans_notify_return(game g, move move, int depth, score score, flag_
 	} else {
 		tt[idx].r = -1;
 	}
-}
-
-static void asd ()
-{
 }
 
 static void trans_notify_entry(game g, int depth, score *alpha, score *beta) {
@@ -81,8 +70,6 @@ static void trans_notify_entry(game g, int depth, score *alpha, score *beta) {
 		*beta = min(*beta, tt[idx].score);
 		break;
 	}
-
-	asd();
 }
 
 static int trans_suggest(game g, move *arr, int depth) {
@@ -105,11 +92,35 @@ static int trans_suggest(game g, move *arr, int depth) {
 	return 1;
 }
 
+static void trans_score_succs(game g, const move *succs, score *vals,
+			      int nsucc, int depth) {
+	u64 key = g->zobrist;
+	u64 idx = key % CFG_TTABLE_SIZE;
+
+	if (tt[idx].key != key)
+		return;
+
+	int i;
+	for (i=0; i<nsucc; i++) {
+		if (succs[i].move_type != MOVE_REGULAR)
+			continue;
+
+		if (succs[i].r == tt[idx].r
+		 && succs[i].R == tt[idx].R
+		 && succs[i].c == tt[idx].c
+		 && succs[i].C == tt[idx].C) {
+			vals[i] += TRANS_SCORE;
+			break;
+		}
+	}
+}
+
 static struct addon trans_addon __maybe_unused = {
 	.reset		= trans_reset,
 	.notify_return	= trans_notify_return,
 	.notify_entry	= trans_notify_entry,
 	.suggest	= trans_suggest,
+	.score_succs	= trans_score_succs,
 };
 
 void addon_trans_init() {
