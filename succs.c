@@ -25,12 +25,12 @@ void pawnSuccs_w(int r, int c, game g, move *arr, int *alen) {
 			addToRet_promote(m, arr, alen);
 		}
 
-		if (enemy_of(g->board[m.R][c-1], g->turn)) {
+		if (c > 0 && enemy_of(g->board[m.R][c-1], g->turn)) {
 			m.C = c-1;
 			addToRet_promote(m, arr, alen);
 		}
 
-		if (enemy_of(g->board[m.R][c+1], g->turn)) {
+		if (c < 7 && enemy_of(g->board[m.R][c+1], g->turn)) {
 			m.C = c+1;
 			addToRet_promote(m, arr, alen);
 		}
@@ -52,12 +52,12 @@ void pawnSuccs_w(int r, int c, game g, move *arr, int *alen) {
 			addToRet(m, arr, alen);
 		}
 
-		if (enemy_of(g->board[m.R][c-1], g->turn)) {
+		if (c > 0 && enemy_of(g->board[m.R][c-1], g->turn)) {
 			m.C = c-1;
 			addToRet(m, arr, alen);
 		}
 
-		if (enemy_of(g->board[m.R][c+1], g->turn)) {
+		if (c < 7 && enemy_of(g->board[m.R][c+1], g->turn)) {
 			m.C = c+1;
 			addToRet(m, arr, alen);
 		}
@@ -75,12 +75,12 @@ void pawnSuccs_w(int r, int c, game g, move *arr, int *alen) {
 			}
 		}
 
-		if (enemy_of(g->board[m.R][c-1], g->turn)) {
+		if (c > 0 && enemy_of(g->board[m.R][c-1], g->turn)) {
 			m.C = c-1;
 			addToRet(m, arr, alen);
 		}
 
-		if (enemy_of(g->board[m.R][c+1], g->turn)) {
+		if (c < 7 && enemy_of(g->board[m.R][c+1], g->turn)) {
 			m.C = c+1;
 			addToRet(m, arr, alen);
 		}
@@ -112,12 +112,12 @@ void pawnSuccs_b(int r, int c, game g, move *arr, int *alen) {
 			addToRet_promote(m, arr, alen);
 		}
 
-		if (enemy_of(g->board[m.R][c-1], g->turn)) {
+		if (c > 0 && enemy_of(g->board[m.R][c-1], g->turn)) {
 			m.C = c-1;
 			addToRet_promote(m, arr, alen);
 		}
 
-		if (enemy_of(g->board[m.R][c+1], g->turn)) {
+		if (c < 7 && enemy_of(g->board[m.R][c+1], g->turn)) {
 			m.C = c+1;
 			addToRet_promote(m, arr, alen);
 		}
@@ -139,12 +139,12 @@ void pawnSuccs_b(int r, int c, game g, move *arr, int *alen) {
 			addToRet(m, arr, alen);
 		}
 
-		if (enemy_of(g->board[m.R][c-1], g->turn)) {
+		if (c > 0 && enemy_of(g->board[m.R][c-1], g->turn)) {
 			m.C = c-1;
 			addToRet(m, arr, alen);
 		}
 
-		if (enemy_of(g->board[m.R][c+1], g->turn)) {
+		if (c < 7 && enemy_of(g->board[m.R][c+1], g->turn)) {
 			m.C = c+1;
 			addToRet(m, arr, alen);
 		}
@@ -162,12 +162,12 @@ void pawnSuccs_b(int r, int c, game g, move *arr, int *alen) {
 			}
 		}
 
-		if (enemy_of(g->board[m.R][c-1], g->turn)) {
+		if (c > 0 && enemy_of(g->board[m.R][c-1], g->turn)) {
 			m.C = c-1;
 			addToRet(m, arr, alen);
 		}
 
-		if (enemy_of(g->board[m.R][c+1], g->turn)) {
+		if (c < 7 && enemy_of(g->board[m.R][c+1], g->turn)) {
 			m.C = c+1;
 			addToRet(m, arr, alen);
 		}
@@ -202,7 +202,8 @@ void knightSuccs(int r, int c, game g, move *arr, int *alen) {
 		if (m.C < 0 || m.C > 7)
 			continue;
 
-		if (g->board[m.R][m.C] != 0 && colorOf(g->board[m.R][m.C]) == g->turn)
+		if (g->board[m.R][m.C] != EMPTY
+		 && colorOf(g->board[m.R][m.C]) == g->turn)
 			continue;
 
 		addToRet(m, arr, alen);
@@ -355,6 +356,10 @@ void kingSuccs(int r, int c, game g, move *arr, int *alen) {
 		if (m.C < 0 || m.C > 7)
 			continue;
 
+		if (g->board[m.R][m.C] != EMPTY
+		 && colorOf(g->board[m.R][m.C]) == g->turn)
+			continue;
+
 		addToRet(m, arr, alen);
 	}
 }
@@ -374,7 +379,7 @@ int genSuccs(game g, move **arr_ret) {
 		for (j=0; j<8; j++) {
 			i8 piece = g->board[i][j];
 
-			if (piece == EMPTY)
+			if (piece == EMPTY || colorOf(piece) != g->turn)
 				continue; /* Can't be moved */
 
 			switch (piece) {
