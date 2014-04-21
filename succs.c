@@ -370,8 +370,6 @@ int genSuccs(game g, move **arr_ret) {
 	arr = malloc(asz * sizeof arr[0]);
 	assert(arr != NULL);
 
-	kingSuccs(g->kingx[g->turn], g->kingy[g->turn], g, arr, &alen);
-
 	for (i=0; i<8; i++) {
 		for (j=0; j<8; j++) {
 			i8 piece = g->board[i][j];
@@ -403,6 +401,11 @@ int genSuccs(game g, move **arr_ret) {
 				rookSuccs(i, j, g, arr, &alen);
 				bishopSuccs(i, j, g, arr, &alen);
 				break;
+			case WKING:
+			case BKING:
+				kingSuccs(i, j, g, arr, &alen);
+				break;
+
 			}
 		}
 	}
