@@ -21,14 +21,19 @@ static const score maxScore =  1e7;
 
 
 static void shuffleSuccs(game g, move *succs, int n);
-static void sortSuccs(game g, move *succs, int n, int depth, int maxDepth);
+static void sortSuccs(game g, move *succs, int n, int depth);
 static score negamax(game start, int maxDepth, int curDepth,
 			     move *mm, score alpha, score beta);
 
 typedef int (*succgen_t)(game, move**, int);
 
 static int genSuccs_wrap(game g, move **arr, int depth) {
-	return genSuccs(g, arr);
+	int n;
+	n = genSuccs(g, arr);
+
+	sortSuccs(g, *arr, n, depth);
+
+	return n;
 }
 
 /* Stats */
@@ -170,8 +175,6 @@ static score negamax_(
 		assert(succs != NULL);
 		stats.ngen += nsucc;
 
-		sortSuccs(g, succs, nsucc, curDepth, maxDepth);
-
 		for (i=0; i<nsucc; i++) {
 			*ng = *g;
 
@@ -275,14 +278,12 @@ score boardEval(game g) {
 	return ret;
 }
 
-static void sortSuccs(game g, move *succs, int n, int depth, int maxDepth) {
+static void sortSuccs(game g, move *succs, int n, int depth) {
 	score *vals;
 	int i, j;
 	score ts;
 	move tm;
 
-	if (depth+2 >= maxDepth)
-		return;
 	/* Shuffle */
 	shuffleSuccs(g, succs, n);
 
