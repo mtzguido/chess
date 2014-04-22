@@ -900,20 +900,6 @@ static int absoluteScoreOf(int piece) {
 	return abs(scoreTab[piece]);
 }
 
-bool equalMove(move a, move b) {
-	if (a.move_type != b.move_type) return false;
-	if (a.who != b.who) return false;
-
-	if (a.move_type != MOVE_REGULAR)
-		return true;
-
-	return    a.r == b.r
-	       && a.c == b.c
-	       && a.R == b.R
-	       && a.C == b.C
-	       && a.promote == b.promote;
-}
-
 bool equalGame(game a, game b) {
 	return a->zobrist == b->zobrist;
 }

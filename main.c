@@ -244,7 +244,7 @@ int one_move() {
 };
 
 void parse_opt(int argc, char **argv) {
-	behaviour.mode = onemove;
+	behaviour.mode = fairy;
 }
 
 void printMove_wrap(game g, move m) {

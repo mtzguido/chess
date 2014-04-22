@@ -14,9 +14,8 @@ static void killer_reset() {
 			killerTable[i][j].move_type = -1;
 }
 
-static void killer_sort(game g __maybe_unused,
-			const move *succs, score *vals,
-			int nsucc, int depth) {
+static void killer_score_succs(game g __maybe_unused, struct MS *ss,
+			       int nsucc, int depth) {
 	int i, k;
 
 	/*
@@ -25,8 +24,8 @@ static void killer_sort(game g __maybe_unused,
 	 * */
 	for (k=0; k<KILLER_WIDTH; k++) {
 		for (i=0; i<nsucc; i++) {
-			if (equalMove(succs[i], killerTable[depth][k])) {
-				vals[i] += KILLER_SCORE;
+			if (equalMove(ss[i].m, killerTable[depth][k])) {
+				ss[i].s += KILLER_SCORE;
 				break;
 			}
 		}
@@ -73,7 +72,7 @@ static int killer_suggest(game g, move *arr, int depth) {
 static struct addon killer_addon __maybe_unused =
 {
 	.reset = killer_reset,
-	.score_succs = killer_sort,
+	.score_succs = killer_score_succs,
 	.notify_cut = killer_notify_cut,
 	.suggest = killer_suggest,
 };

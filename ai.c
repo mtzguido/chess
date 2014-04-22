@@ -278,37 +278,34 @@ score boardEval(game g) {
 	return ret;
 }
 
+static int MS_cmp(const void *_a, const void *_b) {
+	const struct MS *a = _a;
+	const struct MS *b = _b;
+
+	/* Decreciente en score */
+	return b->s - a->s;
+}
+
 static void sortSuccs(game g, move *succs, int n, int depth) {
-	score *vals;
-	int i, j;
-	score ts;
-	move tm;
+	int i;
+	struct MS *ss;
 
 	/* Shuffle */
 	shuffleSuccs(g, succs, n);
 
-	vals = malloc(n * sizeof (score));
-	for (i=0; i<n; i++)
-		vals[i] = 0;
-
-	addon_score_succs(g, succs, vals, n, depth);
-
-	for (i=1; i<n; i++) {
-		for (j=i; j>0; j--) {
-			if (vals[j-1] >= vals[j])
-				break;
-
-			ts = vals[j-1];
-			vals[j-1] = vals[j];
-			vals[j] = ts;
-
-			tm = succs[j-1];
-			succs[j-1] = succs[j];
-			succs[j] = tm;
-		}
+	ss = malloc(n * sizeof (struct MS));
+	for (i=0; i<n; i++) {
+		ss[i].m = succs[i];
+		ss[i].s = 0;
 	}
 
-	free(vals);
+	addon_score_succs(g, ss, n, depth);
+	qsort(ss, n, sizeof (struct MS), MS_cmp);
+
+	for (i=0; i<n; i++)
+		succs[i] = ss[i].m;
+
+	free(ss);
 }
 
 static void shuffleSuccs(game g, move *succs, int n) {

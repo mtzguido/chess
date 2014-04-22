@@ -50,8 +50,10 @@ static void trans_notify_entry(game g, int depth, score *alpha, score *beta) {
 	u64 key = g->zobrist;
 	u64 idx = key % CFG_TTABLE_SIZE;
 
+	/*
 	if (tt[idx].seq < seq)
 		return;
+		*/
 
 	if (tt[idx].key != key)
 		return;
@@ -92,7 +94,7 @@ static int trans_suggest(game g, move *arr, int depth) {
 	return 1;
 }
 
-static void trans_score_succs(game g, const move *succs, score *vals,
+static void trans_score_succs(game g, struct MS *ss,
 			      int nsucc, int depth) {
 	u64 key = g->zobrist;
 	u64 idx = key % CFG_TTABLE_SIZE;
@@ -102,14 +104,14 @@ static void trans_score_succs(game g, const move *succs, score *vals,
 
 	int i;
 	for (i=0; i<nsucc; i++) {
-		if (succs[i].move_type != MOVE_REGULAR)
+		if (ss[i].m.move_type != MOVE_REGULAR)
 			continue;
 
-		if (succs[i].r == tt[idx].r
-		 && succs[i].R == tt[idx].R
-		 && succs[i].c == tt[idx].c
-		 && succs[i].C == tt[idx].C) {
-			vals[i] += TRANS_SCORE;
+		if (ss[i].m.r == tt[idx].r
+		 && ss[i].m.R == tt[idx].R
+		 && ss[i].m.c == tt[idx].c
+		 && ss[i].m.C == tt[idx].C) {
+			ss[i].s += TRANS_SCORE;
 			break;
 		}
 	}

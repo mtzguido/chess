@@ -3,18 +3,24 @@
 
 #include <stdio.h>
 
-static void trivial_score_succs(game g __maybe_unused,
-				const move *succs, score *vals,
+static void trivial_score_succs(game g, struct MS *ss,
 				int nsucc, int depth) {
 	int i;
 
 	for (i=0; i<nsucc; i++) {
-		/* Captures? */
+		move m = ss[i].m;
 
-		if (succs[i].promote != 0)
-			vals[i] += 1;
+		if (m.move_type != MOVE_REGULAR)
+			continue;
+
+		if (ss[i].m.promote != 0)
+			ss[i].s += 100;
+
+		if (g->board[m.R][m.C] != 0)
+			ss[i].s += 50;
+
+		ss[i].s += abs(g->board[m.r][m.c]);
 	}
-
 }
 		
 static struct addon trivial_addon __maybe_unused =

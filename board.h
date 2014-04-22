@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <string.h>
 
 #include "common.h"
 
@@ -11,7 +12,7 @@
 #define MOVE_KINGSIDE_CASTLE 1
 #define MOVE_QUEENSIDE_CASTLE 2
 
-typedef struct move {
+struct move {
 	u8 who;
 	i8 move_type;
 	/* (r,c) -> (R,C) */
@@ -20,7 +21,9 @@ typedef struct move {
 	i8 R;
 	i8 C;
 	i8 promote;
-} move;
+} __attribute__((packed));
+
+typedef struct move move;
 
 struct game_struct {
 	/* Tablero */
@@ -80,23 +83,23 @@ typedef struct game_struct *game;
 /* Pieces */
 #define EMPTY		0
 #define WPAWN		1
-#define WROOK		2
-#define WKNIGHT		3
-#define	WBISHOP		4
+#define WKNIGHT		2
+#define	WBISHOP		3
+#define WROOK		4
 #define WQUEEN		5
 #define	WKING		6
 #define BPAWN		(-1)
-#define BROOK		(-2)
-#define BKNIGHT		(-3)
-#define	BBISHOP		(-4)
+#define BKNIGHT		(-2)
+#define	BBISHOP		(-3)
+#define BROOK		(-4)
 #define BQUEEN		(-5)
 #define	BKING		(-6)
 
 #define isEmpty(c)	((c) == 0)
 #define isPawn(c)	(abs(c) == 1)
-#define isRook(c)	(abs(c) == 2)
-#define isKnight(c)	(abs(c) == 3)
-#define isBishop(c)	(abs(c) == 4)
+#define isKnight(c)	(abs(c) == 2)
+#define isBishop(c)	(abs(c) == 3)
+#define isRook(c)	(abs(c) == 4)
 #define isQueen(c)	(abs(c) == 5)
 #define isKing(c)	(abs(c) == 6)
 #define colorOf(c)	((c)>0)
@@ -114,12 +117,21 @@ bool isDraw(game g);
 void printBoard(game b);
 
 bool equalGame(game a, game b);
-bool equalMove(move a, move b);
 
 char charOf(int piece);
 
 static inline bool enemy_of(i8 piece, u8 who) {
 	return piece != EMPTY && colorOf(piece) != who;
+}
+
+__maybe_unused static bool equalMove(move a, move b) {
+	if (a.who != b.who)
+		return false;
+
+	if (a.move_type != MOVE_REGULAR)
+		return a.move_type == b.move_type;
+
+	return memcmp(&a, &b, sizeof (move)) == 0;
 }
 
 #endif

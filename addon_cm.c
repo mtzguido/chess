@@ -16,7 +16,7 @@ static void cm_reset() {
 		counterTable[a][b][c][d][e].move_type = -1;
 }
 
-static void cm_score_succs(game g, const move *succs, score *vals,
+static void cm_score_succs(game g, struct MS *ss,
 			   int nsucc, int depth) {
 	int i;
 
@@ -28,8 +28,8 @@ static void cm_score_succs(game g, const move *succs, score *vals,
 		return;
 
 	for (i=0; i<nsucc; i++) {
-		if (equalMove(succs[i], m)) {
-			vals[i] += CM_SCORE;
+		if (equalMove(ss[i].m, m)) {
+			ss[i].s += CM_SCORE;
 			break;
 		}
 	}
