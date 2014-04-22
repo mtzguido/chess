@@ -23,7 +23,7 @@ void printMove(move m) {
 	} else {
 		assert(m.move_type == MOVE_REGULAR);
 
-		if (m.was_promotion) {
+		if (m.promote != 0) {
 			printf("%c%c%c%c%c\n", m.c + 'a', '8'-m.r, m.C + 'a', '8'-m.R, tolower(charOf(m.promote)));
 			fprintf(stderr, "%c%c%c%c%c\n", m.c + 'a', '8'-m.r, m.C + 'a', '8'-m.R, tolower(charOf(m.promote)));
 		} else {

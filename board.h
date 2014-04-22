@@ -14,12 +14,12 @@
 typedef struct move {
 	u8 who;
 	i8 move_type;
-	i8 r, c, R, C; /* (r,c) -> (R,C) */
+	/* (r,c) -> (R,C) */
+	i8 r;
+	i8 c;
+	i8 R;
+	i8 C;
 	i8 promote;
-
-	bool was_capture;
-	bool was_promotion;
-	bool was_ep;
 } move;
 
 struct game_struct {

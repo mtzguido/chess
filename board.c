@@ -653,16 +653,10 @@ static bool doMoveRegular(game g, move m) {
 			updCastling(g, m);
 
 		set_ep(g, -1, -1);
-		g->lastmove.was_promotion = 0;
-		g->lastmove.was_ep = 0;
 	}
 
-	if (g->lastmove.was_ep || g->board[m.R][m.C] != 0) {
+	if (g->board[m.R][m.C] != 0)
 		g->idlecount = 0;
-		g->lastmove.was_capture = 1;
-	} else {
-		g->lastmove.was_capture = 0;
-	}
 
 	/*
 	 * No podemos usar piece, porque
@@ -744,9 +738,6 @@ static void epCapture(game g, move m) {
 		setPiece(g, m.r, m.C, 0);
 		g->inCheck[WHITE] = -1;
 		g->inCheck[BLACK] = -1;
-		g->lastmove.was_ep = true;
-	} else {
-		g->lastmove.was_ep = false;
 	}
 }
 
@@ -764,9 +755,6 @@ static void calcPromotion(game g, move m) {
 		i8 new_piece = m.who == WHITE ? m.promote : -m.promote;
 
 		setPiece(g, m.r, m.c, new_piece);
-		g->lastmove.was_promotion = true;
-	} else {
-		g->lastmove.was_promotion = false;
 	}
 }
 
@@ -928,35 +916,4 @@ bool equalMove(move a, move b) {
 
 bool equalGame(game a, game b) {
 	return a->zobrist == b->zobrist;
-#if 0
-	if (a->zobrist != b->zobrist)
-		return false;
-
-	if (a->turn != b->turn
-	 || a->en_passant_x != b->en_passant_x
-	 || a->en_passant_y != b->en_passant_y
-	 || a->kingx[0] != b->kingx[0]
-	 || a->kingx[1] != b->kingx[1]
-	 || a->pieceScore != b->pieceScore
-	 || a->totalScore != b->totalScore
-	 || a->pps_O != b->pps_O
-	 || a->pps_E != b->pps_E
-	 || a->castle_king[0] != b->castle_king[0]
-	 || a->castle_king[1] != b->castle_king[1]
-	)
-		return false;
-
-	int rc = memcmp(a->board, b->board, sizeof a->board) == 0;
-
-	if (a->zobrist == b->zobrist && rc == 0) {
-		fprintf(stderr, "COLISION DE ZOBRIST!!!!\n");
-		printBoard(a);
-		fprintf(stderr, "_--------------------------------------\n");
-		printBoard(b);
-		fprintf(stderr, "_--------------------------------------\n");
-	}
-
-	return rc;
-#endif
 }
-

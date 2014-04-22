@@ -56,7 +56,7 @@ move fromPGN(game g, struct pgn p) {
 
 				if (g->board[ret.R][ret.C] != 0) {
 					assert(p.capture);
-					ret.was_capture = 1;
+					//ret.was_capture = 1;
 				}
 
 				if (isPawn(piece) && ret.R == (g->turn == WHITE ? 0 : 7)) {
@@ -75,7 +75,7 @@ move fromPGN(game g, struct pgn p) {
 					if (g->turn == BLACK)
 						ret.promote = - ret.promote;
 
-					ret.was_promotion = 1;
+					//ret.was_promotion = 1;
 
 					return ret;
 				}

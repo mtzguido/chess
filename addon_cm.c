@@ -36,10 +36,8 @@ static void cm_score_succs(game g, const move *succs, score *vals,
 }
 
 static void cm_notify_cut(game g, move m, int depth) {
-	if (!m.was_capture) {
-		move om = g->lastmove;
-		counterTable[g->turn][om.r][om.c][om.R][om.C] = m;
-	}
+	move om = g->lastmove;
+	counterTable[g->turn][om.r][om.c][om.R][om.C] = m;
 }
 
 static int cm_suggest(game g, move *arr, int depth) {
