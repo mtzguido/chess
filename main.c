@@ -213,7 +213,8 @@ int match(struct player pwhite, struct player pblack) {
 enum play_mode {
 	self,
 	fairy,
-	onemove
+	onemove,
+	randplay,
 };
 
 struct {
@@ -277,6 +278,31 @@ struct player ai_player =
 	.notify = nothing,
 };
 
+move random_move(game g) {
+	move *arr;
+	int n = genSuccs(g, &arr);
+
+	game ng = copyGame(g);
+
+	do {
+		int i = rand()%n;
+
+		if (doMove(ng, arr[i])) {
+			freeGame(ng);
+			freeSuccs(arr, n);
+			return arr[i];
+		}
+
+		*ng = *g;
+	} while (1);
+}
+
+struct player random_player = {
+	.start = nothing,
+	.notify = nothing,
+	.getMove = random_move,
+};
+
 int main(int argc, char **argv) {
 	int rc;
 
@@ -295,6 +321,9 @@ int main(int argc, char **argv) {
 		break;
 	case onemove:
 		rc = one_move();
+		break;
+	case randplay:
+		rc = match(random_player, fairy_player);
 		break;
 	}
 
