@@ -19,6 +19,11 @@ endif
 
 include .config
 
+ifeq (${CONFIG_PROFOPT},y)
+	CFLAGS += -fprofile-generate -fprofile-use
+	LFLAGS += -fprofile-generate
+endif
+
 ifeq (${CONFIG_ALPHABETA},y)
 	CFLAGS += -DCFG_ALPHABETA
 endif
