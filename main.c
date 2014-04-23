@@ -13,9 +13,6 @@
 #include "succs.h"
 #include "user_input.h"
 
-#include <execinfo.h>
-#include <signal.h>
-
 struct player {
 	void (*start)(int color);
 	move (*getMove)(game);
@@ -74,19 +71,6 @@ void logToBook(game g, move m) {
 		fprintf(game_log, "\n");
 
 	movenum++;
-}
-
-void handler(int sig) {
-	void *array[100];
-	size_t size;
-
-	// get void*'s for all entries on the stack
-	size = backtrace(array, 100);
-
-	// print out all the frames to stderr
-	fprintf(stderr, "Error: signal %d:\n", sig);
-	backtrace_symbols_fd(array, size, STDERR_FILENO);
-	exit(1);
 }
 
 move playerMove(game g) {
@@ -244,7 +228,7 @@ int one_move() {
 };
 
 void parse_opt(int argc, char **argv) {
-	behaviour.mode = fairy;
+	behaviour.mode = onemove;
 }
 
 void printMove_wrap(game g, move m) {
@@ -306,7 +290,6 @@ struct player random_player = {
 int main(int argc, char **argv) {
 	int rc;
 
-	signal(SIGSEGV, handler);
 	srand(time(NULL) + getpid());
 	init_mem();
 
