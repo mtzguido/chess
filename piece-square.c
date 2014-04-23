@@ -1,50 +1,57 @@
 #include "piece-square.h"
 
+#include <assert.h>
+
 /*
  * Fuente:
  * http://chessprogramming.wikispaces.com/Simplified+evaluation+function
  */
 
-char piece_square_val_O(int piece, int r, int c) {
-	char m = colorOf(piece) == WHITE ? 1 : -1;
-	int p = abs(piece);
 
-	/* Simetría para el negro */
-	if (colorOf(piece) != WHITE) {
-		r = 7-r;
-		c = 7-c;
-	}
+static const char t_pawn[8][8];
+static const char t_bishop[8][8];
+static const char t_knight[8][8];
+static const char t_rook[8][8];
+static const char t_queen[8][8];
+static const char t_kingO[8][8];
+static const char t_kingE[8][8];
 
-	switch (p) {
-	case WPAWN:   return m*(t_pawn[r][c]);
-	case WBISHOP: return m*(t_bishop[r][c]);
-	case WROOK:   return m*(t_rook[r][c]);
-	case WKNIGHT: return m*(t_knight[r][c]);
-	case WQUEEN:  return m*(t_queen[r][c]);
-	case WKING:   return m*(t_kingO[r][c]);
-	default:      return 0;
+char piece_square_val_O(i8 piece, i8 r, i8 c) {
+	switch (piece) {
+	case WPAWN:	return t_pawn[r][c];
+	case WBISHOP:	return t_bishop[r][c];
+	case WROOK:	return t_rook[r][c];
+	case WKNIGHT:	return t_knight[r][c];
+	case WQUEEN:	return t_queen[r][c];
+	case WKING:	return t_kingO[r][c];
+	case BPAWN:	return -t_pawn[7-r][7-c];
+	case BBISHOP:	return -t_bishop[7-r][7-c];
+	case BROOK:	return -t_rook[7-r][7-c];
+	case BKNIGHT:	return -t_knight[7-r][7-c];
+	case BQUEEN:	return -t_queen[7-r][7-c];
+	case BKING:	return -t_kingO[7-r][7-c];
 	}
+	assert(0);
+	__builtin_unreachable();
 }
 
-char piece_square_val_E(int piece, int r, int c) {
-	char m = colorOf(piece) == WHITE ? 1 : -1;
-	int p = abs(piece);
-
-	/* Simetría para el negro */
-	if (colorOf(piece) != WHITE) {
-		r = 7-r;
-		c = 7-c;
+char piece_square_val_E(i8 piece, i8 r, i8 c) {
+	switch (piece) {
+	case WPAWN:	return t_pawn[r][c];
+	case WBISHOP:	return t_bishop[r][c];
+	case WROOK:	return t_rook[r][c];
+	case WKNIGHT:	return t_knight[r][c];
+	case WQUEEN:	return t_queen[r][c];
+	case WKING:	return t_kingE[r][c];
+	case BPAWN:	return -t_pawn[7-r][7-c];
+	case BBISHOP:	return -t_bishop[7-r][7-c];
+	case BROOK:	return -t_rook[7-r][7-c];
+	case BKNIGHT:	return -t_knight[7-r][7-c];
+	case BQUEEN:	return -t_queen[7-r][7-c];
+	case BKING:	return -t_kingE[7-r][7-c];
 	}
-
-	switch (p) {
-	case WPAWN:   return m*(t_pawn[r][c]);
-	case WBISHOP: return m*(t_bishop[r][c]);
-	case WROOK:   return m*(t_rook[r][c]);
-	case WKNIGHT: return m*(t_knight[r][c]);
-	case WQUEEN:  return m*(t_queen[r][c]);
-	case WKING:   return m*(t_kingE[r][c]);
-	default:      return 0;
-	}
+	assert(0);
+	__builtin_unreachable();
 }
 
 void piecePosFullRecalc(game g) {
@@ -55,12 +62,15 @@ void piecePosFullRecalc(game g) {
 
 	for (i=0; i<8; i++) 
 		for (j=0; j<8; j++) {
+			if (!g->board[i][j])
+				continue;
+
 			g->pps_O += piece_square_val_O(g->board[i][j], i, j);
 			g->pps_E += piece_square_val_E(g->board[i][j], i, j);
 		}
 }
 
-const char t_pawn[8][8] =
+static const char t_pawn[8][8] =
 {
 	{       0,	0,	0,	0,	0,	0,	0,	0	},
 	{       50,	50,	50,	50,	50,	50,	50,	50	},
@@ -72,7 +82,7 @@ const char t_pawn[8][8] =
 	{       0,	0,	0,	0,	0,	0,	0,	0	}
 };
 
-const char t_knight[8][8] =
+static const char t_knight[8][8] =
 {
 	{	-50,	-40,	-30,	-30,	-30,	-30,	-40,	-50	},
 	{	-40,	-20,	0,	0,	0,	0,	-20,	-40	},
@@ -84,7 +94,7 @@ const char t_knight[8][8] =
 	{	-50,	-40,	-30,	-30,	-30,	-30,	-40,	-50	},
 };
 
-const char t_bishop[8][8] = 
+static const char t_bishop[8][8] = 
 {
 	{	-20,	-10,	-10,	-10,	-10,	-10,	-10,	-20	},
 	{	-10,	0,	0,	0,	0,	0,	0,	-10	},
@@ -96,7 +106,7 @@ const char t_bishop[8][8] =
 	{	-20,	-10,	-10,	-10,	-10,	-10,	-10,	-20	},
 };
 
-const char t_rook[8][8] =
+static const char t_rook[8][8] =
 {
 	{	0,	0,	0,	0,	0,	0,	0,	0	},
 	{	5,	10,	10,	10,	10,	10,	10,	5	},
@@ -108,7 +118,7 @@ const char t_rook[8][8] =
 	{	0,	0,	0,	5,	5,	0,	0,	0	}
 };
 
-const char t_queen[8][8] =
+static const char t_queen[8][8] =
 {
 	{	-20,	-10,	-10,	-5,	-5,	-10,	-10,	-20	},
 	{	-10,	0,	0,	0,	0,	0,	0,	-10	},
@@ -120,7 +130,7 @@ const char t_queen[8][8] =
 	{	-20,	-10,	-10,	-5,	-5,	-10,	-10,	-20 }
 };
 
-const char t_kingO[8][8] =
+static const char t_kingO[8][8] =
 {
 	{	-30,	-40,	-40,	-50,	-50,	-40,	-40,	-30	},
 	{	-30,	-40,	-40,	-50,	-50,	-40,	-40,	-30	},
@@ -132,7 +142,7 @@ const char t_kingO[8][8] =
 	{	20,	30,	10,	0,	0,	10,	30,	20	}
 };
 
-const char t_kingE[8][8] =
+static const char t_kingE[8][8] =
 {
 	{	-50,	-40,	-30,	-20,	-20,	-30,	-40,	-50	},
 	{	-30,	-20,	-10,	0,	0,	-10,	-20,	-30	},
