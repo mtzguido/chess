@@ -13,7 +13,7 @@ static void trivial_score_succs(game g, struct MS *ss,
 		if (m.move_type != MOVE_REGULAR)
 			continue;
 
-		if (ss[i].m.promote != 0)
+		if (m.promote != 0)
 			ss[i].s += 100;
 
 		if (g->board[m.R][m.C] != 0)
