@@ -368,10 +368,9 @@ int genSuccs(game g, move **arr_ret) {
 	int i, j;
 	int alen, asz;
 	move *arr;
-	static int amax = 0;
 
 	alen = 0;
-	asz = 128;
+	asz = 70;
 	arr = malloc(asz * sizeof arr[0]);
 	assert(arr != NULL);
 
@@ -437,11 +436,6 @@ int genSuccs(game g, move **arr_ret) {
 	}
 
 	assert(alen <= asz);
-
-	if (alen > amax) {
-		amax = alen;
-		fprintf(stderr, "amax = %i\n", amax);
-	}
 
 	*arr_ret = arr;
 	return alen;
