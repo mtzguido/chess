@@ -1,8 +1,8 @@
 #include "addon_trans.h"
 #include "addon.h"
 
-#include <stdio.h>
 #include <assert.h>
+#include <stdio.h>
 
 #define TRANS_SCORE 10000
 
@@ -50,10 +50,8 @@ static void trans_notify_entry(game g, int depth, score *alpha, score *beta) {
 	u64 key = g->zobrist;
 	u64 idx = key % CFG_TTABLE_SIZE;
 
-	/*
-	if (tt[idx].seq < seq)
+	if (tt[idx].flag == FLAG_NONE)
 		return;
-		*/
 
 	if (tt[idx].key != key)
 		return;

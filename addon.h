@@ -10,6 +10,7 @@ struct MS {
 };
 
 typedef enum {
+	FLAG_NONE,
 	FLAG_EXACT,
 	FLAG_LOWER_BOUND,
 	FLAG_UPPER_BOUND
