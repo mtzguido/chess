@@ -29,9 +29,17 @@ typedef int (*succgen_t)(game, move**, int);
 
 static int genSuccs_wrap(game g, move **arr, int depth) {
 	int n;
+
+	/* Generar sucesores */
 	n = genSuccs(g, arr);
 
-	sortSuccs(g, *arr, n, depth);
+	/* Mezclarlos si es necesario */
+	if (flag_shuffle)
+		shuffleSuccs(g, *arr, n);
+
+	/* Ordenarlos si es necesario */
+	if (depth < SEARCH_DEPTH - 2)
+		sortSuccs(g, *arr, n, depth);
 
 	return n;
 }
@@ -121,6 +129,7 @@ static score negamax_(
 	int nvalid = 0;
 	__maybe_unused int COPIED = 0;
 	game ng;
+	move bestmove;
 
 	const score alpha_orig = alpha;
 	__maybe_unused const score beta_orig = beta;
@@ -152,7 +161,7 @@ static score negamax_(
 	if (mm == NULL)
 		addon_notify_entry(g, curDepth, &alpha, &beta);
 
-	if (alpha >= beta) {
+	if (alpha_beta && alpha >= beta) {
 		ret = alpha;
 		goto out;
 	}
@@ -190,6 +199,7 @@ static score negamax_(
 
 			if (t > best) {
 				best = t;
+				bestmove = succs[i];
 				if (mm != NULL) {
 					*mm = succs[i];
 					COPIED = 1;
@@ -211,29 +221,37 @@ static score negamax_(
 
 	stats.nbranch += nvalid;
 
+	flag_t flag;
+
 	if (nvalid == 0) {
 		if (inCheck(g, g->turn))
 			ret = -100000 + curDepth;
 		else
 			ret = 0; /* Stalemate */
+
+		flag = FLAG_EXACT;
 	} else {
-		ret = alpha;
+		ret = best;
+
+		if (best <= alpha_orig)
+			flag = FLAG_UPPER_BOUND;
+		else if (best > beta)
+			flag = FLAG_LOWER_BOUND;
+		else
+			flag = FLAG_EXACT;
 	}
 
-	flag_t flag;
-
-	if (best <= alpha_orig)
-		flag = FLAG_UPPER_BOUND;
-	else if (best > beta)
-		flag = FLAG_LOWER_BOUND;
-	else
-		flag = FLAG_EXACT;
-
-	addon_notify_return(g, g->lastmove, curDepth, ret, flag);
+	addon_notify_return(g, bestmove, curDepth, ret, flag);
 
 out:
 	if (mm != NULL)
 		assert(COPIED);
+
+	if (0 && curDepth == 1) {
+		fprintf(stderr, "depth1: devuelvo %i (nvalid=%i)\n", ret, nvalid);
+		fprintf(stderr, "hash= %llx\n", g->zobrist);
+
+	}
 
 	return ret;
 }
@@ -290,9 +308,6 @@ static void sortSuccs(game g, move *succs, int n, int depth) {
 	int i;
 	struct MS *ss;
 
-	/* Shuffle */
-	shuffleSuccs(g, succs, n);
-
 	ss = malloc(n * sizeof (struct MS));
 	for (i=0; i<n; i++) {
 		ss[i].m = succs[i];
@@ -309,16 +324,14 @@ static void sortSuccs(game g, move *succs, int n, int depth) {
 }
 
 static void shuffleSuccs(game g, move *succs, int n) {
-	if (flag_shuffle) {
-		int i, j;
-		move t;
+	int i, j;
+	move t;
 
-		for (i=0; i<n-1; i++) {
-			j = i + rand() % (n-i);
+	for (i=0; i<n-1; i++) {
+		j = i + rand() % (n-i);
 
-			t = succs[i];
-			succs[i] = succs[j];
-			succs[j] = t;
-		}
+		t = succs[i];
+		succs[i] = succs[j];
+		succs[j] = t;
 	}
 }
