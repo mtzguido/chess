@@ -601,8 +601,8 @@ static void movePiece(game g, i8 r, i8 c, i8 R, i8 C) {
 
 	g->pps_O      -= piece_square_val_O(from, r, c);
 	g->pps_O      += piece_square_val_O(from, R, C);
-	g->pps_E      += piece_square_val_E(from, R, C);
 	g->pps_E      -= piece_square_val_E(from, r, c);
+	g->pps_E      += piece_square_val_E(from, R, C);
 	g->zobrist    ^= ZOBR_PIECE(from, r, c);
 	g->zobrist    ^= ZOBR_PIECE(from, R, C);
 
@@ -658,11 +658,7 @@ static bool doMoveRegular(game g, move m) {
 	if (g->board[m.R][m.C] != 0)
 		g->idlecount = 0;
 
-	/*
-	 * No podemos usar piece, porque
-	 * calcPromotion puede haber
-	 * cambiado la pieza 
-	 */
+	/* Movemos */
 	movePiece(g, m.r, m.c, m.R, m.C);
 
 	/* Si es algún movimiento relevante al rey contrario
