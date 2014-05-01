@@ -249,7 +249,7 @@ out:
 
 	if (0 && curDepth == 1) {
 		fprintf(stderr, "depth1: devuelvo %i (nvalid=%i)\n", ret, nvalid);
-		fprintf(stderr, "hash= %llx\n", g->zobrist);
+		fprintf(stderr, "hash= %" PRIx64 "\n", g->zobrist);
 
 	}
 

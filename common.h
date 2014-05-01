@@ -2,6 +2,7 @@
 #define __COMMON_H__
 
 #include <stdint.h>
+#include <inttypes.h>
 
 #define __maybe_unused  __attribute__((unused))
 
