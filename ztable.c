@@ -5,12 +5,10 @@
 
 int n_collision = 0;
 
-int NINSIDE = 0;
-
 struct bucket {
 	u64 key;
-	int n;
 	struct bucket *next;
+	int n;
 };
 
 struct bucket * ztable[CFG_ZTABLE_SIZE] __attribute__((aligned(0x1000)));
