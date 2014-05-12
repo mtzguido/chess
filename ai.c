@@ -156,7 +156,7 @@ static score negamax_(
 		goto out;
 	}
 
-	if (mm == NULL)
+	if (mm == NULL && maxDepth - curDepth > 2)
 		addon_notify_entry(g, curDepth, &alpha, &beta);
 
 	if (alpha_beta && alpha >= beta) {
@@ -239,7 +239,8 @@ static score negamax_(
 			flag = FLAG_EXACT;
 	}
 
-	addon_notify_return(g, bestmove, curDepth, ret, flag);
+	if (maxDepth - curDepth > 2)
+		addon_notify_return(g, bestmove, curDepth, ret, flag);
 
 out:
 	if (mm != NULL)
