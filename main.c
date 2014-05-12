@@ -1,8 +1,9 @@
-#include <stdio.h>
 #include <assert.h>
+#include <getopt.h>
+#include <stdio.h>
 #include <string.h>
-#include <unistd.h>
 #include <time.h>
+#include <unistd.h>
 
 #include "ai.h"
 #include "board.h"
@@ -195,40 +196,72 @@ int match(struct player pwhite, struct player pblack) {
 }
 
 enum play_mode {
+	none,
 	self,
 	fairy,
-	onemove,
+	moves,
 	randplay,
 };
 
 struct {
 	enum play_mode mode;
-} behaviour;
+	int nmoves;
+} behaviour = {
+	.mode = none,
+	.nmoves = 0,
+};
 
 
-int one_move() {
+int nmoves() {
+	int i;
 	game g;
 	move m;
 
 	start_all_addons();
-
 	g = startingGame();
 
-	mark(g);
-	m = machineMove(g);
-	doMove(g, m);
-	printBoard(g);
-
-	mark(g);
-	m = machineMove(g);
-	doMove(g, m);
-	printBoard(g);
+	for (i=0; i<behaviour.nmoves; i++) {
+		mark(g);
+		m = machineMove(g);
+		doMove(g, m);
+		printBoard(g);
+	}
 
 	return 0;
 };
 
 void parse_opt(int argc, char **argv) {
-	behaviour.mode = onemove;
+	static const struct option long_opts[] = {
+		{ "fairy",	no_argument, 0, 'f' },
+		{ "moves",	required_argument, 0, 'm'},
+		{ "self",	no_argument, 0, 's'},
+		{ "rand",	no_argument, 0, 'r'},
+		{ 0,0,0,0 }
+	};
+
+	int c, idx;
+
+	while (1) {
+		c = getopt_long(argc, argv, "fsm:r", long_opts, &idx);
+		if (c == -1)
+			break;
+
+		switch (c) {
+		case 'f':
+			behaviour.mode = fairy;
+			break;
+		case 's':
+			behaviour.mode = self;
+			break;
+		case 'm':
+			behaviour.mode = moves;
+			behaviour.nmoves = atoi(optarg);
+			break;
+		case 'r':
+			behaviour.mode = randplay;
+			break;
+		}
+	}
 }
 
 void printMove_wrap(game g, move m) {
@@ -288,7 +321,7 @@ struct player random_player = {
 };
 
 int main(int argc, char **argv) {
-	int rc;
+	int rc = 0;
 
 	srand(time(NULL) + getpid());
 	init_mem();
@@ -296,14 +329,18 @@ int main(int argc, char **argv) {
 	parse_opt(argc, argv);
 
 	switch (behaviour.mode) {
+	case none:
+		fprintf(stderr, "Specify a play mode!\n");
+		rc = -1;
+		break;
 	case self:
 		rc = match(ai_player, ai_player);
 		break;
 	case fairy:
 		rc = match(ai_player, fairy_player);
 		break;
-	case onemove:
-		rc = one_move();
+	case moves:
+		rc = nmoves();
 		break;
 	case randplay:
 		rc = match(random_player, fairy_player);
