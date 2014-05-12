@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <inttypes.h>
 
+#define ARRSIZE(a) ((sizeof (a))/(sizeof ((a)[0])))
 #define __maybe_unused  __attribute__((unused))
 
 typedef	uint64_t	u64;

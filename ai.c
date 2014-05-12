@@ -117,8 +117,6 @@ static const succgen_t gen_funs[] = {
 	genSuccs_wrap,
 };
 
-#define ARRSIZE(a) ((sizeof (a))/(sizeof ((a)[0])))
-
 static score negamax_(
 		game g, int maxDepth, int curDepth,
 		move *mm, score alpha, score beta) {
