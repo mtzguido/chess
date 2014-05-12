@@ -61,9 +61,9 @@ void reset_stats() {
 void print_stats(score exp, clock_t t1, clock_t t2) {
 	int i;
 
-	fprintf(stderr, "stats: searched %i nodes in %.3f seconds\n", stats.nopen, 1.0*(t2-t1)/CLOCKS_PER_SEC);
+	fprintf(stderr, "stats: searched %lld nodes in %.3f seconds\n", stats.nopen, 1.0*(t2-t1)/CLOCKS_PER_SEC);
 	fprintf(stderr, "stats: branching aprox: %.3f\n", 1.0 * stats.nbranch / stats.nopen);
-	fprintf(stderr, "stats: total nodes generated: %i\n", stats.ngen);
+	fprintf(stderr, "stats: total nodes generated: %lld\n", stats.ngen);
 	fprintf(stderr, "stats: depth:n_nodes - ");
 	fprintf(stderr, "expected score: %i\n", exp);
 	for (i = 0; stats.depthsn[i] != 0; i++) 
@@ -156,7 +156,7 @@ static score negamax_(
 		goto out;
 	}
 
-	if (mm == NULL && maxDepth - curDepth > 2)
+	if (mm == NULL && maxDepth - curDepth > CFG_MIN_NOTIFY_DEPTH)
 		addon_notify_entry(g, curDepth, &alpha, &beta);
 
 	if (alpha_beta && alpha >= beta) {
@@ -239,7 +239,7 @@ static score negamax_(
 			flag = FLAG_EXACT;
 	}
 
-	if (maxDepth - curDepth > 2)
+	if (maxDepth - curDepth > CFG_MIN_NOTIFY_DEPTH)
 		addon_notify_return(g, bestmove, curDepth, ret, flag);
 
 out:

@@ -7,7 +7,7 @@
 static inline void addToRet(move m, move *arr, int *len);
 static inline void addToRet_promote(move m, move *arr, int *len);
 
-void pawnSuccs_w(int r, int c, game g, move *arr, int *alen) {
+void pawnSuccs_w(int r, int c, const game g, move *arr, int *alen) {
 	move m = {0};
 	m.who = g->turn;
 	m.move_type = MOVE_REGULAR;
@@ -94,7 +94,7 @@ void pawnSuccs_w(int r, int c, game g, move *arr, int *alen) {
 	}
 }
 
-void pawnSuccs_b(int r, int c, game g, move *arr, int *alen) {
+void pawnSuccs_b(int r, int c, const game g, move *arr, int *alen) {
 	move m = {0};
 	m.who = g->turn;
 	m.move_type = MOVE_REGULAR;
@@ -181,7 +181,7 @@ void pawnSuccs_b(int r, int c, game g, move *arr, int *alen) {
 	}
 }
 
-void knightSuccs(int r, int c, game g, move *arr, int *alen) {
+void knightSuccs(int r, int c, const game g, move *arr, int *alen) {
 	const int dr[] = { 2,  2, -2, -2, 1,  1, -1, -1 };
 	const int dc[] = { 1, -1,  1, -1, 2, -2,  2, -2 };
 	unsigned i;
@@ -210,7 +210,7 @@ void knightSuccs(int r, int c, game g, move *arr, int *alen) {
 	}
 }
 
-void rookSuccs(int r, int c, game g, move *arr, int *alen) {
+void rookSuccs(int r, int c, const game g, move *arr, int *alen) {
 	int R, C;
 
 	move m = {0};
@@ -273,7 +273,7 @@ void rookSuccs(int r, int c, game g, move *arr, int *alen) {
 	}
 }
 
-void bishopSuccs(int r, int c, game g, move *arr, int *alen) {
+void bishopSuccs(int r, int c, const game g, move *arr, int *alen) {
 	int R, C;
 
 	move m = {0};
@@ -335,7 +335,7 @@ void bishopSuccs(int r, int c, game g, move *arr, int *alen) {
 	}
 }
 
-void kingSuccs(int r, int c, game g, move *arr, int *alen) {
+void kingSuccs(int r, int c, const game g, move *arr, int *alen) {
 	const int dr[] = {  1, 1,  1, 0, -1, -1, -1, 0  };
 	const int dc[] = { -1, 0,  1, 1,  1,  0, -1, -1 };
 	unsigned i;
@@ -364,22 +364,30 @@ void kingSuccs(int r, int c, game g, move *arr, int *alen) {
 	}
 }
 
-int genSuccs(game g, move **arr_ret) {
+int genSuccs(const game g, move **arr_ret) {
 	int i, j;
 	int alen, asz;
 	move *arr;
 
 	alen = 0;
-	asz = 70;
+	asz = 100;
 	arr = malloc(asz * sizeof arr[0]);
 	assert(arr != NULL);
 
 	for (i=0; i<8; i++) {
-		for (j=0; j<8; j++) {
-			i8 piece = g->board[i][j];
+		if (!((g->piecemask >> (i*8)) & 0xff))
+			continue;
+
+		if (!((g->piecemask >> (i*8)) & 0x0f))
+			j = 4;
+		else
+			j = 0;
+
+		for (; j<8; j++) {
+			const i8 piece = g->board[i][j];
 
 			if (piece == EMPTY || colorOf(piece) != g->turn)
-				continue; /* Can't be moved */
+				continue;
 
 			switch (piece) {
 			case WPAWN:
@@ -409,7 +417,6 @@ int genSuccs(game g, move **arr_ret) {
 			case BKING:
 				kingSuccs(i, j, g, arr, &alen);
 				break;
-
 			}
 		}
 	}
@@ -425,7 +432,7 @@ int genSuccs(game g, move **arr_ret) {
 			m.move_type = MOVE_KINGSIDE_CASTLE;
 			addToRet(m, arr, &alen);
 		}
-	
+
 		if (g->castle_queen[g->turn]
 		 && g->board[kr][1] == EMPTY
 		 && g->board[kr][2] == EMPTY

@@ -347,8 +347,8 @@ int main(int argc, char **argv) {
 		break;
 	}
 
-	fprintf(stderr, "Total nodes: %i\n", stats.totalopen);
-	fprintf(stderr, "Total time: %ims\n", stats.totalms);
+	fprintf(stderr, ">> Total nodes: %lld\n", stats.totalopen);
+	fprintf(stderr, ">> Total time: %lldms\n", stats.totalms);
 	fprintf(stderr, "program returned %i\n", rc);
 	return 0;
 }

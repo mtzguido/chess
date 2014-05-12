@@ -21,7 +21,7 @@ struct move {
 	i8 R;
 	i8 C;
 	i8 promote;
-} __attribute__((packed));
+};
 
 typedef struct move move;
 
@@ -29,6 +29,7 @@ struct game_struct {
 	/* Tablero */
 	/* board [1][2] == C2 */
 	i8 board[8][8];
+	u64 piecemask;
 	u8 turn;
 
 	/* Última jugada */

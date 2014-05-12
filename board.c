@@ -80,6 +80,7 @@ static void fix(game g) {
 	g->pieceScore = 0;
 	g->totalScore = 0;
 	g->zobrist = 0;
+	g->piecemask = 0;
 
 	for (i=0; i<8; i++) {
 		for (j=0; j<8; j++) {
@@ -93,8 +94,10 @@ static void fix(game g) {
 			g->pieceScore += scoreOf(piece);
 			g->totalScore += absoluteScoreOf(piece);
 
-			if (piece)
+			if (piece) {
 				g->zobrist ^= ZOBR_PIECE(piece, i, j);
+				g->piecemask |= 1 <<(i*8 + j);
+			}
 		}
 	}
 
@@ -190,9 +193,10 @@ void printBoard(game g) {
 	fprintf(stderr, "  inCheck = %i %i \n", g->inCheck[0], g->inCheck[1]);
 	fprintf(stderr, "  scores = %i %i\n", g->pieceScore, g->totalScore);
 	fprintf(stderr, "  pps o e = %i %i\n", g->pps_O, g->pps_E);
-	fprintf(stderr, "  zobrist = 0x%0lx\n", g->zobrist);
+	fprintf(stderr, "  zobrist = 0x%" PRIx64 "\n", g->zobrist);
 	fprintf(stderr, "  boardEval is = %i\n", boardEval(g));
 	fprintf(stderr, "  idlecount = %i\n", g->idlecount);
+	fprintf(stderr, "  piecemask = 0x%" PRIx64 "\n", g->piecemask);
 	fprintf(stderr, "]\n");
 
 	fflush(stdout);
@@ -605,6 +609,8 @@ static void movePiece(game g, i8 r, i8 c, i8 R, i8 C) {
 	g->pps_E      += piece_square_val_E(from, R, C);
 	g->zobrist    ^= ZOBR_PIECE(from, r, c);
 	g->zobrist    ^= ZOBR_PIECE(from, R, C);
+	g->piecemask  &= ~ (((u64)1) << (r*8 + c));
+	g->piecemask  |=    ((u64)1) << (R*8 + C);
 
 	g->board[r][c] = EMPTY;
 	g->board[R][C] = from;

@@ -7,11 +7,11 @@
 /* Stats */
 extern struct stats {
 	int depthsn[30];
-	int nopen;
-	int nbranch;
-	int ngen;
-	int totalopen;
-	int totalms;
+	long long nopen;
+	long long nbranch;
+	long long ngen;
+	long long totalopen;
+	long long totalms;
 } stats;
 
 move machineMove(game start);
