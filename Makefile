@@ -3,7 +3,6 @@ CFLAGS=-Wall -Wextra -Wno-unused-parameter $(CFLAGS_EXTRA)
 LFLAGS=
 SHELL=/bin/bash
 TARGET=chess
-CC=gcc
 
 ifeq (${V},1)
 	Q=
