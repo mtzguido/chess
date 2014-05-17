@@ -96,7 +96,7 @@ static void fix(game g) {
 
 			if (piece) {
 				g->zobrist ^= ZOBR_PIECE(piece, i, j);
-				g->piecemask |= 1 <<(i*8 + j);
+				g->piecemask |= ((u64)1) <<(i*8 + j);
 			}
 		}
 	}
