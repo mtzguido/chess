@@ -2,7 +2,7 @@
 #include "addon.h"
 
 #define KILLER_WIDTH 2
-#define KTABLE_SIZE (CFG_DEPTH + 10)
+#define KTABLE_SIZE (MAX_DEPTH + 10)
 #define KILLER_SCORE 1000
 
 static move killerTable[KTABLE_SIZE][KILLER_WIDTH];
@@ -78,9 +78,5 @@ static struct addon killer_addon __maybe_unused =
 };
 
 void addon_killer_init() {
-#ifdef CFG_KILLER
 	addon_register(killer_addon);
-#else
-	;
-#endif
 }

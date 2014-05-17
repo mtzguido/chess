@@ -7,10 +7,17 @@
 #include "addon_trivial.h"
 
 static inline void start_all_addons() {
-	addon_trans_init();
-	addon_killer_init();
-	addon_cm_init();
-	addon_trivial_init();
+	if (copts.heur_trans)
+		addon_trans_init();
+
+	if (copts.heur_killer)
+		addon_killer_init();
+
+	if (copts.heur_cm)
+		addon_cm_init();
+
+	if (copts.heur_trivial)
+		addon_trivial_init();
 }
 
 #endif

@@ -1,6 +1,6 @@
 #include "ai.h"
 #include "board.h"
-#include "config.h"
+#include "common.h"
 #include "ztable.h"
 #include "mem.h"
 #include "addon.h"
@@ -34,11 +34,11 @@ static int genSuccs_wrap(game g, move **arr, int depth) {
 	n = genSuccs(g, arr);
 
 	/* Mezclarlos si es necesario */
-	if (flag_shuffle)
+	if (copts.shuffle)
 		shuffleSuccs(g, *arr, n);
 
 	/* Ordenarlos si es necesario */
-	if (depth < SEARCH_DEPTH - 2)
+	if (depth < copts.depth - 2)
 		sortSuccs(g, *arr, n, depth);
 
 	return n;
@@ -82,7 +82,7 @@ move machineMove(game start) {
 	reset_stats();
 
 	t1 = clock();
-	t = negamax(start, SEARCH_DEPTH, 0, &ret, minScore, maxScore);
+	t = negamax(start, copts.depth, 0, &ret, minScore, maxScore);
 	t2 = clock();
 
 	stats.totalopen += stats.nopen;
@@ -159,7 +159,7 @@ static score negamax_(
 	if (mm == NULL && maxDepth - curDepth > CFG_MIN_NOTIFY_DEPTH)
 		addon_notify_entry(g, curDepth, &alpha, &beta);
 
-	if (alpha_beta && alpha >= beta) {
+	if (copts.alphabeta && alpha >= beta) {
 		ret = alpha;
 		goto out;
 	}
@@ -207,7 +207,7 @@ static score negamax_(
 			if (t > alpha)
 				alpha = t;
 
-			if (alpha_beta && beta <= alpha) {
+			if (copts.alphabeta && beta <= alpha) {
 				addon_notify_cut(g, succs[i], curDepth);
 				break;
 			}

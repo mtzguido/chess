@@ -124,10 +124,6 @@ static struct addon trans_addon __maybe_unused = {
 };
 
 void addon_trans_init() {
-#ifdef CFG_TRANSPOSITION
 	addon_register(trans_addon);
-#else
-	;
-#endif
 }
 

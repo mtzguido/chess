@@ -13,6 +13,7 @@
 #include "addon_list.h"
 #include "succs.h"
 #include "user_input.h"
+#include "common.h"
 
 struct player {
 	void (*start)(int color);
@@ -113,7 +114,7 @@ __maybe_unused static void zobrist_test(game b, int d) {
 	if (rand() > rand())
 		return;
 
-	if (d >= CFG_DEPTH)
+	if (d >= copts.depth)
 		return;
 
 	int n = genSuccs(b, &succs);
@@ -195,23 +196,6 @@ int match(struct player pwhite, struct player pblack) {
 	return 0;
 }
 
-enum play_mode {
-	none,
-	self,
-	fairy,
-	moves,
-	randplay,
-};
-
-struct {
-	enum play_mode mode;
-	int nmoves;
-} behaviour = {
-	.mode = none,
-	.nmoves = 0,
-};
-
-
 int nmoves() {
 	int i;
 	game g;
@@ -220,7 +204,7 @@ int nmoves() {
 	start_all_addons();
 	g = startingGame();
 
-	for (i=0; i<behaviour.nmoves; i++) {
+	for (i=0; i<copts.nmoves; i++) {
 		mark(g);
 		m = machineMove(g);
 		doMove(g, m);
@@ -231,34 +215,50 @@ int nmoves() {
 };
 
 void parse_opt(int argc, char **argv) {
+	int c, idx;
 	static const struct option long_opts[] = {
 		{ "fairy",	no_argument, 0, 'f' },
 		{ "moves",	required_argument, 0, 'm'},
 		{ "self",	no_argument, 0, 's'},
 		{ "rand",	no_argument, 0, 'r'},
+		{ "depth",	required_argument, 0, 'd'},
+		{ "no-shuffle",	no_argument, 0, 0x1 },
+		{ "no-alpha-beta", no_argument, 0, 0x2 },
 		{ 0,0,0,0 }
 	};
 
-	int c, idx;
-
+	copts = defopts;
 	while (1) {
-		c = getopt_long(argc, argv, "fsm:r", long_opts, &idx);
+		c = getopt_long(argc, argv, "fsm:rd:", long_opts, &idx);
 		if (c == -1)
 			break;
 
 		switch (c) {
 		case 'f':
-			behaviour.mode = fairy;
+			copts.mode = fairy;
 			break;
 		case 's':
-			behaviour.mode = self;
+			copts.mode = self;
 			break;
 		case 'm':
-			behaviour.mode = moves;
-			behaviour.nmoves = atoi(optarg);
+			copts.mode = moves;
+			copts.nmoves = atoi(optarg);
 			break;
 		case 'r':
-			behaviour.mode = randplay;
+			copts.mode = randplay;
+			break;
+		case 'd':
+			copts.depth = atoi(optarg);
+			if (copts.depth < 0 || copts.depth > MAX_DEPTH) {
+				fprintf(stderr, "Invalid depth\n");
+				exit(1);
+			}
+			break;
+		case 0x1:
+			copts.shuffle = false;
+			break;
+		case 0x2:
+			copts.alphabeta = false;
 			break;
 		}
 	}
@@ -328,7 +328,7 @@ int main(int argc, char **argv) {
 
 	parse_opt(argc, argv);
 
-	switch (behaviour.mode) {
+	switch (copts.mode) {
 	case none:
 		fprintf(stderr, "Specify a play mode!\n");
 		rc = -1;

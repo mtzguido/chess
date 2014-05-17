@@ -29,7 +29,5 @@ static struct addon trivial_addon __maybe_unused =
 };
 
 void addon_trivial_init() {
-#ifdef CFG_TRIVIAL
 	addon_register(trivial_addon);
-#endif
 }

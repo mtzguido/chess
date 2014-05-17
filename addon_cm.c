@@ -62,9 +62,5 @@ static struct addon cm_addon __maybe_unused = {
 };
 
 void addon_cm_init() {
-#ifdef CFG_COUNTERMOVE
 	addon_register(cm_addon);
-#else
-	;
-#endif
 }

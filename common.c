@@ -1,6 +1,8 @@
 #include "common.h"
 #include "board.h"
 
+struct opts copts;
+
 int isPrefix(char *a, char *b) {
 	while (*a && *a++ == *b++)
 		;
