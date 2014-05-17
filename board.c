@@ -4,6 +4,7 @@
 #include <string.h>
 
 #include "move.h"
+#include "masks.h"
 #include "piece-square.h"
 #include "mem.h"
 #include "board.h"
@@ -80,7 +81,8 @@ static void fix(game g) {
 	g->pieceScore = 0;
 	g->totalScore = 0;
 	g->zobrist = 0;
-	g->piecemask = 0;
+	g->piecemask[BLACK] = 0;
+	g->piecemask[WHITE] = 0;
 
 	for (i=0; i<8; i++) {
 		for (j=0; j<8; j++) {
@@ -96,7 +98,8 @@ static void fix(game g) {
 
 			if (piece) {
 				g->zobrist ^= ZOBR_PIECE(piece, i, j);
-				g->piecemask |= ((u64)1) <<(i*8 + j);
+				g->piecemask[colorOf(piece)]
+					|= ((u64)1) <<(i*8 + j);
 			}
 		}
 	}
@@ -115,7 +118,7 @@ static void fix(game g) {
 
 	g->castled[WHITE] = 0;
 	g->castled[BLACK] = 0;
-	
+
 	piecePosFullRecalc(g);
 }
 
@@ -196,7 +199,8 @@ void printBoard(game g) {
 	fprintf(stderr, "  zobrist = 0x%" PRIx64 "\n", g->zobrist);
 	fprintf(stderr, "  boardEval is = %i\n", boardEval(g));
 	fprintf(stderr, "  idlecount = %i\n", g->idlecount);
-	fprintf(stderr, "  piecemask = 0x%" PRIx64 "\n", g->piecemask);
+	fprintf(stderr, "  piecemask[W] = 0x%.16" PRIx64 "\n", g->piecemask[WHITE]);
+	fprintf(stderr, "  piecemask[B] = 0x%.16" PRIx64 "\n", g->piecemask[BLACK]);
 	fprintf(stderr, "]\n");
 
 	fflush(stdout);
@@ -271,8 +275,10 @@ int isFinished(game g) {
  * Rompemos la simetría en el caso de los reyes,
  * para optimizar un poco.
  */
-static bool inCheck_diag(game g, int kr, int kc, int who);
-static bool inCheck_line(game g, int kr, int kc, int who);
+static bool inCheck_diag1(game g, int kr, int kc, int who);
+static bool inCheck_diag2(game g, int kr, int kc, int who);
+static bool inCheck_row(game g, int kr, int kc, int who);
+static bool inCheck_col(game g, int kr, int kc, int who);
 static bool inCheck_knig(game g, int kr, int kc, int who);
 static bool inCheck_pawn(game g, int kr, int kc, int who);
 static bool inCheck_king(game g);
@@ -286,8 +292,10 @@ bool inCheck(game g, int who) {
 	kr = g->kingx[who];
 	kc = g->kingy[who];
 
-	g->inCheck[who] = inCheck_diag(g, kr, kc, who)
-			|| inCheck_line(g, kr, kc, who)
+	g->inCheck[who] =  inCheck_diag1(g, kr, kc, who)
+			|| inCheck_diag2(g, kr, kc, who)
+			|| inCheck_row(g, kr, kc, who)
+			|| inCheck_col(g, kr, kc, who)
 			|| inCheck_knig(g, kr, kc, who)
 			|| inCheck_pawn(g, kr, kc, who)
 			|| inCheck_king(g);
@@ -295,28 +303,13 @@ bool inCheck(game g, int who) {
 	return g->inCheck[who];
 }
 
-static bool inCheck_line(game g, int kr, int kc, int who) {
+static bool inCheck_row(game g, int kr, int kc, int who) {
 	int i, j;
 	const i8 enemy_q = who == WHITE ? BQUEEN : WQUEEN;
 	const i8 enemy_r = who == WHITE ? BROOK : WROOK;
 
-	/* Columna */
-	j = kc;
-	for (i=kr+1; i<8; i++)
-		if (g->board[i][j] != 0) {
-			if (g->board[i][j] == enemy_q || g->board[i][j] == enemy_r)
-				return true;
-
-			break;
-		}
-
-	for (i=kr-1; i>=0; i--)
-		if (g->board[i][j] != 0) {
-			if (g->board[i][j] == enemy_q || g->board[i][j] == enemy_r)
-				return true;
-
-			break;
-		}
+	if (!(g->piecemask[flipTurn(who)] & rowmask[kr]))
+		return 0;
 
 	/* Fila */
 	i = kr;
@@ -339,28 +332,45 @@ static bool inCheck_line(game g, int kr, int kc, int who) {
 	return false;
 }
 
-static bool inCheck_diag(game g, int kr, int kc, int who) {
+static bool inCheck_col(game g, int kr, int kc, int who) {
+	int i, j;
+	const i8 enemy_q = who == WHITE ? BQUEEN : WQUEEN;
+	const i8 enemy_r = who == WHITE ? BROOK : WROOK;
+
+	if (!(g->piecemask[flipTurn(who)] & colmask[kc]))
+		return 0;
+
+	/* Columna */
+	j = kc;
+	for (i=kr+1; i<8; i++)
+		if (g->board[i][j] != 0) {
+			if (g->board[i][j] == enemy_q || g->board[i][j] == enemy_r)
+				return true;
+
+			break;
+		}
+
+	for (i=kr-1; i>=0; i--)
+		if (g->board[i][j] != 0) {
+			if (g->board[i][j] == enemy_q || g->board[i][j] == enemy_r)
+				return true;
+
+			break;
+		}
+
+
+	return false;
+}
+
+static bool inCheck_diag1(game g, int kr, int kc, int who) {
 	int i, j;
 	const i8 enemy_q = who == WHITE ? BQUEEN : WQUEEN;
 	const i8 enemy_b = who == WHITE ? BBISHOP : WBISHOP;
 
-	/* Diagonales */
-	for (i=kr-1, j=kc-1; i>=0 && j>=0; i--, j--)
-		if (g->board[i][j] != 0) {
-			if (g->board[i][j] == enemy_q || g->board[i][j] == enemy_b)
-				return true;
+	if (!(g->piecemask[flipTurn(who)] & diag1mask[kr+kc]))
+		return false;
 
-			break;
-		}
-
-	for (i=kr+1, j=kc+1; i<8 && j<8; i++, j++)
-		if (g->board[i][j] != 0) {
-			if (g->board[i][j] == enemy_q || g->board[i][j] == enemy_b)
-				return true;
-
-			break;
-		}
-
+	/* Diagonal 1 */
 	for (i=kr+1, j=kc-1; i<8 && j>=0; i++, j--)
 		if (g->board[i][j] != 0) {
 			if (g->board[i][j] == enemy_q || g->board[i][j] == enemy_b)
@@ -379,6 +389,35 @@ static bool inCheck_diag(game g, int kr, int kc, int who) {
 
 	return false;
 }
+
+static bool inCheck_diag2(game g, int kr, int kc, int who) {
+	int i, j;
+	const i8 enemy_q = who == WHITE ? BQUEEN : WQUEEN;
+	const i8 enemy_b = who == WHITE ? BBISHOP : WBISHOP;
+
+	if (!(g->piecemask[flipTurn(who)] & diag2mask[kc-kr+7]))
+		return false;
+
+	/* Diagonal 2 */
+	for (i=kr-1, j=kc-1; i>=0 && j>=0; i--, j--)
+		if (g->board[i][j] != 0) {
+			if (g->board[i][j] == enemy_q || g->board[i][j] == enemy_b)
+				return true;
+
+			break;
+		}
+
+	for (i=kr+1, j=kc+1; i<8 && j<8; i++, j++)
+		if (g->board[i][j] != 0) {
+			if (g->board[i][j] == enemy_q || g->board[i][j] == enemy_b)
+				return true;
+
+			break;
+		}
+
+	return false;
+}
+
 
 static bool inCheck_knig(game g, int kr, int kc, int who) {
 	const i8 enemy_kn = who == WHITE ? BKNIGHT : WKNIGHT;
@@ -574,6 +613,8 @@ static void setPiece(game g, i8 r, i8 c, i8 piece) {
 		g->pps_O      -= piece_square_val_O(old_piece, r, c);
 		g->pps_E      -= piece_square_val_E(old_piece, r, c);
 		g->zobrist    ^= ZOBR_PIECE(old_piece, r, c);
+		g->piecemask[colorOf(old_piece)]
+			&= ~ (((u64)1) << (r*8 + c));
 	}
 
 	g->board[r][c] = piece;
@@ -584,6 +625,8 @@ static void setPiece(game g, i8 r, i8 c, i8 piece) {
 		g->pps_O      += piece_square_val_O(piece, r, c);
 		g->totalScore += absoluteScoreOf(piece);
 		g->pieceScore += scoreOf(piece);
+		g->piecemask[colorOf(piece)]
+			|= (((u64)1) << (r*8 + c));
 	}
 }
 
@@ -596,21 +639,21 @@ static void setPiece(game g, i8 r, i8 c, i8 piece) {
  * anda mas rápido
  */
 static void movePiece(game g, i8 r, i8 c, i8 R, i8 C) {
-	i8 from, to;
-
-	from = g->board[r][c];
-	to   = g->board[R][C];
+	const i8 from = g->board[r][c];
+	const i8 to   = g->board[R][C];
+	const int who = colorOf(from);
 
 	assert(from != EMPTY);
 
-	g->pps_O      -= piece_square_val_O(from, r, c);
-	g->pps_O      += piece_square_val_O(from, R, C);
-	g->pps_E      -= piece_square_val_E(from, r, c);
-	g->pps_E      += piece_square_val_E(from, R, C);
-	g->zobrist    ^= ZOBR_PIECE(from, r, c);
-	g->zobrist    ^= ZOBR_PIECE(from, R, C);
-	g->piecemask  &= ~ (((u64)1) << (r*8 + c));
-	g->piecemask  |=    ((u64)1) << (R*8 + C);
+	g->pps_O	-= piece_square_val_O(from, r, c);
+	g->pps_O	+= piece_square_val_O(from, R, C);
+	g->pps_E	-= piece_square_val_E(from, r, c);
+	g->pps_E	+= piece_square_val_E(from, R, C);
+	g->zobrist	^= ZOBR_PIECE(from, r, c);
+	g->zobrist	^= ZOBR_PIECE(from, R, C);
+
+	g->piecemask[who]	&= ~ (((u64)1) << (r*8 + c));
+	g->piecemask[who]	|=    ((u64)1) << (R*8 + C);
 
 	g->board[r][c] = EMPTY;
 	g->board[R][C] = from;
@@ -621,6 +664,8 @@ static void movePiece(game g, i8 r, i8 c, i8 R, i8 C) {
 		g->pps_O      -= piece_square_val_O(to, R, C);
 		g->pps_E      -= piece_square_val_E(to, R, C);
 		g->zobrist    ^= ZOBR_PIECE(to, R, C);
+		g->piecemask[flipTurn(who)]
+			&= ~ (((u64)1) << (R*8 + C));
 	}
 }
 

@@ -367,6 +367,7 @@ void kingSuccs(int r, int c, const game g, move *arr, int *alen) {
 int genSuccs(const game g, move **arr_ret) {
 	int i, j;
 	int alen, asz;
+	const u64 pmask = g->piecemask[g->turn];
 	move *arr;
 
 	alen = 0;
@@ -375,10 +376,10 @@ int genSuccs(const game g, move **arr_ret) {
 	assert(arr != NULL);
 
 	for (i=0; i<8; i++) {
-		if (!((g->piecemask >> (i*8)) & 0xff))
+		if (!((pmask >> (i*8)) & 0xff))
 			continue;
 
-		if (!((g->piecemask >> (i*8)) & 0x0f))
+		if (!((pmask >> (i*8)) & 0x0f))
 			j = 4;
 		else
 			j = 0;

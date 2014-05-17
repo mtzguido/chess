@@ -29,7 +29,7 @@ struct game_struct {
 	/* Tablero */
 	/* board [1][2] == C2 */
 	i8 board[8][8];
-	u64 piecemask;
+	u64 piecemask[2];
 	u8 turn;
 
 	/* Última jugada */
