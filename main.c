@@ -217,25 +217,25 @@ int nmoves() {
 void parse_opt(int argc, char **argv) {
 	int c, idx;
 	static const struct option long_opts[] = {
-		{ "fairy",	no_argument, 0, 'f' },
 		{ "moves",	required_argument, 0, 'm'},
 		{ "self",	no_argument, 0, 's'},
 		{ "rand",	no_argument, 0, 'r'},
 		{ "depth",	required_argument, 0, 'd'},
 		{ "no-shuffle",	no_argument, 0, 0x1 },
 		{ "no-alpha-beta", no_argument, 0, 0x2 },
+		{ "black",	no_argument, 0, 'b' },
 		{ 0,0,0,0 }
 	};
 
 	copts = defopts;
 	while (1) {
-		c = getopt_long(argc, argv, "fsm:rd:", long_opts, &idx);
+		c = getopt_long(argc, argv, "fsm:rd:b", long_opts, &idx);
 		if (c == -1)
 			break;
 
 		switch (c) {
-		case 'f':
-			copts.mode = fairy;
+		case 'b':
+			copts.black = true;
 			break;
 		case 's':
 			copts.mode = self;
@@ -274,7 +274,7 @@ void fairy_start(int col) {
 		printf("go\n");
 }
 
-struct player fairy_player =
+struct player ui_player =
 {
 	.getMove = playerMove,
 	.notify = printMove_wrap,
@@ -329,21 +329,25 @@ int main(int argc, char **argv) {
 	parse_opt(argc, argv);
 
 	switch (copts.mode) {
-	case none:
-		fprintf(stderr, "Specify a play mode!\n");
-		rc = -1;
+	case normal:
+		if (copts.black)
+			rc = match(ui_player, ai_player);
+		else
+			rc = match(ai_player, ui_player);
+
 		break;
 	case self:
 		rc = match(ai_player, ai_player);
-		break;
-	case fairy:
-		rc = match(ai_player, fairy_player);
 		break;
 	case moves:
 		rc = nmoves();
 		break;
 	case randplay:
-		rc = match(random_player, fairy_player);
+		if (copts.black)
+			rc = match(ui_player, random_player);
+		else
+			rc = match(random_player, ui_player);
+
 		break;
 	}
 

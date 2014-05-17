@@ -33,9 +33,8 @@ char pieceOf(char c);
 #endif
 
 enum play_mode {
-	none,
+	normal,
 	self,
-	fairy,
 	moves,
 	randplay,
 };
@@ -46,6 +45,7 @@ struct opts {
 	int depth;
 	bool shuffle;
 	bool alphabeta;
+	bool black;
 
 	/* Heuristics */
 	bool heur_trans;
@@ -55,11 +55,12 @@ struct opts {
 };
 
 static const struct opts defopts = {
-	.mode = none,
+	.mode = normal,
 	.nmoves = 0,
 	.depth = 6,
 	.shuffle = true,
 	.alphabeta = true,
+	.black = false,
 
 	.heur_trans = true,
 	.heur_killer = true,
