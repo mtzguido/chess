@@ -167,7 +167,7 @@ void pawnSuccs_b(int r, int c, const game g, move *arr, int *alen) {
 			addToRet(m, arr, alen);
 		}
 
-		if (c > 0 && enemy_piece(g, m.R, c+1)) {
+		if (c < 7 && enemy_piece(g, m.R, c+1)) {
 			m.C = c+1;
 			addToRet(m, arr, alen);
 		}
