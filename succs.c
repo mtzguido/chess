@@ -25,12 +25,12 @@ void pawnSuccs_w(int r, int c, const game g, move *arr, int *alen) {
 			addToRet_promote(m, arr, alen);
 		}
 
-		if (c > 0 && enemy_of(g->board[m.R][c-1], g->turn)) {
+		if (c > 0 && enemy_piece(g, m.R, c-1)) {
 			m.C = c-1;
 			addToRet_promote(m, arr, alen);
 		}
 
-		if (c < 7 && enemy_of(g->board[m.R][c+1], g->turn)) {
+		if (c < 7 && enemy_piece(g, m.R, c+1)) {
 			m.C = c+1;
 			addToRet_promote(m, arr, alen);
 		}
@@ -52,12 +52,12 @@ void pawnSuccs_w(int r, int c, const game g, move *arr, int *alen) {
 			addToRet(m, arr, alen);
 		}
 
-		if (c > 0 && enemy_of(g->board[m.R][c-1], g->turn)) {
+		if (c > 0 && enemy_piece(g, m.R, c-1)) {
 			m.C = c-1;
 			addToRet(m, arr, alen);
 		}
 
-		if (c < 7 && enemy_of(g->board[m.R][c+1], g->turn)) {
+		if (c < 7 && enemy_piece(g, m.R, c+1)) {
 			m.C = c+1;
 			addToRet(m, arr, alen);
 		}
@@ -75,12 +75,12 @@ void pawnSuccs_w(int r, int c, const game g, move *arr, int *alen) {
 			}
 		}
 
-		if (c > 0 && enemy_of(g->board[m.R][c-1], g->turn)) {
+		if (c > 0 && enemy_piece(g, m.R, c-1)) {
 			m.C = c-1;
 			addToRet(m, arr, alen);
 		}
 
-		if (c < 7 && enemy_of(g->board[m.R][c+1], g->turn)) {
+		if (c < 7 && enemy_piece(g, m.R, c+1)) {
 			m.C = c+1;
 			addToRet(m, arr, alen);
 		}
@@ -112,12 +112,12 @@ void pawnSuccs_b(int r, int c, const game g, move *arr, int *alen) {
 			addToRet_promote(m, arr, alen);
 		}
 
-		if (c > 0 && enemy_of(g->board[m.R][c-1], g->turn)) {
+		if (c > 0 && enemy_piece(g, m.R, c-1)) {
 			m.C = c-1;
 			addToRet_promote(m, arr, alen);
 		}
 
-		if (c < 7 && enemy_of(g->board[m.R][c+1], g->turn)) {
+		if (c < 7 && enemy_piece(g, m.R, c+1)) {
 			m.C = c+1;
 			addToRet_promote(m, arr, alen);
 		}
@@ -139,12 +139,12 @@ void pawnSuccs_b(int r, int c, const game g, move *arr, int *alen) {
 			addToRet(m, arr, alen);
 		}
 
-		if (c > 0 && enemy_of(g->board[m.R][c-1], g->turn)) {
+		if (c > 0 && enemy_piece(g, m.R, c-1)) {
 			m.C = c-1;
 			addToRet(m, arr, alen);
 		}
 
-		if (c < 7 && enemy_of(g->board[m.R][c+1], g->turn)) {
+		if (c < 7 && enemy_piece(g, m.R, c+1)) {
 			m.C = c+1;
 			addToRet(m, arr, alen);
 		}
@@ -162,12 +162,12 @@ void pawnSuccs_b(int r, int c, const game g, move *arr, int *alen) {
 			}
 		}
 
-		if (c > 0 && enemy_of(g->board[m.R][c-1], g->turn)) {
+		if (c > 0 && enemy_piece(g, m.R, c-1)) {
 			m.C = c-1;
 			addToRet(m, arr, alen);
 		}
 
-		if (c < 7 && enemy_of(g->board[m.R][c+1], g->turn)) {
+		if (c > 0 && enemy_piece(g, m.R, c+1)) {
 			m.C = c+1;
 			addToRet(m, arr, alen);
 		}
@@ -385,10 +385,10 @@ int genSuccs(const game g, move **arr_ret) {
 			j = 0;
 
 		for (; j<8; j++) {
-			const i8 piece = g->board[i][j];
-
-			if (piece == EMPTY || colorOf(piece) != g->turn)
+			if (!own_piece(g, i, j))
 				continue;
+
+			const i8 piece = g->board[i][j];
 
 			switch (piece) {
 			case WPAWN:

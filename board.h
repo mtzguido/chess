@@ -121,8 +121,12 @@ bool equalGame(game a, game b);
 
 char charOf(int piece);
 
-static inline bool enemy_of(i8 piece, u8 who) {
-	return piece != EMPTY && colorOf(piece) != who;
+static inline bool own_piece(game g, i8 r, i8 c) {
+	return g->piecemask[g->turn] & ((u64)1 << (r*8 + c));
+}
+
+static inline bool enemy_piece(game g, i8 r, i8 c) {
+	return g->piecemask[flipTurn(g->turn)] & ((u64)1 << (r*8 + c));
 }
 
 __maybe_unused static bool equalMove(move a, move b) {
