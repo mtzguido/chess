@@ -202,8 +202,7 @@ void knightSuccs(int r, int c, const game g, move *arr, int *alen) {
 		if (m.C < 0 || m.C > 7)
 			continue;
 
-		if (g->board[m.R][m.C] != EMPTY
-		 && colorOf(g->board[m.R][m.C]) == g->turn)
+		if (own_piece(g, m.R, m.C))
 			continue;
 
 		addToRet(m, arr, alen);
@@ -221,55 +220,40 @@ void rookSuccs(int r, int c, const game g, move *arr, int *alen) {
 
 	R = r;
 	for (C=c+1; C<8; C++) {
-		if (g->board[R][C] == 0) {
+		if (!own_piece(g, R, C)) {
 			m.R = R; m.C = C;
 			addToRet(m, arr, alen);
-		} else {
-			if (colorOf(g->board[R][C]) != g->turn) {
-				m.R = R; m.C = C;
-				addToRet(m, arr, alen);
-			}
-			break;
 		}
+		if (enemy_piece(g, R, C))
+			break;
 	}
+
 	for (C=c-1; C>=0; C--) {
-		if (g->board[R][C] == 0) {
+		if (!own_piece(g, R, C)) {
 			m.R = R; m.C = C;
 			addToRet(m, arr, alen);
-		} else {
-			if (colorOf(g->board[R][C]) != g->turn) {
-				m.R = R; m.C = C;
-				addToRet(m, arr, alen);
-			}
-			break;
 		}
+		if (enemy_piece(g, R, C))
+			break;
 	}
 
 	C = c;
 	for (R=r+1; R<8; R++) {
-		if (g->board[R][C] == 0) {
+		if (!own_piece(g, R, C)) {
 			m.R = R; m.C = C;
 			addToRet(m, arr, alen);
-		} else {
-			if (colorOf(g->board[R][C]) != g->turn) {
-				m.R = R; m.C = C;
-				addToRet(m, arr, alen);
-			}
-			break;
 		}
+		if (enemy_piece(g, R, C))
+			break;
 	}
 
 	for (R=r-1; R>=0; R--) {
-		if (g->board[R][C] == 0) {
+		if (!own_piece(g, R, C)) {
 			m.R = R; m.C = C;
 			addToRet(m, arr, alen);
-		} else {
-			if (colorOf(g->board[R][C]) != g->turn) {
-				m.R = R; m.C = C;
-				addToRet(m, arr, alen);
-			}
-			break;
 		}
+		if (enemy_piece(g, R, C))
+			break;
 	}
 }
 
@@ -283,55 +267,39 @@ void bishopSuccs(int r, int c, const game g, move *arr, int *alen) {
 	m.c = c;
 
 	for (R=r+1, C=c+1; R<8 && C<8; R++, C++) {
-		if (g->board[R][C] == 0) {
+		if (!own_piece(g, R, C)) {
 			m.R = R; m.C = C;
 			addToRet(m, arr, alen);
-		} else {
-			if (colorOf(g->board[R][C]) != g->turn) {
-				m.R = R; m.C = C;
-				addToRet(m, arr, alen);
-			}
-			break;
 		}
+		if (enemy_piece(g, R, C))
+			break;
 	}
 
 	for (R=r-1, C=c+1; R>=0 && C<8; R--, C++) {
-		if (g->board[R][C] == 0) {
+		if (!own_piece(g, R, C)) {
 			m.R = R; m.C = C;
 			addToRet(m, arr, alen);
-		} else {
-			if (colorOf(g->board[R][C]) != g->turn) {
-				m.R = R; m.C = C;
-				addToRet(m, arr, alen);
-			}
-			break;
 		}
+		if (enemy_piece(g, R, C))
+			break;
 	}
 
 	for (R=r+1, C=c-1; R<8 && C>=0; R++, C--) {
-		if (g->board[R][C] == 0) {
+		if (!own_piece(g, R, C)) {
 			m.R = R; m.C = C;
 			addToRet(m, arr, alen);
-		} else {
-			if (colorOf(g->board[R][C]) != g->turn) {
-				m.R = R; m.C = C;
-				addToRet(m, arr, alen);
-			}
-			break;
 		}
+		if (enemy_piece(g, R, C))
+			break;
 	}
 
 	for (R=r-1, C=c-1; R>=0 && C>=0; R--, C--) {
-		if (g->board[R][C] == 0) {
+		if (!own_piece(g, R, C)) {
 			m.R = R; m.C = C;
 			addToRet(m, arr, alen);
-		} else {
-			if (colorOf(g->board[R][C]) != g->turn) {
-				m.R = R; m.C = C;
-				addToRet(m, arr, alen);
-			}
-			break;
 		}
+		if (enemy_piece(g, R, C))
+			break;
 	}
 }
 
@@ -356,8 +324,7 @@ void kingSuccs(int r, int c, const game g, move *arr, int *alen) {
 		if (m.C < 0 || m.C > 7)
 			continue;
 
-		if (g->board[m.R][m.C] != EMPTY
-		 && colorOf(g->board[m.R][m.C]) == g->turn)
+		if (own_piece(g, m.R, m.C))
 			continue;
 
 		addToRet(m, arr, alen);
