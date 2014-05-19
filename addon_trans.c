@@ -56,7 +56,7 @@ static void trans_notify_entry(game g, int depth, score *alpha, score *beta) {
 	if (tt[idx].key != key)
 		return;
 
-	if (tt[idx].depth > depth)
+	if (tt[idx].depth < depth)
 		return;
 
 	switch (tt[idx].flag) {

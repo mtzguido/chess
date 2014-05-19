@@ -157,7 +157,7 @@ static score negamax_(
 	}
 
 	if (mm == NULL && maxDepth - curDepth > CFG_MIN_NOTIFY_DEPTH)
-		addon_notify_entry(g, curDepth, &alpha, &beta);
+		addon_notify_entry(g, maxDepth - curDepth, &alpha, &beta);
 
 	if (copts.alphabeta && alpha >= beta) {
 		ret = alpha;
@@ -240,7 +240,7 @@ static score negamax_(
 	}
 
 	if (maxDepth - curDepth > CFG_MIN_NOTIFY_DEPTH)
-		addon_notify_return(g, bestmove, curDepth, ret, flag);
+		addon_notify_return(g, bestmove, maxDepth - curDepth, ret, flag);
 
 out:
 	if (mm != NULL)
