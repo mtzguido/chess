@@ -331,6 +331,11 @@ void kingSuccs(int r, int c, const game g, move *arr, int *alen) {
 	}
 }
 
+void queenSuccs(int r, int c, const game g, move *arr, int *alen) {
+	rookSuccs(r, c, g, arr, alen);
+	bishopSuccs(r, c, g, arr, alen);
+}
+
 int genSuccs(const game g, move **arr_ret) {
 	int i, j;
 	int alen, asz;
@@ -367,36 +372,38 @@ int genSuccs(const game g, move **arr_ret) {
 		assert (j < 8);
 
 		const i8 piece = g->board[i][j];
+		void (*fun)(int, int, const game, move *, int *);
 
 		switch (piece) {
 		case WPAWN:
-			pawnSuccs_w(i, j, g, arr, &alen);
+			fun = pawnSuccs_w;
 			break;
 		case BPAWN:
-			pawnSuccs_b(i, j, g, arr, &alen);
+			fun = pawnSuccs_b;
 			break;
 		case WKNIGHT:
 		case BKNIGHT:
-			knightSuccs(i, j, g, arr, &alen);
+			fun = knightSuccs;
 			break;
 		case WROOK:
 		case BROOK:
-			rookSuccs(i, j, g, arr, &alen);
+			fun = rookSuccs;
 			break;
 		case WBISHOP:
 		case BBISHOP:
-			bishopSuccs(i, j, g, arr, &alen);
+			fun = bishopSuccs;
 			break;
 		case WQUEEN:
 		case BQUEEN:
-			rookSuccs(i, j, g, arr, &alen);
-			bishopSuccs(i, j, g, arr, &alen);
+			fun = queenSuccs;
 			break;
 		case WKING:
 		case BKING:
-			kingSuccs(i, j, g, arr, &alen);
+			fun = kingSuccs;
 			break;
 		}
+
+		fun(i, j, g, arr, &alen);
 
 		pmask >>= 1;
 		j++;
