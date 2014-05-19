@@ -77,12 +77,14 @@ move machineMove(game start) {
 	move ret;
 	score t;
 	clock_t t1,t2;
+	int i;
 
 	addon_reset();
 	reset_stats();
 
 	t1 = clock();
-	t = negamax(start, copts.depth, 0, &ret, minScore, maxScore);
+	for (i=1; i<=copts.depth; i++)
+		t = negamax(start, i, 0, &ret, minScore, maxScore);
 	t2 = clock();
 
 	stats.totalopen += stats.nopen;
@@ -156,15 +158,13 @@ static score negamax_(
 		goto out;
 	}
 
-	if (mm == NULL && maxDepth - curDepth > CFG_MIN_NOTIFY_DEPTH)
+	if (mm == NULL)
 		addon_notify_entry(g, maxDepth - curDepth, &alpha, &beta);
 
 	if (copts.alphabeta && alpha >= beta) {
 		ret = alpha;
 		goto out;
 	}
-
-	stats.nopen++;
 
 	unsigned ii;
 	best = minScore;
@@ -187,6 +187,8 @@ static score negamax_(
 
 			if (!doMove(ng, succs[i]))
 				continue;
+
+			stats.nopen++;
 
 			nvalid++;
 
@@ -239,7 +241,7 @@ static score negamax_(
 			flag = FLAG_EXACT;
 	}
 
-	if (maxDepth - curDepth > CFG_MIN_NOTIFY_DEPTH)
+	if (maxDepth - curDepth > 1)
 		addon_notify_return(g, bestmove, maxDepth - curDepth, ret, flag);
 
 out:
