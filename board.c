@@ -145,49 +145,18 @@ void printBoard(game g) {
 
 	fprintf(stderr, "(turn: %s)\n", g->turn == WHITE ? "WHITE" : "BLACK");
 	for (i=0; i<8; i++) {
-		fprintf(stderr, "   ");
-		for (j=0; j<8; j++) {
-			if (g->en_passant_x == i && g->en_passant_y == j)
-				fputc('!', stderr);
-			else
-				fputc(charOf(g->board[i][j]), stderr);
-			if (g->en_passant_x == i && g->en_passant_y == j)
-				fputc('!', stderr);
-			else
-				fputc(charOf(g->board[i][j]), stderr);
-			if (g->en_passant_x == i && g->en_passant_y == j)
-				fputc('!', stderr);
-			else
-				fputc(charOf(g->board[i][j]), stderr);
-			fputc(' ', stderr);
-			fputc(' ', stderr);
-			fputc(' ', stderr);
-		}
-		fputc('\n', stderr);
 		fprintf(stderr, "%i  ", 8-i);
 		for (j=0; j<8; j++) {
 			if (g->en_passant_x == i && g->en_passant_y == j)
 				fputc('!', stderr);
 			else
 				fputc(charOf(g->board[i][j]), stderr);
-			if (g->en_passant_x == i && g->en_passant_y == j)
-				fputc('!', stderr);
-			else
-				fputc(charOf(g->board[i][j]), stderr);
-			if (g->en_passant_x == i && g->en_passant_y == j)
-				fputc('!', stderr);
-			else
-				fputc(charOf(g->board[i][j]), stderr);
-			fputc(' ', stderr);
-			fputc(' ', stderr);
 			fputc(' ', stderr);
 		}
 		fputc('\n', stderr);
-		fputc('\n', stderr);
 	}
 
-	fprintf(stderr, "\n    a     b     c     d     e     f     g     h\n");
-
+	fprintf(stderr, "\n  a b c d e f g h\n");
 	fprintf(stderr, "[ castle_king = %i %i \n", g->castle_king[0], g->castle_king[1]);
 	fprintf(stderr, "  castle_queen = %i %i \n", g->castle_queen[0], g->castle_queen[1]);
 	fprintf(stderr, "  kingx = %i %i \n", g->kingx[0], g->kingx[1]);
