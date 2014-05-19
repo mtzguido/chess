@@ -75,7 +75,7 @@ void print_stats(score exp, clock_t t1, clock_t t2) {
 
 move machineMove(game start) {
 	move ret;
-	score t;
+	score t = 0;
 	clock_t t1,t2;
 	int i;
 

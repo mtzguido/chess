@@ -401,6 +401,8 @@ int genSuccs(const game g, move **arr_ret) {
 		case BKING:
 			fun = kingSuccs;
 			break;
+		default:
+			abort();
 		}
 
 		fun(i, j, g, arr, &alen);
