@@ -282,21 +282,23 @@ static bool inCheck_row(game g, int kr, int kc, int who) {
 
 	/* Fila */
 	i = kr;
-	for (j=kc+1; j<8; j++)
-		if (g->board[i][j] != 0) {
+	for (j=kc+1; j<8; j++) {
+		if (any_piece(g, i, j)) {
 			if (g->board[i][j] == enemy_q || g->board[i][j] == enemy_r)
 				return true;
 
 			break;
 		}
+	}
 
-	for (j=kc-1; j>=0; j--)
-		if (g->board[i][j] != 0) {
+	for (j=kc-1; j>=0; j--) {
+		if (any_piece(g, i, j)) {
 			if (g->board[i][j] == enemy_q || g->board[i][j] == enemy_r)
 				return true;
 
 			break;
 		}
+	}
 
 	return false;
 }
@@ -311,21 +313,23 @@ static bool inCheck_col(game g, int kr, int kc, int who) {
 
 	/* Columna */
 	j = kc;
-	for (i=kr+1; i<8; i++)
-		if (g->board[i][j] != 0) {
+	for (i=kr+1; i<8; i++) {
+		if (any_piece(g, i, j)) {
 			if (g->board[i][j] == enemy_q || g->board[i][j] == enemy_r)
 				return true;
 
 			break;
 		}
+	}
 
-	for (i=kr-1; i>=0; i--)
-		if (g->board[i][j] != 0) {
+	for (i=kr-1; i>=0; i--) {
+		if (any_piece(g, i, j)) {
 			if (g->board[i][j] == enemy_q || g->board[i][j] == enemy_r)
 				return true;
 
 			break;
 		}
+	}
 
 
 	return false;
@@ -340,21 +344,23 @@ static bool inCheck_diag1(game g, int kr, int kc, int who) {
 		return false;
 
 	/* Diagonal 1 */
-	for (i=kr+1, j=kc-1; i<8 && j>=0; i++, j--)
-		if (g->board[i][j] != 0) {
+	for (i=kr+1, j=kc-1; i<8 && j>=0; i++, j--) {
+		if (any_piece(g, i, j)) {
 			if (g->board[i][j] == enemy_q || g->board[i][j] == enemy_b)
 				return true;
 
 			break;
 		}
+	}
 
-	for (i=kr-1, j=kc+1; i>=0 && j<8; i--, j++)
-		if (g->board[i][j] != 0) {
+	for (i=kr-1, j=kc+1; i>=0 && j<8; i--, j++) {
+		if (any_piece(g, i, j)) {
 			if (g->board[i][j] == enemy_q || g->board[i][j] == enemy_b)
 				return true;
 
 			break;
 		}
+	}
 
 	return false;
 }
@@ -368,21 +374,23 @@ static bool inCheck_diag2(game g, int kr, int kc, int who) {
 		return false;
 
 	/* Diagonal 2 */
-	for (i=kr-1, j=kc-1; i>=0 && j>=0; i--, j--)
-		if (g->board[i][j] != 0) {
+	for (i=kr-1, j=kc-1; i>=0 && j>=0; i--, j--) {
+		if (any_piece(g, i, j)) {
 			if (g->board[i][j] == enemy_q || g->board[i][j] == enemy_b)
 				return true;
 
 			break;
 		}
+	}
 
-	for (i=kr+1, j=kc+1; i<8 && j<8; i++, j++)
-		if (g->board[i][j] != 0) {
+	for (i=kr+1, j=kc+1; i<8 && j<8; i++, j++) {
+		if (any_piece(g, i, j)) {
 			if (g->board[i][j] == enemy_q || g->board[i][j] == enemy_b)
 				return true;
 
 			break;
 		}
+	}
 
 	return false;
 }
