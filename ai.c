@@ -38,7 +38,7 @@ static int genSuccs_wrap(game g, move **arr, int depth) {
 		shuffleSuccs(g, *arr, n);
 
 	/* Ordenarlos si es necesario */
-	if (depth < copts.depth - 2)
+	if (depth < copts.depth - 1)
 		sortSuccs(g, *arr, n, depth);
 
 	return n;
