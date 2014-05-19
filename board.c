@@ -480,20 +480,8 @@ static bool inCheck_king(game g) {
  * en donde mover el caballo causa un jaque aún
  * cuando no lo amenaza
  */
-static bool safe(game g __maybe_unused, u8 r, u8 c, u8 kr, u8 kc) {
-	if (r == kr || c == kc) {
-		return false;
-	} else {
-		int dx, dy;
-
-		dx = abs(r-kr);
-		dy = abs(c-kc);
-
-		if (dx == dy || dx + dy == 3)
-			return false;
-	}
-
-	return true;
+static bool danger(u8 r, u8 c, u8 kr, u8 kc) {
+	return dangermask[8*kr + kc] & ((u64)1 << (r*8 + c));
 }
 
 /* 
@@ -645,15 +633,14 @@ static void movePiece(game g, i8 r, i8 c, i8 R, i8 C) {
 
 	assert(from != EMPTY);
 
-	g->pps_O	-= piece_square_val_O(from, r, c);
-	g->pps_O	+= piece_square_val_O(from, R, C);
-	g->pps_E	-= piece_square_val_E(from, r, c);
-	g->pps_E	+= piece_square_val_E(from, R, C);
-	g->zobrist	^= ZOBR_PIECE(from, r, c);
-	g->zobrist	^= ZOBR_PIECE(from, R, C);
-
-	g->piecemask[who]	&= ~ (((u64)1) << (r*8 + c));
-	g->piecemask[who]	|=    ((u64)1) << (R*8 + C);
+	g->pps_O +=
+		piece_square_val_O(from, R, C) - piece_square_val_O(from, r, c);
+	g->pps_E +=
+		piece_square_val_E(from, R, C) - piece_square_val_E(from, r, c);
+	g->zobrist ^=
+		ZOBR_PIECE(from, r, c) ^ ZOBR_PIECE(from, R, C);
+	g->piecemask[who] ^=
+		(((u64)1) << (r*8 + c)) ^ (((u64)1) << (R*8 + C));
 
 	g->board[r][c] = EMPTY;
 	g->board[R][C] = from;
@@ -715,15 +702,15 @@ static bool doMoveRegular(game g, move m) {
 	/* Si es algún movimiento relevante al rey contrario
 	 * dropeamos la cache */
 	if (g->inCheck[other] != -1)
-		if (!safe(g, m.r, m.c, g->kingx[other], g->kingy[other]) ||
-		    !safe(g, m.R, m.C, g->kingx[other], g->kingy[other]))
+		if (danger(m.r, m.c, g->kingx[other], g->kingy[other]) ||
+		    danger(m.R, m.C, g->kingx[other], g->kingy[other]))
 			g->inCheck[other] = -1;
 
 	/* Necesitamos también (posiblemente) dropear la nuestra */
 	if (g->inCheck[m.who] != -1)
 		if (isKing(piece) ||
-		    !safe(g, m.r, m.c, g->kingx[m.who], g->kingy[m.who]) ||
-		    !safe(g, m.R, m.C, g->kingx[m.who], g->kingy[m.who]))
+		    danger(m.r, m.c, g->kingx[m.who], g->kingy[m.who]) ||
+		    danger(m.R, m.C, g->kingx[m.who], g->kingy[m.who]))
 			g->inCheck[m.who] = -1;
 
 	return true;
