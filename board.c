@@ -633,8 +633,7 @@ static bool doMoveRegular(game g, move m) {
 		return false;
 
 	/* No pisar piezas propias */
-	if (g->board[m.R][m.C] != 0
-	 && colorOf(g->board[m.R][m.C]) == m.who)
+	if (own_piece(g, m.R, m.C))
 		return false;
 
 	/* Es válida */
@@ -662,7 +661,7 @@ static bool doMoveRegular(game g, move m) {
 		set_ep(g, -1, -1);
 	}
 
-	if (g->board[m.R][m.C] != 0)
+	if (enemy_piece(g, m.R, m.C))
 		g->idlecount = 0;
 
 	/* Movemos */
