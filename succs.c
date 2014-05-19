@@ -223,7 +223,7 @@ void rookSuccs(int r, int c, const game g, move *arr, int *alen) {
 		if (!own_piece(g, R, C)) {
 			m.R = R; m.C = C;
 			addToRet(m, arr, alen);
-		}
+		} else break;
 		if (enemy_piece(g, R, C))
 			break;
 	}
@@ -232,7 +232,7 @@ void rookSuccs(int r, int c, const game g, move *arr, int *alen) {
 		if (!own_piece(g, R, C)) {
 			m.R = R; m.C = C;
 			addToRet(m, arr, alen);
-		}
+		} else break;
 		if (enemy_piece(g, R, C))
 			break;
 	}
@@ -242,7 +242,7 @@ void rookSuccs(int r, int c, const game g, move *arr, int *alen) {
 		if (!own_piece(g, R, C)) {
 			m.R = R; m.C = C;
 			addToRet(m, arr, alen);
-		}
+		} else break;
 		if (enemy_piece(g, R, C))
 			break;
 	}
@@ -251,7 +251,7 @@ void rookSuccs(int r, int c, const game g, move *arr, int *alen) {
 		if (!own_piece(g, R, C)) {
 			m.R = R; m.C = C;
 			addToRet(m, arr, alen);
-		}
+		} else break;
 		if (enemy_piece(g, R, C))
 			break;
 	}
@@ -270,7 +270,7 @@ void bishopSuccs(int r, int c, const game g, move *arr, int *alen) {
 		if (!own_piece(g, R, C)) {
 			m.R = R; m.C = C;
 			addToRet(m, arr, alen);
-		}
+		} else break;
 		if (enemy_piece(g, R, C))
 			break;
 	}
@@ -279,7 +279,7 @@ void bishopSuccs(int r, int c, const game g, move *arr, int *alen) {
 		if (!own_piece(g, R, C)) {
 			m.R = R; m.C = C;
 			addToRet(m, arr, alen);
-		}
+		} else break;
 		if (enemy_piece(g, R, C))
 			break;
 	}
@@ -288,7 +288,7 @@ void bishopSuccs(int r, int c, const game g, move *arr, int *alen) {
 		if (!own_piece(g, R, C)) {
 			m.R = R; m.C = C;
 			addToRet(m, arr, alen);
-		}
+		} else break;
 		if (enemy_piece(g, R, C))
 			break;
 	}
@@ -297,7 +297,7 @@ void bishopSuccs(int r, int c, const game g, move *arr, int *alen) {
 		if (!own_piece(g, R, C)) {
 			m.R = R; m.C = C;
 			addToRet(m, arr, alen);
-		}
+		} else break;
 		if (enemy_piece(g, R, C))
 			break;
 	}
@@ -334,7 +334,7 @@ void kingSuccs(int r, int c, const game g, move *arr, int *alen) {
 int genSuccs(const game g, move **arr_ret) {
 	int i, j;
 	int alen, asz;
-	const u64 pmask = g->piecemask[g->turn];
+	u64 pmask = g->piecemask[g->turn];
 	move *arr;
 
 	alen = 0;
@@ -342,50 +342,68 @@ int genSuccs(const game g, move **arr_ret) {
 	arr = malloc(asz * sizeof arr[0]);
 	assert(arr != NULL);
 
-	for (i=0; i<8; i++) {
-		if (!((pmask >> (i*8)) & 0xff))
-			continue;
+	i = 0;
+	j = 0;
 
-		if (!((pmask >> (i*8)) & 0x0f))
-			j = 4;
-		else
-			j = 0;
+	while (pmask) {
+		while (!(pmask & 0xff)) {
+			pmask >>= 8;
+			i++;
+		}
 
-		for (; j<8; j++) {
-			if (!own_piece(g, i, j))
-				continue;
+		while (!(pmask & 1)) {
+			pmask >>= 1;
+			j++;
 
-			const i8 piece = g->board[i][j];
-
-			switch (piece) {
-			case WPAWN:
-				pawnSuccs_w(i, j, g, arr, &alen);
-				break;
-			case BPAWN:
-				pawnSuccs_b(i, j, g, arr, &alen);
-				break;
-			case WKNIGHT:
-			case BKNIGHT:
-				knightSuccs(i, j, g, arr, &alen);
-				break;
-			case WROOK:
-			case BROOK:
-				rookSuccs(i, j, g, arr, &alen);
-				break;
-			case WBISHOP:
-			case BBISHOP:
-				bishopSuccs(i, j, g, arr, &alen);
-				break;
-			case WQUEEN:
-			case BQUEEN:
-				rookSuccs(i, j, g, arr, &alen);
-				bishopSuccs(i, j, g, arr, &alen);
-				break;
-			case WKING:
-			case BKING:
-				kingSuccs(i, j, g, arr, &alen);
-				break;
+			if (j == 8) {
+				j = 0;
+				i++;
 			}
+		}
+
+		assert (i >= 0);
+		assert (j >= 0);
+		assert (i < 8);
+		assert (j < 8);
+
+		const i8 piece = g->board[i][j];
+
+		switch (piece) {
+		case WPAWN:
+			pawnSuccs_w(i, j, g, arr, &alen);
+			break;
+		case BPAWN:
+			pawnSuccs_b(i, j, g, arr, &alen);
+			break;
+		case WKNIGHT:
+		case BKNIGHT:
+			knightSuccs(i, j, g, arr, &alen);
+			break;
+		case WROOK:
+		case BROOK:
+			rookSuccs(i, j, g, arr, &alen);
+			break;
+		case WBISHOP:
+		case BBISHOP:
+			bishopSuccs(i, j, g, arr, &alen);
+			break;
+		case WQUEEN:
+		case BQUEEN:
+			rookSuccs(i, j, g, arr, &alen);
+			bishopSuccs(i, j, g, arr, &alen);
+			break;
+		case WKING:
+		case BKING:
+			kingSuccs(i, j, g, arr, &alen);
+			break;
+		}
+
+		pmask >>= 1;
+		j++;
+
+		if (j == 8) {
+			j = 0;
+			i++;
 		}
 	}
 
