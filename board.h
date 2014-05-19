@@ -129,7 +129,7 @@ static inline bool enemy_piece(game g, i8 r, i8 c) {
 	return g->piecemask[flipTurn(g->turn)] & ((u64)1 << (r*8 + c));
 }
 
-__maybe_unused static bool equalMove(move a, move b) {
+static inline bool equalMove(move a, move b) {
 	if (a.who != b.who)
 		return false;
 
