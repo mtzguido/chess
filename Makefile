@@ -28,17 +28,12 @@ ifeq (${CONFIG_OWNMEM},y)
 endif
 
 ifeq (${CONFIG_RELEASE},y)
-	CFLAGS += -O99
-endif
-
-ifeq (${CONFIG_PROFILE},y)
+	CFLAGS += -O99 -fomit-frame-pointer -DNDEBUG
+else
+	CFLAGS += -g -pg
 	LFLAGS += -pg
-	CFLAGS += -pg
 endif
 
-ifeq (${CONFIG_DEBUG},y)
-	CFLAGS += -g
-endif
 
 ifeq (${CONFIG_SUGGEST},y)
 	CFLAGS += -DCFG_SUGG
