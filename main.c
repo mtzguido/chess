@@ -28,14 +28,14 @@ void checkMove(game g, move m) {
 	move *succs;
 
 	*ng = *g;
-	__maybe_unused int rc = doMove(ng, m);
+	__maybe_unused int rc = doMove(ng, m, 1);
 	assert(rc);
 
 	nsucc = genSuccs(g, &succs);
 
 	for (i=0; i<nsucc; i++) {
 		*t = *g;
-		if (!doMove(t, succs[i]))
+		if (!doMove(t, succs[i], 1))
 			continue;
 
 		if (equalGame(t, ng))
@@ -121,7 +121,7 @@ __maybe_unused static void zobrist_test(game b, int d) {
 
 	for (i=0; i<n; i++) {
 		game t = copyGame(b);
-		if (!doMove(t, succs[i]))
+		if (!doMove(t, succs[i], 1))
 			continue;
 
 		zobrist_test(t, d+1);
@@ -173,13 +173,13 @@ int match(struct player pwhite, struct player pblack) {
 		if (g->turn == WHITE) {
 			m = pwhite.getMove(g);
 			checkMove(g, m);
-			__maybe_unused int rc = doMove(g, m); 
+			__maybe_unused int rc = doMove(g, m, 1);
 			assert(rc);
 			pblack.notify(g, g->lastmove);
 		} else {
 			m = pblack.getMove(g);
 			checkMove(g, m);
-			__maybe_unused int rc = doMove(g, m); 
+			__maybe_unused int rc = doMove(g, m, 1);
 			assert(rc);
 			pwhite.notify(g, g->lastmove);
 		}
@@ -207,7 +207,7 @@ int nmoves() {
 	for (i=0; i<copts.nmoves; i++) {
 		mark(g);
 		m = machineMove(g);
-		doMove(g, m);
+		doMove(g, m, 1);
 		printBoard(g);
 	}
 
@@ -304,7 +304,7 @@ move random_move(game g) {
 	do {
 		int i = rand()%n;
 
-		if (doMove(ng, arr[i])) {
+		if (doMove(ng, arr[i], 1)) {
 			freeGame(ng);
 			freeSuccs(arr, n);
 			return arr[i];

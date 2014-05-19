@@ -107,7 +107,7 @@ typedef struct game_struct *game;
 
 game startingGame(void);
 
-bool doMove(game g, move m); /* Actua sobre g */
+bool doMove(game g, move m, int check); /* Actua sobre g */
 game copyGame(game g);
 void freeGame(game g);
 
