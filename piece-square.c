@@ -7,7 +7,6 @@
  * http://chessprogramming.wikispaces.com/Simplified+evaluation+function
  */
 
-
 static const char t_pawn[8][8];
 static const char t_bishop[8][8];
 static const char t_knight[8][8];
@@ -16,7 +15,7 @@ static const char t_queen[8][8];
 static const char t_kingO[8][8];
 static const char t_kingE[8][8];
 
-char piece_square_val_O(i8 piece, i8 r, i8 c) {
+char piece_square_val_O(piece_t piece, i8 r, i8 c) {
 	switch (piece) {
 	case WPAWN:	return t_pawn[r][c];
 	case WBISHOP:	return t_bishop[r][c];
@@ -35,7 +34,7 @@ char piece_square_val_O(i8 piece, i8 r, i8 c) {
 	__builtin_unreachable();
 }
 
-char piece_square_val_E(i8 piece, i8 r, i8 c) {
+char piece_square_val_E(piece_t piece, i8 r, i8 c) {
 	switch (piece) {
 	case WPAWN:	return t_pawn[r][c];
 	case WBISHOP:	return t_bishop[r][c];

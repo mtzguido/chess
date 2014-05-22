@@ -2,14 +2,16 @@
 #define __ZOBRIST_H__
 
 #include "common.h"
+#include "board.h"
+
 #include <assert.h>
 
 extern const u64 zobrist_keys[794];
 
-static inline u64 ZOBR_PIECE(int piece, int r, int c) {
+static inline u64 ZOBR_PIECE(piece_t piece, int r, int c) {
 	assert(piece != 0);
 
-	const int p = piece > 0 ? piece - 1 : 12 + piece;
+	const int p = piece > 6 ? piece - 2 : piece;
 	return zobrist_keys[r*8*12 + c*12 + p];
 }
 

@@ -89,7 +89,7 @@ bool rookMove(game g, int r, int c, int R, int C) {
 			if (g->board[r][i] != 0)
 				return 0;
 
-		if (g->board[R][C] != 0 && colorOf(g->board[R][C] == colorOf(g->board[r][c])))
+		if (g->board[R][C] != 0 && colorOf(g->board[R][C]) == colorOf(g->board[r][c]))
 			return 0;
 
 		return 1;
@@ -100,7 +100,7 @@ bool rookMove(game g, int r, int c, int R, int C) {
 			if (g->board[i][C] != 0)
 				return 0;
 
-		if (g->board[R][C] != 0 && colorOf(g->board[R][C] == colorOf(g->board[r][c])))
+		if (g->board[R][C] != 0 && colorOf(g->board[R][C]) == colorOf(g->board[r][c]))
 			return 0;
 
 		return 1;

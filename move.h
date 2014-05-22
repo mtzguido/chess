@@ -16,7 +16,7 @@ bool bishopMove(game g, int r, int c, int R, int C);
 static inline bool canMove(game g, int r, int c, int R, int C) {
 	const int piece = g->board[r][c];
 	switch(piece) {
-	case 0:
+	case EMPTY:
 		return false;
 	case WPAWN:
 	case BPAWN:

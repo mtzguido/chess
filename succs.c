@@ -7,7 +7,7 @@
 static inline void addToRet(move m, move *arr, int *len);
 static inline void addToRet_promote(move m, move *arr, int *len);
 
-void pawnSuccs_w(int r, int c, const game g, move *arr, int *alen) {
+void pawnSuccs_w(i8 r, i8 c, const game g, move *arr, int *alen) {
 	move m = {0};
 	m.who = g->turn;
 	m.move_type = MOVE_REGULAR;
@@ -94,7 +94,7 @@ void pawnSuccs_w(int r, int c, const game g, move *arr, int *alen) {
 	}
 }
 
-void pawnSuccs_b(int r, int c, const game g, move *arr, int *alen) {
+void pawnSuccs_b(i8 r, i8 c, const game g, move *arr, int *alen) {
 	move m = {0};
 	m.who = g->turn;
 	m.move_type = MOVE_REGULAR;
@@ -181,7 +181,7 @@ void pawnSuccs_b(int r, int c, const game g, move *arr, int *alen) {
 	}
 }
 
-void knightSuccs(int r, int c, const game g, move *arr, int *alen) {
+void knightSuccs(i8 r, i8 c, const game g, move *arr, int *alen) {
 	const int dr[] = { 2,  2, -2, -2, 1,  1, -1, -1 };
 	const int dc[] = { 1, -1,  1, -1, 2, -2,  2, -2 };
 	unsigned i;
@@ -209,7 +209,7 @@ void knightSuccs(int r, int c, const game g, move *arr, int *alen) {
 	}
 }
 
-void rookSuccs(int r, int c, const game g, move *arr, int *alen) {
+void rookSuccs(i8 r, i8 c, const game g, move *arr, int *alen) {
 	int R, C;
 
 	move m = {0};
@@ -257,7 +257,7 @@ void rookSuccs(int r, int c, const game g, move *arr, int *alen) {
 	}
 }
 
-void bishopSuccs(int r, int c, const game g, move *arr, int *alen) {
+void bishopSuccs(i8 r, i8 c, const game g, move *arr, int *alen) {
 	int R, C;
 
 	move m = {0};
@@ -303,7 +303,7 @@ void bishopSuccs(int r, int c, const game g, move *arr, int *alen) {
 	}
 }
 
-void kingSuccs(int r, int c, const game g, move *arr, int *alen) {
+void kingSuccs(i8 r, i8 c, const game g, move *arr, int *alen) {
 	const int dr[] = {  1, 1,  1, 0, -1, -1, -1, 0  };
 	const int dc[] = { -1, 0,  1, 1,  1,  0, -1, -1 };
 	unsigned i;
@@ -331,13 +331,70 @@ void kingSuccs(int r, int c, const game g, move *arr, int *alen) {
 	}
 }
 
-void queenSuccs(int r, int c, const game g, move *arr, int *alen) {
+void queenSuccs(i8 r, i8 c, const game g, move *arr, int *alen) {
 	rookSuccs(r, c, g, arr, alen);
 	bishopSuccs(r, c, g, arr, alen);
 }
 
+void castleSuccs(const game g, move *arr, int *alen) {
+	const piece_t kr = g->turn == WHITE ? 7 : 0;
+	const piece_t rpiece = g->turn == WHITE ? WROOK : BROOK;
+	move m = {0};
+
+	m.who = g->turn;
+
+	if (g->castle_king[g->turn]
+	 && g->board[kr][5] == EMPTY
+	 && g->board[kr][6] == EMPTY
+	 && g->board[kr][7] == rpiece) {
+		m.move_type = MOVE_KINGSIDE_CASTLE;
+		addToRet(m, arr, alen);
+	}
+
+	if (g->castle_queen[g->turn]
+	 && g->board[kr][0] == rpiece
+	 && g->board[kr][1] == EMPTY
+	 && g->board[kr][2] == EMPTY
+	 && g->board[kr][3] == EMPTY) {
+		m.move_type = MOVE_QUEENSIDE_CASTLE;
+		addToRet(m, arr, alen);
+	}
+}
+
+void pieceSuccs(i8 i, i8 j, const game g, move *arr, int *alen) {
+	const piece_t piece = g->board[i][j];
+
+	switch (piece&7) {
+	case WPAWN:
+	{
+		if (piece == WPAWN)
+			pawnSuccs_w(i, j, g, arr, alen);
+		else if (piece == BPAWN)
+			pawnSuccs_b(i, j, g, arr, alen);
+
+		break;
+	}
+	case WKNIGHT:
+		knightSuccs(i, j, g, arr, alen);
+		break;
+	case WROOK:
+		rookSuccs(i, j, g, arr, alen);
+		break;
+	case WBISHOP:
+		bishopSuccs(i, j, g, arr, alen);
+		break;
+	case WQUEEN:
+		queenSuccs(i, j, g, arr, alen);
+		break;
+	case WKING:
+		kingSuccs(i, j, g, arr, alen);
+		break;
+	}
+}
+
+
 int genSuccs(const game g, move **arr_ret) {
-	int i, j;
+	int i;
 	int alen, asz;
 	u64 pmask = g->piecemask[g->turn];
 	move *arr;
@@ -348,97 +405,24 @@ int genSuccs(const game g, move **arr_ret) {
 	assert(arr != NULL);
 
 	i = 0;
-	j = 0;
-
 	while (pmask) {
 		while (!(pmask & 0xff)) {
 			pmask >>= 8;
+			i+=8;
+		}
+
+		while (!(pmask & 0x01)) {
+			pmask >>= 1;
 			i++;
 		}
 
-		while (!(pmask & 1)) {
-			pmask >>= 1;
-			j++;
-
-			if (j == 8) {
-				j = 0;
-				i++;
-			}
-		}
-
-		assert (i >= 0);
-		assert (j >= 0);
-		assert (i < 8);
-		assert (j < 8);
-
-		const i8 piece = g->board[i][j];
-		void (*fun)(int, int, const game, move *, int *);
-
-		switch (piece) {
-		case WPAWN:
-			fun = pawnSuccs_w;
-			break;
-		case BPAWN:
-			fun = pawnSuccs_b;
-			break;
-		case WKNIGHT:
-		case BKNIGHT:
-			fun = knightSuccs;
-			break;
-		case WROOK:
-		case BROOK:
-			fun = rookSuccs;
-			break;
-		case WBISHOP:
-		case BBISHOP:
-			fun = bishopSuccs;
-			break;
-		case WQUEEN:
-		case BQUEEN:
-			fun = queenSuccs;
-			break;
-		case WKING:
-		case BKING:
-			fun = kingSuccs;
-			break;
-		default:
-			abort();
-		}
-
-		fun(i, j, g, arr, &alen);
+		pieceSuccs((i8)(i>>3), (i8)(i&7), g, arr, &alen);
 
 		pmask >>= 1;
-		j++;
-
-		if (j == 8) {
-			j = 0;
-			i++;
-		}
+		i++;
 	}
 
-	{
-		move m = {0};
-		const i8 kr = g->turn == WHITE ? 7 : 0;
-		const i8 rpiece = g->turn == WHITE ? WROOK : BROOK;
-
-		m.who = g->turn;
-		if (g->castle_king[g->turn]
-		 && g->board[kr][5] == EMPTY
-		 && g->board[kr][6] == EMPTY
-		 && g->board[kr][7] == rpiece) {
-			m.move_type = MOVE_KINGSIDE_CASTLE;
-			addToRet(m, arr, &alen);
-		}
-
-		if (g->castle_queen[g->turn]
-		 && g->board[kr][0] == rpiece
-		 && g->board[kr][1] == EMPTY
-		 && g->board[kr][2] == EMPTY
-		 && g->board[kr][3] == EMPTY) {
-			m.move_type = MOVE_QUEENSIDE_CASTLE;
-			addToRet(m, arr, &alen);
-		}
-	}
+	castleSuccs(g, arr, &alen);
 
 	assert(alen <= asz);
 

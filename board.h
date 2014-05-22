@@ -20,15 +20,17 @@ struct move {
 	i8 c;
 	i8 R;
 	i8 C;
-	i8 promote;
+	u8 promote;
 };
 
 typedef struct move move;
 
+typedef u8 piece_t;
+
 struct game_struct {
 	/* Tablero */
 	/* board [1][2] == C2 */
-	i8 board[8][8];
+	piece_t board[8][8];
 	u64 piecemask[2];
 	u8 turn;
 
@@ -85,25 +87,25 @@ typedef struct game_struct *game;
 #define EMPTY		0
 #define WPAWN		1
 #define WKNIGHT		2
-#define	WBISHOP		3
+#define WBISHOP		3
 #define WROOK		4
 #define WQUEEN		5
-#define	WKING		6
-#define BPAWN		(-1)
-#define BKNIGHT		(-2)
-#define	BBISHOP		(-3)
-#define BROOK		(-4)
-#define BQUEEN		(-5)
-#define	BKING		(-6)
+#define WKING		6
+#define BPAWN		(8 | WPAWN)
+#define BKNIGHT		(8 | WKNIGHT)
+#define BBISHOP		(8 | WBISHOP)
+#define BROOK		(8 | WROOK)
+#define BQUEEN		(8 | WQUEEN)
+#define BKING		(8 | WKING)
 
 #define isEmpty(c)	((c) == EMPTY)
-#define isPawn(c)	((c) == WPAWN   || (c) == BPAWN)
-#define isKnight(c)	((c) == WKNIGHT || (c) == BKNIGHT)
-#define isBishop(c)	((c) == WBISHOP || (c) == BBISHOP)
-#define isRook(c)	((c) == WROOK   || (c) == BROOK)
-#define isQueen(c)	((c) == WQUEEN  || (c) == BQUEEN)
-#define isKing(c)	((c) == WKING   || (c) == BKING)
-#define colorOf(c)	((c)>0)
+#define isPawn(c)	((c&7) == WPAWN)
+#define isKnight(c)	((c&7) == WKNIGHT)
+#define isBishop(c)	((c&7) == WBISHOP)
+#define isRook(c)	((c&7) == WROOK)
+#define isQueen(c)	((c&7) == WQUEEN)
+#define isKing(c)	((c&7) == WKING)
+#define colorOf(c)	(!((c)&8))
 
 game startingGame(void);
 

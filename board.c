@@ -275,8 +275,8 @@ bool inCheck(game g, int who) {
 
 static bool inCheck_row(game g, int kr, int kc, int who) {
 	int i, j;
-	const i8 enemy_q = who == WHITE ? BQUEEN : WQUEEN;
-	const i8 enemy_r = who == WHITE ? BROOK : WROOK;
+	const piece_t enemy_q = who == WHITE ? BQUEEN : WQUEEN;
+	const piece_t enemy_r = who == WHITE ? BROOK : WROOK;
 
 	if (!(g->piecemask[flipTurn(who)] & rowmask[kr]))
 		return 0;
@@ -306,8 +306,8 @@ static bool inCheck_row(game g, int kr, int kc, int who) {
 
 static bool inCheck_col(game g, int kr, int kc, int who) {
 	int i, j;
-	const i8 enemy_q = who == WHITE ? BQUEEN : WQUEEN;
-	const i8 enemy_r = who == WHITE ? BROOK : WROOK;
+	const piece_t enemy_q = who == WHITE ? BQUEEN : WQUEEN;
+	const piece_t enemy_r = who == WHITE ? BROOK : WROOK;
 
 	if (!(g->piecemask[flipTurn(who)] & colmask[kc]))
 		return 0;
@@ -338,8 +338,8 @@ static bool inCheck_col(game g, int kr, int kc, int who) {
 
 static bool inCheck_diag1(game g, int kr, int kc, int who) {
 	int i, j;
-	const i8 enemy_q = who == WHITE ? BQUEEN : WQUEEN;
-	const i8 enemy_b = who == WHITE ? BBISHOP : WBISHOP;
+	const piece_t enemy_q = who == WHITE ? BQUEEN : WQUEEN;
+	const piece_t enemy_b = who == WHITE ? BBISHOP : WBISHOP;
 
 	if (!(g->piecemask[flipTurn(who)] & diag1mask[kr+kc]))
 		return false;
@@ -368,8 +368,8 @@ static bool inCheck_diag1(game g, int kr, int kc, int who) {
 
 static bool inCheck_diag2(game g, int kr, int kc, int who) {
 	int i, j;
-	const i8 enemy_q = who == WHITE ? BQUEEN : WQUEEN;
-	const i8 enemy_b = who == WHITE ? BBISHOP : WBISHOP;
+	const piece_t enemy_q = who == WHITE ? BQUEEN : WQUEEN;
+	const piece_t enemy_b = who == WHITE ? BBISHOP : WBISHOP;
 
 	if (!(g->piecemask[flipTurn(who)] & diag2mask[kc-kr+7]))
 		return false;
@@ -398,7 +398,7 @@ static bool inCheck_diag2(game g, int kr, int kc, int who) {
 
 
 static bool inCheck_knig(game g, int kr, int kc, int who) {
-	const i8 enemy_kn = who == WHITE ? BKNIGHT : WKNIGHT;
+	const piece_t enemy_kn = who == WHITE ? BKNIGHT : WKNIGHT;
 
 	/* Caballos */
 	if (kr >= 2 && kc >= 1 && g->board[kr-2][kc-1] == enemy_kn) return true; 
@@ -570,7 +570,7 @@ bool doMove_unchecked(game g, move m) {
 }
 
 /* Auxiliares de doMoveRegular */
-static inline void setPiece(game g, i8 r, i8 c, i8 piece);
+static inline void setPiece(game g, i8 r, i8 c, piece_t piece);
 static bool isValid(game g, move m);
 static inline void updKing(game g, move m);
 static inline void updCastling(game g, move m);
@@ -578,8 +578,8 @@ static inline void epCapture(game g, move m);
 static inline void epCalc(game g, move m);
 static inline void calcPromotion(game g, move m);
 
-static void setPiece(game g, i8 r, i8 c, i8 piece) {
-	i8 old_piece = g->board[r][c];
+static void setPiece(game g, i8 r, i8 c, piece_t piece) {
+	piece_t old_piece = g->board[r][c];
 
 	if (old_piece) {
 		g->pieceScore -= scoreOf(old_piece);
@@ -613,8 +613,8 @@ static void setPiece(game g, i8 r, i8 c, i8 piece) {
  * anda mas rápido
  */
 static void movePiece(game g, i8 r, i8 c, i8 R, i8 C) {
-	const i8 from = g->board[r][c];
-	const i8 to   = g->board[R][C];
+	const piece_t from = g->board[r][c];
+	const piece_t to   = g->board[R][C];
 	const int who = colorOf(from);
 
 	assert(from != EMPTY);
@@ -643,7 +643,7 @@ static void movePiece(game g, i8 r, i8 c, i8 R, i8 C) {
 }
 
 static bool doMoveRegular(game g, move m, bool check) {
-	const i8 piece = g->board[m.r][m.c];
+	const piece_t piece = g->board[m.r][m.c];
 	const u8 other = flipTurn(g->turn);
 
 	if (check) {
@@ -704,11 +704,11 @@ static bool doMoveRegular(game g, move m, bool check) {
 }
 
 static bool isValid(game g, move m) {
-	i8 piece = g->board[m.r][m.c];
+	piece_t piece = g->board[m.r][m.c];
 
 	/* Siempre se mueve una pieza propia */
 	if (m.who != g->turn ||
-	    piece == 0 ||
+	    piece == EMPTY ||
 	    colorOf(piece) != g->turn)
 		return false;
 
@@ -773,7 +773,7 @@ static void epCalc(game g, move m) {
 
 static void calcPromotion(game g, move m) {
 	if (m.R == (m.who == WHITE ? 0 : 7)) {
-		i8 new_piece = m.who == WHITE ? m.promote : -m.promote;
+		piece_t new_piece = m.who == WHITE ? m.promote : (8 | m.promote);
 
 		setPiece(g, m.r, m.c, new_piece);
 	}
@@ -781,8 +781,8 @@ static void calcPromotion(game g, move m) {
 
 static bool doMoveKCastle(game g, move m, bool check) {
 	const u8 rank = m.who == WHITE ? 7 : 0;
-	const i8 kpiece = m.who == WHITE ? WKING : BKING;
-	const i8 rpiece = m.who == WHITE ? WROOK : BROOK;
+	const piece_t kpiece = m.who == WHITE ? WKING : BKING;
+	const piece_t rpiece = m.who == WHITE ? WROOK : BROOK;
 
 	if (check) {
 		if (!(g->castle_king[m.who]
@@ -843,8 +843,8 @@ static bool doMoveKCastle(game g, move m, bool check) {
 
 static bool doMoveQCastle(game g, move m, bool check) {
 	const u8 rank = m.who == WHITE ? 7 : 0;
-	const i8 kpiece = m.who == WHITE ? WKING : BKING;
-	const i8 rpiece = m.who == WHITE ? WROOK : BROOK;
+	const piece_t kpiece = m.who == WHITE ? WKING : BKING;
+	const piece_t rpiece = m.who == WHITE ? WROOK : BROOK;
 
 	if (check) {
 		if (!(g->castle_queen[m.who]
