@@ -206,12 +206,13 @@ bool isDraw(game g) {
 int isFinished(game g) {
 	move *succs;
 	int i, n;
+	int r = reps(g);
 	game ng;
 
-	assert(reps(g) > 0);
-	assert(reps(g) <= 3);
+	assert(r > 0);
+	assert(r <= 3);
 
-	if (reps(g) >= 3)
+	if (r == 3)
 		return DRAW_3FOLD;
 	else if (g->idlecount >= 100)
 		return DRAW_50MOVE;
@@ -224,7 +225,7 @@ int isFinished(game g) {
 		 * Si hay un sucesor válido,
 		 * el juego no terminó
 		 */
-		if (doMove(ng, succs[i], 0)) {
+		if (doMove_unchecked(ng, succs[i])) {
 			freeGame(ng);
 			freeSuccs(succs, n);
 			return -1;
@@ -490,15 +491,15 @@ static void set_ep(game g, u8 r, u8 c) {
 	g->zobrist ^= ZOBR_EP(g->en_passant_x);
 }
 
-static bool doMoveRegular(game g, move m, int check);
-static bool doMoveKCastle(game g, move m, int check);
-static bool doMoveQCastle(game g, move m, int check);
+static bool doMoveRegular(game g, move m, bool check);
+static bool doMoveKCastle(game g, move m, bool check);
+static bool doMoveQCastle(game g, move m, bool check);
 
 /*
  * 1 : Ok
  * 0 : Movida no válida, deja a g intacto
  */
-bool doMove(game g, move m, int check) {
+bool __doMove(game g, move m, bool check) {
 	assert(m.who == g->turn);
 
 	game old_g = copyGame(g);
@@ -558,6 +559,14 @@ fail:
 	freeGame(old_g);
 
 	return false;
+}
+
+bool doMove(game g, move m) {
+	return __doMove(g, m, true);
+}
+
+bool doMove_unchecked(game g, move m) {
+	return __doMove(g, m, false);
 }
 
 /* Auxiliares de doMoveRegular */
@@ -633,7 +642,7 @@ static void movePiece(game g, i8 r, i8 c, i8 R, i8 C) {
 	}
 }
 
-static bool doMoveRegular(game g, move m, int check) {
+static bool doMoveRegular(game g, move m, bool check) {
 	const i8 piece = g->board[m.r][m.c];
 	const u8 other = flipTurn(g->turn);
 
@@ -644,8 +653,6 @@ static bool doMoveRegular(game g, move m, int check) {
 		/* No pisar piezas propias */
 		if (own_piece(g, m.R, m.C))
 			return false;
-	} else {
-		assert(isValid(g, m));
 	}
 
 	/* Es válida */
@@ -779,19 +786,22 @@ static void calcPromotion(game g, move m) {
 	}
 }
 
-static bool doMoveKCastle(game g, move m, int check) {
+static bool doMoveKCastle(game g, move m, bool check) {
 	const u8 rank = m.who == WHITE ? 7 : 0;
 	const i8 kpiece = m.who == WHITE ? WKING : BKING;
 	const i8 rpiece = m.who == WHITE ? WROOK : BROOK;
 
 	if (check) {
-		if (!(g->castle_king[m.who] && ! inCheck(g, m.who)
+		if (!(g->castle_king[m.who]
 			&& g->board[rank][7] == rpiece && g->board[rank][6] == EMPTY
 			&& g->board[rank][5] == EMPTY  && g->board[rank][4] == kpiece)) {
 
 			return false;
 		}
 	}
+
+	if (inCheck(g, m.who))
+		return false;
 
 	{
 		game tg;
@@ -838,13 +848,13 @@ static bool doMoveKCastle(game g, move m, int check) {
 	return true;
 }
 
-static bool doMoveQCastle(game g, move m, int check) {
+static bool doMoveQCastle(game g, move m, bool check) {
 	const u8 rank = m.who == WHITE ? 7 : 0;
 	const i8 kpiece = m.who == WHITE ? WKING : BKING;
 	const i8 rpiece = m.who == WHITE ? WROOK : BROOK;
 
 	if (check) {
-		if (!(g->castle_queen[m.who] && ! inCheck(g, m.who)
+		if (!(g->castle_queen[m.who]
 			&& g->board[rank][0] == rpiece && g->board[rank][1] == EMPTY
 			&& g->board[rank][2] == EMPTY  && g->board[rank][3] == EMPTY
 			&& g->board[rank][4] == kpiece)) {
@@ -852,6 +862,9 @@ static bool doMoveQCastle(game g, move m, int check) {
 			return false;
 		}
 	}
+
+	if (inCheck(g, m.who))
+		return false;
 
 	{
 		game tg;

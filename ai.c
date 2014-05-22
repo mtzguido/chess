@@ -185,7 +185,7 @@ static score negamax_(
 		for (i=0; i<nsucc; i++) {
 			*ng = *g;
 
-			if (!doMove(ng, succs[i], 0))
+			if (!doMove_unchecked(ng, succs[i]))
 				continue;
 
 			stats.nopen++;
