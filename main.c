@@ -206,6 +206,10 @@ int nmoves() {
 
 	for (i=0; i<copts.nmoves; i++) {
 		mark(g);
+
+		if (isFinished(g) != -1)
+			break;
+
 		m = machineMove(g);
 		doMove(g, m, 1);
 		printBoard(g);
