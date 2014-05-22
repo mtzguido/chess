@@ -158,7 +158,7 @@ static score negamax_(
 
 	unsigned ii;
 	best = minScore;
-	ng = galloc();
+	ng = copyGame(g);
 	for (ii = 0; ii < ARRSIZE(gen_funs); ii++) {
 
 		nsucc = gen_funs[ii](g, &succs, curDepth);
@@ -173,19 +173,20 @@ static score negamax_(
 		stats.ngen += nsucc;
 
 		for (i=0; i<nsucc; i++) {
-			*ng = *g;
 
 			if (!doMove_unchecked(ng, succs[i]))
 				continue;
 
 			stats.nopen++;
-
 			nvalid++;
 
 			mark(ng);
 			t = -negamax(ng, maxDepth, curDepth+1,
 				     NULL, -beta, -alpha);
 			unmark(ng);
+
+			/* Ya no necesitamos a ng */
+			*ng = *g;
 
 			if (t > best) {
 				best = t;
@@ -203,6 +204,7 @@ static score negamax_(
 				addon_notify_cut(g, succs[i], curDepth);
 				break;
 			}
+
 		}
 
 		freeSuccs(succs, nsucc);
