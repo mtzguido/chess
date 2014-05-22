@@ -96,13 +96,13 @@ typedef struct game_struct *game;
 #define BQUEEN		(-5)
 #define	BKING		(-6)
 
-#define isEmpty(c)	((c) == 0)
-#define isPawn(c)	(abs(c) == 1)
-#define isKnight(c)	(abs(c) == 2)
-#define isBishop(c)	(abs(c) == 3)
-#define isRook(c)	(abs(c) == 4)
-#define isQueen(c)	(abs(c) == 5)
-#define isKing(c)	(abs(c) == 6)
+#define isEmpty(c)	((c) == EMPTY)
+#define isPawn(c)	((c) == WPAWN   || (c) == BPAWN)
+#define isKnight(c)	((c) == WKNIGHT || (c) == BKNIGHT)
+#define isBishop(c)	((c) == WBISHOP || (c) == BBISHOP)
+#define isRook(c)	((c) == WROOK   || (c) == BROOK)
+#define isQueen(c)	((c) == WQUEEN  || (c) == BQUEEN)
+#define isKing(c)	((c) == WKING   || (c) == BKING)
 #define colorOf(c)	((c)>0)
 
 game startingGame(void);
