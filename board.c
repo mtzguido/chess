@@ -644,6 +644,8 @@ static bool doMoveRegular(game g, move m, int check) {
 		/* No pisar piezas propias */
 		if (own_piece(g, m.R, m.C))
 			return false;
+	} else {
+		assert(isValid(g, m));
 	}
 
 	/* Es válida */
