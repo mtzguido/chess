@@ -418,17 +418,20 @@ int genSuccs(const game g, move **arr_ret) {
 
 	{
 		move m = {0};
-		const int kr = g->turn == WHITE ? 7 : 0;
+		const i8 kr = g->turn == WHITE ? 7 : 0;
+		const i8 rpiece = g->turn == WHITE ? WROOK : BROOK;
 
 		m.who = g->turn;
 		if (g->castle_king[g->turn]
 		 && g->board[kr][5] == EMPTY
-		 && g->board[kr][6] == EMPTY) {
+		 && g->board[kr][6] == EMPTY
+		 && g->board[kr][7] == rpiece) {
 			m.move_type = MOVE_KINGSIDE_CASTLE;
 			addToRet(m, arr, &alen);
 		}
 
 		if (g->castle_queen[g->turn]
+		 && g->board[kr][0] == rpiece
 		 && g->board[kr][1] == EMPTY
 		 && g->board[kr][2] == EMPTY
 		 && g->board[kr][3] == EMPTY) {

@@ -683,13 +683,6 @@ static bool doMoveRegular(game g, move m, bool check) {
 	if (enemy_piece(g, m.R, m.C))
 		g->idlecount = 0;
 
-	if (m.R == (m.who == BLACK ? 7 : 0)) {
-		if (m.C == 0)
-			disable_castle_q(g, other);
-		else if (m.C == 7)
-			disable_castle_k(g, other);
-	}
-
 	/* Movemos */
 	movePiece(g, m.r, m.c, m.R, m.C);
 
