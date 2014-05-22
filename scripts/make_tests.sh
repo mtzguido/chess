@@ -26,7 +26,7 @@ while [ $n -lt $total ]; do
 	n=$((n+1))
 
 	${CHESS_PROG} ${CHESS_ARGS} <wpipe | tee fairylog >bpipe &
-	./chess w 2>&1 >wpipe <bpipe | tee chesslog | grep -E '^RES:' >> FINISHLOG
+	./chess 2>&1 >wpipe <bpipe | tee chesslog | grep -E '^RES:' >> FINISHLOG
 
 	wait # wait for opponent
 
