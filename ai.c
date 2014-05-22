@@ -235,15 +235,7 @@ static score negamax_(
 		addon_notify_return(g, bestmove, maxDepth - curDepth, ret, flag);
 
 out:
-	if (mm != NULL)
-		assert(COPIED);
-
-	if (0 && curDepth == 1) {
-		fprintf(stderr, "depth1: devuelvo %i (nvalid=%i)\n", ret, nvalid);
-		fprintf(stderr, "hash= %" PRIx64 "\n", g->zobrist);
-
-	}
-
+	assert(mm == NULL || COPIED);
 	return ret;
 }
 
