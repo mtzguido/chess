@@ -135,21 +135,11 @@ static score negamax_(
 	__maybe_unused const score beta_orig = beta;
 
 	if (isDraw(g)) {
-		if (mm != NULL) {
-			mm->move_type = -1;
-			COPIED = 1;
-		}
-		assert(mm == NULL);
 		ret = 0;
 		goto out;
 	}
 
 	if (curDepth >= maxDepth && !inCheck(g, g->turn)) {
-		if (mm != NULL) {
-			mm->move_type = -1;
-			COPIED = 1;
-		}
-		assert(mm == NULL);
 		if (g->turn == WHITE)
 			ret = boardEval(g);
 		else
