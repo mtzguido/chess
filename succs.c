@@ -404,22 +404,11 @@ int genSuccs(const game g, move **arr_ret) {
 	arr = malloc(asz * sizeof arr[0]);
 	assert(arr != NULL);
 
-	i = 0;
 	while (pmask) {
-		while (!(pmask & 0xff)) {
-			pmask >>= 8;
-			i+=8;
-		}
+		i = fls(pmask) - 1;
+		pmask &= ~((u64)1 << i);
 
-		while (!(pmask & 0x01)) {
-			pmask >>= 1;
-			i++;
-		}
-
-		pieceSuccs((i8)(i>>3), (i8)(i&7), g, arr, &alen);
-
-		pmask >>= 1;
-		i++;
+		pieceSuccs(i>>3, i&7, g, arr, &alen);
 	}
 
 	castleSuccs(g, arr, &alen);
