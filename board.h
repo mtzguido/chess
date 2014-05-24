@@ -13,14 +13,15 @@
 #define MOVE_QUEENSIDE_CASTLE 2
 
 struct move {
-	u8 who;
-	i8 move_type;
 	/* (r,c) -> (R,C) */
-	i8 r;
-	i8 c;
-	i8 R;
-	i8 C;
-	u8 promote;
+	u8 r:4;
+	u8 c:4;
+	u8 R:4;
+	u8 C:4;
+	u8 promote:4;
+
+	u8 who:1;
+	i8 move_type:3;
 };
 
 typedef struct move move;
@@ -32,10 +33,10 @@ struct game_struct {
 	/* board [1][2] == C2 */
 	piece_t board[8][8];
 	u64 piecemask[2];
-	u8 turn;
-
 	/* Última jugada */
 	move lastmove;
+
+	u8 turn:1;
 
 	/* Estado no visible */
 	u8 idlecount;
