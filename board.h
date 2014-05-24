@@ -146,7 +146,11 @@ static inline bool equalMove(move a, move b) {
 	if (a.move_type != MOVE_REGULAR)
 		return a.move_type == b.move_type;
 
-	return memcmp(&a, &b, sizeof (move)) == 0;
+	return a.r == b.r
+	    && a.R == b.R
+	    && a.c == b.c
+	    && a.C == b.C
+	    && a.promote == b.promote;
 }
 
 #endif
