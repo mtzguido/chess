@@ -41,8 +41,8 @@ struct game_struct {
 	u8 idlecount;
 	bool castle_king[2];
 	bool castle_queen[2];
-	i8 en_passant_x;
-	i8 en_passant_y;
+	i8 en_passant_x:4;
+	i8 en_passant_y:4;
 
 	/* Si se hizo enroque */
 	bool castled[2];
@@ -68,7 +68,7 @@ struct game_struct {
 	 *   endgame, se interpolan luego */
 	int pps_O;
 	int pps_E;
-} __attribute__((packed));
+};
 
 typedef struct game_struct *game;
 
