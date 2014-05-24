@@ -615,7 +615,7 @@ static void setPiece(game g, i8 r, i8 c, piece_t piece) {
 static void movePiece(game g, i8 r, i8 c, i8 R, i8 C) {
 	const piece_t from = g->board[r][c];
 	const piece_t to   = g->board[R][C];
-	const int who = colorOf(from);
+	const int who = g->turn;
 
 	assert(from != EMPTY);
 

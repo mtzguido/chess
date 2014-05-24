@@ -29,46 +29,25 @@ typedef struct move move;
 typedef u8 piece_t;
 
 struct game_struct {
-	/* Tablero */
-	/* board [1][2] == C2 */
 	piece_t board[8][8];
 	u64 piecemask[2];
-	/* Última jugada */
-	move lastmove;
-
+	uint64_t zobrist;
+	int pps_O;
+	int pps_E;
 	u8 turn:1;
+	int pieceScore;
+	int totalScore;
 
-	/* Estado no visible */
+	move lastmove;
 	u8 idlecount;
 	bool castle_king[2];
 	bool castle_queen[2];
 	i8 en_passant_x:4;
 	i8 en_passant_y:4;
-
-	/* Si se hizo enroque */
 	bool castled[2];
-
-	/* Optimizaciones */
-	/*   Zobrist hash */
-	uint64_t zobrist;
-
-	/*   Posicion de los reyes */
 	u8 kingx[2];
 	u8 kingy[2];
-
-	/*   Caches de jaque */
 	i8 inCheck[2];
-	/*     inCheck[who] = -1 -> no conocido
-	 *     inCheck[who] = 0 -> libre
-	 *     inCheck[who] = 1 -> en jaque */
-
-	/*   Cache de score */
-	int pieceScore;
-	int totalScore;
-	/*   Piece scores de opening y
-	 *   endgame, se interpolan luego */
-	int pps_O;
-	int pps_E;
 };
 
 typedef struct game_struct *game;
