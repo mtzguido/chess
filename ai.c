@@ -125,7 +125,7 @@ static score negamax_(
 	move bestmove;
 	const score alpha_orig = alpha;
 
-	if (isDraw(g)) {
+	if (reps(g) > 1 || g->idlecount >= 100) {
 		ret = 0;
 		goto out;
 	}
