@@ -7,7 +7,6 @@
 #include "succs.h"
 
 #include <stdint.h>
-#include <assert.h>
 #include <math.h> /* INFINITY */
 #include <stdio.h>
 #include <assert.h>
@@ -83,8 +82,10 @@ move machineMove(game start) {
 	reset_stats();
 
 	t1 = clock();
-	for (i=1; i<=copts.depth; i++)
-		t = negamax(start, i, 0, &ret, minScore, maxScore);
+	for (i=1; i<copts.depth; i++)
+		negamax(start, i, 0, NULL, minScore, maxScore);
+
+	t = negamax(start, i, 0, &ret, minScore, maxScore);
 	t2 = clock();
 
 	stats.totalopen += stats.nopen;
@@ -112,13 +113,6 @@ static score negamax(
 	return rc1;
 }
 
-static const succgen_t gen_funs[] = {
-#ifdef CFG_SUGG
-	addon_suggest,
-#endif
-	genSuccs_wrap,
-};
-
 static score negamax_(
 		game g, int maxDepth, int curDepth,
 		move *mm, score alpha, score beta) {
@@ -127,12 +121,9 @@ static score negamax_(
 	move *succs = NULL;
 	int i, nsucc;
 	int nvalid = 0;
-	__maybe_unused int COPIED = 0;
 	game ng;
 	move bestmove;
-
 	const score alpha_orig = alpha;
-	__maybe_unused const score beta_orig = beta;
 
 	if (isDraw(g)) {
 		ret = 0;
@@ -148,67 +139,51 @@ static score negamax_(
 		goto out;
 	}
 
-	if (mm == NULL)
-		addon_notify_entry(g, maxDepth - curDepth, &alpha, &beta);
-
-	if (copts.alphabeta && alpha >= beta) {
+	addon_notify_entry(g, maxDepth - curDepth, &alpha, &beta);
+	if (alpha >= beta) {
 		ret = alpha;
 		goto out;
 	}
 
-	unsigned ii;
 	best = minScore;
 	ng = copyGame(g);
-	for (ii = 0; ii < ARRSIZE(gen_funs); ii++) {
 
-		nsucc = gen_funs[ii](g, &succs, curDepth);
+	nsucc = genSuccs_wrap(g, &succs, curDepth);
+	stats.ngen += nsucc;
 
-		if (nsucc == 0) {
-			freeSuccs(succs, nsucc);
+	for (i=0; i<nsucc; i++) {
+		if (!doMove_unchecked(ng, succs[i]))
 			continue;
+
+		stats.nopen++;
+		nvalid++;
+
+		mark(ng);
+		t = -negamax(ng, maxDepth, curDepth+1, NULL, -beta, -alpha);
+		unmark(ng);
+
+		/* Ya no necesitamos a ng */
+		*ng = *g;
+
+		if (t > best) {
+			best = t;
+			bestmove = succs[i];
+			if (mm != NULL)
+				*mm = succs[i];
 		}
 
-		assert(nsucc > 0);
-		assert(succs != NULL);
-		stats.ngen += nsucc;
+		if (t > alpha) {
+			alpha = t;
 
-		for (i=0; i<nsucc; i++) {
-
-			if (!doMove_unchecked(ng, succs[i]))
-				continue;
-
-			stats.nopen++;
-			nvalid++;
-
-			mark(ng);
-			t = -negamax(ng, maxDepth, curDepth+1,
-				     NULL, -beta, -alpha);
-			unmark(ng);
-
-			/* Ya no necesitamos a ng */
-			*ng = *g;
-
-			if (t > best) {
-				best = t;
-				bestmove = succs[i];
-				if (mm != NULL) {
-					*mm = succs[i];
-					COPIED = 1;
-				}
-			}
-
-			if (t > alpha)
-				alpha = t;
-
-			if (copts.alphabeta && beta <= alpha) {
+			if (beta <= alpha) {
 				addon_notify_cut(g, succs[i], curDepth);
 				break;
 			}
-
 		}
 
-		freeSuccs(succs, nsucc);
 	}
+
+	freeSuccs(succs, nsucc);
 	freeGame(ng);
 
 	stats.nbranch += nvalid;
@@ -237,7 +212,6 @@ static score negamax_(
 		addon_notify_return(g, bestmove, maxDepth - curDepth, ret, flag);
 
 out:
-	assert(mm == NULL || COPIED);
 	return ret;
 }
 
