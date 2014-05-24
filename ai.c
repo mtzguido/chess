@@ -283,14 +283,12 @@ static void sortSuccs(game g, move *succs, int n, int depth) {
 }
 
 static void shuffleSuccs(game g, move *succs, int n) {
-	int i, j;
+	int j;
 	move t;
 
-	for (i=0; i<n-1; i++) {
-		j = i + rand() % (n-i);
+	j = rand() % n;
 
-		t = succs[i];
-		succs[i] = succs[j];
-		succs[j] = t;
-	}
+	t = succs[0];
+	succs[0] = succs[j];
+	succs[j] = t;
 }
