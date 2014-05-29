@@ -389,6 +389,8 @@ void pieceSuccs(i8 i, i8 j, const game g, move *arr, int *alen) {
 	case WKING:
 		kingSuccs(i, j, g, arr, alen);
 		break;
+	default:
+		assert(0);
 	}
 }
 
