@@ -226,7 +226,6 @@ void parse_opt(int argc, char **argv) {
 		{ "rand",	no_argument, 0, 'r'},
 		{ "depth",	required_argument, 0, 'd'},
 		{ "no-shuffle",	no_argument, 0, 0x1 },
-		{ "no-alpha-beta", no_argument, 0, 0x2 },
 		{ "black",	no_argument, 0, 'b' },
 		{ 0,0,0,0 }
 	};
@@ -260,9 +259,6 @@ void parse_opt(int argc, char **argv) {
 			break;
 		case 0x1:
 			copts.shuffle = false;
-			break;
-		case 0x2:
-			copts.alphabeta = false;
 			break;
 		}
 	}

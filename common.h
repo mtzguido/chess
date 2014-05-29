@@ -44,7 +44,6 @@ struct opts {
 	int nmoves;
 	int depth;
 	bool shuffle;
-	bool alphabeta;
 	bool black;
 
 	/* Heuristics */
@@ -59,7 +58,6 @@ static const struct opts defopts = {
 	.nmoves = 0,
 	.depth = 6,
 	.shuffle = true,
-	.alphabeta = true,
 	.black = false,
 
 	.heur_trans = true,
