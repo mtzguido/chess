@@ -31,6 +31,7 @@ static int genSuccs_wrap(game g, move **arr, int depth) {
 
 	/* Generar sucesores */
 	n = genSuccs(g, arr);
+	stats.ngen += n;
 
 	/* Mezclarlos si es necesario */
 	if (copts.shuffle)
@@ -99,6 +100,57 @@ move machineMove(game start) {
 	return ret;
 }
 
+void mark2() {}
+
+static score quiesce(game g, score alpha, score beta, int d) {
+	score t;
+
+	int nsucc, i;
+	game ng;
+	move *succs;
+
+	t = boardEval(g);
+
+	if (d > 5)
+		return t;
+
+	if (t >= beta)
+		return beta;
+	if (t > alpha)
+		alpha = t;
+
+	ng = copyGame(g);
+	nsucc = genSuccs(g, &succs);
+	for (i=0; i<nsucc; i++) {
+		if (succs[i].move_type != MOVE_REGULAR)
+			continue;
+
+		if (!enemy_piece(g, succs[i].R, succs[i].C))
+			continue;
+
+		if (!doMove_unchecked(ng, succs[i]))
+			continue;
+
+		mark2();
+
+		t = -quiesce(ng, -beta, -alpha, d+1);
+		*ng = *g;
+
+		if (t > alpha) {
+			if (beta <= alpha)
+				return beta;
+
+			alpha = t;
+		}
+	}
+
+	freeSuccs(succs, nsucc);
+	freeGame(ng);
+
+	return alpha;
+}
+
+
 static score negamax_(
 		game g, int maxDepth, int curDepth,
 		move *mm, score alpha, score beta);
@@ -126,23 +178,22 @@ static score negamax_(
 	move bestmove;
 	const score alpha_orig = alpha;
 
-	if (reps(g) > 1 || g->idlecount >= 100) {
+	if (isDraw(g)) {
 		ret = 0;
 		assert(mm == NULL);
 		goto out;
 	}
 
-	if (curDepth >= maxDepth && !inCheck(g, g->turn)) {
-		if (g->turn == WHITE)
-			ret = boardEval(g);
-		else
-			ret = -boardEval(g);
+	if (inCheck(g, g->turn))
+		maxDepth++;
 
-		assert(mm == NULL);
+	if (curDepth >= maxDepth) {
+		ret = quiesce(g, alpha, beta, 0);
 		goto out;
 	}
+	if (mm == NULL)
+		addon_notify_entry(g, maxDepth - curDepth, &alpha, &beta);
 
-	addon_notify_entry(g, maxDepth - curDepth, &alpha, &beta);
 	if (alpha >= beta) {
 		ret = alpha;
 		assert(mm == NULL);
@@ -153,7 +204,6 @@ static score negamax_(
 	ng = copyGame(g);
 
 	nsucc = genSuccs_wrap(g, &succs, curDepth);
-	stats.ngen += nsucc;
 
 	for (i=0; i<nsucc; i++) {
 		if (!doMove_unchecked(ng, succs[i]))
