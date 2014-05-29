@@ -198,9 +198,11 @@ char charOf(int piece) {
 
 /* No usa info de sucesores */
 bool isDraw(game g) {
-	assert(reps(g) > 0);
+	int r = reps(g);
 
-	return g->idlecount >= 100 || reps(g) >= 3;
+	assert(r > 0);
+
+	return r >= 3 || g->idlecount >= 100;
 }
 
 int isFinished(game g) {
