@@ -86,6 +86,7 @@ move machineMove(game start) {
 		negamax(start, i, 0, NULL, minScore, maxScore);
 
 	t = negamax(start, i, 0, &ret, minScore, maxScore);
+	assert(ret.move_type >= 0);
 	t2 = clock();
 
 	stats.totalopen += stats.nopen;
@@ -127,6 +128,7 @@ static score negamax_(
 
 	if (reps(g) > 1 || g->idlecount >= 100) {
 		ret = 0;
+		assert(mm == NULL);
 		goto out;
 	}
 
@@ -136,12 +138,14 @@ static score negamax_(
 		else
 			ret = -boardEval(g);
 
+		assert(mm == NULL);
 		goto out;
 	}
 
 	addon_notify_entry(g, maxDepth - curDepth, &alpha, &beta);
 	if (alpha >= beta) {
 		ret = alpha;
+		assert(mm == NULL);
 		goto out;
 	}
 
@@ -168,8 +172,10 @@ static score negamax_(
 		if (t > best) {
 			best = t;
 			bestmove = succs[i];
-			if (mm != NULL)
+			if (mm != NULL) {
 				*mm = succs[i];
+				assert(mm->move_type >= 0);
+			}
 		}
 
 		if (t > alpha) {
