@@ -100,8 +100,6 @@ move machineMove(game start) {
 	return ret;
 }
 
-void mark2() {}
-
 static score quiesce(game g, score alpha, score beta, int d) {
 	score t;
 
@@ -132,13 +130,13 @@ static score quiesce(game g, score alpha, score beta, int d) {
 		if (!doMove_unchecked(ng, succs[i]))
 			continue;
 
-		mark2();
+		stats.nopen++;
 
 		t = -quiesce(ng, -beta, -alpha, d+1);
 		*ng = *g;
 
 		if (t > alpha) {
-			if (beta <= alpha) {
+			if (t >= beta) {
 				ret = beta;
 				goto out;
 			}
