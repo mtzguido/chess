@@ -104,9 +104,13 @@ static score quiesce(game g, score alpha, score beta, int d) {
 	score t;
 
 	int nsucc, i;
+	int nvalid;
 	game ng;
 	move *succs;
 	score ret;
+
+	if (isDraw(g))
+		return 0;
 
 	t = boardEval(g);
 
@@ -115,11 +119,13 @@ static score quiesce(game g, score alpha, score beta, int d) {
 
 	if (t >= beta)
 		return beta;
+
 	if (t > alpha)
 		alpha = t;
 
 	ng = copyGame(g);
 	nsucc = genSuccs(g, &succs);
+	nvalid = 0;
 	for (i=0; i<nsucc; i++) {
 		if (succs[i].move_type != MOVE_REGULAR)
 			continue;
@@ -131,8 +137,11 @@ static score quiesce(game g, score alpha, score beta, int d) {
 			continue;
 
 		stats.nopen++;
+		nvalid++;
 
+		mark(ng);
 		t = -quiesce(ng, -beta, -alpha, d+1);
+		unmark(ng);
 		*ng = *g;
 
 		if (t > alpha) {
@@ -145,7 +154,11 @@ static score quiesce(game g, score alpha, score beta, int d) {
 		}
 	}
 
-	ret = alpha;
+	if (nvalid == 0)
+		ret = 0;
+	else
+		ret = alpha;
+
 out:
 	freeSuccs(succs, nsucc);
 	freeGame(ng);
