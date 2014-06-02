@@ -415,7 +415,14 @@ int genSuccs(const game g, move **arr_ret) {
 
 	castleSuccs(g, arr, &alen);
 
-	assert(alen <= asz);
+	if (alen > asz) {
+		fprintf(stderr, " !!!!!! TODO MAL !!!!! \n");
+		fprintf(stderr, " !!!!!! TODO MAL !!!!! \n");
+		printBoard(g);
+		fprintf(stderr, " !!!!!! TODO MAL !!!!! \n");
+		fprintf(stderr, " !!!!!! TODO MAL !!!!! \n");
+		abort();
+	}
 
 	*arr_ret = arr;
 	return alen;
