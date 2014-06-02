@@ -108,6 +108,7 @@ static score quiesce(game g, score alpha, score beta, int d) {
 	int nsucc, i;
 	game ng;
 	move *succs;
+	score ret;
 
 	t = boardEval(g);
 
@@ -137,17 +138,21 @@ static score quiesce(game g, score alpha, score beta, int d) {
 		*ng = *g;
 
 		if (t > alpha) {
-			if (beta <= alpha)
-				return beta;
+			if (beta <= alpha) {
+				ret = beta;
+				goto out;
+			}
 
 			alpha = t;
 		}
 	}
 
+	ret = alpha;
+out:
 	freeSuccs(succs, nsucc);
 	freeGame(ng);
 
-	return alpha;
+	return ret;
 }
 
 
