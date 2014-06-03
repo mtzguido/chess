@@ -113,6 +113,8 @@ static score quiesce(game g, score alpha, score beta, int d) {
 		return 0;
 
 	t = boardEval(g);
+	if (g->turn == BLACK)
+		t = -t;
 
 	if (d > 5)
 		return t;
