@@ -156,7 +156,7 @@ void printBoard(game g) {
 		fputc('\n', stderr);
 	}
 
-	fprintf(stderr, "\n  a b c d e f g h\n");
+	fprintf(stderr, "\n   a b c d e f g h\n");
 	fprintf(stderr, "[ castle_king = %i %i \n", g->castle_king[0], g->castle_king[1]);
 	fprintf(stderr, "  castle_queen = %i %i \n", g->castle_queen[0], g->castle_queen[1]);
 	fprintf(stderr, "  kingx = %i %i \n", g->kingx[0], g->kingx[1]);
