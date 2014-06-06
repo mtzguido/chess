@@ -4,10 +4,10 @@
 #include <stdio.h>
 #include <assert.h>
 
-static inline void addToRet(move m, move *arr, int *len);
-static inline void addToRet_promote(move m, move *arr, int *len);
+static inline void addToRet(move m, struct MS *arr, int *len);
+static inline void addToRet_promote(move m, struct MS *arr, int *len);
 
-void pawnSuccs_w(i8 r, i8 c, const game g, move *arr, int *alen) {
+void pawnSuccs_w(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 	move m = {0};
 	m.who = g->turn;
 	m.move_type = MOVE_REGULAR;
@@ -94,7 +94,7 @@ void pawnSuccs_w(i8 r, i8 c, const game g, move *arr, int *alen) {
 	}
 }
 
-void pawnSuccs_b(i8 r, i8 c, const game g, move *arr, int *alen) {
+void pawnSuccs_b(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 	move m = {0};
 	m.who = g->turn;
 	m.move_type = MOVE_REGULAR;
@@ -181,7 +181,7 @@ void pawnSuccs_b(i8 r, i8 c, const game g, move *arr, int *alen) {
 	}
 }
 
-void knightSuccs(i8 r, i8 c, const game g, move *arr, int *alen) {
+void knightSuccs(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 	const int dr[] = { 2,  2, -2, -2, 1,  1, -1, -1 };
 	const int dc[] = { 1, -1,  1, -1, 2, -2,  2, -2 };
 	unsigned i;
@@ -209,7 +209,7 @@ void knightSuccs(i8 r, i8 c, const game g, move *arr, int *alen) {
 	}
 }
 
-void rookSuccs(i8 r, i8 c, const game g, move *arr, int *alen) {
+void rookSuccs(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 	int R, C;
 
 	move m = {0};
@@ -257,7 +257,7 @@ void rookSuccs(i8 r, i8 c, const game g, move *arr, int *alen) {
 	}
 }
 
-void bishopSuccs(i8 r, i8 c, const game g, move *arr, int *alen) {
+void bishopSuccs(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 	int R, C;
 
 	move m = {0};
@@ -303,7 +303,7 @@ void bishopSuccs(i8 r, i8 c, const game g, move *arr, int *alen) {
 	}
 }
 
-void kingSuccs(i8 r, i8 c, const game g, move *arr, int *alen) {
+void kingSuccs(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 	const int dr[] = {  1, 1,  1, 0, -1, -1, -1, 0  };
 	const int dc[] = { -1, 0,  1, 1,  1,  0, -1, -1 };
 	unsigned i;
@@ -331,12 +331,12 @@ void kingSuccs(i8 r, i8 c, const game g, move *arr, int *alen) {
 	}
 }
 
-void queenSuccs(i8 r, i8 c, const game g, move *arr, int *alen) {
+void queenSuccs(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 	rookSuccs(r, c, g, arr, alen);
 	bishopSuccs(r, c, g, arr, alen);
 }
 
-void castleSuccs(const game g, move *arr, int *alen) {
+void castleSuccs(const game g, struct MS *arr, int *alen) {
 	const piece_t kr = g->turn == WHITE ? 7 : 0;
 	const piece_t rpiece = g->turn == WHITE ? WROOK : BROOK;
 	move m = {0};
@@ -361,7 +361,7 @@ void castleSuccs(const game g, move *arr, int *alen) {
 	}
 }
 
-void pieceSuccs(i8 i, i8 j, const game g, move *arr, int *alen) {
+void pieceSuccs(i8 i, i8 j, const game g, struct MS *arr, int *alen) {
 	const piece_t piece = g->board[i][j];
 
 	switch (piece&7) {
@@ -395,11 +395,11 @@ void pieceSuccs(i8 i, i8 j, const game g, move *arr, int *alen) {
 }
 
 
-int genSuccs(const game g, move **arr_ret) {
+int genSuccs(const game g, struct MS **arr_ret) {
 	int i;
 	int alen, asz;
 	u64 pmask = g->piecemask[g->turn];
-	move *arr;
+	struct MS *arr;
 
 	alen = 0;
 	asz = 100;
@@ -428,12 +428,13 @@ int genSuccs(const game g, move **arr_ret) {
 	return alen;
 }
 
-static inline void addToRet(move m, move *arr, int *len) {
-	arr[*len] = m;
+static inline void addToRet(move m, struct MS *arr, int *len) {
+	arr[*len].m = m;
+	arr[*len].s = -1;
 	(*len)++;
 }
 
-static inline void addToRet_promote(move m, move *arr, int *len) {
+static inline void addToRet_promote(move m, struct MS *arr, int *len) {
 	/*
 	 * Aca agregamos ambos casos si es un peón que promueve.
 	 * es una chanchada, si.
@@ -445,6 +446,6 @@ static inline void addToRet_promote(move m, move *arr, int *len) {
 	addToRet(m, arr, len);
 }
 
-void freeSuccs(move *arr, int len __maybe_unused) {
+void freeSuccs(struct MS *arr, int len __maybe_unused) {
 	free(arr);
 }

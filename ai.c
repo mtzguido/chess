@@ -19,33 +19,48 @@ static const score minScore = -1e7;
 static const score maxScore =  1e7;
 
 
-static void shuffleSuccs(game g, move *succs, int n);
-static void sortSuccs(game g, move *succs, int n, int depth);
+struct stats stats;
+
 static score negamax(game start, int maxDepth, int curDepth,
 			     move *mm, score alpha, score beta);
 
-typedef int (*succgen_t)(game, move**, int);
-
-static int genSuccs_wrap(game g, move **arr, int depth) {
+static int genSuccs_wrap(game g, struct MS **arr, int depth) {
 	int n;
 
 	/* Generar sucesores */
 	n = genSuccs(g, arr);
 	stats.ngen += n;
 
-	/* Mezclarlos si es necesario */
-	if (copts.shuffle)
-		shuffleSuccs(g, *arr, n);
-
-	/* Ordenarlos si es necesario */
-	if (depth < copts.depth - 1)
-		sortSuccs(g, *arr, n, depth);
+	addon_score_succs(g, *arr, n, depth);
 
 	return n;
 }
 
-/* Stats */
-struct stats stats;
+static void sort_succ(game g, struct MS *arr, int i, int len, int depth) {
+	/* Mezclarlos si es necesario */
+	if (copts.shuffle) {
+		int t = rand()%(len-i) + i;
+		struct MS swap;
+		swap = arr[i];
+		arr[i] = arr[t];
+		arr[t] = swap;
+	}
+
+	/* Ordenarlos si es necesario */
+	if (depth < copts.depth - 1) {
+		int j;
+
+		for (j=i+1; j<len; j++) {
+			if (arr[j].s > arr[i].s) {
+				struct MS swap;
+
+				swap = arr[i];
+				arr[i] = arr[j];
+				arr[j] = swap;
+			}
+		}
+	}
+}
 
 void reset_stats() {
 	int i;
@@ -106,7 +121,7 @@ static score quiesce(game g, score alpha, score beta, int d) {
 	int nsucc, i;
 	int nvalid;
 	game ng;
-	move *succs;
+	struct MS *succs;
 	score ret;
 
 	if (isDraw(g))
@@ -129,13 +144,15 @@ static score quiesce(game g, score alpha, score beta, int d) {
 	nsucc = genSuccs(g, &succs);
 	nvalid = 0;
 	for (i=0; i<nsucc; i++) {
-		if (succs[i].move_type != MOVE_REGULAR)
+		sort_succ(g, succs, i, nsucc, d);
+
+		if (succs[i].m.move_type != MOVE_REGULAR)
 			continue;
 
-		if (!enemy_piece(g, succs[i].R, succs[i].C))
+		if (!enemy_piece(g, succs[i].m.R, succs[i].m.C))
 			continue;
 
-		if (!doMove_unchecked(ng, succs[i]))
+		if (!doMove_unchecked(ng, succs[i].m))
 			continue;
 
 		stats.nopen++;
@@ -189,7 +206,7 @@ static score negamax_(
 		move *mm, score alpha, score beta) {
 
 	score t, ret, best;
-	move *succs = NULL;
+	struct MS *succs = NULL;
 	int i, nsucc;
 	int nvalid = 0;
 	game ng;
@@ -224,7 +241,9 @@ static score negamax_(
 	nsucc = genSuccs_wrap(g, &succs, curDepth);
 
 	for (i=0; i<nsucc; i++) {
-		if (!doMove_unchecked(ng, succs[i]))
+		sort_succ(g, succs, i, nsucc, curDepth);
+
+		if (!doMove_unchecked(ng, succs[i].m))
 			continue;
 
 		stats.nopen++;
@@ -239,9 +258,9 @@ static score negamax_(
 
 		if (t > best) {
 			best = t;
-			bestmove = succs[i];
+			bestmove = succs[i].m;
 			if (mm != NULL) {
-				*mm = succs[i];
+				*mm = succs[i].m;
 				assert(mm->move_type >= 0);
 			}
 		}
@@ -250,7 +269,7 @@ static score negamax_(
 			alpha = t;
 
 			if (beta <= alpha) {
-				addon_notify_cut(g, succs[i], curDepth);
+				addon_notify_cut(g, succs[i].m, curDepth);
 				break;
 			}
 		}
@@ -327,42 +346,4 @@ score boardEval(game g) {
 		ret = (ret * (100 - g->idlecount))/32;
 
 	return ret;
-}
-
-static int MS_cmp(const void *_a, const void *_b) {
-	const struct MS *a = _a;
-	const struct MS *b = _b;
-
-	/* Decreciente en score */
-	return b->s - a->s;
-}
-
-static void sortSuccs(game g, move *succs, int n, int depth) {
-	int i;
-	struct MS *ss;
-
-	ss = malloc(n * sizeof (struct MS));
-	for (i=0; i<n; i++) {
-		ss[i].m = succs[i];
-		ss[i].s = 0;
-	}
-
-	addon_score_succs(g, ss, n, depth);
-	qsort(ss, n, sizeof (struct MS), MS_cmp);
-
-	for (i=0; i<n; i++)
-		succs[i] = ss[i].m;
-
-	free(ss);
-}
-
-static void shuffleSuccs(game g, move *succs, int n) {
-	int j;
-	move t;
-
-	j = rand() % n;
-
-	t = succs[0];
-	succs[0] = succs[j];
-	succs[j] = t;
 }

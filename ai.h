@@ -3,8 +3,6 @@
 
 #include "board.h"
 
-
-/* Stats */
 extern struct stats {
 	int depthsn[30];
 	long long nopen;
@@ -15,8 +13,6 @@ extern struct stats {
 } stats;
 
 move machineMove(game start);
-
-typedef int score;
 
 score boardEval(game g);
 

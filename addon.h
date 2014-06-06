@@ -4,11 +4,6 @@
 #include "board.h"
 #include "ai.h"
 
-struct MS {
-	move m;
-	score s;
-};
-
 typedef enum {
 	FLAG_NONE,
 	FLAG_EXACT,

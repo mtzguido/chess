@@ -132,5 +132,11 @@ static inline bool equalMove(move a, move b) {
 	    && a.promote == b.promote;
 }
 
-#endif
+typedef int score;
 
+struct MS {
+	move m;
+	score s;
+};
+
+#endif

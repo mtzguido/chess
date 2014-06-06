@@ -206,7 +206,7 @@ bool isDraw(game g) {
 }
 
 int isFinished(game g) {
-	move *succs;
+	struct MS *succs;
 	int i, n;
 	int r = reps(g);
 	game ng;
@@ -227,7 +227,7 @@ int isFinished(game g) {
 		 * Si hay un sucesor válido,
 		 * el juego no terminó
 		 */
-		if (doMove_unchecked(ng, succs[i])) {
+		if (doMove_unchecked(ng, succs[i].m)) {
 			freeGame(ng);
 			freeSuccs(succs, n);
 			return -1;

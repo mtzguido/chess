@@ -3,7 +3,7 @@
 
 #include "board.h"
 
-int genSuccs(game g, move **arr);
-void freeSuccs(move *arr, int n);
+int genSuccs(game g, struct MS **arr);
+void freeSuccs(struct MS *arr, int n);
 
 #endif

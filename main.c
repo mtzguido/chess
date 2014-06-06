@@ -25,7 +25,7 @@ void checkMove(game g, move m) {
 	game t = galloc();
 	game ng = galloc();
 	int i, nsucc;
-	move *succs;
+	struct MS *succs;
 
 	*ng = *g;
 	__maybe_unused int rc = doMove(ng, m);
@@ -35,7 +35,7 @@ void checkMove(game g, move m) {
 
 	for (i=0; i<nsucc; i++) {
 		*t = *g;
-		if (!doMove(t, succs[i]))
+		if (!doMove(t, succs[i].m))
 			continue;
 
 		if (equalGame(t, ng))
@@ -106,7 +106,7 @@ move playerMove(game g) {
 
 __maybe_unused static void zobrist_test(game b, int d) {
 	mark(b);
-	move *succs;
+	struct MS *succs;
 	int i;
 
 	stats.totalopen++;
@@ -121,7 +121,7 @@ __maybe_unused static void zobrist_test(game b, int d) {
 
 	for (i=0; i<n; i++) {
 		game t = copyGame(b);
-		if (!doMove(t, succs[i]))
+		if (!doMove(t, succs[i].m))
 			continue;
 
 		zobrist_test(t, d+1);
@@ -296,7 +296,7 @@ struct player ai_player =
 };
 
 move random_move(game g) {
-	move *arr;
+	struct MS *arr;
 	int n = genSuccs(g, &arr);
 
 	game ng = copyGame(g);
@@ -304,10 +304,11 @@ move random_move(game g) {
 	do {
 		int i = rand()%n;
 
-		if (doMove(ng, arr[i])) {
+		if (doMove(ng, arr[i].m)) {
+			struct MS temp = arr[i];
 			freeGame(ng);
 			freeSuccs(arr, n);
-			return arr[i];
+			return temp.m;
 		}
 
 		*ng = *g;
