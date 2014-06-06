@@ -49,16 +49,20 @@ static void sort_succ(game g, struct MS *arr, int i, int len, int depth) {
 	/* Ordenarlos si es necesario */
 	if (depth < copts.depth - 1) {
 		int j;
+		int best = i;
+		score s = arr[i].s;
 
 		for (j=i+1; j<len; j++) {
-			if (arr[j].s > arr[i].s) {
-				struct MS swap;
-
-				swap = arr[i];
-				arr[i] = arr[j];
-				arr[j] = swap;
+			if (arr[j].s > s) {
+				best = j;
+				s = arr[j].s;
 			}
 		}
+
+		struct MS swap;
+		swap = arr[best];
+		arr[best] = arr[i];
+		arr[i] = swap;
 	}
 }
 
