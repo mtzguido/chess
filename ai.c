@@ -36,7 +36,7 @@ static int genSuccs_wrap(game g, struct MS **arr, int depth) {
 	return n;
 }
 
-static void sort_succ(game g, struct MS *arr, int i, int len, int depth) {
+static void sort_succ(game g, struct MS *arr, int i, int len, int depth_rem) {
 	/* Mezclarlos si es necesario */
 	if (copts.shuffle) {
 		int t = rand()%(len-i) + i;
@@ -47,7 +47,7 @@ static void sort_succ(game g, struct MS *arr, int i, int len, int depth) {
 	}
 
 	/* Ordenarlos si es necesario */
-	if (depth < copts.depth - 1) {
+	if (depth_rem > 1) {
 		int j;
 		int best = i;
 		score s = arr[i].s;
@@ -148,7 +148,7 @@ static score quiesce(game g, score alpha, score beta, int d) {
 	nsucc = genSuccs(g, &succs);
 	nvalid = 0;
 	for (i=0; i<nsucc; i++) {
-		sort_succ(g, succs, i, nsucc, d);
+		sort_succ(g, succs, i, nsucc, 5-d);
 
 		if (succs[i].m.move_type != MOVE_REGULAR)
 			continue;
@@ -247,7 +247,7 @@ static score negamax_(
 	nsucc = genSuccs_wrap(g, &succs, curDepth);
 
 	for (i=0; i<nsucc; i++) {
-		sort_succ(g, succs, i, nsucc, curDepth);
+		sort_succ(g, succs, i, nsucc, maxDepth - curDepth);
 
 		if (!doMove_unchecked(ng, succs[i].m))
 			continue;
