@@ -912,24 +912,22 @@ static bool doMoveQCastle(game g, move m, bool check) {
 	return true;
 }
 
-static const int __scoreTab[] =
+static const int scoreTab[] =
 {
-	[6+BKING] = -20000,
-	[6+BQUEEN] = -900,
-	[6+BROOK] = -500,
-	[6+BBISHOP] = -330,
-	[6+BKNIGHT] = -320,
-	[6+BPAWN] = -100,
-	[6+0] = 0,
-	[6+WKING] = 20000,
-	[6+WQUEEN] = 900,
-	[6+WROOK] = 500,
-	[6+WBISHOP] = 330,
-	[6+WKNIGHT] = 320,
-	[6+WPAWN] = 100
+	[BKING] = -20000,
+	[BQUEEN] = -900,
+	[BROOK] = -500,
+	[BBISHOP] = -330,
+	[BKNIGHT] = -320,
+	[BPAWN] = -100,
+	[0] = 0,
+	[WKING] = 20000,
+	[WQUEEN] = 900,
+	[WROOK] = 500,
+	[WBISHOP] = 330,
+	[WKNIGHT] = 320,
+	[WPAWN] = 100
 };
-
-static const int * scoreTab = &__scoreTab[6];
 
 static int scoreOf(int piece) {
 	return scoreTab[piece];
