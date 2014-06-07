@@ -57,7 +57,7 @@ static const struct opts defopts = {
 	.mode = normal,
 	.nmoves = 0,
 	.depth = 6,
-	.shuffle = true,
+	.shuffle = false,
 	.black = false,
 
 	.heur_trans = true,
