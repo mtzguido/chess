@@ -153,7 +153,9 @@ static score quiesce(game g, score alpha, score beta, int d) {
 		if (succs[i].m.move_type != MOVE_REGULAR)
 			continue;
 
-		if (!enemy_piece(g, succs[i].m.R, succs[i].m.C))
+		/* Only consider captures and promotions */
+		if (!enemy_piece(g, succs[i].m.R, succs[i].m.C)
+		 && !succs[i].m.promote)
 			continue;
 
 		if (!doMove_unchecked(ng, succs[i].m))
