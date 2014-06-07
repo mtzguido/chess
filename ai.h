@@ -5,7 +5,8 @@
 
 extern struct stats {
 	int depthsn[30];
-	long long nopen;
+	long long nopen_s;
+	long long nopen_q;
 	long long nbranch;
 	long long ngen;
 	long long totalopen;

@@ -47,7 +47,7 @@ static void sort_succ(game g, struct MS *arr, int i, int len, int depth_rem) {
 	}
 
 	/* Ordenarlos si es necesario */
-	if (depth_rem > 1) {
+	if (depth_rem > 2) {
 		int j;
 		int best = i;
 		score s = arr[i].s;
@@ -70,7 +70,8 @@ void reset_stats() {
 	int i;
 
 	n_collision = 0;
-	stats.nopen = 0;
+	stats.nopen_s = 0;
+	stats.nopen_q = 0;
 	stats.ngen = 0;
 	stats.nbranch = 0;
 	for (i = 0; i < 30; i++)
@@ -80,8 +81,8 @@ void reset_stats() {
 void print_stats(score exp, clock_t t1, clock_t t2) {
 	int i;
 
-	fprintf(stderr, "stats: searched %lld nodes in %.3f seconds\n", stats.nopen, 1.0*(t2-t1)/CLOCKS_PER_SEC);
-	fprintf(stderr, "stats: branching aprox: %.3f\n", 1.0 * stats.nbranch / stats.nopen);
+	fprintf(stderr, "stats: searched %lld (%lld) nodes in %.3f seconds\n", stats.nopen_s, stats.nopen_q, 1.0*(t2-t1)/CLOCKS_PER_SEC);
+	fprintf(stderr, "stats: branching aprox: %.3f\n", 1.0 * stats.nbranch / stats.nopen_s);
 	fprintf(stderr, "stats: total nodes generated: %lld\n", stats.ngen);
 	fprintf(stderr, "stats: depth:n_nodes - ");
 	fprintf(stderr, "expected score: %i\n", exp);
@@ -109,7 +110,7 @@ move machineMove(game start) {
 	assert(ret.move_type >= 0);
 	t2 = clock();
 
-	stats.totalopen += stats.nopen;
+	stats.totalopen += stats.nopen_s + stats.nopen_q;
 	stats.totalms += 1000*(t2-t1)/CLOCKS_PER_SEC;
 
 	print_stats(t, t1, t2);
@@ -131,24 +132,23 @@ static score quiesce(game g, score alpha, score beta, int d) {
 	if (isDraw(g))
 		return 0;
 
+	stats.nopen_q++;
+
 	t = boardEval(g);
-	if (g->turn == BLACK)
-		t = -t;
-
-	if (d > 5)
-		return t;
-
 	if (t >= beta)
 		return beta;
 
 	if (t > alpha)
 		alpha = t;
 
+	if (d>3)
+		return t;
+
 	ng = copyGame(g);
-	nsucc = genSuccs(g, &succs);
+	nsucc = genSuccs_wrap(g, &succs, d);
 	nvalid = 0;
 	for (i=0; i<nsucc; i++) {
-		sort_succ(g, succs, i, nsucc, 5-d);
+		sort_succ(g, succs, i, nsucc, 99);
 
 		if (succs[i].m.move_type != MOVE_REGULAR)
 			continue;
@@ -161,7 +161,6 @@ static score quiesce(game g, score alpha, score beta, int d) {
 		if (!doMove_unchecked(ng, succs[i].m))
 			continue;
 
-		stats.nopen++;
 		nvalid++;
 
 		mark(ng);
@@ -232,6 +231,9 @@ static score negamax_(
 		ret = quiesce(g, alpha, beta, 0);
 		goto out;
 	}
+
+	stats.nopen_s++;
+
 	if (mm == NULL)
 		addon_notify_entry(g, maxDepth - curDepth, &alpha, &beta);
 
@@ -252,7 +254,6 @@ static score negamax_(
 		if (!doMove_unchecked(ng, succs[i].m))
 			continue;
 
-		stats.nopen++;
 		nvalid++;
 
 		mark(ng);
@@ -351,5 +352,5 @@ score boardEval(game g) {
 	if (g->idlecount >= 68)
 		ret = (ret * (100 - g->idlecount))/32;
 
-	return ret;
+	return g->turn == WHITE ? ret : -ret;
 }
