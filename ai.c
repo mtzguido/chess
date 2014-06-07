@@ -24,6 +24,18 @@ struct stats stats;
 static score negamax(game start, int maxDepth, int curDepth,
 			     move *mm, score alpha, score beta);
 
+static int genCaps_wrap(game g, struct MS **arr, int depth) {
+	int n;
+
+	/* Generar sucesores */
+	n = genCaps(g, arr);
+	stats.ngen += n;
+
+	addon_score_succs(g, *arr, n, depth);
+
+	return n;
+}
+
 static int genSuccs_wrap(game g, struct MS **arr, int depth) {
 	int n;
 
@@ -120,7 +132,7 @@ move machineMove(game start) {
 	return ret;
 }
 
-static score quiesce(game g, score alpha, score beta, int d) {
+static score quiesce(game g, score alpha, score beta, int curDepth, int maxDepth) {
 	score t;
 
 	int nsucc, i;
@@ -141,22 +153,28 @@ static score quiesce(game g, score alpha, score beta, int d) {
 	if (t > alpha)
 		alpha = t;
 
-	if (d>3)
+	if (curDepth >= maxDepth && !inCheck(g, g->turn))
 		return t;
 
 	ng = copyGame(g);
-	nsucc = genSuccs_wrap(g, &succs, d);
+	nsucc = genCaps_wrap(g, &succs, curDepth);
 	nvalid = 0;
 	for (i=0; i<nsucc; i++) {
-		sort_succ(g, succs, i, nsucc, 99);
+		sort_succ(g, succs, i, nsucc, maxDepth - curDepth);
 
 		if (succs[i].m.move_type != MOVE_REGULAR)
 			continue;
 
 		/* Only consider captures and promotions */
 		if (!enemy_piece(g, succs[i].m.R, succs[i].m.C)
-		 && !succs[i].m.promote)
-			continue;
+		 && !succs[i].m.promote
+		 && !(succs[i].m.R == g->en_passant_x
+			 && succs[i].m.C == g->en_passant_y)) {
+			move m = succs[i].m;
+			printBoard(g);
+			printf("%i %i %i %i\n", m.r, m.c, m.R, m.C);
+			assert(0);
+		}
 
 		if (!doMove_unchecked(ng, succs[i].m))
 			continue;
@@ -164,7 +182,7 @@ static score quiesce(game g, score alpha, score beta, int d) {
 		nvalid++;
 
 		mark(ng);
-		t = -quiesce(ng, -beta, -alpha, d+1);
+		t = -quiesce(ng, -beta, -alpha, curDepth+1, maxDepth);
 		unmark(ng);
 		*ng = *g;
 
@@ -228,7 +246,7 @@ static score negamax_(
 		maxDepth++;
 
 	if (curDepth >= maxDepth) {
-		ret = quiesce(g, alpha, beta, 0);
+		ret = quiesce(g, alpha, beta, curDepth, curDepth+4);
 		goto out;
 	}
 

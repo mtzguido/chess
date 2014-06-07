@@ -4,6 +4,7 @@
 #include "board.h"
 
 int genSuccs(game g, struct MS **arr);
+int genCaps(game g, struct MS **arr);
 void freeSuccs(struct MS *arr, int n);
 
 #endif
