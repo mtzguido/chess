@@ -28,7 +28,7 @@ ifeq (${CONFIG_OWNMEM},y)
 endif
 
 ifeq (${CONFIG_RELEASE},y)
-	CFLAGS += -O99 -fomit-frame-pointer -DNDEBUG
+	CFLAGS += -O2 -DNDEBUG
 else
 	CFLAGS += -g -pg
 	LFLAGS += -pg
