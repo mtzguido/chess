@@ -1,5 +1,6 @@
 #include "board.h"
 #include "succs.h"
+#include "masks.h"
 
 #include <stdio.h>
 #include <assert.h>
@@ -351,7 +352,7 @@ void knightSuccs(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 	}
 }
 
-void rookSuccs(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
+void rookSuccs_col(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 	int R, C;
 
 	move m = {0};
@@ -378,6 +379,16 @@ void rookSuccs(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 		if (enemy_piece(g, R, C))
 			break;
 	}
+}
+
+void rookSuccs_row(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
+	int R, C;
+
+	move m = {0};
+	m.who = g->turn;
+	m.move_type = MOVE_REGULAR;
+	m.r = r;
+	m.c = c;
 
 	C = c;
 	for (R=r+1; R<8; R++) {
@@ -399,7 +410,40 @@ void rookSuccs(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 	}
 }
 
-void bishopSuccs(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
+void rookSuccs(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
+	rookSuccs_row(r, c, g, arr, alen);
+	rookSuccs_col(r, c, g, arr, alen);
+}
+
+static void bishopSuccs_diag1(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
+	int R, C;
+
+	move m = {0};
+	m.who = g->turn;
+	m.move_type = MOVE_REGULAR;
+	m.r = r;
+	m.c = c;
+
+	for (R=r+1, C=c-1; R<8 && C>=0; R++, C--) {
+		if (!own_piece(g, R, C)) {
+			m.R = R; m.C = C;
+			addToRet(m, arr, alen);
+		} else break;
+		if (enemy_piece(g, R, C))
+			break;
+	}
+
+	for (R=r-1, C=c+1; R>=0 && C<8; R--, C++) {
+		if (!own_piece(g, R, C)) {
+			m.R = R; m.C = C;
+			addToRet(m, arr, alen);
+		} else break;
+		if (enemy_piece(g, R, C))
+			break;
+	}
+}
+
+static void bishopSuccs_diag2(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 	int R, C;
 
 	move m = {0};
@@ -417,24 +461,6 @@ void bishopSuccs(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 			break;
 	}
 
-	for (R=r-1, C=c+1; R>=0 && C<8; R--, C++) {
-		if (!own_piece(g, R, C)) {
-			m.R = R; m.C = C;
-			addToRet(m, arr, alen);
-		} else break;
-		if (enemy_piece(g, R, C))
-			break;
-	}
-
-	for (R=r+1, C=c-1; R<8 && C>=0; R++, C--) {
-		if (!own_piece(g, R, C)) {
-			m.R = R; m.C = C;
-			addToRet(m, arr, alen);
-		} else break;
-		if (enemy_piece(g, R, C))
-			break;
-	}
-
 	for (R=r-1, C=c-1; R>=0 && C>=0; R--, C--) {
 		if (!own_piece(g, R, C)) {
 			m.R = R; m.C = C;
@@ -443,6 +469,11 @@ void bishopSuccs(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 		if (enemy_piece(g, R, C))
 			break;
 	}
+}
+
+void bishopSuccs(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
+	bishopSuccs_diag1(r, c, g, arr, alen);
+	bishopSuccs_diag2(r, c, g, arr, alen);
 }
 
 void kingSuccs(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
@@ -506,7 +537,7 @@ void knightCaps(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 	}
 }
 
-void rookCaps(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
+static void rookCaps_row(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 	int R, C;
 
 	move m = {0};
@@ -514,6 +545,9 @@ void rookCaps(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 	m.move_type = MOVE_REGULAR;
 	m.r = r;
 	m.c = c;
+
+	if (!(g->piecemask[flipTurn(g->turn)] & rowmask[r]))
+		return;
 
 	R = r;
 	for (C=c+1; C<8; C++) {
@@ -535,6 +569,19 @@ void rookCaps(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 			break;
 		}
 	}
+}
+
+static void rookCaps_col(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
+	int R, C;
+
+	move m = {0};
+	m.who = g->turn;
+	m.move_type = MOVE_REGULAR;
+	m.r = r;
+	m.c = c;
+
+	if (!(g->piecemask[flipTurn(g->turn)] & colmask[c]))
+		return;
 
 	C = c;
 	for (R=r+1; R<8; R++) {
@@ -558,7 +605,12 @@ void rookCaps(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 	}
 }
 
-void bishopCaps(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
+void rookCaps(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
+	rookCaps_row(r, c, g, arr, alen);
+	rookCaps_col(r, c, g, arr, alen);
+}
+
+void bishopCaps_diag1(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 	int R, C;
 
 	move m = {0};
@@ -567,7 +619,10 @@ void bishopCaps(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 	m.r = r;
 	m.c = c;
 
-	for (R=r+1, C=c+1; R<8 && C<8; R++, C++) {
+	if (!(g->piecemask[flipTurn(g->turn)] & diag1mask[r+c]))
+		return;
+
+	for (R=r+1, C=c-1; R<8 && C>=0; R++, C--) {
 		if (enemy_piece(g, R, C)) {
 			m.R = R; m.C = C;
 			addToRet(m, arr, alen);
@@ -586,8 +641,21 @@ void bishopCaps(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 			break;
 		}
 	}
+}
 
-	for (R=r+1, C=c-1; R<8 && C>=0; R++, C--) {
+void bishopCaps_diag2(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
+	int R, C;
+
+	move m = {0};
+	m.who = g->turn;
+	m.move_type = MOVE_REGULAR;
+	m.r = r;
+	m.c = c;
+
+	if (!(g->piecemask[flipTurn(g->turn)] & diag2mask[c-r+7]))
+		return;
+
+	for (R=r+1, C=c+1; R<8 && C<8; R++, C++) {
 		if (enemy_piece(g, R, C)) {
 			m.R = R; m.C = C;
 			addToRet(m, arr, alen);
@@ -606,6 +674,11 @@ void bishopCaps(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 			break;
 		}
 	}
+}
+
+void bishopCaps(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
+	bishopCaps_diag1(r, c, g, arr, alen);
+	bishopCaps_diag2(r, c, g, arr, alen);
 }
 
 void kingCaps(i8 r, i8 c, const game g, struct MS *arr, int *alen) {

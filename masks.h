@@ -1,7 +1,7 @@
 #ifndef __MASKS_H__
 #define __MASKS_H__
 
-u64 rowmask[8] = {
+static const u64 rowmask[8] = {
 	0x00000000000000ff,
 	0x000000000000ff00,
 	0x0000000000ff0000,
@@ -12,7 +12,7 @@ u64 rowmask[8] = {
 	0xff00000000000000,
 };
 
-u64 colmask[8] = {
+static const u64 colmask[8] = {
 	0x0101010101010101,
 	0x0202020202020202,
 	0x0404040404040404,
@@ -24,7 +24,7 @@ u64 colmask[8] = {
 };
 
 /* NE to SW */
-u64 diag1mask[15] = {
+static const u64 diag1mask[15] = {
 	0x0000000000000001,
 	0x0000000000000102,
 	0x0000000000010204,
@@ -43,7 +43,7 @@ u64 diag1mask[15] = {
 };
 
 /* NW to SE */
-u64 diag2mask[15] = {
+static const u64 diag2mask[15] = {
 	0x0100000000000000,
 	0x0201000000000000,
 	0x0402010000000000,
@@ -61,7 +61,7 @@ u64 diag2mask[15] = {
 	0x0000000000000080,
 };
 
-u64 dangermask[64] = {
+static const u64 dangermask[64] = {
 	0x81412111090707ff,
 	0x02824222120f0fff,
 	0x04048444241f1fff,
