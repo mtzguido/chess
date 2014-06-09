@@ -7,6 +7,13 @@
 #include "addon_trivial.h"
 
 static inline void start_all_addons() {
+	static int done;
+
+	if (done)
+		return;
+
+	done = 1;
+
 	if (copts.heur_trans)
 		addon_trans_init();
 
