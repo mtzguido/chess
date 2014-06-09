@@ -106,7 +106,7 @@ void print_stats(score exp, clock_t t1, clock_t t2) {
 }
 
 move machineMove(game start) {
-	move ret;
+	move ret = {0};
 	score t = 0;
 	clock_t t1,t2;
 	int i;
@@ -118,7 +118,7 @@ move machineMove(game start) {
 	for (i=1; i<copts.depth; i++)
 		negamax(start, i, 0, NULL, minScore, maxScore);
 
-	t = negamax(start, i, 0, &ret, minScore, maxScore);
+	t = negamax(start, copts.depth, 0, &ret, minScore, maxScore);
 	assert(ret.move_type >= 0);
 	t2 = clock();
 
@@ -165,16 +165,11 @@ static score quiesce(game g, score alpha, score beta, int curDepth, int maxDepth
 		if (succs[i].m.move_type != MOVE_REGULAR)
 			continue;
 
-		/* Only consider captures and promotions */
-		if (!enemy_piece(g, succs[i].m.R, succs[i].m.C)
-		 && !succs[i].m.promote
-		 && !(succs[i].m.R == g->en_passant_x
-			 && succs[i].m.C == g->en_passant_y)) {
-			move m = succs[i].m;
-			printBoard(g);
-			printf("%i %i %i %i\n", m.r, m.c, m.R, m.C);
-			assert(0);
-		}
+		/* We only consider captures and promotions */
+		assert(enemy_piece(g, succs[i].m.R, succs[i].m.C)
+				|| succs[i].m.promote
+				|| (succs[i].m.R == g->en_passant_x
+					&& succs[i].m.C == g->en_passant_y));
 
 		if (!doMove_unchecked(ng, succs[i].m))
 			continue;
@@ -233,8 +228,10 @@ static score negamax_(
 	int i, nsucc;
 	int nvalid = 0;
 	game ng;
-	move bestmove;
+	move bestmove = {0};
 	const score alpha_orig = alpha;
+
+	bestmove.move_type = -1;
 
 	if (isDraw(g)) {
 		ret = 0;
@@ -286,7 +283,6 @@ static score negamax_(
 			bestmove = succs[i].m;
 			if (mm != NULL) {
 				*mm = succs[i].m;
-				assert(mm->move_type >= 0);
 			}
 		}
 
@@ -326,7 +322,7 @@ static score negamax_(
 			flag = FLAG_EXACT;
 	}
 
-	if (maxDepth - curDepth > 1)
+	if (maxDepth - curDepth > 1 && bestmove.move_type != -1)
 		addon_notify_return(g, bestmove, maxDepth - curDepth, ret, flag);
 
 out:

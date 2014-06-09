@@ -225,7 +225,7 @@ void parse_opt(int argc, char **argv) {
 		{ "self",	no_argument, 0, 's'},
 		{ "rand",	no_argument, 0, 'r'},
 		{ "depth",	required_argument, 0, 'd'},
-		{ "no-shuffle",	no_argument, 0, 0x1 },
+		{ "shuffle",	no_argument, 0, 0x1 },
 		{ "black",	no_argument, 0, 'b' },
 		{ 0,0,0,0 }
 	};
@@ -258,7 +258,7 @@ void parse_opt(int argc, char **argv) {
 			}
 			break;
 		case 0x1:
-			copts.shuffle = false;
+			copts.shuffle = true;
 			break;
 		}
 	}

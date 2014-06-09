@@ -10,27 +10,13 @@
 #include "board.h"
 #include "zobrist.h"
 #include "ztable.h"
-#include "ai.h" // BORRAR!!
+#include "ai.h"
 #include "succs.h"
 
 char charOf(int piece);
 
 static int scoreOf(int piece);
 static int absoluteScoreOf(int piece);
-
-void pr_board(game g) {
-	int i;
-	fprintf(stderr, "BOARD: [");
-	for(i=0; i<64; i++)
-		fprintf(stderr, "%i,", g->board[i/8][i%8]);
-	fprintf(stderr, "]\n");
-}
-
-inline static int sign(int a) {
-	if (a > 0) return 1;
-	if (a < 0) return -1;
-	return 0;
-}
 
 #if 1
 static const struct game_struct

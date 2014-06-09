@@ -742,7 +742,7 @@ int __genSuccs(const game g, struct MS **arr_ret, movegen_t fun) {
 
 	alen = 0;
 	asz = 100;
-	arr = malloc(asz * sizeof arr[0]);
+	arr = calloc(asz, sizeof arr[0]);
 	assert(arr != NULL);
 
 	while (pmask) {
