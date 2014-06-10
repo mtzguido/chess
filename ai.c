@@ -147,6 +147,7 @@ static score quiesce(game g, score alpha, score beta, int curDepth, int maxDepth
 	stats.nopen_q++;
 
 	t = boardEval(g);
+
 	if (t >= beta)
 		return beta;
 
@@ -192,7 +193,7 @@ static score quiesce(game g, score alpha, score beta, int curDepth, int maxDepth
 	}
 
 	if (nvalid == 0)
-		ret = 0;
+		ret = t;
 	else
 		ret = alpha;
 
@@ -203,23 +204,7 @@ out:
 	return ret;
 }
 
-
-static score negamax_(
-		game g, int maxDepth, int curDepth,
-		move *mm, score alpha, score beta);
-
 static score negamax(
-		game g, int maxDepth, int curDepth,
-		move *mm, score alpha, score beta) {
-	score rc1 = negamax_(g, maxDepth, curDepth, mm, alpha, beta);
-
-	/* Wrap de negamax, para debug */
-	/* printf("mm (%i/%i) (a=%i, b=%i) returns %i\n", curDepth, maxDepth, alpha, beta, rc); */
-
-	return rc1;
-}
-
-static score negamax_(
 		game g, int maxDepth, int curDepth,
 		move *mm, score alpha, score beta) {
 
@@ -228,10 +213,8 @@ static score negamax_(
 	int i, nsucc;
 	int nvalid = 0;
 	game ng;
-	move bestmove = {0};
+	int bestmove = -1;
 	const score alpha_orig = alpha;
-
-	bestmove.move_type = -1;
 
 	if (isDraw(g)) {
 		ret = 0;
@@ -280,22 +263,21 @@ static score negamax_(
 
 		if (t > best) {
 			best = t;
-			bestmove = succs[i].m;
-			if (mm != NULL) {
-				*mm = succs[i].m;
-			}
+			bestmove = i;
 		}
 
-		if (t > alpha) {
+		if (t > alpha)
 			alpha = t;
 
-			if (beta <= alpha) {
-				addon_notify_cut(g, succs[i].m, curDepth);
-				break;
-			}
+		if (alpha >= beta) {
+			ret = best;
+			addon_notify_cut(g, succs[i].m, curDepth);
+			break;
 		}
-
 	}
+
+	if (bestmove != -1 && mm != NULL)
+		*mm = succs[bestmove].m;
 
 	freeSuccs(succs, nsucc);
 	freeGame(ng);
@@ -322,8 +304,9 @@ static score negamax_(
 			flag = FLAG_EXACT;
 	}
 
-	if (maxDepth - curDepth > 1 && bestmove.move_type != -1)
-		addon_notify_return(g, bestmove, maxDepth - curDepth, ret, flag);
+	if (maxDepth - curDepth > 1 && bestmove != -1)
+		addon_notify_return(g, succs[bestmove].m,
+				    maxDepth - curDepth, ret, flag);
 
 out:
 	return ret;
