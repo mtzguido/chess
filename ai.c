@@ -316,30 +316,128 @@ static int pieceScore(game g) {
 	int x = g->totalScore - 40000;
 	int pps = (x*(g->pps_O - g->pps_E))/8000 + g->pps_E;
 
-	return g->pieceScore  + pps;
+	return g->pieceScore + pps;
+}
+
+
+static score eval_wpawn(int i, int j, int pawn_rank[2][10]) {
+	score ret = 0;
+
+	if (pawn_rank[WHITE][j+1] > i)
+		ret += DOUBLED_PAWN;
+
+	if (pawn_rank[WHITE][j] == 0
+			&& pawn_rank[WHITE][j+2] == 0)
+		ret += ISOLATED_PAWN;
+
+	if (pawn_rank[WHITE][j] < i &&
+			pawn_rank[WHITE][j+2] < i)
+		ret += BACKWARDS_PAWN;
+
+	if (pawn_rank[BLACK][j] >= i &&
+			pawn_rank[BLACK][j+1] >= i &&
+			pawn_rank[BLACK][j+2] >= i)
+		ret += (7 - i) * PASSED_PAWN;
+
+	return ret;
+}
+
+static score eval_bpawn(int i, int j, int pawn_rank[2][10]) {
+	score ret = 0;
+
+	if (pawn_rank[BLACK][j+1] < i)
+		ret += DOUBLED_PAWN;
+
+	if (pawn_rank[BLACK][j] == 0
+			&& pawn_rank[BLACK][j+2] == 0)
+		ret += ISOLATED_PAWN;
+
+	if (pawn_rank[BLACK][j] > i &&
+			pawn_rank[BLACK][j+2] > i)
+		ret += BACKWARDS_PAWN;
+
+	if (pawn_rank[WHITE][j] <= i &&
+			pawn_rank[WHITE][j+1] <= i &&
+			pawn_rank[WHITE][j+2] <= i)
+		ret += i * PASSED_PAWN;
+
+	return ret;
 }
 
 score boardEval(game g) {
-	score ret = 0;
+	int i, j;
+	score score = pieceScore(g);
+	int pawn_rank[2][10];
 
-	ret = pieceScore(g);
+	for (i=0; i<10; i++) {
+		pawn_rank[WHITE][i] = 0;
+		pawn_rank[BLACK][i] = 7;
+	}
+
+	/*
+	 * Primera pasada, llenamos pawn_rank con el peon
+	 * menos avanzado de cada lado.
+	 */
+	for (i=0; i<8; i++) {
+		for (j=0; j<8; j++) {
+			piece_t piece = g->board[i][j];
+
+			if (piece == WPAWN) {
+				if (pawn_rank[WHITE][j+1] < i)
+					pawn_rank[WHITE][j+1] = i;
+			} else if (piece == BPAWN) {
+				if (pawn_rank[BLACK][j+1] > i)
+					pawn_rank[BLACK][j+1] = i;
+			}
+		}
+	}
+
+	/*
+	 * Segunda pasada. Con la información de los peones
+	 * evaluamos filas abiertas y status de peones
+	 */
+	for (i=0; i<8; i++) {
+		for (j=0; j<8; j++) {
+			piece_t piece = g->board[i][j];
+
+			if (piece == WPAWN) {
+				score += eval_wpawn(i, j, pawn_rank);
+			} else if (piece == BPAWN) {
+				score -= eval_bpawn(i, j, pawn_rank);
+			} else if (piece == WROOK) {
+				if (pawn_rank[WHITE][j+1] == 0) {
+					if (pawn_rank[BLACK][j+1] == 7)
+						score += ROOK_OPEN_FILE;
+					else
+						score += ROOK_SEMI_OPEN_FILE;
+				}
+			} else if (piece == BROOK) {
+				if (pawn_rank[BLACK][j+1] == 7) {
+					if (pawn_rank[WHITE][j+1] == 0)
+						score -= ROOK_OPEN_FILE;
+					else
+						score -= ROOK_SEMI_OPEN_FILE;
+				}
+			}
+		}
+	}
 
 	if (!g->castled[WHITE]) {
 		if (!g->castle_king[WHITE] && !g->castle_queen[WHITE])
-			ret -= 15;
+			score -= 15;
 		else if (!g->castle_king[WHITE])
-			ret -= 12;
+			score -= 12;
 		else if (!g->castle_queen[WHITE])
-			ret -= 8;
+			score -= 8;
 	}
 
 	if (!g->castled[BLACK]) {
 		if (!g->castle_king[BLACK] && !g->castle_queen[BLACK])
-			ret += 15;
+			score += 15;
 		else if (!g->castle_king[BLACK])
-			ret += 12;
+			score += 12;
 		else if (!g->castle_queen[BLACK])
-			ret += 8;
+			score += 8;
 	}
 
 	/*
@@ -347,7 +445,7 @@ score boardEval(game g) {
 	 * muchos movimientos idle
 	 */
 	if (g->idlecount >= 68)
-		ret = (ret * (100 - g->idlecount))/32;
+		score = (score * (100 - g->idlecount))/32;
 
-	return g->turn == WHITE ? ret : -ret;
+	return g->turn == WHITE ? score : -score;
 }

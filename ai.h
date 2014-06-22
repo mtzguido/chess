@@ -17,4 +17,11 @@ move machineMove(game start);
 
 score boardEval(game g);
 
+#define ROOK_OPEN_FILE		15
+#define ROOK_SEMI_OPEN_FILE	10
+#define DOUBLED_PAWN		(-10)
+#define ISOLATED_PAWN		(-20)
+#define BACKWARDS_PAWN		(-8)
+#define PASSED_PAWN		20
+
 #endif
