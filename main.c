@@ -226,6 +226,7 @@ void parse_opt(int argc, char **argv) {
 		{ "rand",	no_argument, 0, 'r'},
 		{ "depth",	required_argument, 0, 'd'},
 		{ "shuffle",	no_argument, 0, 0x1 },
+		{ "ai-vs-rand",	no_argument, 0, 0x2 },
 		{ "black",	no_argument, 0, 'b' },
 		{ 0,0,0,0 }
 	};
@@ -259,6 +260,9 @@ void parse_opt(int argc, char **argv) {
 			break;
 		case 0x1:
 			copts.shuffle = true;
+			break;
+		case 0x2:
+			copts.mode = ai_vs_rand;
 			break;
 		}
 	}
@@ -349,6 +353,9 @@ int main(int argc, char **argv) {
 		else
 			rc = match(random_player, ui_player);
 
+		break;
+	case ai_vs_rand:
+		rc = match(ai_player, random_player);
 		break;
 	}
 
