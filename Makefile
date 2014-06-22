@@ -30,8 +30,8 @@ endif
 ifeq (${CONFIG_RELEASE},y)
 	CFLAGS += -O99 -DNDEBUG
 else
-	CFLAGS += -g -pg -O1
-	LFLAGS += -pg -O1
+	CFLAGS += -g -pg
+	LFLAGS += -pg
 endif
 
 
