@@ -312,7 +312,9 @@ static score negamax(
 		flag = FLAG_EXACT;
 		assert(mm == NULL);
 	} else {
-		ret = best;
+		assert(bestmove != -1);
+
+		ret = alpha;
 
 		if (best <= alpha_orig)
 			flag = FLAG_UPPER_BOUND;
