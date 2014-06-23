@@ -452,6 +452,8 @@ score boardEval(game g) {
 			score -= 12;
 		else if (!g->castle_queen[WHITE])
 			score -= 8;
+		else
+			score -= 5;
 	}
 
 	if (!g->castled[BLACK]) {
@@ -461,6 +463,8 @@ score boardEval(game g) {
 			score += 12;
 		else if (!g->castle_queen[BLACK])
 			score += 8;
+		else
+			score += 5;
 	}
 
 	/*
