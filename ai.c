@@ -18,7 +18,6 @@
 static const score minScore = -1e7;
 static const score maxScore =  1e7;
 
-
 struct stats stats;
 
 static score negamax(game start, int maxDepth, int curDepth,
@@ -76,6 +75,8 @@ static void sort_succ(game g, struct MS *arr, int i, int len, int depth_rem) {
 		arr[best] = arr[i];
 		arr[i] = swap;
 	}
+
+	assert(arr[i].m.move_type >= 0);
 }
 
 void reset_stats() {
@@ -93,33 +94,39 @@ void reset_stats() {
 void print_stats(score exp, clock_t t1, clock_t t2) {
 	int i;
 
-	fprintf(stderr, "stats: searched %lld (%lld) nodes in %.3f seconds\n", stats.nopen_s, stats.nopen_q, 1.0*(t2-t1)/CLOCKS_PER_SEC);
-	fprintf(stderr, "stats: branching aprox: %.3f\n", 1.0 * stats.nbranch / stats.nopen_s);
+	fprintf(stderr, "stats: searched %lld (%lld) nodes in %.3f seconds\n",
+			stats.nopen_s, stats.nopen_q,
+			1.0*(t2-t1)/CLOCKS_PER_SEC);
+	fprintf(stderr, "stats: branching aprox: %.3f\n",
+			1.0 * stats.nbranch / stats.nopen_s);
 	fprintf(stderr, "stats: total nodes generated: %lld\n", stats.ngen);
 	fprintf(stderr, "stats: depth:n_nodes - ");
 	fprintf(stderr, "expected score: %i\n", exp);
+
 	for (i = 0; stats.depthsn[i] != 0; i++) 
 		fprintf(stderr, "%i:%i, ", i, stats.depthsn[i]);
 
 	fprintf(stderr, "\n");
-
 }
 
 move machineMove(game start) {
 	move ret = {0};
 	score t = 0;
 	clock_t t1,t2;
-	int i;
+
+	ret.move_type = -1;
 
 	addon_reset();
 	reset_stats();
 
 	t1 = clock();
-	for (i=1; i<copts.depth; i++)
-		negamax(start, i, 0, NULL, minScore, maxScore);
+//	int i;
+//	for (i=1; i<copts.depth; i++)
+//		negamax(start, i, 0, NULL, minScore, maxScore);
 
 	t = negamax(start, copts.depth, 0, &ret, minScore, maxScore);
 	assert(ret.move_type >= 0);
+	assert(ret.who == start->turn);
 	t2 = clock();
 
 	stats.totalopen += stats.nopen_s + stats.nopen_q;
@@ -226,6 +233,11 @@ static score negamax(
 		maxDepth++;
 
 	if (curDepth >= maxDepth) {
+		/*
+		 * Corte por profundidad, hacemos búsqueda por quietud, para
+		 * mejorar nuestra evaluación de tablero
+		 */
+		assert(mm == NULL);
 		ret = quiesce(g, alpha, beta, curDepth, curDepth+4);
 		goto out;
 	}
@@ -293,6 +305,7 @@ static score negamax(
 			ret = 0; /* Stalemate */
 
 		flag = FLAG_EXACT;
+		assert(mm == NULL);
 	} else {
 		ret = best;
 
@@ -302,13 +315,18 @@ static score negamax(
 			flag = FLAG_LOWER_BOUND;
 		else
 			flag = FLAG_EXACT;
+
+		if (maxDepth - curDepth > 1) {
+			move trucho = {0};
+			addon_notify_return(g, trucho, maxDepth - curDepth, ret, flag);
+		}
 	}
 
-	if (maxDepth - curDepth > 1 && bestmove != -1)
-		addon_notify_return(g, succs[bestmove].m,
-				    maxDepth - curDepth, ret, flag);
 
 out:
+	if (mm)
+		assert(mm->move_type >= 0);
+
 	return ret;
 }
 
