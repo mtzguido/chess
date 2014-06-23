@@ -120,9 +120,9 @@ move machineMove(game start) {
 	reset_stats();
 
 	t1 = clock();
-//	int i;
-//	for (i=1; i<copts.depth; i++)
-//		negamax(start, i, 0, NULL, minScore, maxScore);
+	int i;
+	for (i=1; i<copts.depth; i++)
+		negamax(start, i, 0, NULL, minScore, maxScore);
 
 	t = negamax(start, copts.depth, 0, &ret, minScore, maxScore);
 	assert(ret.move_type >= 0);
@@ -211,9 +211,8 @@ out:
 	return ret;
 }
 
-static score negamax(
-		game g, int maxDepth, int curDepth,
-		move *mm, score alpha, score beta) {
+static score negamax(game g, int maxDepth, int curDepth,
+		     move *mm, score alpha, score beta) {
 
 	score t, ret, best;
 	struct MS *succs = NULL;
@@ -221,6 +220,7 @@ static score negamax(
 	int nvalid = 0;
 	game ng;
 	int bestmove = -1;
+	move bestmove_saved;
 	const score alpha_orig = alpha;
 
 	if (isDraw(g)) {
@@ -238,7 +238,7 @@ static score negamax(
 		 * mejorar nuestra evaluación de tablero
 		 */
 		assert(mm == NULL);
-		ret = quiesce(g, alpha, beta, curDepth, curDepth+4);
+		ret = quiesce(g, alpha, beta, curDepth, curDepth);
 		goto out;
 	}
 
@@ -293,15 +293,15 @@ static score negamax(
 		}
 	}
 
+	bestmove_saved = succs[bestmove].m;
 	if (bestmove != -1 && mm != NULL)
-		*mm = succs[bestmove].m;
+		*mm = bestmove_saved;
 
 	freeSuccs(succs, nsucc);
 	freeGame(ng);
 
 	stats.nbranch += nvalid;
 
-	flag_t flag;
 
 	if (nvalid == 0) {
 		if (inCheck(g, g->turn))
@@ -309,12 +309,18 @@ static score negamax(
 		else
 			ret = 0; /* Stalemate */
 
-		flag = FLAG_EXACT;
 		assert(mm == NULL);
 	} else {
-		assert(bestmove != -1);
+		flag_t flag;
 
-		ret = alpha;
+		assert(bestmove != -1);
+		/*
+		 * Devolver alpha o best es lo mismo (o son ambos menores o iguales
+		 * a alpha_orig o son iguales) pero en la TT debemos guardar ${WHAT}
+		 * porque ${REASON}
+		 */
+		assert(best == alpha || (best < alpha_orig && alpha == alpha_orig));
+		ret = best;
 
 		if (best <= alpha_orig)
 			flag = FLAG_UPPER_BOUND;
@@ -324,11 +330,10 @@ static score negamax(
 			flag = FLAG_EXACT;
 
 		if (maxDepth - curDepth > 1) {
-			move trucho = {0};
-			addon_notify_return(g, trucho, maxDepth - curDepth, ret, flag);
+			addon_notify_return(g, bestmove_saved,
+					    maxDepth - curDepth, ret, flag);
 		}
 	}
-
 
 out:
 	if (mm)
@@ -390,9 +395,16 @@ static score eval_bpawn(int i, int j, int pawn_rank[2][10]) {
 }
 
 score boardEval(game g) {
-	int i, j;
-	score score = pieceScore(g);
+	static const score castle_points[2][2] =
+	{
+		{ 15, 12 },
+		{ 8,  5 },
+	};
+
+	int i;
+	u64 pmask;
 	int pawn_rank[2][10];
+	score score = pieceScore(g);
 
 	for (i=0; i<10; i++) {
 		pawn_rank[WHITE][i] = 0;
@@ -403,17 +415,25 @@ score boardEval(game g) {
 	 * Primera pasada, llenamos pawn_rank con el peon
 	 * menos avanzado de cada lado.
 	 */
-	for (i=0; i<8; i++) {
-		for (j=0; j<8; j++) {
-			piece_t piece = g->board[i][j];
+	pmask = g->piecemask[g->turn];
+	while (pmask) {
+		i = fls(pmask) - 1;
+		pmask &= ~((u64)1 << i);
 
-			if (piece == WPAWN) {
-				if (pawn_rank[WHITE][j+1] < i)
-					pawn_rank[WHITE][j+1] = i;
-			} else if (piece == BPAWN) {
-				if (pawn_rank[BLACK][j+1] > i)
-					pawn_rank[BLACK][j+1] = i;
-			}
+		const int r = i >> 3;
+		const int c = i & 7;
+		const piece_t piece = g->board[r][c];
+
+		switch (piece) {
+		case WPAWN: 
+			if (pawn_rank[WHITE][c+1] < i)
+				pawn_rank[WHITE][c+1] = i;
+			break;
+
+		case BPAWN:
+			if (pawn_rank[BLACK][c+1] > i)
+				pawn_rank[BLACK][c+1] = i;
+			break;
 		}
 	}
 
@@ -421,52 +441,49 @@ score boardEval(game g) {
 	 * Segunda pasada. Con la información de los peones
 	 * evaluamos filas abiertas y status de peones
 	 */
-	for (i=0; i<8; i++) {
-		for (j=0; j<8; j++) {
-			piece_t piece = g->board[i][j];
+	pmask = g->piecemask[g->turn];
+	while (pmask) {
+		i = fls(pmask) - 1;
+		pmask &= ~((u64)1 << i);
 
-			if (piece == WPAWN) {
-				score += eval_wpawn(i, j, pawn_rank);
-			} else if (piece == BPAWN) {
-				score -= eval_bpawn(i, j, pawn_rank);
-			} else if (piece == WROOK) {
-				if (pawn_rank[WHITE][j+1] == 0) {
-					if (pawn_rank[BLACK][j+1] == 7)
-						score += ROOK_OPEN_FILE;
-					else
-						score += ROOK_SEMI_OPEN_FILE;
-				}
-			} else if (piece == BROOK) {
-				if (pawn_rank[BLACK][j+1] == 7) {
-					if (pawn_rank[WHITE][j+1] == 0)
-						score -= ROOK_OPEN_FILE;
-					else
-						score -= ROOK_SEMI_OPEN_FILE;
-				}
+		const int r = i >> 3;
+		const int c = i & 7;
+		const piece_t piece = g->board[r][c];
+
+		switch (piece) {
+		case WPAWN:
+			score += eval_wpawn(r, c, pawn_rank);
+			break;
+		case BPAWN:
+			score -= eval_bpawn(r, c, pawn_rank);
+			break;
+		case WROOK:
+			if (pawn_rank[WHITE][c+1] == 0) {
+				if (pawn_rank[BLACK][c+1] == 7)
+					score += ROOK_OPEN_FILE;
+				else
+					score += ROOK_SEMI_OPEN_FILE;
 			}
+			break;
+		case BROOK:
+			if (pawn_rank[BLACK][c+1] == 7) {
+				if (pawn_rank[WHITE][c+1] == 0)
+					score -= ROOK_OPEN_FILE;
+				else
+					score -= ROOK_SEMI_OPEN_FILE;
+			}
+			break;
 		}
 	}
 
 	if (!g->castled[WHITE]) {
-		if (!g->castle_king[WHITE] && !g->castle_queen[WHITE])
-			score -= 15;
-		else if (!g->castle_king[WHITE])
-			score -= 12;
-		else if (!g->castle_queen[WHITE])
-			score -= 8;
-		else
-			score -= 5;
+		score -= castle_points[g->castle_king[WHITE]]
+				      [g->castle_queen[WHITE]];
 	}
 
 	if (!g->castled[BLACK]) {
-		if (!g->castle_king[BLACK] && !g->castle_queen[BLACK])
-			score += 15;
-		else if (!g->castle_king[BLACK])
-			score += 12;
-		else if (!g->castle_queen[BLACK])
-			score += 8;
-		else
-			score += 5;
+		score += castle_points[g->castle_king[BLACK]]
+				      [g->castle_queen[BLACK]];
 	}
 
 	/*
