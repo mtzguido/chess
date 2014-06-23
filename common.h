@@ -22,16 +22,6 @@ typedef int8_t		i8;
 int isPrefix(char *a, char *b);
 char pieceOf(char c);
 
-#ifdef CFG_DEPTH_EXTENSION
- #define EXTRA_CHECK	1
- #define EXTRA_CAPTURE	5
- #define EXTRA_PROMOTION	99
-#else
- #define EXTRA_CHECK	0
- #define EXTRA_CAPTURE	0
- #define EXTRA_PROMOTION	0
-#endif
-
 enum play_mode {
 	normal,
 	self,
