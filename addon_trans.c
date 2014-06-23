@@ -50,6 +50,9 @@ static void trans_notify_entry(game g, int depth, score *alpha, score *beta) {
 	u64 key = g->zobrist;
 	u64 idx = key % CFG_TTABLE_SIZE;
 
+	if (tt[idx].seq < seq)
+		return;
+
 	if (tt[idx].flag == FLAG_NONE)
 		return;
 
