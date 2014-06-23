@@ -51,7 +51,7 @@ static const struct opts defopts = {
 	.shuffle = false,
 	.black = false,
 
-	.heur_trans = true,
+	.heur_trans = false,
 	.heur_killer = true,
 	.heur_cm = true,
 	.heur_trivial = true,
