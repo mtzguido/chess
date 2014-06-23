@@ -248,7 +248,12 @@ static score negamax(
 		addon_notify_entry(g, maxDepth - curDepth, &alpha, &beta);
 
 	if (alpha >= beta) {
-		ret = alpha;
+		/*
+		 * La posición es no-alcanzable por best play,
+		 * devolvemos alpha_orig para no modificar nada
+		 * en upstream.
+		 */
+		ret = alpha_orig;
 		assert(mm == NULL);
 		goto out;
 	}
