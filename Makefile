@@ -70,7 +70,7 @@ $(TARGET): $(objs)
 	$(Q) $(CC) $(LFLAGS) $(objs) -o $(TARGET)
 
 %.o: %.c $(wildcard *.h) .config
-	$(Q)$(SAY) "CC	$<"
+	$(Q)$(SAY) "CC	$@"
 	$(Q)$(CC) $(CFLAGS) -c $<	-o $@
 
 clean:
