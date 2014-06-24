@@ -109,7 +109,35 @@ void print_stats(score exp, clock_t t1, clock_t t2) {
 	fprintf(stderr, "\n");
 }
 
-move machineMove(game start) {
+static bool forced(const game g, move *m) {
+	struct MS *succs;
+	int n = genSuccs(g, &succs);
+	int i;
+	int c = -1;
+	game ng;
+
+	ng = copyGame(g);
+	for (i=0; i<n; i++) {
+		if (doMove_unchecked(ng, succs[i].m)) {
+			if (c != -1) {
+				freeSuccs(succs, n);
+				freeGame(ng);
+				return false;
+			}
+
+			c = i;
+			*ng = *g;
+		}
+	}
+
+	assert(c != -1);
+	*m = succs[c].m;
+	freeSuccs(succs, n);
+	freeGame(ng);
+	return true;
+}
+
+move machineMove(const game start) {
 	move ret = {0};
 	score t = 0;
 	clock_t t1,t2;
@@ -120,13 +148,19 @@ move machineMove(game start) {
 	reset_stats();
 
 	t1 = clock();
-	int i;
-	for (i=1; i<copts.depth; i++)
-		negamax(start, i, 0, NULL, minScore, maxScore);
+	if (! forced(start, &ret)) {
+		int i;
 
-	t = negamax(start, copts.depth, 0, &ret, minScore, maxScore);
-	assert(ret.move_type >= 0);
-	assert(ret.who == start->turn);
+		for (i=1; i<copts.depth; i++)
+			negamax(start, i, 0, NULL, minScore, maxScore);
+
+		t = negamax(start, copts.depth, 0, &ret, minScore, maxScore);
+		assert(ret.move_type >= 0);
+		assert(ret.who == start->turn);
+	} else {
+		fprintf(stderr, "stats: forced move.\n");
+		t = 0;
+	}
 	t2 = clock();
 
 	stats.totalopen += stats.nopen_s + stats.nopen_q;
