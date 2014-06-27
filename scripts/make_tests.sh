@@ -30,6 +30,7 @@ while [ $n -lt $total ]; do
 
 	wait # wait for opponent
 
+	gprof chess gmon.out > games/prof_$n
 	if [ $n -eq 1 ]; then
 		mv gmon.out gmon.sum
 	else
