@@ -453,12 +453,6 @@ static score eval_bpawn(int i, int j, int pawn_rank[2][10]) {
 }
 
 score boardEval(game g) {
-	static const score castle_points[2][2] =
-	{
-		{ 15, 12 },
-		{ 8,  5 },
-	};
-
 	int i;
 	u64 pmask;
 	int pawn_rank[2][10];
@@ -534,14 +528,39 @@ score boardEval(game g) {
 		}
 	}
 
+	/* Penalizamos según posibilidades de enroque */
 	if (!g->castled[WHITE]) {
-		score -= castle_points[g->castle_king[WHITE]]
-				      [g->castle_queen[WHITE]];
+		switch(2*g->castle_king[WHITE] + g->castle_queen[WHITE]) {
+		case 0x00:
+			score -= 15;
+			break;
+		case 0x01:
+			score -= 12;
+			break;
+		case 0x02:
+			score -= 8;
+			break;
+		case 0x03:
+			score -= 5;
+			break;
+		}
 	}
 
 	if (!g->castled[BLACK]) {
-		score += castle_points[g->castle_king[BLACK]]
-				      [g->castle_queen[BLACK]];
+		switch(2*g->castle_king[BLACK] + g->castle_queen[BLACK]) {
+		case 0x00:
+			score += 15;
+			break;
+		case 0x01:
+			score += 12;
+			break;
+		case 0x02:
+			score += 8;
+			break;
+		case 0x03:
+			score += 5;
+			break;
+		}
 	}
 
 	/*
