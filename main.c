@@ -19,6 +19,7 @@ struct player {
 	void (*start)(int color);
 	move (*getMove)(game);
 	void (*notify)(game, move);
+	void (*notify_res)(int res);
 };
 
 void checkMove(game g, move m) {
@@ -145,6 +146,7 @@ int match(struct player pwhite, struct player pblack) {
 
 		rc = isFinished(g);
 		if (rc > 0) {
+			sleep(1);
 			if (rc == WIN(WHITE)) {
 				fprintf(stderr, "RES: Win (checkmate)\n");
 				return 12;
@@ -163,9 +165,8 @@ int match(struct player pwhite, struct player pblack) {
 			} else {
 				assert(0);
 			}
-
-			break;
 		}
+
 		printBoard(g);
 
 		game prev = copyGame(g);
@@ -274,6 +275,7 @@ void parse_opt(int argc, char **argv) {
 
 void printMove_wrap(game g, move m) {
 	printMove(m);
+	fflush(NULL);
 }
 
 void fairy_start(int col) {
@@ -282,11 +284,33 @@ void fairy_start(int col) {
 		printf("go\n");
 }
 
+void fairy_notify_res(int res) {
+	switch (res) {
+	case WIN(WHITE):
+		printf("1-0 {White mates G}\n");
+		break;
+	case WIN(BLACK):
+		printf("0-1 {Black mates G}\n");
+		break;
+	case DRAW_3FOLD:
+		printf("1/2-1/2 {Draw by repetition G}\n");
+		break;
+	case DRAW_50MOVE:
+		printf("1/2-1/2 {50 Move rule G}\n");
+		break;
+	case DRAW_STALE:
+		printf("1/2-1/2 {Stalemate G}\n");
+		break;
+	}
+	fflush(NULL);
+}
+
 struct player ui_player =
 {
 	.getMove = playerMove,
 	.notify = printMove_wrap,
 	.start = fairy_start,
+	.notify_res = fairy_notify_res,
 };
 
 void ai_start() {
@@ -301,6 +325,7 @@ struct player ai_player =
 	.start = ai_start,
 	.getMove = machineMove,
 	.notify = nothing,
+	.notify_res = nothing,
 };
 
 move random_move(game g) {
@@ -327,6 +352,7 @@ struct player random_player = {
 	.start = nothing,
 	.notify = nothing,
 	.getMove = random_move,
+	.notify_res = nothing,
 };
 
 int main(int argc, char **argv) {
