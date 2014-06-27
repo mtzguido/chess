@@ -7,7 +7,6 @@
 #include "succs.h"
 
 #include <stdint.h>
-#include <math.h> /* INFINITY */
 #include <stdio.h>
 #include <assert.h>
 #include <stdlib.h>
