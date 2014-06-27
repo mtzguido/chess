@@ -449,7 +449,7 @@ score boardEval(game g) {
 	 * Primera pasada, llenamos pawn_rank con el peon
 	 * menos avanzado de cada lado.
 	 */
-	pmask = g->piecemask[g->turn];
+	pmask = g->piecemask[WHITE] | g->piecemask[BLACK];
 	while (pmask) {
 		i = fls(pmask) - 1;
 		pmask &= ~((u64)1 << i);
@@ -460,13 +460,13 @@ score boardEval(game g) {
 
 		switch (piece) {
 		case WPAWN: 
-			if (pawn_rank[WHITE][c+1] < i)
-				pawn_rank[WHITE][c+1] = i;
+			if (pawn_rank[WHITE][c+1] < r)
+				pawn_rank[WHITE][c+1] = r;
 			break;
 
 		case BPAWN:
-			if (pawn_rank[BLACK][c+1] > i)
-				pawn_rank[BLACK][c+1] = i;
+			if (pawn_rank[BLACK][c+1] > r)
+				pawn_rank[BLACK][c+1] = r;
 			break;
 		}
 	}
@@ -475,7 +475,7 @@ score boardEval(game g) {
 	 * Segunda pasada. Con la información de los peones
 	 * evaluamos filas abiertas y status de peones
 	 */
-	pmask = g->piecemask[g->turn];
+	pmask = g->piecemask[WHITE] | g->piecemask[BLACK];
 	while (pmask) {
 		i = fls(pmask) - 1;
 		pmask &= ~((u64)1 << i);
