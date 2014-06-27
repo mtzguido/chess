@@ -179,6 +179,15 @@ static score quiesce(game g, score alpha, score beta, int curDepth, int maxDepth
 	if (isDraw(g))
 		return 0;
 
+	if (inCheck(g, g->turn)) {
+		/*
+		 * Consideramos TODAS las movidas posibles, por lo
+		 * tanto llamamos a negamax con profundidad 0 (al estar
+		 * en jaque, será aumentada, y por lo tanto igual a 1)
+		 */
+		return negamax(g, curDepth, curDepth, NULL, alpha, beta);
+	}
+
 	stats.nopen_q++;
 
 	t = boardEval(g);
@@ -189,7 +198,7 @@ static score quiesce(game g, score alpha, score beta, int curDepth, int maxDepth
 	if (t > alpha)
 		alpha = t;
 
-	if (curDepth >= maxDepth && !inCheck(g, g->turn))
+	if (curDepth >= maxDepth)
 		return t;
 
 	ng = copyGame(g);
