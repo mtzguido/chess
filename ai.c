@@ -148,11 +148,6 @@ move machineMove(const game start) {
 
 	t1 = clock();
 	if (! forced(start, &ret)) {
-		int i;
-
-		for (i=1; i<copts.depth; i++)
-			negamax(start, i, 0, NULL, minScore, maxScore);
-
 		t = negamax(start, copts.depth, 0, &ret, minScore, maxScore);
 		assert(ret.move_type >= 0);
 		assert(ret.who == start->turn);
