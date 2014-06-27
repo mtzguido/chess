@@ -250,14 +250,12 @@ out:
 
 static score negamax(game g, int maxDepth, int curDepth,
 		     move *mm, score alpha, score beta) {
-
 	score t, ret, best;
 	struct MS *succs = NULL;
 	int i, nsucc;
 	int nvalid = 0;
 	game ng;
 	int bestmove = -1;
-	move bestmove_saved;
 	const score alpha_orig = alpha;
 
 	if (isDraw(g)) {
@@ -266,16 +264,29 @@ static score negamax(game g, int maxDepth, int curDepth,
 		goto out;
 	}
 
-	if (inCheck(g, g->turn))
-		maxDepth++;
+	/*
+	 * Si ya pasamos por este tablero, podemos asumir
+	 * que vamos a reaccionar igual y vamos a llevar a un empate
+	 * por repetición.
+	 */
+	if (reps(g) >= 2 && !mm) {
+		ret = 0;
+		goto out;
+	}
 
-	if (curDepth >= maxDepth) {
+	/*
+	 * Nunca paramos en una posición ruidosa, y extendemos
+	 * la profundidad máxima para todo el sub-árbol
+	 */
+	if (inCheck(g, g->turn) || g->lastmove.promote != EMPTY) {
+		maxDepth++;
+	} else if (curDepth >= maxDepth) {
 		/*
 		 * Corte por profundidad, hacemos búsqueda por quietud, para
-		 * mejorar nuestra evaluación de tablero
+		 * mejorar nuestra evaluación de tablero.
 		 */
 		assert(mm == NULL);
-		ret = quiesce(g, alpha, beta, curDepth, curDepth);
+		ret = quiesce(g, alpha, beta, curDepth, 999);
 		goto out;
 	}
 
@@ -288,7 +299,8 @@ static score negamax(game g, int maxDepth, int curDepth,
 		/*
 		 * La posición es no-alcanzable por best play,
 		 * devolvemos alpha_orig para no modificar nada
-		 * en upstream.
+		 * en upstream. Deberíamos ser mas agresivos y devolver
+		 * alpha? Es lo mismo?
 		 */
 		ret = alpha_orig;
 		assert(mm == NULL);
@@ -324,39 +336,45 @@ static score negamax(game g, int maxDepth, int curDepth,
 			alpha = t;
 
 		if (alpha >= beta) {
-			ret = best;
 			addon_notify_cut(g, succs[i].m, curDepth);
 			break;
 		}
 	}
 
-	bestmove_saved = succs[bestmove].m;
-	if (bestmove != -1 && mm != NULL)
-		*mm = bestmove_saved;
-
-	freeSuccs(succs, nsucc);
-	freeGame(ng);
-
 	stats.nbranch += nvalid;
 
-
+	/* Era un tablero terminal? */
 	if (nvalid == 0) {
+		assert(mm == NULL);
+
+		move dummy = {0};
+
 		if (inCheck(g, g->turn))
 			ret = -100000 + curDepth;
 		else
 			ret = 0; /* Stalemate */
 
-		assert(mm == NULL);
+		/*
+		 * Lo guardamos en la TT, podría ahorrar unos
+		 * pocos ciclos
+		 */
+		addon_notify_return(g, dummy, 999, ret, FLAG_EXACT);
 	} else {
 		flag_t flag;
 
 		assert(bestmove != -1);
+
+		if (mm)
+			*mm = succs[bestmove].m;
+
 		/*
-		 * Devolver alpha o best es lo mismo (o son ambos menores o iguales
-		 * a alpha_orig o son iguales) pero en la TT debemos guardar ${WHAT}
-		 * porque ${REASON}
+		 * Devolver alpha o best es lo mismo (o son ambos menores o
+		 * iguales a alpha_orig o son iguales) pero en la TT debemos
+		 * guardar ${WHAT} porque ${REASON}
 		 */
-		assert(best == alpha || (best < alpha_orig && alpha == alpha_orig));
+		assert(best == alpha ||
+				(best < alpha_orig && alpha == alpha_orig));
+
 		ret = best;
 
 		if (best <= alpha_orig)
@@ -367,10 +385,13 @@ static score negamax(game g, int maxDepth, int curDepth,
 			flag = FLAG_EXACT;
 
 		if (maxDepth - curDepth > 1) {
-			addon_notify_return(g, bestmove_saved,
+			addon_notify_return(g, succs[bestmove].m,
 					    maxDepth - curDepth, ret, flag);
 		}
 	}
+
+	freeSuccs(succs, nsucc);
+	freeGame(ng);
 
 out:
 	if (mm)
