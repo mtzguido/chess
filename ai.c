@@ -47,6 +47,12 @@ static int genSuccs_wrap(game g, struct MS **arr, int depth) {
 }
 
 static void sort_succ(game g, struct MS *arr, int i, int len, int depth_rem) {
+
+	if (i == len-1) {
+		/* Nada para hacer */
+		return;
+	}
+
 	/* Mezclarlos si es necesario */
 	if (copts.shuffle) {
 		int t = rand()%(len-i) + i;
