@@ -820,9 +820,13 @@ int __genSuccs(const game g, struct MS **arr_ret, movegen_t fun) {
 	assert(arr != NULL);
 
 	npcs = on_bits(g->piecemask[g->turn], pieces);
+#if 1
+	for (i=npcs-1; i>=0; i--) {
+#else
 	for (i=0; i<npcs; i++) {
+#endif
 		const u8 r = pieces[i] >> 3;
-		const u8 c = pieces[i] & 0x7;
+		const u8 c = pieces[i] & 7;
 
 		fun(r, c, g, arr, &alen);
 	}
