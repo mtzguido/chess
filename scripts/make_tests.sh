@@ -12,7 +12,9 @@ fi
 
 rm -f FINISHLOG
 n=0
-total=${1:-100} # $1 o 100, por defecto
+total=$1
+
+shift
 
 rm -f wpipe bpipe full_log gmon.sum
 mkfifo wpipe bpipe
@@ -26,7 +28,7 @@ while [ $n -lt $total ]; do
 	n=$((n+1))
 
 	${CHESS_PROG} ${CHESS_ARGS} <wpipe | tee fairylog >bpipe &
-	./chess --depth 4 2>&1 >wpipe <bpipe | tee chesslog | grep -E '^RES:' >> FINISHLOG
+	./chess $@ 2>&1 >wpipe <bpipe | tee chesslog | grep -E '^RES:' >> FINISHLOG
 
 	wait # wait for opponent
 
