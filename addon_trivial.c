@@ -16,8 +16,8 @@ static void trivial_score_succs(game g, struct MS *ss,
 		if (m.promote != 0)
 			ss[i].s += 100;
 
-		ss[i].s += abs(g->board[m.r][m.c]);
-		ss[i].s += 10 * abs(g->board[m.R][m.C]);
+		ss[i].s += g->board[m.r][m.c] & ~8;
+		ss[i].s += 10 * (g->board[m.R][m.C] & ~8);
 	}
 }
 		
