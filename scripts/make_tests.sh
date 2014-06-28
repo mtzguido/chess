@@ -30,11 +30,13 @@ while [ $n -lt $total ]; do
 
 	wait # wait for opponent
 
-	gprof chess gmon.out > games/prof_$n
-	if [ $n -eq 1 ]; then
-		mv gmon.out gmon.sum
-	else
-		gprof -s chess gmon.out gmon.sum
+	if [ -f gmon.out ]; then
+		gprof chess gmon.out > games/prof_$n
+		if [ $n -eq 1 ]; then
+			mv gmon.out gmon.sum
+		else
+			gprof -s chess gmon.out gmon.sum
+		fi
 	fi
 
 	cp gamelog games/gamelog_$n
@@ -56,4 +58,4 @@ while [ $n -lt $total ]; do
 	fi
 done
 
-gprof chess gmon.sum > tests_profile
+[ -f gmon.out ] && gprof chess gmon.sum > tests_profile
