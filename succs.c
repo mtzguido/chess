@@ -819,7 +819,7 @@ int __genSuccs(const game g, struct MS **arr_ret, movegen_t fun) {
 	assert(arr != NULL);
 
 	while (pmask) {
-		i = fls(pmask) - 1;
+		i = fls(pmask);
 		pmask &= ~((u64)1 << i);
 
 		fun(i>>3, i&7, g, arr, &alen);

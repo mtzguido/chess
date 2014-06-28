@@ -469,7 +469,7 @@ score boardEval(game g) {
 	 */
 	pmask = g->piecemask[WHITE] | g->piecemask[BLACK];
 	while (pmask) {
-		i = fls(pmask) - 1;
+		i = fls(pmask);
 		pmask &= ~((u64)1 << i);
 
 		const int r = i >> 3;
@@ -495,7 +495,7 @@ score boardEval(game g) {
 	 */
 	pmask = g->piecemask[WHITE] | g->piecemask[BLACK];
 	while (pmask) {
-		i = fls(pmask) - 1;
+		i = fls(pmask);
 		pmask &= ~((u64)1 << i);
 
 		const int r = i >> 3;

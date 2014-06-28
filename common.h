@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <inttypes.h>
 #include <stdbool.h>
+#include <assert.h>
 
 #define MAX_DEPTH 30
 
@@ -61,10 +62,7 @@ extern struct opts copts;
 
 static inline int fls(u64 x)
 {
-	int r = 64;
-
-	if (!x)
-		return 0;
+	int r = 63;
 
 	if (!(x & 0xffffffff00000000u)) {
 		x <<= 32;
