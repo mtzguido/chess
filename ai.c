@@ -50,10 +50,16 @@ static void sort_succ(game g, struct MS *arr, int i, int len, int depth_rem) {
 	/* Mezclarlos si es necesario */
 	if (copts.shuffle) {
 		int t = rand()%(len-i) + i;
-		struct MS swap;
-		swap = arr[i];
-		arr[i] = arr[t];
-		arr[t] = swap;
+
+		assert (t >= i && t < len);
+
+		if (t != i) {
+			struct MS swap;
+			assert(t > i);
+			swap = arr[i];
+			arr[i] = arr[t];
+			arr[t] = swap;
+		}
 	}
 
 	/* Ordenarlos si es necesario */
@@ -69,10 +75,13 @@ static void sort_succ(game g, struct MS *arr, int i, int len, int depth_rem) {
 			}
 		}
 
-		struct MS swap;
-		swap = arr[best];
-		arr[best] = arr[i];
-		arr[i] = swap;
+		if (best != i) {
+			struct MS swap;
+			assert(best > i);
+			swap = arr[best];
+			arr[best] = arr[i];
+			arr[i] = swap;
+		}
 	}
 
 	assert(arr[i].m.move_type >= 0);
