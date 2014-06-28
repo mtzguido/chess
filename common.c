@@ -31,3 +31,30 @@ char pieceOf(char c) {
 	}   
 }
 
+int on_bits(u64 x, u8 *arr) {
+	int ret = 0;
+	int i = 0;
+
+	while (x) {
+		while (!(x&0xffffffff)) {
+			x >>= 32;
+			i += 32;
+		}
+
+		while (!(x&0xff)) {
+			x >>= 8;
+			i += 8;
+		}
+
+		while (!(x&1)) {
+			x >>= 1;
+			i++;
+		}
+
+		arr[ret++] = i;
+		x >>= 1;
+		i++;
+	}
+
+	return ret;
+}

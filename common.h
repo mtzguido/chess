@@ -60,35 +60,6 @@ static const struct opts defopts = {
 
 extern struct opts copts;
 
-static inline int fls(u64 x)
-{
-	int r = 63;
-
-	if (!(x & 0xffffffff00000000u)) {
-		x <<= 32;
-		r -= 32;
-	}
-	if (!(x & 0xffff000000000000u)) {
-		x <<= 16;
-		r -= 16;
-	}
-	if (!(x & 0xff00000000000000u)) {
-		x <<= 8;
-		r -= 8;
-	}
-	if (!(x & 0xf000000000000000u)) {
-		x <<= 4;
-		r -= 4;
-	}
-	if (!(x & 0xc000000000000000u)) {
-		x <<= 2;
-		r -= 2;
-	}
-	if (!(x & 0x8000000000000000u)) {
-		x <<= 1;
-		r -= 1;
-	}
-	return r;
-}
+int on_bits(u64 x, u8 *arr);
 
 #endif

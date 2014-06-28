@@ -810,19 +810,21 @@ typedef void (*movegen_t)(i8 i, i8 j, const game g, struct MS *arr, int *alen);
 int __genSuccs(const game g, struct MS **arr_ret, movegen_t fun) {
 	int i;
 	int alen, asz;
-	u64 pmask = g->piecemask[g->turn];
 	struct MS *arr;
+	u8 pieces[64];
+	int npcs;
 
 	alen = 0;
 	asz = 100;
 	arr = calloc(asz, sizeof arr[0]);
 	assert(arr != NULL);
 
-	while (pmask) {
-		i = fls(pmask);
-		pmask &= ~((u64)1 << i);
+	npcs = on_bits(g->piecemask[g->turn], pieces);
+	for (i=0; i<npcs; i++) {
+		const u8 r = pieces[i] >> 3;
+		const u8 c = pieces[i] & 0x7;
 
-		fun(i>>3, i&7, g, arr, &alen);
+		fun(r, c, g, arr, &alen);
 	}
 
 	castleSuccs(g, arr, &alen);

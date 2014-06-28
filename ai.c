@@ -466,23 +466,23 @@ score boardEval(game g) {
 	u64 pmask;
 	int pawn_rank[2][10];
 	score score = pieceScore(g);
+	u8 pieces[64];
+	int npcs;
 
 	for (i=0; i<10; i++) {
 		pawn_rank[WHITE][i] = 0;
 		pawn_rank[BLACK][i] = 7;
 	}
 
+	npcs = on_bits(g->piecemask[WHITE] | g->piecemask[BLACK], pieces);
+
 	/*
 	 * Primera pasada, llenamos pawn_rank con el peon
 	 * menos avanzado de cada lado.
 	 */
-	pmask = g->piecemask[WHITE] | g->piecemask[BLACK];
-	while (pmask) {
-		i = fls(pmask);
-		pmask &= ~((u64)1 << i);
-
-		const int r = i >> 3;
-		const int c = i & 7;
+	for (i=0; i<npcs; i++) {
+		const int r = pieces[i] >> 3;
+		const int c = pieces[i] & 7;
 		const piece_t piece = g->board[r][c];
 
 		switch (piece) {
@@ -502,13 +502,9 @@ score boardEval(game g) {
 	 * Segunda pasada. Con la información de los peones
 	 * evaluamos filas abiertas y status de peones
 	 */
-	pmask = g->piecemask[WHITE] | g->piecemask[BLACK];
-	while (pmask) {
-		i = fls(pmask);
-		pmask &= ~((u64)1 << i);
-
-		const int r = i >> 3;
-		const int c = i & 7;
+	for (i=0; i<npcs; i++) {
+		const int r = pieces[i] >> 3;
+		const int c = pieces[i] & 7;
 		const piece_t piece = g->board[r][c];
 
 		switch (piece) {
