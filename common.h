@@ -38,6 +38,8 @@ struct opts {
 	bool shuffle;
 	bool black;
 
+	bool reverse;
+
 	/* Heuristics */
 	bool heur_trans;
 	bool heur_killer;
@@ -51,6 +53,8 @@ static const struct opts defopts = {
 	.depth = 6,
 	.shuffle = false,
 	.black = false,
+
+	.reverse = false,
 
 	.heur_trans = false,
 	.heur_killer = true,
