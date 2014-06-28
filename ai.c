@@ -469,7 +469,6 @@ static score eval_bpawn(int i, int j, int pawn_rank[2][10]) {
 
 score boardEval(game g) {
 	int i;
-	u64 pmask;
 	int pawn_rank[2][10];
 	score score = pieceScore(g);
 	u8 pieces[64];
