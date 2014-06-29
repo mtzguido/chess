@@ -301,7 +301,11 @@ static score negamax(game g, int maxDepth, int curDepth,
 		 * mejorar nuestra evaluación de tablero.
 		 */
 		assert(mm == NULL);
-		ret = quiesce(g, alpha, beta, curDepth, 999);
+		if (copts.quiesce)
+			ret = quiesce(g, alpha, beta, curDepth, 999);
+		else
+			ret = boardEval(g);
+
 		goto out;
 	}
 

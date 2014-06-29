@@ -231,6 +231,7 @@ void parse_opt(int argc, char **argv) {
 		{ "no-tt",	no_argument, 0, 0x3 },
 		{ "reverse",	no_argument, 0, 0x4 },
 		{ "no-ab",	no_argument, 0, 0x5 },
+		{ "no-quiesce",	no_argument, 0, 0x6 },
 		{ "black",	no_argument, 0, 'b' },
 		{ 0,0,0,0 }
 	};
@@ -276,6 +277,9 @@ void parse_opt(int argc, char **argv) {
 			break;
 		case 0x5:
 			copts.ab = false;
+			break;
+		case 0x6:
+			copts.quiesce = false;
 			break;
 		}
 	}

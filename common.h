@@ -41,6 +41,7 @@ struct opts {
 	bool reverse;
 
 	bool ab; /* Alpha-beta */
+	bool quiesce;
 	/* Heuristics */
 	bool heur_trans;
 	bool heur_killer;
@@ -58,6 +59,7 @@ static const struct opts defopts = {
 	.reverse = false,
 
 	.ab = true,
+	.quiesce = true,
 	.heur_trans = false,
 	.heur_killer = true,
 	.heur_cm = true,
