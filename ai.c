@@ -257,6 +257,9 @@ out:
 	freeSuccs(succs, nsucc);
 	freeGame(ng);
 
+	assert(ret < maxScore);
+	assert(ret > minScore);
+
 	return ret;
 }
 
@@ -412,6 +415,9 @@ static score negamax(game g, int maxDepth, int curDepth,
 out:
 	if (mm)
 		assert(mm->move_type >= 0);
+
+	assert(ret > minScore);
+	assert(ret < maxScore);
 
 	return ret;
 }
@@ -580,6 +586,9 @@ score boardEval(game g) {
 	 */
 	if (g->idlecount >= 68)
 		score = (score * (100 - g->idlecount))/32;
+
+	assert((g->turn == WHITE ? score : -score) < maxScore);
+	assert((g->turn == WHITE ? score : -score) > minScore);
 
 	return g->turn == WHITE ? score : -score;
 }
