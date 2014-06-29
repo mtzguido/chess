@@ -238,7 +238,7 @@ void parse_opt(int argc, char **argv) {
 
 	copts = defopts;
 	while (1) {
-		c = getopt_long(argc, argv, "fsm:rd:b", long_opts, &idx);
+		c = getopt_long(argc, argv, "", long_opts, &idx);
 		if (c == -1)
 			break;
 
@@ -281,6 +281,9 @@ void parse_opt(int argc, char **argv) {
 		case 0x6:
 			copts.quiesce = false;
 			break;
+		case '?':
+		default:
+			exit(1);
 		}
 	}
 }
