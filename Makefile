@@ -6,11 +6,11 @@ TARGET=chess
 
 ifeq (${V},1)
 	Q=
-	SAY= echo
 else
 	Q = @
-	SAY = echo
 endif
+
+SAY = echo
 
 .config:
 	@echo USING DEFAULT CONFIG
@@ -67,7 +67,7 @@ all: $(TARGET)
 
 $(TARGET): $(objs)
 	$(Q)$(SAY) "LD	$@"
-	$(Q) $(CC) $(LFLAGS) $(objs) -o $(TARGET)
+	$(Q)$(CC) $(LFLAGS) $(objs) -o $(TARGET)
 
 %.o: %.c $(wildcard *.h) .config
 	$(Q)$(SAY) "CC	$@"
