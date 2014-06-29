@@ -61,3 +61,5 @@ while [ $n -lt $total ]; do
 done
 
 [ -f gmon.out ] && gprof chess gmon.sum > tests_profile
+
+exit 0
