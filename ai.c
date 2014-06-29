@@ -183,13 +183,10 @@ move machineMove(const game start) {
 }
 
 static score quiesce(game g, score alpha, score beta, int curDepth, int maxDepth) {
-	score t;
-
-	int nsucc, i;
-	int nvalid;
-	game ng;
+	int nsucc, nvalid, i;
 	struct MS *succs;
-	score ret;
+	game ng;
+	score ret, t;
 
 	if (isDraw(g))
 		return 0;
