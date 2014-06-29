@@ -310,7 +310,7 @@ static score negamax(game g, int maxDepth, int curDepth,
 	if (mm == NULL)
 		addon_notify_entry(g, maxDepth - curDepth, &alpha, &beta);
 
-	if (alpha >= beta) {
+	if (alpha >= beta && copts.ab) {
 		/*
 		 * La posición es no-alcanzable por best play,
 		 * devolvemos alpha_orig para no modificar nada
@@ -350,7 +350,7 @@ static score negamax(game g, int maxDepth, int curDepth,
 		if (t > alpha)
 			alpha = t;
 
-		if (alpha >= beta) {
+		if (alpha >= beta && copts.ab) {
 			addon_notify_cut(g, succs[i].m, curDepth);
 			break;
 		}
