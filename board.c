@@ -507,7 +507,7 @@ bool __doMove(game g, move m, bool check) {
 		g->castled[m.who] = 1;
 
 		break;
-	
+
 	case MOVE_QUEENSIDE_CASTLE:
 		if (!doMoveQCastle(g, m, check))
 			goto fail;
@@ -517,17 +517,10 @@ bool __doMove(game g, move m, bool check) {
 		g->castled[m.who] = 1;
 
 		break;
-	case -1:
-		return false;
 
 	default:
 		assert(0);
-
-		/*
-		 * Necesario!! el compilador
-		 * puede optimizar si no está esto!
-		 */
-		return false;
+		goto fail;
 	}
 
 	/* Nunca podemos quedar en jaque */
