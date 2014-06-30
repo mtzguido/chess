@@ -85,16 +85,6 @@ re: clean all
 run: $(TARGET)
 	./$(TARGET)
 
-prof: $(TARGET) prof_input
-	time ./$(TARGET) w < prof_input || true # >/dev/null
-	gprof $(TARGET) gmon.out >prof
-
-vprof: prof
-	gprof2dot.py prof | xdot
-
-test: | $(TARGET)
-	./scripts/make_tests.sh
-
 doc:
 	$(Q)$(SAY) "DOC     "
 	$(Q)$(MAKE) -s -C doc
