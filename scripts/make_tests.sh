@@ -25,7 +25,7 @@ if ! [ -d games ]; then
 	mkdir games
 fi
 
-echo "	b/d/w		score (min - max)"
+echo "		b/d/w		score (min - max)"
 while [ $n -lt $total ]; do
 	n=$((n+1))
 
@@ -54,7 +54,7 @@ while [ $n -lt $total ]; do
 	min_score=$(bc -l <<< "scale=2; (2*$white + $draw)/ (2*$total)")
 	max_score=$(bc -l <<< "scale=2; (2*$white + $draw + 2*($total - $n))/ (2*$total)")
 	
-	echo "$n/$total	$black/$draw/$white		$score ($min_score - $max_score)"
+	echo "	$n/$total	$black/$draw/$white		$score ($min_score - $max_score)"
 
 	if [ $((black + draw + white)) -ne $n ]; then
 		echo 'wat!'
@@ -62,6 +62,6 @@ while [ $n -lt $total ]; do
 	fi
 done
 
-[ -f gmon.out ] && gprof chess gmon.sum > tests_profile
+[ -f gmon.out ] && gprof chess gmon.sum > games/tests_profile
 
 exit 0
