@@ -25,7 +25,7 @@ if ! [ -d games ]; then
 	mkdir games
 fi
 
-echo "	l/d/w		score (min - max)"
+echo "	b/d/w		score (min - max)"
 while [ $n -lt $total ]; do
 	n=$((n+1))
 
@@ -47,16 +47,16 @@ while [ $n -lt $total ]; do
 	cp fairylog  games/fairylog_$n
 	cp chesslog  games/chesslog_$n
 
-	lose=$(grep Lose FINISHLOG | wc -l)
+	black=$(grep Lose FINISHLOG | wc -l)
 	draw=$(grep Draw FINISHLOG | wc -l)
-	win=$(grep Win FINISHLOG | wc -l)
-	score=$(bc -l <<< "scale=2; (2*$win + $draw)/ (2*$n)")
-	min_score=$(bc -l <<< "scale=2; (2*$win + $draw)/ (2*$total)")
-	max_score=$(bc -l <<< "scale=2; (2*$win + $draw + 2*($total - $n))/ (2*$total)")
+	white=$(grep Win FINISHLOG | wc -l)
+	score=$(bc -l <<< "scale=2; (2*$white + $draw)/ (2*$n)")
+	min_score=$(bc -l <<< "scale=2; (2*$white + $draw)/ (2*$total)")
+	max_score=$(bc -l <<< "scale=2; (2*$white + $draw + 2*($total - $n))/ (2*$total)")
 	
-	echo "$n/$total	$lose/$draw/$win		$score ($min_score - $max_score)"
+	echo "$n/$total	$black/$draw/$white		$score ($min_score - $max_score)"
 
-	if [ $((lose + draw + win)) -ne $n ]; then
+	if [ $((black + draw + white)) -ne $n ]; then
 		echo 'wat!'
 		break;
 	fi
