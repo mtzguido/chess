@@ -63,6 +63,7 @@ mods=	main	\
 	piece-square
 
 objs=$(patsubst %,%.o,$(mods))
+crap=$(patsubst %,%.i %.s,$(mods))
 
 all: $(TARGET)
 
@@ -84,7 +85,7 @@ $(TARGET): $(objs)
 
 clean:
 	$(Q)$(SAY) "CLEAN"
-	$(Q)rm -f $(TARGET) $(objs) gmon.out
+	$(Q)rm -f $(TARGET) $(objs) $(crap) gmon.out
 	$(Q)rm -f bpipe wpipe
 	$(Q)$(MAKE) -s -C doc clean
 	$(Q)rm -f FINISHLOG full_log gamelog_*
