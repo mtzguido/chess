@@ -16,6 +16,8 @@ total=$1
 
 shift
 
+echo 'Starting tests. Options = '$@
+
 rm -f wpipe bpipe full_log gmon.sum
 mkfifo wpipe bpipe
 
