@@ -433,7 +433,10 @@ static int pieceScore(game g) {
  * Compartido por todas las funciones de
  * evaluación de tablero.
  */
-int pawn_rank[2][10];
+int pawn_rank[2][10] = {
+	[BLACK] = { [0] = 7, [9] = 7 },
+	[WHITE] = { [0] = 0, [9] = 0 },
+};
 
 void fill_ranks(u8 pieces[], int npcs, game g) {
 	int i;
@@ -586,7 +589,12 @@ score boardEval(game g) {
 	u8 pieces[64];
 	int npcs;
 
-	for (i=0; i<10; i++) {
+	assert(pawn_rank[WHITE][0] == 0);
+	assert(pawn_rank[WHITE][9] == 0);
+	assert(pawn_rank[BLACK][0] == 7);
+	assert(pawn_rank[BLACK][9] == 7);
+
+	for (i=1; i<9; i++) {
 		pawn_rank[WHITE][i] = 0;
 		pawn_rank[BLACK][i] = 7;
 	}
