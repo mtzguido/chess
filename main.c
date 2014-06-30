@@ -214,6 +214,8 @@ int nmoves() {
 		m = machineMove(g);
 		doMove(g, m);
 		printBoard(g);
+
+		fprintf(stderr, "Moves %i/%i\n", i+1, copts.nmoves);
 	}
 
 	return 0;
