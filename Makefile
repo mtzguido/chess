@@ -73,6 +73,14 @@ $(TARGET): $(objs)
 	$(Q)$(SAY) "CC	$@"
 	$(Q)$(CC) $(CFLAGS) -c $<	-o $@
 
+%.s: %.c $(wildcard *.h) .config
+	$(Q)$(SAY) "AS	$@"
+	$(Q)$(CC) $(CFLAGS) -S $<	-o $@
+
+%.i: %.c $(wildcard *.h) .config
+	$(Q)$(SAY) "CPP	$@"
+	$(Q)$(CC) $(CFLAGS) -E $<	-o $@
+
 clean:
 	$(Q)$(SAY) "CLEAN"
 	$(Q)rm -f $(TARGET) $(objs) gmon.out
