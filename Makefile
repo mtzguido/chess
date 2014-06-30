@@ -28,7 +28,8 @@ ifeq (${CONFIG_OWNMEM},y)
 endif
 
 ifeq (${CONFIG_RELEASE},y)
-	CFLAGS += -O99 -DNDEBUG
+	CFLAGS += -O99 -DNDEBUG -flto
+	LFLAGS += -flto
 else
 	CFLAGS += -g -pg
 	LFLAGS += -pg
