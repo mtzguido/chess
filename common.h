@@ -11,6 +11,9 @@
 #define ARRSIZE(a) ((sizeof (a))/(sizeof ((a)[0])))
 #define __maybe_unused  __attribute__((unused))
 
+#define unlikely(c) __builtin_expect(c, 0)
+#define   likely(c) __builtin_expect(c, 1)
+
 typedef uint64_t	u64;
 typedef uint32_t	u32;
 typedef uint16_t	u16;

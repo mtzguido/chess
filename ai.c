@@ -584,7 +584,7 @@ score boardEval(game g) {
 	 * Acercamos a 0 los tableros que tengan
 	 * muchos movimientos idle
 	 */
-	if (g->idlecount > 68)
+	if (unlikely(g->idlecount > 68))
 		score = (score * (100 - g->idlecount))/32;
 
 	assert((g->turn == WHITE ? score : -score) < maxScore);
