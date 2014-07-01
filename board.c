@@ -569,7 +569,7 @@ static void setPiece(game g, i8 r, i8 c, piece_t piece) {
 		g->pps_E      -= piece_square_val_E(old_piece, r, c);
 		g->zobrist    ^= ZOBR_PIECE(old_piece, r, c);
 		g->piecemask[colorOf(old_piece)]
-			&= ~ (((u64)1) << (r*8 + c));
+			^= ((u64)1) << (r*8 + c);
 	}
 
 	g->board[r][c] = piece;
@@ -581,7 +581,7 @@ static void setPiece(game g, i8 r, i8 c, piece_t piece) {
 		g->totalScore += absoluteScoreOf(piece);
 		g->pieceScore += scoreOf(piece);
 		g->piecemask[colorOf(piece)]
-			|= (((u64)1) << (r*8 + c));
+			^= ((u64)1) << (r*8 + c);
 	}
 }
 
@@ -619,7 +619,7 @@ static void movePiece(game g, i8 r, i8 c, i8 R, i8 C) {
 		g->pps_E      -= piece_square_val_E(to, R, C);
 		g->zobrist    ^= ZOBR_PIECE(to, R, C);
 		g->piecemask[flipTurn(who)]
-			&= ~ (((u64)1) << (R*8 + C));
+			^= ((u64)1) << (R*8 + C);
 	}
 }
 
