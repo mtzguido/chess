@@ -422,7 +422,7 @@ out:
 	return ret;
 }
 
-static int pieceScore(game g) {
+static int pieceScore(const game g) {
 	int x = g->totalScore - 40000;
 	int pps = (x*(g->pps_O - g->pps_E))/8000 + g->pps_E;
 
@@ -438,7 +438,7 @@ int pawn_rank[2][10] = {
 	[WHITE] = { [0] = 0, [9] = 0 },
 };
 
-void fill_ranks(u8 pieces[], int npcs, game g) {
+static void fill_ranks(const u8 pieces[], const int npcs, const game g) {
 	int i;
 
 	for (i=0; i<npcs; i++) {
@@ -460,7 +460,7 @@ void fill_ranks(u8 pieces[], int npcs, game g) {
 	}
 }
 
-static score eval_wpawn(int i, int j) {
+static score eval_wpawn(const int i, const int j) {
 	score ret = 0;
 
 	if (pawn_rank[WHITE][j+1] > i)
@@ -482,7 +482,7 @@ static score eval_wpawn(int i, int j) {
 	return ret;
 }
 
-static score eval_bpawn(int i, int j) {
+static score eval_bpawn(const int i, const int j) {
 	score ret = 0;
 
 	if (pawn_rank[BLACK][j+1] < i)
@@ -504,7 +504,7 @@ static score eval_bpawn(int i, int j) {
 	return ret;
 }
 
-score eval_with_ranks(u8 pieces[], int npcs, game g) {
+static score eval_with_ranks(const u8 pieces[], const int npcs, const game g) {
 	int i;
 	score score = 0;
 
@@ -517,9 +517,6 @@ score eval_with_ranks(u8 pieces[], int npcs, game g) {
 		case WPAWN:
 			score += eval_wpawn(r, c);
 			break;
-		case BPAWN:
-			score -= eval_bpawn(r, c);
-			break;
 		case WROOK:
 			if (pawn_rank[WHITE][c+1] == 0) {
 				if (pawn_rank[BLACK][c+1] == 7)
@@ -527,6 +524,9 @@ score eval_with_ranks(u8 pieces[], int npcs, game g) {
 				else
 					score += ROOK_SEMI_OPEN_FILE;
 			}
+			break;
+		case BPAWN:
+			score -= eval_bpawn(r, c);
 			break;
 		case BROOK:
 			if (pawn_rank[BLACK][c+1] == 7) {
@@ -542,48 +542,31 @@ score eval_with_ranks(u8 pieces[], int npcs, game g) {
 	return score;
 }
 
-static score castle_score(game g) {
+static score castle_score(const game g) {
 	score score = 0;
 
-	/* Penalizamos según posibilidades de enroque */
 	if (!g->castled[WHITE]) {
 		switch(2*g->castle_king[WHITE] + g->castle_queen[WHITE]) {
-		case 0x00:
-			score -= 15;
-			break;
-		case 0x01:
-			score -= 12;
-			break;
-		case 0x02:
-			score -= 8;
-			break;
-		case 0x03:
-			score -= 5;
-			break;
+		case 0x00: score -= 15; break;
+		case 0x01: score -= 12; break;
+		case 0x02: score -= 8;  break;
+		case 0x03: score -= 5;  break;
 		}
 	}
 
 	if (!g->castled[BLACK]) {
 		switch(2*g->castle_king[BLACK] + g->castle_queen[BLACK]) {
-		case 0x00:
-			score += 15;
-			break;
-		case 0x01:
-			score += 12;
-			break;
-		case 0x02:
-			score += 8;
-			break;
-		case 0x03:
-			score += 5;
-			break;
+		case 0x00: score += 15; break;
+		case 0x01: score += 12; break;
+		case 0x02: score += 8;  break;
+		case 0x03: score += 5;  break;
 		}
 	}
 
 	return score;
 }
 
-score boardEval(game g) {
+score boardEval(const game g) {
 	int i;
 	score score = pieceScore(g);
 	u8 pieces[64];
