@@ -93,7 +93,7 @@ static void sort_succ(game g, struct MS *arr, int i, int len, int depth_rem) {
 	assert(arr[i].m.move_type >= 0);
 }
 
-void reset_stats() {
+static void reset_stats() {
 	int i;
 
 	n_collision = 0;
@@ -105,7 +105,7 @@ void reset_stats() {
 		stats.depthsn[i] = 0;
 }
 
-void print_stats(score exp, clock_t t1, clock_t t2) {
+static void print_stats(score exp, clock_t t1, clock_t t2) {
 	int i;
 
 	fprintf(stderr, "stats: searched %lld (%lld) nodes in %.3f seconds\n",
