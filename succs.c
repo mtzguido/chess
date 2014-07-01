@@ -8,7 +8,7 @@
 static inline void addToRet(move m, struct MS *arr, int *len);
 static inline void addToRet_promote(move m, struct MS *arr, int *len);
 
-void pawnSuccs_w(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
+static void pawnSuccs_w(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 	move m = {0};
 	m.who = g->turn;
 	m.move_type = MOVE_REGULAR;
@@ -95,7 +95,7 @@ void pawnSuccs_w(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 	}
 }
 
-void pawnSuccs_b(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
+static void pawnSuccs_b(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 	move m = {0};
 	m.who = g->turn;
 	m.move_type = MOVE_REGULAR;
@@ -182,7 +182,7 @@ void pawnSuccs_b(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 	}
 }
 
-void pawnCaps_w(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
+static void pawnCaps_w(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 	move m = {0};
 	m.who = g->turn;
 	m.move_type = MOVE_REGULAR;
@@ -253,7 +253,7 @@ void pawnCaps_w(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 	}
 }
 
-void pawnCaps_b(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
+static void pawnCaps_b(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 	move m = {0};
 	m.who = g->turn;
 	m.move_type = MOVE_REGULAR;
@@ -324,7 +324,7 @@ void pawnCaps_b(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 	}
 }
 
-void knightSuccs(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
+static void knightSuccs(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 	const int dr[] = { 2,  2, -2, -2, 1,  1, -1, -1 };
 	const int dc[] = { 1, -1,  1, -1, 2, -2,  2, -2 };
 	unsigned i;
@@ -352,7 +352,7 @@ void knightSuccs(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 	}
 }
 
-void rookSuccs_col(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
+static void rookSuccs_col(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 	int R, C;
 
 	move m = {0};
@@ -381,7 +381,7 @@ void rookSuccs_col(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 	}
 }
 
-void rookSuccs_row(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
+static void rookSuccs_row(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 	int R, C;
 
 	move m = {0};
@@ -410,7 +410,7 @@ void rookSuccs_row(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 	}
 }
 
-void rookSuccs(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
+static void rookSuccs(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 	rookSuccs_row(r, c, g, arr, alen);
 	rookSuccs_col(r, c, g, arr, alen);
 }
@@ -471,7 +471,7 @@ static void bishopSuccs_diag2(i8 r, i8 c, const game g, struct MS *arr, int *ale
 	}
 }
 
-void bishopSuccs(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
+static void bishopSuccs(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 	bishopSuccs_diag1(r, c, g, arr, alen);
 	bishopSuccs_diag2(r, c, g, arr, alen);
 }
@@ -504,12 +504,12 @@ void kingSuccs(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 	}
 }
 
-void queenSuccs(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
+static void queenSuccs(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 	rookSuccs(r, c, g, arr, alen);
 	bishopSuccs(r, c, g, arr, alen);
 }
 
-void knightCaps(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
+static void knightCaps(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 	const int dr[] = { 2,  2, -2, -2, 1,  1, -1, -1 };
 	const int dc[] = { 1, -1,  1, -1, 2, -2,  2, -2 };
 	unsigned i;
@@ -605,12 +605,12 @@ static void rookCaps_col(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 	}
 }
 
-void rookCaps(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
+static void rookCaps(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 	rookCaps_row(r, c, g, arr, alen);
 	rookCaps_col(r, c, g, arr, alen);
 }
 
-void bishopCaps_diag1(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
+static void bishopCaps_diag1(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 	int R, C;
 
 	move m = {0};
@@ -643,7 +643,7 @@ void bishopCaps_diag1(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 	}
 }
 
-void bishopCaps_diag2(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
+static void bishopCaps_diag2(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 	int R, C;
 
 	move m = {0};
@@ -676,12 +676,12 @@ void bishopCaps_diag2(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 	}
 }
 
-void bishopCaps(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
+static void bishopCaps(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 	bishopCaps_diag1(r, c, g, arr, alen);
 	bishopCaps_diag2(r, c, g, arr, alen);
 }
 
-void kingCaps(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
+static void kingCaps(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 	const int dr[] = {  1, 1,  1, 0, -1, -1, -1, 0  };
 	const int dc[] = { -1, 0,  1, 1,  1,  0, -1, -1 };
 	unsigned i;
@@ -709,12 +709,12 @@ void kingCaps(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 	}
 }
 
-void queenCaps(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
+static void queenCaps(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 	rookCaps(r, c, g, arr, alen);
 	bishopCaps(r, c, g, arr, alen);
 }
 
-void castleSuccs(const game g, struct MS *arr, int *alen) {
+static void castleSuccs(const game g, struct MS *arr, int *alen) {
 	const piece_t kr = g->turn == WHITE ? 7 : 0;
 	const piece_t rpiece = g->turn == WHITE ? WROOK : BROOK;
 	move m = {0};
@@ -739,7 +739,7 @@ void castleSuccs(const game g, struct MS *arr, int *alen) {
 	}
 }
 
-void pieceSuccs(i8 i, i8 j, const game g, struct MS *arr, int *alen) {
+static void pieceSuccs(i8 i, i8 j, const game g, struct MS *arr, int *alen) {
 	const piece_t piece = g->board[i][j];
 
 	switch (piece&7) {
@@ -772,7 +772,7 @@ void pieceSuccs(i8 i, i8 j, const game g, struct MS *arr, int *alen) {
 	}
 }
 
-void pieceCaps(i8 i, i8 j, const game g, struct MS *arr, int *alen) {
+static void pieceCaps(i8 i, i8 j, const game g, struct MS *arr, int *alen) {
 	const piece_t piece = g->board[i][j];
 
 	switch (piece&7) {
@@ -807,7 +807,7 @@ void pieceCaps(i8 i, i8 j, const game g, struct MS *arr, int *alen) {
 
 typedef void (*movegen_t)(i8 i, i8 j, const game g, struct MS *arr, int *alen);
 
-int __genSuccs(const game g, struct MS **arr_ret, movegen_t fun) {
+static int __genSuccs(const game g, struct MS **arr_ret, movegen_t fun) {
 	int i;
 	int alen, asz;
 	struct MS *arr;
