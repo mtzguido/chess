@@ -89,7 +89,7 @@ void add_rule(char *sequence) {
 		}
 
 		add_one(g->zobrist, m);
-		bool rc = doMove(g, m);
+		bool rc __maybe_unused = doMove(g, m);
 		assert(rc);
 
 		turn = flipTurn(turn);

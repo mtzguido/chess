@@ -275,8 +275,8 @@ static score negamax(game g, int maxDepth, int curDepth,
 	int nvalid = 0;
 	game ng;
 	int bestmove = -1;
-	const score alpha_orig = alpha;
-	const score  beta_orig = beta;
+	const score alpha_orig __maybe_unused = alpha;
+	const score  beta_orig __maybe_unused = beta;
 
 	if (isDraw(g)) {
 		ret = 0;
