@@ -68,7 +68,8 @@ $(TARGET): main.o $(objs)
 
 book.o: book.gen
 book.gen: book.txt book-gen
-	./book-gen < book.txt > book.gen
+	$(Q)$(SAY) "BOOKGEN"
+	$(Q)./book-gen < book.txt > book.gen
 
 %.o: %.c $(wildcard *.h) .config
 	$(Q)$(SAY) "CC	$@"
@@ -83,7 +84,7 @@ book.gen: book.txt book-gen
 	$(Q)$(CC) $(CFLAGS) -E $<	-o $@
 
 book-gen: book-gen.o $(filter-out ai.o book.o,$(objs))
-	$(Q)$(SAY) "CC	$@"
+	$(Q)$(SAY) "LD	$@"
 	$(Q)$(CC) $(LFLAGS) $^ -o $@
 
 clean:
