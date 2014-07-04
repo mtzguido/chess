@@ -821,7 +821,7 @@ static int __genSuccs(const game g, struct MS **arr_ret, movegen_t fun) {
 
 	npcs = on_bits(g->piecemask[g->turn], pieces);
 
-	if (copts.reverse) {
+	if (copts.reverse && fun == pieceSuccs) {
 		for (i=npcs-1; i>=0; i--) {
 			const u8 r = pieces[i] >> 3;
 			const u8 c = pieces[i] & 7;
