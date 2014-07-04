@@ -39,8 +39,7 @@ CFLAGS += -DCFG_MEMSZ=${CONFIG_MEMSZ}
 CFLAGS += -DCFG_ZTABLE_SIZE=${CONFIG_ZTABLE_SIZE}
 CFLAGS += -DCFG_TTABLE_SIZE=${CONFIG_TTABLE_SIZE}
 
-mods=	main	\
-	ai	\
+mods=	ai	\
 	board	\
 	move	\
 	succs	\
@@ -55,16 +54,21 @@ mods=	main	\
 	addon	\
 	common	\
 	user_input	\
-	piece-square
+	piece-square	\
+	book
 
 objs=$(patsubst %,%.o,$(mods))
 crap=$(patsubst %,%.i %.s,$(mods))
 
-all: $(TARGET)
+all: $(TARGET) book-gen
 
-$(TARGET): $(objs)
+$(TARGET): main.o $(objs)
 	$(Q)$(SAY) "LD	$@"
-	$(Q)$(CC) $(LFLAGS) $(objs) -o $(TARGET)
+	$(Q)$(CC) $(LFLAGS) main.o $(objs) -o $(TARGET)
+
+book.o: book.gen
+book.gen: book.txt book-gen
+	./book-gen < book.txt > book.gen
 
 %.o: %.c $(wildcard *.h) .config
 	$(Q)$(SAY) "CC	$@"
@@ -78,9 +82,14 @@ $(TARGET): $(objs)
 	$(Q)$(SAY) "CPP	$@"
 	$(Q)$(CC) $(CFLAGS) -E $<	-o $@
 
+book-gen: book-gen.o $(filter-out ai.o book.o,$(objs))
+	$(Q)$(SAY) "CC	$@"
+	$(Q)$(CC) $(LFLAGS) $^ -o $@
+
 clean:
 	$(Q)$(SAY) "CLEAN"
 	$(Q)rm -f $(TARGET) $(objs) $(crap) gmon.out
+	$(Q)rm -f main.o book-gen.o book.gen
 	$(Q)rm -f bpipe wpipe
 	$(Q)$(MAKE) -s -C doc clean
 	$(Q)rm -f FINISHLOG full_log gamelog_*

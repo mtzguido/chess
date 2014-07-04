@@ -5,6 +5,7 @@
 #include "mem.h"
 #include "addon.h"
 #include "succs.h"
+#include "book.h"
 
 #include <stdint.h>
 #include <stdio.h>
@@ -162,13 +163,16 @@ move machineMove(const game start) {
 	reset_stats();
 
 	t1 = clock();
-	if (! forced(start, &ret)) {
+	if (bookMove(start, &ret)) {
+		fprintf(stderr, "stats: book move.\n");
+		t = 0;
+	} else if (forced(start, &ret)) {
+		fprintf(stderr, "stats: forced move.\n");
+		t = 0;
+	} else {
 		t = negamax(start, copts.depth, 0, &ret, minScore, maxScore);
 		assert(ret.move_type >= 0);
 		assert(ret.who == start->turn);
-	} else {
-		fprintf(stderr, "stats: forced move.\n");
-		t = 0;
 	}
 	t2 = clock();
 
