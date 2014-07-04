@@ -10,7 +10,6 @@
 #include "board.h"
 #include "zobrist.h"
 #include "ztable.h"
-#include "ai.h"
 #include "succs.h"
 
 char charOf(int piece);
@@ -152,7 +151,6 @@ void printBoard(game g) {
 	fprintf(stderr, "  scores = %i %i\n", g->pieceScore, g->totalScore);
 	fprintf(stderr, "  pps o e = %i %i\n", g->pps_O, g->pps_E);
 	fprintf(stderr, "  zobrist = 0x%" PRIx64 "\n", g->zobrist);
-	fprintf(stderr, "  boardEval is = %i\n", boardEval(g));
 	fprintf(stderr, "  idlecount = %i\n", g->idlecount);
 	fprintf(stderr, "  piecemask[W] = 0x%.16" PRIx64 "\n", g->piecemask[WHITE]);
 	fprintf(stderr, "  piecemask[B] = 0x%.16" PRIx64 "\n", g->piecemask[BLACK]);
