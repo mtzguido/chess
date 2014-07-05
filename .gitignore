@@ -1,6 +1,8 @@
 *.o
 *.gcda
 chess
+book-gen
+book.gen
 gmon.out
 gmon.sum
 doc/*.aux
