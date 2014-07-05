@@ -19,17 +19,55 @@ void add_one(u64 hash, move m) {
 	booklen++;
 }
 
+#define cmp_field(a, b)					\
+	do {						\
+		if ((a) != (b))				\
+			return (a) < (b) ? -1 : 1;	\
+	} while (0)
+
+int entry_cmp(struct bookmove a, struct bookmove b) {
+	cmp_field(a.hash, b.hash);
+	cmp_field(a.next.move_type, b.next.move_type);
+
+	if (a.next.move_type != MOVE_REGULAR)
+		return 0;
+
+	cmp_field(a.next.r, b.next.r);
+	cmp_field(a.next.c, b.next.c);
+	cmp_field(a.next.R, b.next.R);
+	cmp_field(a.next.C, b.next.C);
+
+	return 0;
+}
+#undef cmp_field
+
 void sort_book() {
 	int i, j;
 	struct bookmove sw;
 
 	for (i=1; i<booklen; i++) {
 		j = i-1;
-		while (j >= 0 && book[j].hash > book[j+1].hash) {
+		while (j >= 0 && entry_cmp(book[j], book[j+1]) > 0) {
 			sw = book[j];
 			book[j] = book[j+1];
 			book[j+1] = sw;
 			j--;
+		}
+	}
+}
+
+void nodup_book() {
+	int i, j;
+
+	i = 1;
+	while (i < booklen) {
+		if (!entry_cmp(book[i-1], book[i])) {
+			for (j = i; j < booklen-1; j++)
+				book[j] = book[j+1];
+
+			booklen--;
+		} else {
+			i++;
 		}
 	}
 }
@@ -118,6 +156,7 @@ int main () {
 	}
 
 	sort_book();
+	nodup_book();
 	print_book();
 
 	return 0;
