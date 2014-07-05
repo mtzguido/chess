@@ -19,6 +19,11 @@ bool bookMove(const game g, move *m) {
 
 	for (i=0; i<booklen; i++) {
 		if (book[i].hash == g->zobrist) {
+			if (!copts.shuffle) {
+				match = i;
+				break;
+			}
+
 			chance++;
 			if (rand() % chance == 0)
 				match = i;
