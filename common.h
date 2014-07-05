@@ -39,6 +39,7 @@ struct opts {
 	int nmoves;
 	int depth;
 	bool shuffle;
+	bool usebook;
 	bool black;
 
 	bool reverse;
@@ -57,6 +58,7 @@ static const struct opts defopts = {
 	.nmoves = 0,
 	.depth = 6,
 	.shuffle = false,
+	.usebook = true,
 	.black = false,
 
 	.reverse = false,

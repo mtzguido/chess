@@ -163,7 +163,7 @@ move machineMove(const game start) {
 	reset_stats();
 
 	t1 = clock();
-	if (bookMove(start, &ret)) {
+	if (copts.usebook && bookMove(start, &ret)) {
 		fprintf(stderr, "stats: book move.\n");
 		t = 0;
 	} else if (forced(start, &ret)) {
