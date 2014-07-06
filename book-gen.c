@@ -72,6 +72,19 @@ void nodup_book() {
 	}
 }
 
+char *movetype_str(int type) {
+	switch (type) {
+	case MOVE_REGULAR:
+		return "MOVE_REGULAR";
+	case MOVE_KINGSIDE_CASTLE:
+		return "MOVE_KINGSIDE_CASTLE";
+	case MOVE_QUEENSIDE_CASTLE:
+		return "MOVE_QUEENSIDE_CASTLE";
+	}
+	assert(0);
+	return NULL;
+}
+
 void print_book() {
 	int i;
 
@@ -80,12 +93,13 @@ void print_book() {
 		move m = book[i].next;
 		u64 hash = book[i].hash;
 
-		printf("	[%i] = { .hash = 0x%.16" PRIx64 ",\n", i, hash);
-		printf("		.r = %i,\n", m.r);
-		printf("		.c = %i,\n", m.c);
-		printf("		.R = %i,\n", m.R);
-		printf("		.C = %i,\n", m.C);
-		printf("		.move_type = %i,\n", m.move_type);
+		printf("	{\n");
+		printf("		.hash = 0x%.16" PRIx64 ",\n", hash);
+		printf("		.move_type = %s,\n", movetype_str(m.move_type));
+		if (m.move_type == MOVE_REGULAR) {
+			printf("		.r = %i, .c = %i, .R = %i, .C = %i\n",
+					m.r, m.c, m.R, m.C);
+		}
 		printf("	},\n");
 
 	}
