@@ -106,22 +106,19 @@ static void reset_stats() {
 		stats.depthsn[i] = 0;
 }
 
-static void print_stats(score exp, clock_t t1, clock_t t2) {
-	int i;
-
-	fprintf(stderr, "stats: searched %lld (%lld) nodes in %.3f seconds\n",
-			stats.nopen_s, stats.nopen_q,
-			1.0*(t2-t1)/CLOCKS_PER_SEC);
+static void print_stats(score exp) {
+	fprintf(stderr, "stats: searched %lld (%lld) nodes\n",
+			stats.nopen_s, stats.nopen_q);
 	fprintf(stderr, "stats: branching aprox: %.3f\n",
 			1.0 * stats.nbranch / stats.nopen_s);
 	fprintf(stderr, "stats: total nodes generated: %lld\n", stats.ngen);
-	fprintf(stderr, "stats: depth:n_nodes - ");
-	fprintf(stderr, "expected score: %i\n", exp);
+	fprintf(stderr, "stats: expected score: %i\n", exp);
+	fprintf(stderr, "stats: Number of hash collisions: %i\n", n_collision);
+}
 
-	for (i = 0; stats.depthsn[i] != 0; i++) 
-		fprintf(stderr, "%i:%i, ", i, stats.depthsn[i]);
-
-	fprintf(stderr, "\n");
+static void print_time(clock_t t1, clock_t t2) {
+	fprintf(stderr, "stats: moved in %.3f seconds\n",
+			1.0*(t2-t1)/CLOCKS_PER_SEC);
 }
 
 static bool forced(const game g, move *m) {
@@ -154,7 +151,6 @@ static bool forced(const game g, move *m) {
 
 move machineMove(const game start) {
 	move ret = {0};
-	score t = 0;
 	clock_t t1,t2;
 
 	ret.move_type = -1;
@@ -165,23 +161,21 @@ move machineMove(const game start) {
 	t1 = clock();
 	if (copts.usebook && bookMove(start, &ret)) {
 		fprintf(stderr, "stats: book move.\n");
-		t = 0;
 	} else if (forced(start, &ret)) {
 		fprintf(stderr, "stats: forced move.\n");
-		t = 0;
 	} else {
-		t = negamax(start, copts.depth, 0, &ret, minScore, maxScore);
+		score t = negamax(start, copts.depth, 0,
+				  &ret, minScore, maxScore);
 		assert(ret.move_type >= 0);
 		assert(ret.who == start->turn);
+		print_stats(t);
 	}
 	t2 = clock();
 
 	stats.totalopen += stats.nopen_s + stats.nopen_q;
 	stats.totalms += 1000*(t2-t1)/CLOCKS_PER_SEC;
 
-	print_stats(t, t1, t2);
-
-	fprintf(stderr, "stats: Number of hash collisions: %i\n", n_collision);
+	print_time(t1, t2);
 	fflush(NULL);
 	return ret;
 }
