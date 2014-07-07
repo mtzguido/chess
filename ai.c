@@ -47,8 +47,12 @@ static int genSuccs_wrap(game g, struct MS **arr, int depth) {
 	return n;
 }
 
+/*
+ * Ordena el arreglo de sucesores de manera lazy.
+ * Deja en arr[i] el sucesor correcto, asume que arr[0..i-1] ya
+ * está ordenado.
+ */
 static void sort_succ(game g, struct MS *arr, int i, int len, int depth_rem) {
-
 	if (i == len-1) {
 		/* Nada para hacer */
 		return;
@@ -320,6 +324,7 @@ static score negamax(game g, int maxDepth, int curDepth,
 		 * en upstream. Deberíamos ser mas agresivos y devolver
 		 * alpha? Es lo mismo?
 		 */
+		assert(0);
 		ret = alpha_orig;
 		assert(mm == NULL);
 		goto out;
