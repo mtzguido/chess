@@ -41,20 +41,20 @@ init = {
 static const struct game_struct
 init = {
 	.board= {
-		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, BKING, EMPTY },
-		{ WPAWN, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, BPAWN, EMPTY },
-		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
-		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, WKING, WQUEEN },
-		{ EMPTY, BROOK, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
-		{ BQUEEN, EMPTY, EMPTY, BBISHOP, EMPTY, EMPTY, EMPTY, EMPTY },
-		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
-		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY }
+		{ BROOK, EMPTY, EMPTY,  BKING, EMPTY,   BBISHOP, EMPTY, BROOK },
+		{ EMPTY, EMPTY, BPAWN,  EMPTY, BPAWN,   BPAWN,   BPAWN, BPAWN },
+		{ BPAWN, BPAWN, EMPTY,  EMPTY, BQUEEN,  EMPTY,   EMPTY, EMPTY },
+		{ EMPTY, EMPTY, EMPTY,  BPAWN, WKNIGHT, EMPTY,   EMPTY, BKNIGHT },
+		{ WQUEEN, EMPTY, EMPTY, WPAWN, EMPTY,   WBISHOP, EMPTY, EMPTY },
+		{ WPAWN, EMPTY, WKNIGHT, EMPTY, EMPTY,  EMPTY,   EMPTY, EMPTY },
+		{ EMPTY, WPAWN, EMPTY,  EMPTY, WPAWN,   WPAWN,   WPAWN, WPAWN },
+		{ EMPTY, EMPTY, EMPTY,  EMPTY, WKING, WBISHOP,   EMPTY, WROOK }
 	},
 	.turn = WHITE,
 	.lastmove = { 0 },
-	.idlecount = 0,
-	.castle_king = { 1, 1 },
-	.castle_queen = { 1, 1 },
+	.idlecount = 2,
+	.castle_king = { 0, 1 },
+	.castle_queen = { 0, 0 },
 	.castled = { 0, 0 },
 };
 
@@ -480,6 +480,7 @@ static void set_ep(game g, u8 r, u8 c) {
 static bool doMoveRegular(game g, move m, bool check);
 static bool doMoveKCastle(game g, move m, bool check);
 static bool doMoveQCastle(game g, move m, bool check);
+static bool doMoveNull(game g, move m, bool check);
 
 /*
  * 1 : Ok
@@ -513,6 +514,16 @@ bool __doMove(game g, move m, bool check) {
 		set_ep(g, -1, -1);
 		g->lastmove = m;
 		g->castled[m.who] = 1;
+
+		break;
+
+	case MOVE_NULL:
+		assert(copts.nullmove);
+		if (!doMoveNull(g, m, check))
+			goto fail;
+
+		set_ep(g, -1, -1);
+		g->lastmove = m;
 
 		break;
 
@@ -684,6 +695,13 @@ static bool doMoveRegular(game g, move m, bool check) {
 		    danger(m.r, m.c, g->kingx[m.who], g->kingy[m.who]))
 			g->inCheck[m.who] = -1;
 	}
+
+	return true;
+}
+
+static bool doMoveNull(game g, move m, bool check) {
+	if (inCheck(g, g->turn))
+		return false;
 
 	return true;
 }

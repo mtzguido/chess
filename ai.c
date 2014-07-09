@@ -19,9 +19,12 @@ static const score minScore = -1e7;
 static const score maxScore =  1e7;
 
 struct stats stats;
+static bool doing_null_move = false;
 
-static score negamax(game start, int maxDepth, int curDepth,
-			     move *mm, score alpha, score beta);
+static score quiesce(game g, score alpha, score beta, int curDepth,
+		     int maxDepth);
+static score negamax(game start, int maxDepth, int curDepth, move *mm,
+		     score alpha, score beta);
 
 static int genCaps_wrap(game g, struct MS **arr, int depth) {
 	int n;
@@ -106,6 +109,7 @@ static void reset_stats() {
 	stats.nopen_q = 0;
 	stats.ngen = 0;
 	stats.nbranch = 0;
+	stats.null_cuts = 0;
 	for (i = 0; i < 30; i++)
 		stats.depthsn[i] = 0;
 }
@@ -116,6 +120,7 @@ static void print_stats(score exp) {
 	fprintf(stderr, "stats: branching aprox: %.3f\n",
 			1.0 * stats.nbranch / stats.nopen_s);
 	fprintf(stderr, "stats: total nodes generated: %lld\n", stats.ngen);
+	fprintf(stderr, "stats: null move cuts: %lld\n", stats.null_cuts);
 	fprintf(stderr, "stats: expected score: %i\n", exp);
 	fprintf(stderr, "stats: Number of hash collisions: %i\n", n_collision);
 }
@@ -328,6 +333,38 @@ static score negamax(game g, int maxDepth, int curDepth,
 		ret = alpha_orig;
 		assert(mm == NULL);
 		goto out;
+	}
+
+	if (copts.nullmove
+		&& beta < maxScore
+		&& !doing_null_move
+		&& !inCheck(g, g->turn)
+		&& maxDepth - curDepth > 2) {
+		score t;
+		move m = { .move_type = MOVE_NULL, .who = g->turn };
+
+		assert(mm == NULL);
+
+		ng = copyGame(g);
+
+		if (doMove(ng, m)) {
+			mark(ng);
+			doing_null_move = true;
+			t = -negamax(ng, maxDepth-3, curDepth+1,
+				     NULL, -beta, -alpha);
+			doing_null_move = false;
+			unmark(ng);
+
+			freeGame(ng);
+
+			if (t > beta) {
+				stats.null_cuts++;
+				ret = beta_orig;
+				goto out;
+			}
+		} else {
+			freeGame(ng);
+		}
 	}
 
 	best = minScore;

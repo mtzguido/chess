@@ -8,9 +8,12 @@
 
 #include "common.h"
 
-#define MOVE_REGULAR 0
-#define MOVE_KINGSIDE_CASTLE 1
-#define MOVE_QUEENSIDE_CASTLE 2
+enum move_types {
+	MOVE_REGULAR,
+	MOVE_KINGSIDE_CASTLE,
+	MOVE_QUEENSIDE_CASTLE,
+	MOVE_NULL,
+};
 
 struct move {
 	/* (r,c) -> (R,C) */
@@ -21,7 +24,7 @@ struct move {
 	u8 promote:4;
 
 	u8 who:1;
-	i8 move_type:3;
+	enum move_types move_type:3;
 };
 
 typedef struct move move;

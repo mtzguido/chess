@@ -11,6 +11,7 @@ extern struct stats {
 	long long ngen;
 	long long totalopen;
 	long long totalms;
+	long long null_cuts;
 } stats;
 
 move machineMove(game start);

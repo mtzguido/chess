@@ -235,8 +235,9 @@ void parse_opt(int argc, char **argv) {
 		{ "no-ab",	no_argument, 0, 0x5 },
 		{ "no-quiesce",	no_argument, 0, 0x6 },
 		{ "no-book",	no_argument, 0, 0x7 },
-		{ "black",	no_argument, 0, 'b' },
 		{ "seed",	required_argument, 0, 0x8},
+		{ "no-null",	no_argument, 0, 0x9 },
+		{ "black",	no_argument, 0, 'b' },
 		{ 0,0,0,0 }
 	};
 
@@ -290,6 +291,9 @@ void parse_opt(int argc, char **argv) {
 			break;
 		case 0x8:
 			srand(atoi(optarg));
+			break;
+		case 0x9:
+			copts.nullmove = false;
 			break;
 		case '?':
 		default:
