@@ -15,7 +15,6 @@
 char charOf(int piece);
 
 static int scoreOf(int piece);
-static int absoluteScoreOf(int piece);
 
 #if 1
 static const struct game_struct
@@ -63,8 +62,8 @@ init = {
 static void fix(game g) {
 	int i, j;
 
-	g->pieceScore = 0;
-	g->totalScore = 0;
+	g->pieceScore[BLACK] = 0;
+	g->pieceScore[WHITE] = 0;
 	g->zobrist = 0;
 	g->piecemask[BLACK] = 0;
 	g->piecemask[WHITE] = 0;
@@ -78,8 +77,7 @@ static void fix(game g) {
 				g->kingy[colorOf(piece)] = j;
 			}
 
-			g->pieceScore += scoreOf(piece);
-			g->totalScore += absoluteScoreOf(piece);
+			g->pieceScore[colorOf(piece)] += scoreOf(piece);
 
 			if (piece) {
 				g->zobrist ^= ZOBR_PIECE(piece, i, j);
@@ -143,18 +141,18 @@ void printBoard(game g) {
 
 	fprintf(stderr, "\n   a b c d e f g h\n");
 	fprintf(stderr, "[ castle_king = %i %i \n", g->castle_king[0], g->castle_king[1]);
-	fprintf(stderr, "  castle_queen = %i %i \n", g->castle_queen[0], g->castle_queen[1]);
-	fprintf(stderr, "  kingx = %i %i \n", g->kingx[0], g->kingx[1]);
-	fprintf(stderr, "  kingy = %i %i \n", g->kingy[0], g->kingy[1]);
-	fprintf(stderr, "  en_passant = %i %i \n", g->en_passant_x, g->en_passant_y);
-	fprintf(stderr, "  inCheck = %i %i \n", g->inCheck[0], g->inCheck[1]);
-	fprintf(stderr, "  scores = %i %i\n", g->pieceScore, g->totalScore);
-	fprintf(stderr, "  pps o e = %i %i\n", g->pps_O, g->pps_E);
-	fprintf(stderr, "  zobrist = 0x%" PRIx64 "\n", g->zobrist);
-	fprintf(stderr, "  idlecount = %i\n", g->idlecount);
-	fprintf(stderr, "  piecemask[W] = 0x%.16" PRIx64 "\n", g->piecemask[WHITE]);
-	fprintf(stderr, "  piecemask[B] = 0x%.16" PRIx64 "\n", g->piecemask[BLACK]);
-	fprintf(stderr, "]\n");
+	fprintf(stderr, "[ castle_queen = %i %i \n", g->castle_queen[0], g->castle_queen[1]);
+	fprintf(stderr, "[ kingx = %i %i \n", g->kingx[0], g->kingx[1]);
+	fprintf(stderr, "[ kingy = %i %i \n", g->kingy[0], g->kingy[1]);
+	fprintf(stderr, "[ en_passant = %i %i \n", g->en_passant_x, g->en_passant_y);
+	fprintf(stderr, "[ inCheck = %i %i \n", g->inCheck[0], g->inCheck[1]);
+	fprintf(stderr, "[ scores = %i %i\n", g->pieceScore[WHITE],
+					      g->pieceScore[BLACK]);
+	fprintf(stderr, "[ pps o e = %i %i\n", g->pps_O, g->pps_E);
+	fprintf(stderr, "[ zobrist = 0x%" PRIx64 "\n", g->zobrist);
+	fprintf(stderr, "[ idlecount = %i\n", g->idlecount);
+	fprintf(stderr, "[ piecemask[W] = 0x%.16" PRIx64 "\n", g->piecemask[WHITE]);
+	fprintf(stderr, "[ piecemask[B] = 0x%.16" PRIx64 "\n", g->piecemask[BLACK]);
 
 	fflush(stdout);
 }
@@ -570,27 +568,25 @@ static inline void calcPromotion(game g, move m);
 
 static void setPiece(game g, i8 r, i8 c, piece_t piece) {
 	piece_t old_piece = g->board[r][c];
+	u8 old_who = colorOf(old_piece);
+	u8 who = colorOf(piece);
 
 	if (old_piece) {
-		g->pieceScore -= scoreOf(old_piece);
-		g->totalScore -= absoluteScoreOf(old_piece);
-		g->pps_O      -= piece_square_val_O(old_piece, r, c);
-		g->pps_E      -= piece_square_val_E(old_piece, r, c);
-		g->zobrist    ^= ZOBR_PIECE(old_piece, r, c);
-		g->piecemask[colorOf(old_piece)]
-			^= ((u64)1) << (r*8 + c);
+		g->pieceScore[old_who]	-= scoreOf(old_piece);
+		g->pps_O		-= piece_square_val_O(old_piece, r, c);
+		g->pps_E		-= piece_square_val_E(old_piece, r, c);
+		g->zobrist		^= ZOBR_PIECE(old_piece, r, c);
+		g->piecemask[old_who]	^= ((u64)1) << (r*8 + c);
 	}
 
 	g->board[r][c] = piece;
 
 	if (piece) {
-		g->zobrist    ^= ZOBR_PIECE(piece, r, c);
-		g->pps_E      += piece_square_val_E(piece, r, c);
-		g->pps_O      += piece_square_val_O(piece, r, c);
-		g->totalScore += absoluteScoreOf(piece);
-		g->pieceScore += scoreOf(piece);
-		g->piecemask[colorOf(piece)]
-			^= ((u64)1) << (r*8 + c);
+		g->piecemask[who]	^= ((u64)1) << (r*8 + c);
+		g->zobrist		^= ZOBR_PIECE(piece, r, c);
+		g->pps_E		+= piece_square_val_E(piece, r, c);
+		g->pps_O		+= piece_square_val_O(piece, r, c);
+		g->pieceScore[who]	+= scoreOf(piece);
 	}
 }
 
@@ -605,7 +601,8 @@ static void setPiece(game g, i8 r, i8 c, piece_t piece) {
 static void movePiece(game g, i8 r, i8 c, i8 R, i8 C) {
 	const piece_t from = g->board[r][c];
 	const piece_t to   = g->board[R][C];
-	const int who = g->turn;
+	const u8 who = g->turn;
+	const u8 enemy = flipTurn(who);
 
 	assert(from != EMPTY);
 
@@ -622,13 +619,11 @@ static void movePiece(game g, i8 r, i8 c, i8 R, i8 C) {
 	g->board[R][C] = from;
 
 	if (to) {
-		g->pieceScore -= scoreOf(to);
-		g->totalScore -= absoluteScoreOf(to);
-		g->pps_O      -= piece_square_val_O(to, R, C);
-		g->pps_E      -= piece_square_val_E(to, R, C);
-		g->zobrist    ^= ZOBR_PIECE(to, R, C);
-		g->piecemask[flipTurn(who)]
-			^= ((u64)1) << (R*8 + C);
+		g->pieceScore[enemy]	-= scoreOf(to);
+		g->pps_O		-= piece_square_val_O(to, R, C);
+		g->pps_E		-= piece_square_val_E(to, R, C);
+		g->zobrist		^= ZOBR_PIECE(to, R, C);
+		g->piecemask[enemy]	^= ((u64)1) << (R*8 + C);
 	}
 }
 
@@ -909,27 +904,17 @@ static bool doMoveQCastle(game g, move m, bool check) {
 
 static const int scoreTab[] =
 {
-	[BKING] = -20000,
-	[BQUEEN] = -900,
-	[BROOK] = -500,
-	[BBISHOP] = -330,
-	[BKNIGHT] = -320,
-	[BPAWN] = -100,
-	[0] = 0,
-	[WKING] = 20000,
-	[WQUEEN] = 900,
-	[WROOK] = 500,
-	[WBISHOP] = 330,
-	[WKNIGHT] = 320,
-	[WPAWN] = 100
+	[EMPTY]		= 0,
+	[WPAWN]		= 100,
+	[WKNIGHT]	= 320,
+	[WBISHOP]	= 330,
+	[WROOK]		= 500,
+	[WQUEEN]	= 900,
+	[WKING]		= 20000,
 };
 
 static int scoreOf(int piece) {
-	return scoreTab[piece];
-}
-
-static int absoluteScoreOf(int piece) {
-	return abs(scoreTab[piece]);
+	return scoreTab[piece & 7];
 }
 
 bool equalGame(game a, game b) {

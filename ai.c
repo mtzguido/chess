@@ -464,10 +464,10 @@ out:
 }
 
 static int pieceScore(const game g) {
-	int x = g->totalScore - 40000;
+	int x = g->pieceScore[WHITE] + g->pieceScore[BLACK] - 40000;
 	int pps = (x*(g->pps_O - g->pps_E))/8000 + g->pps_E;
 
-	return g->pieceScore + pps;
+	return g->pieceScore[WHITE] - g->pieceScore[BLACK] + pps;
 }
 
 /*

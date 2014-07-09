@@ -38,8 +38,7 @@ struct game_struct {
 	int pps_O;
 	int pps_E;
 	u8 turn:1;
-	int pieceScore;
-	int totalScore;
+	int pieceScore[2];
 
 	move lastmove;
 	u8 idlecount;
