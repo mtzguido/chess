@@ -195,7 +195,7 @@ static score quiesce(game g, score alpha, score beta, int curDepth, int maxDepth
 	game ng;
 	score ret, t;
 
-	if (isDraw(g))
+	if (isDraw(g) || reps(g) >= 2)
 		return 0;
 
 	if (inCheck(g, g->turn)) {
