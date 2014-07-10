@@ -648,8 +648,8 @@ score boardEval(const game g) {
 	if (unlikely(g->idlecount > 68))
 		score = (score * (100 - g->idlecount))/32;
 
-	assert((g->turn == WHITE ? score : -score) < maxScore);
-	assert((g->turn == WHITE ? score : -score) > minScore);
+	assert(score < maxScore);
+	assert(score > minScore);
 
 	return g->turn == WHITE ? score : -score;
 }
