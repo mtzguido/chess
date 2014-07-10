@@ -339,7 +339,8 @@ static score negamax(game g, int maxDepth, int curDepth,
 		&& beta < maxScore
 		&& !doing_null_move
 		&& !inCheck(g, g->turn)
-		&& maxDepth - curDepth > 2) {
+		&& g->pieceScore[g->turn] > 21000
+		&& maxDepth - curDepth > 1) {
 		score t;
 		move m = { .move_type = MOVE_NULL, .who = g->turn };
 
