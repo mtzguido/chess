@@ -811,7 +811,7 @@ static int __genSuccs(const game g, struct MS **arr_ret, movegen_t fun) {
 	int i;
 	int alen, asz;
 	struct MS *arr;
-	u8 pieces[64];
+	u8 rows[32], cols[32];
 	int npcs;
 
 	alen = 0;
@@ -819,19 +819,19 @@ static int __genSuccs(const game g, struct MS **arr_ret, movegen_t fun) {
 	arr = calloc(asz, sizeof arr[0]);
 	assert(arr != NULL);
 
-	npcs = on_bits(g->piecemask[g->turn], pieces);
+	npcs = on_bits(g->piecemask[g->turn], rows, cols);
 
 	if (copts.reverse && fun == pieceSuccs) {
 		for (i=npcs-1; i>=0; i--) {
-			const u8 r = pieces[i] >> 3;
-			const u8 c = pieces[i] & 7;
+			const u8 r = rows[i];
+			const u8 c = cols[i];
 
 			fun(r, c, g, arr, &alen);
 		}
 	} else {
 		for (i=0; i<npcs; i++) {
-			const u8 r = pieces[i] >> 3;
-			const u8 c = pieces[i] & 7;
+			const u8 r = rows[i];
+			const u8 c = cols[i];
 
 			fun(r, c, g, arr, &alen);
 		}

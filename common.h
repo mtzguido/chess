@@ -86,6 +86,6 @@ static const struct opts defopts = {
 
 extern struct opts copts;
 
-int on_bits(u64 x, u8 *arr);
+int on_bits(u64 x, u8 *rows, u8 *cols);
 
 #endif

@@ -480,12 +480,13 @@ int pawn_rank[2][10] = {
 	[WHITE] = { [0] = 0, [9] = 0 },
 };
 
-static void fill_ranks(const u8 pieces[], const int npcs, const game g) {
+static void fill_ranks(const u8 rows[], const u8 cols[], const int npcs,
+		       const game g) {
 	int i;
 
 	for (i=0; i<npcs; i++) {
-		const int r = pieces[i] >> 3;
-		const int c = pieces[i] & 7;
+		const int r = rows[i];
+		const int c = cols[i];
 		const piece_t piece = g->board[r][c];
 
 		switch (piece) {
@@ -546,13 +547,14 @@ static score eval_bpawn(const int i, const int j) {
 	return ret;
 }
 
-static score eval_with_ranks(const u8 pieces[], const int npcs, const game g) {
+static score eval_with_ranks(const u8 rows[], const u8 cols[], const int npcs,
+			     const game g) {
 	int i;
 	score score = 0;
 
 	for (i=0; i<npcs; i++) {
-		const int r = pieces[i] >> 3;
-		const int c = pieces[i] & 7;
+		const int r = rows[i];
+		const int c = cols[i];
 		const piece_t piece = g->board[r][c];
 
 		switch (piece) {
@@ -609,10 +611,9 @@ static score castle_score(const game g) {
 }
 
 score boardEval(const game g) {
-	int i;
 	score score = pieceScore(g);
-	u8 pieces[64];
-	int npcs;
+	u8 rows[32], cols[32];
+	int i, npcs;
 
 	assert(pawn_rank[WHITE][0] == 0);
 	assert(pawn_rank[WHITE][9] == 0);
@@ -624,19 +625,19 @@ score boardEval(const game g) {
 		pawn_rank[BLACK][i] = 7;
 	}
 
-	npcs = on_bits(g->piecemask[WHITE] | g->piecemask[BLACK], pieces);
+	npcs = on_bits(g->piecemask[WHITE] | g->piecemask[BLACK], rows, cols);
 
 	/*
 	 * Primera pasada, llenamos pawn_rank con el peon
 	 * menos avanzado de cada lado.
 	 */
-	fill_ranks(pieces, npcs, g);
+	fill_ranks(rows, cols, npcs, g);
 
 	/*
 	 * Segunda pasada. Con la información de los peones
 	 * evaluamos filas abiertas y status de peones
 	 */
-	score += eval_with_ranks(pieces, npcs, g);
+	score += eval_with_ranks(rows, cols, npcs, g);
 
 	/* Penalizamos según posibilidades de enroque */
 	score += castle_score(g);

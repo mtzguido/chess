@@ -28,99 +28,100 @@ char pieceOf(char c) {
 		case 'k':	return WKING;
 		case 'K':	return WKING;
 		default:	return EMPTY;
-	}   
+	}
 }
 
 #define B(n)	(((u64)0xff)<<((8*n)))
 #define b(n)	(((u64)1<<(n)))
 
-int on_bits(u64 x, u8 *arr) {
+int on_bits(u64 x, u8 *rows, u8 *cols) {
 	int ret = 0;
 
 	if (x & (B(0) | B(1) | B(2) | B(3))) {
 		if (x & B(0)) {
-			if (x & b(0)) arr[ret++] = 0;
-			if (x & b(1)) arr[ret++] = 1;
-			if (x & b(2)) arr[ret++] = 2;
-			if (x & b(3)) arr[ret++] = 3;
-			if (x & b(4)) arr[ret++] = 4;
-			if (x & b(5)) arr[ret++] = 5;
-			if (x & b(6)) arr[ret++] = 6;
-			if (x & b(7)) arr[ret++] = 7;
+			if (x & b(0))  { rows[ret] = 0; cols[ret++] = 0; }
+			if (x & b(1))  { rows[ret] = 0; cols[ret++] = 1; }
+			if (x & b(2))  { rows[ret] = 0; cols[ret++] = 2; }
+			if (x & b(3))  { rows[ret] = 0; cols[ret++] = 3; }
+			if (x & b(4))  { rows[ret] = 0; cols[ret++] = 4; }
+			if (x & b(5))  { rows[ret] = 0; cols[ret++] = 5; }
+			if (x & b(6))  { rows[ret] = 0; cols[ret++] = 6; }
+			if (x & b(7))  { rows[ret] = 0; cols[ret++] = 7; }
 		}
 		if (x & B(1)) {
-			if (x & b(8)) arr[ret++] = 8;
-			if (x & b(9)) arr[ret++] = 9;
-			if (x & b(10)) arr[ret++] = 10;
-			if (x & b(11)) arr[ret++] = 11;
-			if (x & b(12)) arr[ret++] = 12;
-			if (x & b(13)) arr[ret++] = 13;
-			if (x & b(14)) arr[ret++] = 14;
-			if (x & b(15)) arr[ret++] = 15;
+			if (x & b(8))  { rows[ret] = 1; cols[ret++] = 0; }
+			if (x & b(9))  { rows[ret] = 1; cols[ret++] = 1; }
+			if (x & b(10)) { rows[ret] = 1; cols[ret++] = 2; }
+			if (x & b(11)) { rows[ret] = 1; cols[ret++] = 3; }
+			if (x & b(12)) { rows[ret] = 1; cols[ret++] = 4; }
+			if (x & b(13)) { rows[ret] = 1; cols[ret++] = 5; }
+			if (x & b(14)) { rows[ret] = 1; cols[ret++] = 6; }
+			if (x & b(15)) { rows[ret] = 1; cols[ret++] = 7; }
 		}
 		if (x & B(2)) {
-			if (x & b(16)) arr[ret++] = 16;
-			if (x & b(17)) arr[ret++] = 17;
-			if (x & b(18)) arr[ret++] = 18;
-			if (x & b(19)) arr[ret++] = 19;
-			if (x & b(20)) arr[ret++] = 20;
-			if (x & b(21)) arr[ret++] = 21;
-			if (x & b(22)) arr[ret++] = 22;
-			if (x & b(23)) arr[ret++] = 23;
+			if (x & b(16)) { rows[ret] = 2; cols[ret++] = 0; }
+			if (x & b(17)) { rows[ret] = 2; cols[ret++] = 1; }
+			if (x & b(18)) { rows[ret] = 2; cols[ret++] = 2; }
+			if (x & b(19)) { rows[ret] = 2; cols[ret++] = 3; }
+			if (x & b(20)) { rows[ret] = 2; cols[ret++] = 4; }
+			if (x & b(21)) { rows[ret] = 2; cols[ret++] = 5; }
+			if (x & b(22)) { rows[ret] = 2; cols[ret++] = 6; }
+			if (x & b(23)) { rows[ret] = 2; cols[ret++] = 7; }
 		}
 		if (x & B(3)) {
-			if (x & b(24)) arr[ret++] = 24;
-			if (x & b(25)) arr[ret++] = 25;
-			if (x & b(26)) arr[ret++] = 26;
-			if (x & b(27)) arr[ret++] = 27;
-			if (x & b(28)) arr[ret++] = 28;
-			if (x & b(29)) arr[ret++] = 29;
-			if (x & b(30)) arr[ret++] = 30;
-			if (x & b(31)) arr[ret++] = 31;
+			if (x & b(24)) { rows[ret] = 3; cols[ret++] = 0; }
+			if (x & b(25)) { rows[ret] = 3; cols[ret++] = 1; }
+			if (x & b(26)) { rows[ret] = 3; cols[ret++] = 2; }
+			if (x & b(27)) { rows[ret] = 3; cols[ret++] = 3; }
+			if (x & b(28)) { rows[ret] = 3; cols[ret++] = 4; }
+			if (x & b(29)) { rows[ret] = 3; cols[ret++] = 5; }
+			if (x & b(30)) { rows[ret] = 3; cols[ret++] = 6; }
+			if (x & b(31)) { rows[ret] = 3; cols[ret++] = 7; }
 		}
 	}
 	if (x & (B(4) | B(5) | B(6) | B(7))) {
 		if (x & B(4)) {
-			if (x & b(32)) arr[ret++] = 32;
-			if (x & b(33)) arr[ret++] = 33;
-			if (x & b(34)) arr[ret++] = 34;
-			if (x & b(35)) arr[ret++] = 35;
-			if (x & b(36)) arr[ret++] = 36;
-			if (x & b(37)) arr[ret++] = 37;
-			if (x & b(38)) arr[ret++] = 38;
-			if (x & b(39)) arr[ret++] = 39;
+			if (x & b(32)) { rows[ret] = 4; cols[ret++] = 0; }
+			if (x & b(33)) { rows[ret] = 4; cols[ret++] = 1; }
+			if (x & b(34)) { rows[ret] = 4; cols[ret++] = 2; }
+			if (x & b(35)) { rows[ret] = 4; cols[ret++] = 3; }
+			if (x & b(36)) { rows[ret] = 4; cols[ret++] = 4; }
+			if (x & b(37)) { rows[ret] = 4; cols[ret++] = 5; }
+			if (x & b(38)) { rows[ret] = 4; cols[ret++] = 6; }
+			if (x & b(39)) { rows[ret] = 4; cols[ret++] = 7; }
 		}
 		if (x & B(5)) {
-			if (x & b(40)) arr[ret++] = 40;
-			if (x & b(41)) arr[ret++] = 41;
-			if (x & b(42)) arr[ret++] = 42;
-			if (x & b(43)) arr[ret++] = 43;
-			if (x & b(44)) arr[ret++] = 44;
-			if (x & b(45)) arr[ret++] = 45;
-			if (x & b(46)) arr[ret++] = 46;
-			if (x & b(47)) arr[ret++] = 47;
+			if (x & b(40)) { rows[ret] = 5; cols[ret++] = 0; }
+			if (x & b(41)) { rows[ret] = 5; cols[ret++] = 1; }
+			if (x & b(42)) { rows[ret] = 5; cols[ret++] = 2; }
+			if (x & b(43)) { rows[ret] = 5; cols[ret++] = 3; }
+			if (x & b(44)) { rows[ret] = 5; cols[ret++] = 4; }
+			if (x & b(45)) { rows[ret] = 5; cols[ret++] = 5; }
+			if (x & b(46)) { rows[ret] = 5; cols[ret++] = 6; }
+			if (x & b(47)) { rows[ret] = 5; cols[ret++] = 7; }
 		}
 		if (x & B(6)) {
-			if (x & b(48)) arr[ret++] = 48;
-			if (x & b(49)) arr[ret++] = 49;
-			if (x & b(50)) arr[ret++] = 50;
-			if (x & b(51)) arr[ret++] = 51;
-			if (x & b(52)) arr[ret++] = 52;
-			if (x & b(53)) arr[ret++] = 53;
-			if (x & b(54)) arr[ret++] = 54;
-			if (x & b(55)) arr[ret++] = 55;
+			if (x & b(48)) { rows[ret] = 6; cols[ret++] = 0; }
+			if (x & b(49)) { rows[ret] = 6; cols[ret++] = 1; }
+			if (x & b(50)) { rows[ret] = 6; cols[ret++] = 2; }
+			if (x & b(51)) { rows[ret] = 6; cols[ret++] = 3; }
+			if (x & b(52)) { rows[ret] = 6; cols[ret++] = 4; }
+			if (x & b(53)) { rows[ret] = 6; cols[ret++] = 5; }
+			if (x & b(54)) { rows[ret] = 6; cols[ret++] = 6; }
+			if (x & b(55)) { rows[ret] = 6; cols[ret++] = 7; }
 		}
 		if (x & B(7)) {
-			if (x & b(56)) arr[ret++] = 56;
-			if (x & b(57)) arr[ret++] = 57;
-			if (x & b(58)) arr[ret++] = 58;
-			if (x & b(59)) arr[ret++] = 59;
-			if (x & b(60)) arr[ret++] = 60;
-			if (x & b(61)) arr[ret++] = 61;
-			if (x & b(62)) arr[ret++] = 62;
-			if (x & b(63)) arr[ret++] = 63;
+			if (x & b(56)) { rows[ret] = 7; cols[ret++] = 0; }
+			if (x & b(57)) { rows[ret] = 7; cols[ret++] = 1; }
+			if (x & b(58)) { rows[ret] = 7; cols[ret++] = 2; }
+			if (x & b(59)) { rows[ret] = 7; cols[ret++] = 3; }
+			if (x & b(60)) { rows[ret] = 7; cols[ret++] = 4; }
+			if (x & b(61)) { rows[ret] = 7; cols[ret++] = 5; }
+			if (x & b(62)) { rows[ret] = 7; cols[ret++] = 6; }
+			if (x & b(63)) { rows[ret] = 7; cols[ret++] = 7; }
 		}
 	}
 
+	assert(ret <= 32);
 	return ret;
 }
