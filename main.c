@@ -237,6 +237,7 @@ void parse_opt(int argc, char **argv) {
 		{ "no-book",	no_argument, 0, 0x7 },
 		{ "seed",	required_argument, 0, 0x8},
 		{ "no-null",	no_argument, 0, 0x9 },
+		{ "no-iter",	no_argument, 0, 0xa },
 		{ "black",	no_argument, 0, 'b' },
 		{ 0,0,0,0 }
 	};
@@ -294,6 +295,9 @@ void parse_opt(int argc, char **argv) {
 			break;
 		case 0x9:
 			copts.nullmove = false;
+			break;
+		case 0xa:
+			copts.iter = false;
 			break;
 		case '?':
 		default:

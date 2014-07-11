@@ -45,23 +45,24 @@ enum play_mode {
 
 struct opts {
 	enum play_mode mode;
-	int nmoves;
-	int depth;
-	bool shuffle;
-	bool usebook;
-	bool black;
+	int nmoves;	/* Amount of moves to calculate */
+	int depth;	/* Search depth */
+	bool shuffle;	/* Shuffle the succ moves */
+	bool usebook;	/* Use opening book */
+	bool black;	/* Play as black */
 
-	bool reverse;
+	bool reverse;	/* Reverse the order of succ generation (debug) */
 
-	bool ab; /* Alpha-beta */
-	bool quiesce;
-	bool nullmove;
+	bool iter;	/* Iterative deepening */
+	bool ab;	/* Alpha-beta */
+	bool quiesce;	/* Use quiescence search on leaf nodes */
+	bool nullmove;	/* Use Null Move Heuristic */
 
 	/* Heuristics */
-	bool heur_trans;
-	bool heur_killer;
-	bool heur_cm;
-	bool heur_trivial;
+	bool heur_trans;	/* Transposition table */
+	bool heur_killer;	/* Killer Heuristic */
+	bool heur_cm;		/* Countermove Heuristic */
+	bool heur_trivial;	/* Trivial and cheap move ordering */
 };
 
 static const struct opts defopts = {
@@ -74,6 +75,7 @@ static const struct opts defopts = {
 
 	.reverse = false,
 
+	.iter = true,
 	.ab = true,
 	.quiesce = true,
 	.nullmove = true,

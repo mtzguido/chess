@@ -176,6 +176,13 @@ move machineMove(const game start) {
 	} else if (forced(start, &ret)) {
 		fprintf(stderr, "stats: forced move.\n");
 	} else {
+		/* Profundización para llenar la TT */
+		if (copts.iter) {
+			int d;
+			for (d=2 - copts.depth%2; d<copts.depth; d += 2)
+				negamax(start, d, 0, &ret, minScore, maxScore);
+		}
+
 		score t = negamax(start, copts.depth, 0,
 				  &ret, minScore, maxScore);
 
