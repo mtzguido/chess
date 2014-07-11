@@ -122,6 +122,7 @@ int on_bits(u64 x, u8 *rows, u8 *cols) {
 		}
 	}
 
+	/* A lo sumo hay 32 piezas en el tablero */
 	assert(ret <= 32);
 	return ret;
 }
