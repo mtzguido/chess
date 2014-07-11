@@ -122,7 +122,7 @@ static inline bool any_piece(game g, i8 r, i8 c) {
 }
 
 static inline bool equalMove(move a, move b) {
-	if (a.who != b.who)
+	if (a.who != b.who || a.move_type != b.move_type)
 		return false;
 
 	if (a.move_type != MOVE_REGULAR)
