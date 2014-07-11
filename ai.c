@@ -104,12 +104,14 @@ static void sort_succ(game g, struct MS *arr, int i, int len, int depth_rem) {
 static void reset_stats() {
 	int i;
 
-	n_collision = 0;
-	stats.nopen_s = 0;
-	stats.nopen_q = 0;
-	stats.ngen = 0;
-	stats.nbranch = 0;
-	stats.null_cuts = 0;
+	n_collision	= 0;
+	stats.nopen_s	= 0;
+	stats.nopen_q	= 0;
+	stats.ngen	= 0;
+	stats.nbranch	= 0;
+	stats.null_cuts	= 0;
+	stats.tt_hits	= 0;
+
 	for (i = 0; i < 30; i++)
 		stats.depthsn[i] = 0;
 }
@@ -121,6 +123,7 @@ static void print_stats(score exp) {
 			1.0 * stats.nbranch / stats.nopen_s);
 	fprintf(stderr, "stats: total nodes generated: %lld\n", stats.ngen);
 	fprintf(stderr, "stats: null move cuts: %lld\n", stats.null_cuts);
+	fprintf(stderr, "stats: TT hits : %lld\n", stats.tt_hits);
 	fprintf(stderr, "stats: expected score: %i\n", exp);
 	fprintf(stderr, "stats: Number of hash collisions: %i\n", n_collision);
 }
