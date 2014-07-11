@@ -43,7 +43,7 @@ move parseMove(game g, char *line) {
 	if (5 != (t=sscanf(line, "%c%i%c%i%c", &c, &r, &C, &R, &newpiece))
 			&& (newpiece = 0) /* muuuuuuy chanta */
 			&& (4 != (t=sscanf(line, "%c%i%c%i", &c, &r, &C, &R)))) {
-		m.move_type = -1;
+		m.move_type = MOVE_INVAL;
 		return m;
 	}
 
@@ -57,7 +57,7 @@ move parseMove(game g, char *line) {
 	if (c < 'a' || c > 'h' || C < 'a' || C > 'h' ||
 	    r < 0   || r > 8   || R < 0   || R > 8  ) {
 		fprintf(stderr, "Out of bounds... try again\b");
-		m.move_type = -1;
+		m.move_type = MOVE_INVAL;
 		return m;
 	}
 

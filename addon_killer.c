@@ -11,7 +11,7 @@ static void killer_reset() {
 	int i, j;
 	for (i=0; i<KTABLE_SIZE; i++)
 		for (j=0; j<KILLER_WIDTH; j++)
-			killerTable[i][j].move_type = -1;
+			killerTable[i][j].move_type = MOVE_INVAL;
 }
 
 static void killer_score_succs(game g __maybe_unused, struct MS *ss,
@@ -57,7 +57,7 @@ static int killer_suggest(game g, move *arr, int depth) {
 
 	c = 0;
 	for (i=0; i<KILLER_WIDTH; i++) {
-		if (killerTable[depth][i].move_type == -1)
+		if (killerTable[depth][i].move_type == MOVE_INVAL)
 			continue;
 
 		if (killerTable[depth][i].who != g->turn)

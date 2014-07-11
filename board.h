@@ -9,6 +9,7 @@
 #include "common.h"
 
 enum move_types {
+	MOVE_INVAL,
 	MOVE_REGULAR,
 	MOVE_KINGSIDE_CASTLE,
 	MOVE_QUEENSIDE_CASTLE,

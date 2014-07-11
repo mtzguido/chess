@@ -13,7 +13,7 @@ static void cm_reset() {
 	for (c=0; c<8; c++)
 	for (d=0; d<8; d++)
 	for (e=0; e<8; e++)
-		counterTable[a][b][c][d][e].move_type = -1;
+		counterTable[a][b][c][d][e].move_type = MOVE_INVAL;
 }
 
 static void cm_score_succs(game g, struct MS *ss,
@@ -24,7 +24,7 @@ static void cm_score_succs(game g, struct MS *ss,
 	move l = g->lastmove;
 	move m = counterTable[g->turn][l.r][l.c][l.R][l.C];
 
-	if (m.move_type == -1)
+	if (m.move_type == MOVE_INVAL)
 		return;
 
 	for (i=0; i<nsucc; i++) {
@@ -44,7 +44,7 @@ static int cm_suggest(game g, move *arr, int depth) {
 	move m = g->lastmove;
 	move cm = counterTable[g->turn][m.r][m.c][m.R][m.C];
 
-	if (cm.move_type == -1)
+	if (cm.move_type == MOVE_INVAL)
 		return 0;
 
 	if (cm.who != g->turn)

@@ -98,7 +98,7 @@ move playerMove(game g) {
 
 	m = parseMove(g, line+5);
 
-	if (m.move_type == -1)
+	if (m.move_type == MOVE_INVAL)
 		return playerMove(g);
 
 	free(line);

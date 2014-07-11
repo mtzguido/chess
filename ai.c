@@ -162,7 +162,7 @@ move machineMove(const game start) {
 	move ret = {0};
 	clock_t t1,t2;
 
-	ret.move_type = -1;
+	ret.move_type = MOVE_INVAL;
 
 	addon_reset();
 	reset_stats();
@@ -175,7 +175,8 @@ move machineMove(const game start) {
 	} else {
 		score t = negamax(start, copts.depth, 0,
 				  &ret, minScore, maxScore);
-		assert(ret.move_type >= 0);
+
+		assert(ret.move_type != MOVE_INVAL);
 		assert(ret.who == start->turn);
 		print_stats(t);
 	}
@@ -456,7 +457,7 @@ static score negamax(game g, int maxDepth, int curDepth,
 
 out:
 	if (mm)
-		assert(mm->move_type >= 0);
+		assert(mm->move_type != MOVE_INVAL);
 
 	assert(ret > minScore);
 	assert(ret < maxScore);
