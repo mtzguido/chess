@@ -80,7 +80,7 @@ static const struct opts defopts = {
 	.quiesce = true,
 	.nullmove = true,
 
-	.heur_trans = false,
+	.heur_trans = true,
 	.heur_killer = true,
 	.heur_cm = true,
 	.heur_trivial = true,
