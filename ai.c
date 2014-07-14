@@ -282,11 +282,24 @@ out:
 	return ret;
 }
 
+static int calcExtension(game g, int maxDepth, int curDepth) {
+	int ret = 0;
+
+	if (inCheck(g, g->turn))
+		ret++;
+
+	if (g->lastmove.promote != EMPTY)
+		ret++;
+
+	return ret;
+}
+
 static score negamax(game g, int maxDepth, int curDepth,
 		     move *mm, score alpha, score beta) {
 	score t, ret, best;
 	struct MS *succs = NULL;
 	int i, nsucc;
+	int ext;
 	int nvalid = 0;
 	game ng;
 	int bestmove = -1;
@@ -309,13 +322,16 @@ static score negamax(game g, int maxDepth, int curDepth,
 		goto out;
 	}
 
-	/*
-	 * Nunca paramos en una posición ruidosa, y extendemos
-	 * la profundidad máxima para todo el sub-árbol
-	 */
-	if (inCheck(g, g->turn) || g->lastmove.promote != EMPTY) {
-		maxDepth++;
-	} else if (curDepth >= maxDepth) {
+	ext = calcExtension(g, maxDepth, curDepth);
+	maxDepth += ext;
+
+	if (curDepth >= maxDepth) {
+		/*
+		 * Si esto ocurre, tenemos una recursion mutua
+		 * infinita con quiesce. No debería ocurrir,
+		 * pero dejamos el assert por las dudas.
+		 */
+		assert(!inCheck(g, g->turn));
 		/*
 		 * Corte por profundidad, hacemos búsqueda por quietud, para
 		 * mejorar nuestra evaluación de tablero.
@@ -637,6 +653,8 @@ score boardEval(const game g) {
 	score score = pieceScore(g);
 	u8 rows[32], cols[32];
 	int i, npcs;
+
+	assert(!inCheck(g, g->turn));
 
 	assert(pawn_rank[WHITE][0] == 0);
 	assert(pawn_rank[WHITE][9] == 0);
