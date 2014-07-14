@@ -19,7 +19,8 @@ static const score minScore = -1e7;
 static const score maxScore =  1e7;
 
 struct stats stats;
-static bool doing_null_move = false;
+static bool doing_null_move	= false;
+static bool doing_lmr		= false;
 
 static score quiesce(game g, score alpha, score beta, int curDepth,
 		     int maxDepth);
@@ -410,17 +411,26 @@ static score negamax(game g, int maxDepth, int curDepth,
 		nvalid++;
 
 		mark(ng);
+
 		/* Poor man's LMR */
 		if (copts.lmr
-			&& curDepth > 2
-			&& i >= 5
-			&& succs[i].s*10 < succs[0].s
-			&& g->board[succs[i].m.R][succs[i].m.C] == EMPTY) {
+			&& !doing_lmr
+			&& i >= 4
+			&& curDepth >= 2
+			&& succs[i].s*100 < succs[0].s
+			&& ext == 0
+			&& !inCheck(ng, ng->turn)
+			&& !isCapture(g, succs[i].m)
+			&& !isPromotion(g, succs[i].m)) {
 			stats.lmrs++;
+
+			doing_lmr = true;
 			t = -negamax(ng, maxDepth-1, curDepth+1, NULL, -beta, -alpha);
+			doing_lmr = false;
 		} else {
 			t = -negamax(ng, maxDepth, curDepth+1, NULL, -beta, -alpha);
 		}
+
 		unmark(ng);
 
 		/* Ya no necesitamos a ng */
