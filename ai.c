@@ -112,8 +112,10 @@ static void reset_stats() {
 	stats.null_cuts	= 0;
 	stats.tt_hits	= 0;
 
-	for (i = 0; i < 30; i++)
+	for (i = 0; i < 100; i++) {
 		stats.depthsn[i] = 0;
+		stats.picked[i] = 0;
+	}
 }
 
 static void print_stats(score exp) {
@@ -412,6 +414,7 @@ static score negamax(game g, int maxDepth, int curDepth,
 			break;
 		}
 	}
+	stats.picked[bestmove]++;
 
 	stats.nbranch += nvalid;
 

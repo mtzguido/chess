@@ -4,7 +4,8 @@
 #include "board.h"
 
 extern struct stats {
-	int depthsn[30];
+	long long depthsn[100];
+	long long picked[100];
 	long long nopen_s;
 	long long nopen_q;
 	long long nbranch;
