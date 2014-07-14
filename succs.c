@@ -860,11 +860,18 @@ int genCaps(const game g, struct MS **arr_ret) {
 	return __genSuccs(g, arr_ret, pieceCaps);
 }
 
-static inline void addToRet(move m, struct MS *arr, int *len) {
+static inline void _addToRet(move m, struct MS *arr, int *len) {
 	arr[*len].m = m;
 	arr[*len].s = -1;
+
 	(*len)++;
 }
+
+static inline void addToRet(move m, struct MS *arr, int *len) {
+	assert(m.promote == EMPTY);
+	_addToRet(m, arr, len);
+}
+
 
 static inline void addToRet_promote(move m, struct MS *arr, int *len) {
 	/*
@@ -872,10 +879,10 @@ static inline void addToRet_promote(move m, struct MS *arr, int *len) {
 	 * es una chanchada, si.
 	 */
 	m.promote = WQUEEN;
-	addToRet(m, arr, len);
+	_addToRet(m, arr, len);
 
 	m.promote = WKNIGHT;
-	addToRet(m, arr, len);
+	_addToRet(m, arr, len);
 }
 
 void freeSuccs(struct MS *arr, int len __maybe_unused) {
