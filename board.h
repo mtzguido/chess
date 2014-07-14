@@ -121,6 +121,23 @@ static inline bool any_piece(game g, i8 r, i8 c) {
 			& ((u64)1 << (r*8 + c));
 }
 
+static inline bool isCapture(game g, move m) {
+	if (m.move_type != MOVE_REGULAR)
+		return false;
+
+	return enemy_piece(g, m.R, m.C)
+		|| (m.R == g->en_passant_x
+			&& m.C == g->en_passant_y
+			&& isPawn(g->board[m.r][m.c]));
+}
+
+static inline bool isPromotion(game g, move m) {
+	if (m.move_type != MOVE_REGULAR)
+		return false;
+
+	return m.promote != EMPTY;
+}
+
 static inline bool equalMove(move a, move b) {
 	if (a.who != b.who || a.move_type != b.move_type)
 		return false;

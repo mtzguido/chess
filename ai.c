@@ -245,10 +245,7 @@ static score quiesce(game g, score alpha, score beta, int curDepth, int maxDepth
 			continue;
 
 		/* We only consider captures and promotions */
-		assert(enemy_piece(g, succs[i].m.R, succs[i].m.C)
-				|| succs[i].m.promote
-				|| (succs[i].m.R == g->en_passant_x
-					&& succs[i].m.C == g->en_passant_y));
+		assert(isCapture(g, succs[i].m) || isPromotion(g, succs[i].m));
 
 		if (!doMove_unchecked(ng, succs[i].m))
 			continue;
