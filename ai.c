@@ -395,7 +395,15 @@ static score negamax(game g, int maxDepth, int curDepth,
 		nvalid++;
 
 		mark(ng);
-		t = -negamax(ng, maxDepth, curDepth+1, NULL, -beta, -alpha);
+		/* Poor man's LMR */
+		if (copts.lmr
+			&& curDepth > 2
+			&& i >= 5
+			&& succs[i].s*10 < succs[0].s
+			&& g->board[succs[i].m.R][succs[i].m.C] == EMPTY)
+			t = -negamax(ng, maxDepth-1, curDepth+1, NULL, -beta, -alpha);
+		else
+			t = -negamax(ng, maxDepth, curDepth+1, NULL, -beta, -alpha);
 		unmark(ng);
 
 		/* Ya no necesitamos a ng */

@@ -238,6 +238,7 @@ void parse_opt(int argc, char **argv) {
 		{ "seed",	required_argument, 0, 0x8},
 		{ "no-null",	no_argument, 0, 0x9 },
 		{ "no-iter",	no_argument, 0, 0xa },
+		{ "no-lmr",	no_argument, 0, 0xb },
 		{ "black",	no_argument, 0, 'b' },
 		{ 0,0,0,0 }
 	};
@@ -298,6 +299,9 @@ void parse_opt(int argc, char **argv) {
 			break;
 		case 0xa:
 			copts.iter = false;
+			break;
+		case 0xb:
+			copts.lmr = false;
 			break;
 		case '?':
 		default:
