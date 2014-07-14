@@ -618,6 +618,7 @@ static void movePiece(game g, i8 r, i8 c, i8 R, i8 C) {
 	g->board[r][c] = EMPTY;
 	g->board[R][C] = from;
 
+	/* Si hubo captura */
 	if (to) {
 		g->pieceScore[enemy]	-= scoreOf(to);
 		g->pps_O		-= piece_square_val_O(to, R, C);
