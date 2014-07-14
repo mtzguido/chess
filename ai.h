@@ -14,6 +14,7 @@ extern struct stats {
 	long long totalms;
 	long long null_cuts;
 	long long tt_hits;
+	long long lmrs;
 } stats;
 
 move machineMove(game start);
