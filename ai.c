@@ -329,7 +329,7 @@ static score negamax(game g, int maxDepth, int curDepth,
 	if (curDepth >= maxDepth) {
 		/*
 		 * Si esto ocurre, tenemos una recursion mutua
-		 * infinita con quiesce. No debería ocurrir,
+		 * infinita con quiesce. No debería ocurrir nunca,
 		 * pero dejamos el assert por las dudas.
 		 */
 		assert(!inCheck(g, g->turn));
