@@ -207,23 +207,24 @@ move machineMove(const game start) {
 	return ret;
 }
 
+static int calcExtension(game g, int maxDepth, int curDepth) {
+	int ret = 0;
+
+	if (inCheck(g, g->turn) || g->lastmove.promote != EMPTY)
+		ret++;
+
+	return ret;
+}
+
 static score quiesce(game g, score alpha, score beta, int curDepth, int maxDepth) {
 	int nsucc, nvalid, i;
 	struct MS *succs;
+	int ext;
 	game ng;
 	score ret, t;
 
 	if (isDraw(g) || reps(g) >= 2)
 		return 0;
-
-	if (inCheck(g, g->turn)) {
-		/*
-		 * Consideramos TODAS las movidas posibles, por lo
-		 * tanto llamamos a negamax con profundidad 0 (al estar
-		 * en jaque, será aumentada, y por lo tanto igual a 1)
-		 */
-		return negamax(g, curDepth, curDepth, NULL, alpha, beta);
-	}
 
 	stats.nopen_q++;
 
@@ -235,6 +236,8 @@ static score quiesce(game g, score alpha, score beta, int curDepth, int maxDepth
 	if (t > alpha)
 		alpha = t;
 
+	ext = calcExtension(g, maxDepth, curDepth);
+	maxDepth += ext;
 	if (curDepth >= maxDepth)
 		return t;
 
@@ -281,18 +284,6 @@ out:
 
 	assert(ret < maxScore);
 	assert(ret > minScore);
-
-	return ret;
-}
-
-static int calcExtension(game g, int maxDepth, int curDepth) {
-	int ret = 0;
-
-	if (inCheck(g, g->turn))
-		ret++;
-
-	if (g->lastmove.promote != EMPTY)
-		ret++;
 
 	return ret;
 }
@@ -404,6 +395,8 @@ static score negamax(game g, int maxDepth, int curDepth,
 	ng = copyGame(g);
 
 	stats.nopen_s++;
+	stats.depthsn[curDepth]++;
+
 	nsucc = genSuccs_wrap(g, &succs, curDepth);
 
 	for (i=0; i<nsucc; i++) {
@@ -454,7 +447,10 @@ static score negamax(game g, int maxDepth, int curDepth,
 		}
 	}
 
-	stats.picked[bestmove]++;
+	if (bestmove != -1)
+		stats.picked[bestmove]++;
+	else
+		assert(nvalid == 0);
 
 	/* Era un tablero terminal? */
 	if (nvalid == 0) {
@@ -666,8 +662,6 @@ score boardEval(const game g) {
 	score score = pieceScore(g);
 	u8 rows[32], cols[32];
 	int i, npcs;
-
-	assert(!inCheck(g, g->turn));
 
 	assert(pawn_rank[WHITE][0] == 0);
 	assert(pawn_rank[WHITE][9] == 0);
