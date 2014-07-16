@@ -41,12 +41,28 @@ static int genCaps_wrap(game g, struct MS **arr, int depth) {
 
 static int genSuccs_wrap(game g, struct MS **arr, int depth) {
 	int n;
+	int i, j;
 
 	/* Generar sucesores */
 	n = genSuccs(g, arr);
 	stats.ngen += n;
 
 	addon_score_succs(g, *arr, n, depth);
+
+	/* Mezclarlos si es necesario */
+	if (copts.shuffle) {
+		struct MS swap;
+		for (i=0; i<n-1; i++) {
+			j = i + rand() % (n-i);
+
+			if (i == j)
+				continue;
+
+			swap = (*arr)[j];
+			(*arr)[j] = (*arr)[i];
+			(*arr)[i] = swap;
+		}
+	}
 
 	return n;
 }
@@ -60,21 +76,6 @@ static void sort_succ(game g, struct MS *arr, int i, int len, int depth_rem) {
 	if (i == len-1) {
 		/* Nada para hacer */
 		return;
-	}
-
-	/* Mezclarlos si es necesario */
-	if (copts.shuffle) {
-		int t = rand()%(len-i) + i;
-
-		assert (t >= i && t < len);
-
-		if (t != i) {
-			struct MS swap;
-			assert(t > i);
-			swap = arr[i];
-			arr[i] = arr[t];
-			arr[t] = swap;
-		}
 	}
 
 	/* Ordenarlos si es necesario */
