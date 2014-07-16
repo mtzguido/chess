@@ -111,7 +111,7 @@ static void reset_stats() {
 	stats.nopen_s	= 0;
 	stats.nopen_q	= 0;
 	stats.ngen	= 0;
-	stats.nbranch	= 0;
+	stats.nterminal	= 0;
 	stats.null_cuts	= 0;
 	stats.tt_hits	= 0;
 	stats.lmrs	= 0;
@@ -126,7 +126,7 @@ static void print_stats(score exp) {
 	fprintf(stderr, "stats: searched %lld (%lld) nodes\n",
 			stats.nopen_s, stats.nopen_q);
 	fprintf(stderr, "stats: branching aprox: %.3f\n",
-			1.0 * stats.nbranch / stats.nopen_s);
+			1.0 * stats.nterminal / stats.nopen_s);
 	fprintf(stderr, "stats: total nodes generated: %lld\n", stats.ngen);
 	fprintf(stderr, "stats: null move cuts: %lld\n", stats.null_cuts);
 	fprintf(stderr, "stats: TT hits : %lld\n", stats.tt_hits);
@@ -187,7 +187,7 @@ move machineMove(const game start) {
 		if (copts.iter) {
 			int d;
 			for (d=2 - copts.depth%2; d<copts.depth; d += 2)
-				negamax(start, d, 0, &ret, minScore, maxScore);
+				negamax(start, d, 0, NULL, minScore, maxScore);
 		}
 
 		score t = negamax(start, copts.depth, 0,
@@ -328,18 +328,21 @@ static score negamax(game g, int maxDepth, int curDepth,
 	ext = calcExtension(g, maxDepth, curDepth);
 	maxDepth += ext;
 
+	/*
+	 * Corte por profundidad, hacemos búsqueda por quietud, para
+	 * mejorar nuestra evaluación de tablero.
+	 */
 	if (curDepth >= maxDepth) {
+		assert(mm == NULL);
+		stats.nterminal++;
+
 		/*
 		 * Si esto ocurre, tenemos una recursion mutua
 		 * infinita con quiesce. No debería ocurrir nunca,
 		 * pero dejamos el assert por las dudas.
 		 */
 		assert(!inCheck(g, g->turn));
-		/*
-		 * Corte por profundidad, hacemos búsqueda por quietud, para
-		 * mejorar nuestra evaluación de tablero.
-		 */
-		assert(mm == NULL);
+
 		if (copts.quiesce)
 			ret = quiesce(g, alpha, beta, curDepth, 999);
 		else
@@ -347,8 +350,6 @@ static score negamax(game g, int maxDepth, int curDepth,
 
 		goto out;
 	}
-
-	stats.nopen_s++;
 
 	if (mm == NULL)
 		addon_notify_entry(g, maxDepth - curDepth, &alpha, &beta);
@@ -402,6 +403,7 @@ static score negamax(game g, int maxDepth, int curDepth,
 	best = minScore;
 	ng = copyGame(g);
 
+	stats.nopen_s++;
 	nsucc = genSuccs_wrap(g, &succs, curDepth);
 
 	for (i=0; i<nsucc; i++) {
@@ -419,7 +421,7 @@ static score negamax(game g, int maxDepth, int curDepth,
 			&& !doing_lmr
 			&& i >= 4
 			&& curDepth >= 2
-			&& succs[i].s*100 < succs[0].s
+			&& succs[i].s*10 < succs[0].s
 			&& ext == 0
 			&& !inCheck(ng, ng->turn)
 			&& !isCapture(g, succs[i].m)
@@ -451,9 +453,8 @@ static score negamax(game g, int maxDepth, int curDepth,
 			break;
 		}
 	}
-	stats.picked[bestmove]++;
 
-	stats.nbranch += nvalid;
+	stats.picked[bestmove]++;
 
 	/* Era un tablero terminal? */
 	if (nvalid == 0) {
