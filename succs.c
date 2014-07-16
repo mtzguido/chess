@@ -862,7 +862,7 @@ int genCaps(const game g, struct MS **arr_ret) {
 
 static inline void _addToRet(move m, struct MS *arr, int *len) {
 	arr[*len].m = m;
-	arr[*len].s = -1;
+	arr[*len].s = 0;
 
 	(*len)++;
 }

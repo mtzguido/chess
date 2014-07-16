@@ -100,6 +100,7 @@ static void sort_succ(game g, struct MS *arr, int i, int len, int depth_rem) {
 	}
 
 	assert(arr[i].m.move_type >= 0);
+	assert(arr[i].s >= 0);
 }
 
 static void reset_stats() {
