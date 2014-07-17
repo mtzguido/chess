@@ -87,7 +87,7 @@ move parseMove(game g, char *line) {
 		m.R = 8-R;
 		m.c = c-'a';
 		m.C = C-'a';
-		m.promote = pieceOf(newpiece);
+		m.promote = pieceOf(newpiece) & 7;
 	}
 
 	return m;

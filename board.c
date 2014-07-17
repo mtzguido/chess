@@ -16,7 +16,6 @@ char charOf(int piece);
 
 static int scoreOf(int piece);
 
-#if 1
 static const struct game_struct
 init = {
 	.board= {
@@ -36,32 +35,11 @@ init = {
 	.castle_queen = { 1, 1 },
 	.castled = { 0, 0 },
 };
-#else
-static const struct game_struct
-init = {
-	.board= {
-		{ BROOK, EMPTY, EMPTY,  BKING, EMPTY,   BBISHOP, EMPTY, BROOK },
-		{ EMPTY, EMPTY, BPAWN,  EMPTY, BPAWN,   BPAWN,   BPAWN, BPAWN },
-		{ BPAWN, BPAWN, EMPTY,  EMPTY, BQUEEN,  EMPTY,   EMPTY, EMPTY },
-		{ EMPTY, EMPTY, EMPTY,  BPAWN, WKNIGHT, EMPTY,   EMPTY, BKNIGHT },
-		{ WQUEEN, EMPTY, EMPTY, WPAWN, EMPTY,   WBISHOP, EMPTY, EMPTY },
-		{ WPAWN, EMPTY, WKNIGHT, EMPTY, EMPTY,  EMPTY,   EMPTY, EMPTY },
-		{ EMPTY, WPAWN, EMPTY,  EMPTY, WPAWN,   WPAWN,   WPAWN, WPAWN },
-		{ EMPTY, EMPTY, EMPTY,  EMPTY, WKING, WBISHOP,   EMPTY, WROOK }
-	},
-	.turn = WHITE,
-	.lastmove = { 0 },
-	.idlecount = 2,
-	.castle_king = { 0, 1 },
-	.castle_queen = { 0, 0 },
-	.castled = { 0, 0 },
-};
-
-#endif
 
 static void fix(game g) {
 	int i, j;
 
+	g->idlecount = 0;
 	g->pieceScore[BLACK] = 0;
 	g->pieceScore[WHITE] = 0;
 	g->zobrist = 0;
@@ -126,6 +104,8 @@ void freeGame(game g) {
 void printBoard(game g) {
 	int i, j;
 
+	char bbuf[200];
+
 	fprintf(stderr, "(turn: %s)\n", g->turn == WHITE ? "WHITE" : "BLACK");
 	for (i=0; i<8; i++) {
 		fprintf(stderr, "%i  ", 8-i);
@@ -153,6 +133,9 @@ void printBoard(game g) {
 	fprintf(stderr, "[ idlecount = %i\n", g->idlecount);
 	fprintf(stderr, "[ piecemask[W] = 0x%.16" PRIx64 "\n", g->piecemask[WHITE]);
 	fprintf(stderr, "[ piecemask[B] = 0x%.16" PRIx64 "\n", g->piecemask[BLACK]);
+	tostr(g, bbuf);
+	fprintf(stderr, "[ tostr = <%s>\n", bbuf);
+
 
 	fflush(stdout);
 }
@@ -920,4 +903,63 @@ static int scoreOf(int piece) {
 
 bool equalGame(game a, game b) {
 	return a->zobrist == b->zobrist;
+}
+
+void tostr(game g, char *s) {
+	int i, j;
+	char buf[10];
+
+	for (i=0; i<8; i++) {
+		for (j=0; j<8; j++)
+			*s++ = charOf(g->board[i][j]);
+	}
+
+	*s++ = g->turn == WHITE ? 'W' : 'B';
+
+	sprintf(buf, "%02d", g->idlecount);
+	assert(strlen(buf) == 2);
+	strcpy(s, buf);
+	s += 2;
+
+	*s++ = g->castle_king[WHITE] ? '1' : '0';
+	*s++ = g->castle_king[BLACK] ? '1' : '0';
+	*s++ = g->castle_queen[WHITE] ? '1' : '0';
+	*s++ = g->castle_queen[BLACK] ? '1' : '0';
+	*s++ = g->castled[WHITE] ? '1' : '0';
+	*s++ = g->castled[BLACK] ? '1' : '0';
+	*s++ = g->en_passant_x + '1';
+	*s++ = g->en_passant_y + '1';
+
+	*s = 0;
+}
+
+game fromstr(char *s) {
+	int i, j;
+	game ret = galloc();
+	char buf[3];
+
+	for (i=0; i<8; i++) {
+		for (j=0; j<8; j++)
+			ret->board[i][j] = pieceOf(*s++);
+	}
+
+	ret->turn = *s++ == 'W' ? WHITE : BLACK;
+
+	buf[0] = *s++;
+	buf[1] = *s++;
+	buf[2] = 0;
+
+	ret->idlecount = atoi(buf);
+
+	ret->castle_king[WHITE]  = *s++ == '1';
+	ret->castle_king[BLACK]  = *s++ == '1';
+	ret->castle_queen[WHITE] = *s++ == '1';
+	ret->castle_queen[BLACK] = *s++ == '1';
+	ret->castled[WHITE]      = *s++ == '1';
+	ret->castled[BLACK]      = *s++ == '1';
+	ret->en_passant_x        = *s++ - '1';
+	ret->en_passant_y        = *s++ - '1';
+
+	fix(ret);
+	return ret;
 }

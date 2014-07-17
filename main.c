@@ -22,6 +22,19 @@ struct player {
 	void (*notify_res)(int res);
 };
 
+game startingGame2() {
+	game g;
+
+	if (copts.custom_start) {
+		g = fromstr(copts.custom_start_str);
+		printBoard(g);
+	} else {
+		g = startingGame();
+	}
+
+	return g;
+}
+
 void checkMove(game g, move m) {
 	game t = galloc();
 	game ng = galloc();
@@ -134,7 +147,9 @@ __maybe_unused static void zobrist_test(game b, int d) {
 
 int match(struct player pwhite, struct player pblack) {
 	move m;
-	game g = startingGame();
+	game g;
+
+	g = startingGame2();
 
 	pwhite.start(WHITE);
 	pblack.start(BLACK);
@@ -203,7 +218,7 @@ int nmoves() {
 	move m;
 
 	start_all_addons();
-	g = startingGame();
+	g = startingGame2();
 
 	for (i=0; i<copts.nmoves; i++) {
 		mark(g);
@@ -239,6 +254,7 @@ void parse_opt(int argc, char **argv) {
 		{ "no-null",	no_argument, 0, 0x9 },
 		{ "no-iter",	no_argument, 0, 0xa },
 		{ "no-lmr",	no_argument, 0, 0xb },
+		{ "init",	required_argument, 0, 0xc },
 		{ "black",	no_argument, 0, 'b' },
 		{ 0,0,0,0 }
 	};
@@ -302,6 +318,10 @@ void parse_opt(int argc, char **argv) {
 			break;
 		case 0xb:
 			copts.lmr = false;
+			break;
+		case 0xc:
+			copts.custom_start = true;
+			strcpy(copts.custom_start_str, optarg);
 			break;
 		case '?':
 		default:

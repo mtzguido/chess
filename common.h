@@ -45,25 +45,28 @@ enum play_mode {
 
 struct opts {
 	enum play_mode mode;
-	int nmoves;	/* Amount of moves to calculate */
-	int depth;	/* Search depth */
-	bool shuffle;	/* Shuffle the succ moves */
-	bool usebook;	/* Use opening book */
-	bool black;	/* Play as black */
+	int nmoves;			/* Amount of moves to calculate */
+	int depth;			/* Search depth */
+	bool shuffle;			/* Shuffle the succ moves */
+	bool usebook;			/* Use opening book */
+	bool black;			/* Play as black */
 
-	bool reverse;	/* Reverse the order of succ generation (debug) */
+	bool custom_start;		/* Use a custom starting board */
+	char custom_start_str[100];	/* Custom board spec */
 
-	bool iter;	/* Iterative deepening */
-	bool ab;	/* Alpha-beta */
-	bool quiesce;	/* Use quiescence search on leaf nodes */
-	bool nullmove;	/* Use Null Move Heuristic */
-	bool lmr;	/* Late move reduction */
+	bool reverse;			/* Reverse the order of succ generation (debug) */
+
+	bool iter;			/* Iterative deepening */
+	bool ab;			/* Alpha-beta */
+	bool quiesce;			/* Use quiescence search on leaf nodes */
+	bool nullmove;			/* Use Null Move Heuristic */
+	bool lmr;			/* Late move reduction */
 
 	/* Heuristics */
-	bool heur_trans;	/* Transposition table */
-	bool heur_killer;	/* Killer Heuristic */
-	bool heur_cm;		/* Countermove Heuristic */
-	bool heur_trivial;	/* Trivial and cheap move ordering */
+	bool heur_trans;		/* Transposition table */
+	bool heur_killer;		/* Killer Heuristic */
+	bool heur_cm;			/* Countermove Heuristic */
+	bool heur_trivial;		/* Trivial and cheap move ordering */
 };
 
 static const struct opts defopts = {
