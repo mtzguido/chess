@@ -693,6 +693,9 @@ score boardEval(const game g) {
 	/* Penalizamos según posibilidades de enroque */
 	score += castle_score(g);
 
+	if (inCheck(g, WHITE)) score -= 200;
+	if (inCheck(g, BLACK)) score += 200;
+
 	/*
 	 * Acercamos a 0 los tableros que tengan
 	 * muchos movimientos idle
