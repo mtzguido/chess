@@ -78,6 +78,9 @@ static void sort_succ(game g, struct MS *arr, int i, int len, int depth_rem) {
 		return;
 	}
 
+	if (!copts.sort)
+		return;
+
 	/* Ordenarlos si es necesario */
 	if (depth_rem > 2) {
 		int j;

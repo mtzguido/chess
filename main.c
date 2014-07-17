@@ -255,6 +255,7 @@ void parse_opt(int argc, char **argv) {
 		{ "no-iter",	no_argument, 0, 0xa },
 		{ "no-lmr",	no_argument, 0, 0xb },
 		{ "init",	required_argument, 0, 0xc },
+		{ "no-sort",	no_argument, 0, 0xd },
 		{ "black",	no_argument, 0, 'b' },
 		{ 0,0,0,0 }
 	};
@@ -322,6 +323,9 @@ void parse_opt(int argc, char **argv) {
 		case 0xc:
 			copts.custom_start = true;
 			strcpy(copts.custom_start_str, optarg);
+			break;
+		case 0xd:
+			copts.sort = false;
 			break;
 		case '?':
 		default:

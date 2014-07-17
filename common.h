@@ -50,6 +50,7 @@ struct opts {
 	bool shuffle;			/* Shuffle the succ moves */
 	bool usebook;			/* Use opening book */
 	bool black;			/* Play as black */
+	bool sort;			/* Use move sorting */
 
 	bool custom_start;		/* Use a custom starting board */
 	char custom_start_str[100];	/* Custom board spec */
@@ -76,6 +77,7 @@ static const struct opts defopts = {
 	.shuffle = false,
 	.usebook = true,
 	.black = false,
+	.sort = true,
 
 	.reverse = false,
 
