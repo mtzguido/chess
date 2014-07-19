@@ -11,3 +11,4 @@ doc/*.pdf
 *.swp
 tags
 .config
+games/
