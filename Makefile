@@ -98,7 +98,7 @@ clean:
 	$(Q)rm -f main.o book-gen.o book.gen
 	$(Q)rm -f bpipe wpipe
 	$(Q)$(MAKE) -s -C doc clean
-	$(Q)rm -f FINISHLOG full_log gamelog_*
+	$(Q)rm -f FINISHLOG gamelog_*
 
 re: clean all
 
