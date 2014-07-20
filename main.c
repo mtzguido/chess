@@ -239,33 +239,31 @@ int nmoves() {
 void parse_opt(int argc, char **argv) {
 	int c, idx;
 	static const struct option long_opts[] = {
-		{ "moves",	required_argument, 0, 'm'},
-		{ "self",	no_argument, 0, 's'},
-		{ "rand",	no_argument, 0, 'r'},
-		{ "depth",	required_argument, 0, 'd'},
-		{ "shuffle",	no_argument, 0, 0x1 },
-		{ "ai-vs-rand",	no_argument, 0, 0x2 },
-		{ "no-tt",	no_argument, 0, 0x3 },
-		{ "reverse",	no_argument, 0, 0x4 },
-		{ "no-ab",	no_argument, 0, 0x5 },
-		{ "no-quiesce",	no_argument, 0, 0x6 },
-		{ "no-book",	no_argument, 0, 0x7 },
-		{ "seed",	required_argument, 0, 0x8},
-		{ "no-null",	no_argument, 0, 0x9 },
-		{ "no-iter",	no_argument, 0, 0xa },
-		{ "no-lmr",	no_argument, 0, 0xb },
-		{ "init",	required_argument, 0, 0xc },
-		{ "no-sort",	no_argument, 0, 0xd },
-		{ "black",	no_argument, 0, 'b' },
+		{ "moves",	required_argument,	0, 'm'},
+		{ "self",	no_argument,		0, 's'},
+		{ "rand",	no_argument,		0, 'r'},
+		{ "ai-vs-rand",	no_argument,		0, 0x2 },
+
+		{ "black",	no_argument,		0, 'b' },
+		{ "init",	required_argument,	0, 0xc },
+
+		{ "depth",	required_argument,	0, 'd'},
+		{ "shuffle",	no_argument,		0, 0x1 },
+		{ "no-tt",	no_argument,		0, 0x3 },
+		{ "reverse",	no_argument,		0, 0x4 },
+		{ "no-ab",	no_argument,		0, 0x5 },
+		{ "no-quiesce",	no_argument,		0, 0x6 },
+		{ "no-book",	no_argument,		0, 0x7 },
+		{ "seed",	required_argument,	0, 0x8},
+		{ "no-null",	no_argument,		0, 0x9 },
+		{ "no-iter",	no_argument,		0, 0xa },
+		{ "no-lmr",	no_argument,		0, 0xb },
+		{ "no-sort",	no_argument,		0, 0xd },
 		{ 0,0,0,0 }
 	};
 
 	copts = defopts;
-	while (1) {
-		c = getopt_long(argc, argv, "", long_opts, &idx);
-		if (c == -1)
-			break;
-
+	while (c = getopt_long(argc, argv, "", long_opts, &idx), c != -1) {
 		switch (c) {
 		case 'b':
 			copts.black = true;

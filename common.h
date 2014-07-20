@@ -14,14 +14,16 @@
 #define unlikely(c) __builtin_expect(c, 0)
 #define   likely(c) __builtin_expect(c, 1)
 
-#define clamp(v, l, h)	({		\
+#define clamp(v, l, h)			\
+({					\
 	typeof(v) __v = v;		\
 	typeof(l) __l = l;		\
 	typeof(h) __h = h;		\
 	(void) (&__v == &__l);		\
 	(void) (&__v == &__h);		\
 	__v = __v < __l ? __l : __v;	\
-	__v > __h ? __h : __v; })
+	__v > __h ? __h : __v;		\
+})
 
 typedef uint64_t	u64;
 typedef uint32_t	u32;
