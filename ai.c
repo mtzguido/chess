@@ -429,6 +429,12 @@ static score negamax(game g, int maxDepth, int curDepth,
 			doing_lmr = true;
 			t = -negamax(ng, maxDepth-1, curDepth+1, NULL, -beta, -alpha);
 			doing_lmr = false;
+
+			/* Do a full search if it didn't fail low */
+			if (t > alpha && t < beta) {
+				t = -negamax(ng, maxDepth, curDepth+1, NULL,
+					     -beta, -alpha);
+			}
 		} else {
 			t = -negamax(ng, maxDepth, curDepth+1, NULL, -beta, -alpha);
 		}
