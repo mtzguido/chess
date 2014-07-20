@@ -27,10 +27,11 @@ fi
 if ! [ -d games ]; then
 	mkdir games
 	echo 0 > games/.seq
-	seq=0
+	seq=0000
 else
 	seq=$(($(cat games/.seq)+1))
 	echo $seq > games/.seq
+	seq=$(printf "%04d" $seq)
 fi
 
 DIR=games/$seq
