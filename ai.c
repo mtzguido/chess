@@ -114,7 +114,7 @@ static void reset_stats() {
 	stats.nopen_s	= 0;
 	stats.nopen_q	= 0;
 	stats.ngen	= 0;
-	stats.nterminal	= 0;
+	stats.nall	= 0;
 	stats.null_cuts	= 0;
 	stats.tt_hits	= 0;
 	stats.lmrs	= 0;
@@ -129,7 +129,7 @@ static void print_stats(score exp) {
 	fprintf(stderr, "stats: searched %lld (%lld) nodes\n",
 			stats.nopen_s, stats.nopen_q);
 	fprintf(stderr, "stats: branching aprox: %.3f\n",
-			1.0 * stats.nterminal / stats.nopen_s);
+			1.0 * stats.nall / stats.nopen_s);
 	fprintf(stderr, "stats: total nodes generated: %lld\n", stats.ngen);
 	fprintf(stderr, "stats: null move cuts: %lld\n", stats.null_cuts);
 	fprintf(stderr, "stats: TT hits : %lld\n", stats.tt_hits);
@@ -303,6 +303,7 @@ static score negamax(game g, int maxDepth, int curDepth,
 	const score alpha_orig __maybe_unused = alpha;
 	const score  beta_orig __maybe_unused = beta;
 
+	stats.nall++;
 	if (isDraw(g)) {
 		ret = 0;
 		assert(mm == NULL);
@@ -328,7 +329,6 @@ static score negamax(game g, int maxDepth, int curDepth,
 	 */
 	if (curDepth >= maxDepth) {
 		assert(mm == NULL);
-		stats.nterminal++;
 
 		/*
 		 * Si esto ocurre, tenemos una recursion mutua
@@ -361,6 +361,7 @@ static score negamax(game g, int maxDepth, int curDepth,
 		goto out;
 	}
 
+	/* NMH */
 	if (copts.nullmove
 		&& beta < maxScore
 		&& !doing_null_move
@@ -384,6 +385,7 @@ static score negamax(game g, int maxDepth, int curDepth,
 
 			freeGame(ng);
 
+			/* Failed high */
 			if (t > beta) {
 				stats.null_cuts++;
 				ret = beta_orig;
@@ -412,7 +414,7 @@ static score negamax(game g, int maxDepth, int curDepth,
 
 		mark(ng);
 
-		/* Poor man's LMR */
+		/* LMR */
 		if (copts.lmr
 			&& !doing_lmr
 			&& i >= 4

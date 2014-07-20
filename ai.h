@@ -8,7 +8,7 @@ extern struct stats {
 	long long picked[100];
 	long long nopen_s;
 	long long nopen_q;
-	long long nterminal;
+	long long nall;
 	long long ngen;
 	long long totalopen;
 	long long totalms;
