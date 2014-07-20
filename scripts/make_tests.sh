@@ -16,17 +16,28 @@ total=$1
 
 shift
 
-echo 'Starting tests. Options = '$@
-
 rm -f wpipe bpipe full_log gmon.sum
 mkfifo wpipe bpipe
 
 if ! [ -d games ]; then
 	mkdir games
+	echo 0 > games/.seq
+	seq=0
+else
+	seq=$(($(cat games/.seq)+1))
+	echo $seq > games/.seq
 fi
 
+DIR=games/$seq
+mkdir $DIR
+
+echo "PROG=$CHESS_PROG"		>> $DIR/log
+echo "ARGS=$CHESS_ARGS"		>> $DIR/log
+echo "OPTS=$@"			>> $DIR/log
+echo "Running $total games"	>> $DIR/log
+
 echo "		b/d/w		score (min - max)"
-while [ $n -lt $total ]; do
+(while [ $n -lt $total ]; do
 	n=$((n+1))
 
 	clock_1=$(date +%s)
@@ -43,7 +54,7 @@ while [ $n -lt $total ]; do
 	wait # wait for opponent
 
 	if [ -f gmon.out ]; then
-		gprof chess gmon.out > games/prof_$n
+		gprof chess gmon.out > $DIR/prof_$n
 		if [ $n -eq 1 ]; then
 			mv gmon.out gmon.sum
 		else
@@ -51,9 +62,9 @@ while [ $n -lt $total ]; do
 		fi
 	fi
 
-	cp gamelog games/gamelog_$n
-	cp fairylog  games/fairylog_$n
-	cp chesslog  games/chesslog_$n
+	cp gamelog	$DIR/gamelog_$n
+	cp fairylog	$DIR/fairylog_$n
+	cp chesslog	$DIR/chesslog_$n
 
 	black=$(grep Lose FINISHLOG | wc -l)
 	draw=$(grep Draw FINISHLOG | wc -l)
@@ -68,8 +79,8 @@ while [ $n -lt $total ]; do
 		echo 'wat!'
 		break;
 	fi
-done
+done) | tee -a $DIR/log
 
-[ -f gmon.out ] && gprof chess gmon.sum > games/tests_profile
+[ -f gmon.out ] && gprof chess gmon.sum > $DIR/tests_profile
 
 exit 0
