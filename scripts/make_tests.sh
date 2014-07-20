@@ -19,6 +19,11 @@ shift
 rm -f wpipe bpipe full_log gmon.sum
 mkfifo wpipe bpipe
 
+if ! [ -x chess ]; then
+	echo "Can't find chess program. Run 'make' first" >&2
+	exit 1
+fi
+
 if ! [ -d games ]; then
 	mkdir games
 	echo 0 > games/.seq
