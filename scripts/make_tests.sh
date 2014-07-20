@@ -62,9 +62,9 @@ echo "		b/d/w		score (min - max)"
 		fi
 	fi
 
-	cp gamelog	$DIR/gamelog_$n
-	cp fairylog	$DIR/fairylog_$n
-	cp chesslog	$DIR/chesslog_$n
+	mv gamelog	$DIR/gamelog_$n
+	mv fairylog	$DIR/fairylog_$n
+	mv chesslog	$DIR/chesslog_$n
 
 	black=$(grep Lose FINISHLOG | wc -l)
 	draw=$(grep Draw FINISHLOG | wc -l)
@@ -82,5 +82,7 @@ echo "		b/d/w		score (min - max)"
 done) | tee -a $DIR/log
 
 [ -f gmon.out ] && gprof chess gmon.sum > $DIR/tests_profile
+
+rm -f FINISHLOG
 
 exit 0
