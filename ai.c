@@ -118,6 +118,7 @@ static void reset_stats() {
 	stats.null_cuts	= 0;
 	stats.tt_hits	= 0;
 	stats.lmrs	= 0;
+	stats.lmrs_ok	= 0;
 
 	for (i = 0; i < 100; i++) {
 		stats.depthsn[i] = 0;
@@ -133,7 +134,9 @@ static void print_stats(score exp) {
 	fprintf(stderr, "stats: total nodes generated: %lld\n", stats.ngen);
 	fprintf(stderr, "stats: null move cuts: %lld\n", stats.null_cuts);
 	fprintf(stderr, "stats: TT hits : %lld\n", stats.tt_hits);
-	fprintf(stderr, "stats: Late move reductions : %lld\n", stats.lmrs);
+	fprintf(stderr, "stats: Late move reductions : %lld/%lld (%.2f%%)\n",
+			stats.lmrs_ok, stats.lmrs,
+			100.0 * stats.lmrs_ok / stats.lmrs);
 	fprintf(stderr, "stats: expected score: %i\n", exp);
 	fprintf(stderr, "stats: Number of hash collisions: %i\n", n_collision);
 }
@@ -434,6 +437,8 @@ static score negamax(game g, int maxDepth, int curDepth,
 			if (t > alpha && t < beta) {
 				t = -negamax(ng, maxDepth, curDepth+1, NULL,
 					     -beta, -alpha);
+			} else {
+				stats.lmrs_ok++;
 			}
 		} else {
 			t = -negamax(ng, maxDepth, curDepth+1, NULL, -beta, -alpha);
