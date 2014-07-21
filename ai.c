@@ -129,7 +129,7 @@ static void print_stats(score exp) {
 	fprintf(stderr, "stats: searched %lld (%lld) nodes\n",
 			stats.nopen_s, stats.nopen_q);
 	fprintf(stderr, "stats: branching aprox: %.3f\n",
-			1.0 * stats.nall / stats.nopen_s);
+			1.0 * (stats.nall - 1) / stats.nopen_s);
 	fprintf(stderr, "stats: total nodes generated: %lld\n", stats.ngen);
 	fprintf(stderr, "stats: null move cuts: %lld\n", stats.null_cuts);
 	fprintf(stderr, "stats: TT hits : %lld\n", stats.tt_hits);
