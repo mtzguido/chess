@@ -739,32 +739,35 @@ static void castleSuccs(const game g, struct MS *arr, int *alen) {
 	}
 }
 
+__always_inline
 static void pieceSuccs(i8 i, i8 j, const game g, struct MS *arr, int *alen) {
 	const piece_t piece = g->board[i][j];
 
-	switch (piece&7) {
+	switch (piece) {
 	case WPAWN:
-	{
-		if (piece == WPAWN)
-			pawnSuccs_w(i, j, g, arr, alen);
-		else if (piece == BPAWN)
-			pawnSuccs_b(i, j, g, arr, alen);
-
+		pawnSuccs_w(i, j, g, arr, alen);
 		break;
-	}
+	case BPAWN:
+		pawnSuccs_b(i, j, g, arr, alen);
+		break;
 	case WKNIGHT:
+	case BKNIGHT:
 		knightSuccs(i, j, g, arr, alen);
 		break;
 	case WROOK:
+	case BROOK:
 		rookSuccs(i, j, g, arr, alen);
 		break;
 	case WBISHOP:
+	case BBISHOP:
 		bishopSuccs(i, j, g, arr, alen);
 		break;
 	case WQUEEN:
+	case BQUEEN:
 		queenSuccs(i, j, g, arr, alen);
 		break;
 	case WKING:
+	case BKING:
 		kingSuccs(i, j, g, arr, alen);
 		break;
 	default:
@@ -772,32 +775,35 @@ static void pieceSuccs(i8 i, i8 j, const game g, struct MS *arr, int *alen) {
 	}
 }
 
+__always_inline
 static void pieceCaps(i8 i, i8 j, const game g, struct MS *arr, int *alen) {
 	const piece_t piece = g->board[i][j];
 
-	switch (piece&7) {
+	switch (piece) {
 	case WPAWN:
-	{
-		if (piece == WPAWN)
-			pawnCaps_w(i, j, g, arr, alen);
-		else if (piece == BPAWN)
-			pawnCaps_b(i, j, g, arr, alen);
-
+		pawnCaps_w(i, j, g, arr, alen);
 		break;
-	}
+	case BPAWN:
+		pawnCaps_b(i, j, g, arr, alen);
+		break;
 	case WKNIGHT:
+	case BKNIGHT:
 		knightCaps(i, j, g, arr, alen);
 		break;
 	case WROOK:
+	case BROOK:
 		rookCaps(i, j, g, arr, alen);
 		break;
 	case WBISHOP:
+	case BBISHOP:
 		bishopCaps(i, j, g, arr, alen);
 		break;
 	case WQUEEN:
+	case BQUEEN:
 		queenCaps(i, j, g, arr, alen);
 		break;
 	case WKING:
+	case BKING:
 		kingCaps(i, j, g, arr, alen);
 		break;
 	default:
@@ -872,12 +878,7 @@ static inline void addToRet(move m, struct MS *arr, int *len) {
 	_addToRet(m, arr, len);
 }
 
-
 static inline void addToRet_promote(move m, struct MS *arr, int *len) {
-	/*
-	 * Aca agregamos ambos casos si es un peón que promueve.
-	 * es una chanchada, si.
-	 */
 	m.promote = WQUEEN;
 	_addToRet(m, arr, len);
 
