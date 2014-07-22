@@ -513,6 +513,10 @@ static void knightCaps(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 	const int dr[] = { 2,  2, -2, -2, 1,  1, -1, -1 };
 	const int dc[] = { 1, -1,  1, -1, 2, -2,  2, -2 };
 	unsigned i;
+	int other = flipTurn(g->turn);
+
+	if (!(g->piecemask[other] & knightmask[r*8+c]))
+		return;
 
 	move m = {0};
 	m.who = g->turn;
