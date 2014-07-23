@@ -38,18 +38,24 @@ game startingGame2() {
 void checkMove(game g, move m) {
 	game t = galloc();
 	game ng = galloc();
-	int i, nsucc;
-	struct MS *succs;
+	int i;
 
 	*ng = *g;
 	__maybe_unused int rc = doMove(ng, m);
-	assert(rc);
+	if (!rc) {
+		fprintf(stderr, "-----------------------------------\n");
+		fprintf(stderr, "MOVIDA ILEGAL?!?!?!!\n");
+		printBoard(g);
+		fprintf(stderr, "%i %i %i %i %i\n", m.move_type, m.r, m.c, m.R, m.C);
+		fprintf(stderr, "-----------------------------------\n");
+		abort();
+	}
 
-	nsucc = genSuccs(g, &succs);
+	genSuccs(g);
 
-	for (i=0; i<nsucc; i++) {
+	for (i=first_succ[ply]; i<first_succ[ply+1]; i++) {
 		*t = *g;
-		if (!doMove(t, succs[i].m))
+		if (!doMove(t, gsuccs[i].m))
 			continue;
 
 		if (equalGame(t, ng))
@@ -66,7 +72,6 @@ void checkMove(game g, move m) {
 ok:
 	freeGame(t);
 	freeGame(ng);
-	freeSuccs(succs, nsucc);
 }
 
 void logToBook(game g, move m) {
@@ -116,33 +121,6 @@ move playerMove(game g) {
 
 	free(line);
 	return m;
-}
-
-__maybe_unused static void zobrist_test(game b, int d) {
-	mark(b);
-	struct MS *succs;
-	int i;
-
-	stats.totalopen++;
-
-	if (rand() > rand())
-		return;
-
-	if (d >= copts.depth)
-		return;
-
-	int n = genSuccs(b, &succs);
-
-	for (i=0; i<n; i++) {
-		game t = copyGame(b);
-		if (!doMove(t, succs[i].m))
-			continue;
-
-		zobrist_test(t, d+1);
-		freeGame(t);
-	}
-
-	freeSuccs(succs, n);
 }
 
 int match(struct player pwhite, struct player pblack) {
@@ -391,18 +369,17 @@ struct player ai_player =
 };
 
 move random_move(game g) {
-	struct MS *arr;
-	int n = genSuccs(g, &arr);
+	int i;
 
+	genSuccs(g);
 	game ng = copyGame(g);
-
 	do {
-		int i = rand()%n;
+		i = rand()%(first_succ[ply+1] - first_succ[ply]) +
+			first_succ[ply];
 
-		if (doMove(ng, arr[i].m)) {
-			struct MS temp = arr[i];
+		if (doMove(ng, gsuccs[i].m)) {
+			struct MS temp = gsuccs[i];
 			freeGame(ng);
-			freeSuccs(arr, n);
 			return temp.m;
 		}
 

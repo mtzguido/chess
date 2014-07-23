@@ -14,8 +14,7 @@ static void cm_reset() {
 		counterTable[a][b][c][d][e].move_type = MOVE_INVAL;
 }
 
-static void cm_score_succs(game g, struct MS *ss,
-			   int nsucc, int depth) {
+static void cm_score_succs(game g, int depth) {
 	int i;
 
 	/* Buscamos la counter move */
@@ -25,9 +24,9 @@ static void cm_score_succs(game g, struct MS *ss,
 	if (m.move_type == MOVE_INVAL)
 		return;
 
-	for (i=0; i<nsucc; i++) {
-		if (equalMove(ss[i].m, m)) {
-			ss[i].s += CM_SCORE;
+	for (i=first_succ[ply]; i<first_succ[ply+1]; i++) {
+		if (equalMove(gsuccs[i].m, m)) {
+			gsuccs[i].s += CM_SCORE;
 			break;
 		}
 	}

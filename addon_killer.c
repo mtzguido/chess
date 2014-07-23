@@ -13,8 +13,7 @@ static void killer_reset() {
 			killerTable[i][j].move_type = MOVE_INVAL;
 }
 
-static void killer_score_succs(game g __maybe_unused, struct MS *ss,
-			       int nsucc, int depth) {
+static void killer_score_succs(game g __maybe_unused, int depth) {
 	int i, k;
 
 	/*
@@ -22,9 +21,9 @@ static void killer_score_succs(game g __maybe_unused, struct MS *ss,
 	 * plies atrás.
 	 * */
 	for (k=0; k<KILLER_WIDTH; k++) {
-		for (i=0; i<nsucc; i++) {
-			if (equalMove(ss[i].m, killerTable[depth][k])) {
-				ss[i].s += KILLER_SCORE;
+		for (i=first_succ[ply]; i<first_succ[ply+1]; i++) {
+			if (equalMove(gsuccs[i].m, killerTable[depth][k])) {
+				gsuccs[i].s += KILLER_SCORE;
 				break;
 			}
 		}

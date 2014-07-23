@@ -5,10 +5,14 @@
 #include <stdio.h>
 #include <assert.h>
 
-static inline void addToRet(move m, struct MS *arr, int *len);
-static inline void addToRet_promote(move m, struct MS *arr, int *len);
+static inline void addToRet(move m);
+static inline void addToRet_promote(move m);
 
-static void pawnSuccs_w(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
+struct MS gsuccs[2048];
+int first_succ[32];
+int ply;
+
+static void pawnSuccs_w(i8 r, i8 c, const game g) {
 	move m = {0};
 	m.who = g->turn;
 	m.move_type = MOVE_REGULAR;
@@ -23,17 +27,17 @@ static void pawnSuccs_w(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 		/* Última fila */
 		if (g->board[m.R][c] == EMPTY) {
 			m.C = c;
-			addToRet_promote(m, arr, alen);
+			addToRet_promote(m);
 		}
 
 		if (c > 0 && enemy_piece(g, m.R, c-1)) {
 			m.C = c-1;
-			addToRet_promote(m, arr, alen);
+			addToRet_promote(m);
 		}
 
 		if (c < 7 && enemy_piece(g, m.R, c+1)) {
 			m.C = c+1;
-			addToRet_promote(m, arr, alen);
+			addToRet_promote(m);
 		}
 		return;
 	case 3:
@@ -41,7 +45,7 @@ static void pawnSuccs_w(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 		if (g->en_passant_x == 2 && abs(g->en_passant_y - c) == 1) {
 			m.R = g->en_passant_x;
 			m.C = g->en_passant_y;
-			addToRet(m, arr, alen);
+			addToRet(m);
 			m.R = r-1;
 	 	}
 		/* Fall through */
@@ -50,40 +54,40 @@ static void pawnSuccs_w(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 	case 5:
 		if (g->board[m.R][c] == EMPTY) {
 			m.C = c;
-			addToRet(m, arr, alen);
+			addToRet(m);
 		}
 
 		if (c > 0 && enemy_piece(g, m.R, c-1)) {
 			m.C = c-1;
-			addToRet(m, arr, alen);
+			addToRet(m);
 		}
 
 		if (c < 7 && enemy_piece(g, m.R, c+1)) {
 			m.C = c+1;
-			addToRet(m, arr, alen);
+			addToRet(m);
 		}
 
 		return;
 	case 6:
 		if (g->board[m.R][c] == EMPTY) {
 			m.C = c;
-			addToRet(m, arr, alen);
+			addToRet(m);
 
 			if (g->board[r-2][c] == EMPTY) {
 				m.R = r-2;
-				addToRet(m, arr, alen);
+				addToRet(m);
 				m.R = r-1;
 			}
 		}
 
 		if (c > 0 && enemy_piece(g, m.R, c-1)) {
 			m.C = c-1;
-			addToRet(m, arr, alen);
+			addToRet(m);
 		}
 
 		if (c < 7 && enemy_piece(g, m.R, c+1)) {
 			m.C = c+1;
-			addToRet(m, arr, alen);
+			addToRet(m);
 		}
 
 		return;
@@ -95,7 +99,7 @@ static void pawnSuccs_w(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 	}
 }
 
-static void pawnSuccs_b(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
+static void pawnSuccs_b(i8 r, i8 c, const game g) {
 	move m = {0};
 	m.who = g->turn;
 	m.move_type = MOVE_REGULAR;
@@ -110,17 +114,17 @@ static void pawnSuccs_b(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 		/* Última fila */
 		if (g->board[m.R][c] == EMPTY) {
 			m.C = c;
-			addToRet_promote(m, arr, alen);
+			addToRet_promote(m);
 		}
 
 		if (c > 0 && enemy_piece(g, m.R, c-1)) {
 			m.C = c-1;
-			addToRet_promote(m, arr, alen);
+			addToRet_promote(m);
 		}
 
 		if (c < 7 && enemy_piece(g, m.R, c+1)) {
 			m.C = c+1;
-			addToRet_promote(m, arr, alen);
+			addToRet_promote(m);
 		}
 		return;
 	case 4:
@@ -128,7 +132,7 @@ static void pawnSuccs_b(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 		if (g->en_passant_x == 5 && abs(g->en_passant_y - c) == 1) {
 			m.R = g->en_passant_x;
 			m.C = g->en_passant_y;
-			addToRet(m, arr, alen);
+			addToRet(m);
 			m.R = r+1;
 		}
 		/* Fall through */
@@ -137,40 +141,40 @@ static void pawnSuccs_b(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 	case 5:
 		if (g->board[m.R][c] == EMPTY) {
 			m.C = c;
-			addToRet(m, arr, alen);
+			addToRet(m);
 		}
 
 		if (c > 0 && enemy_piece(g, m.R, c-1)) {
 			m.C = c-1;
-			addToRet(m, arr, alen);
+			addToRet(m);
 		}
 
 		if (c < 7 && enemy_piece(g, m.R, c+1)) {
 			m.C = c+1;
-			addToRet(m, arr, alen);
+			addToRet(m);
 		}
 
 		return;
 	case 1:
 		if (g->board[m.R][c] == EMPTY) {
 			m.C = c;
-			addToRet(m, arr, alen);
+			addToRet(m);
 
 			if (g->board[r+2][c] == EMPTY) {
 				m.R = r+2;
-				addToRet(m, arr, alen);
+				addToRet(m);
 				m.R = r+1;
 			}
 		}
 
 		if (c > 0 && enemy_piece(g, m.R, c-1)) {
 			m.C = c-1;
-			addToRet(m, arr, alen);
+			addToRet(m);
 		}
 
 		if (c < 7 && enemy_piece(g, m.R, c+1)) {
 			m.C = c+1;
-			addToRet(m, arr, alen);
+			addToRet(m);
 		}
 
 		return;
@@ -182,7 +186,7 @@ static void pawnSuccs_b(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 	}
 }
 
-static void pawnCaps_w(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
+static void pawnCaps_w(i8 r, i8 c, const game g) {
 	move m = {0};
 	m.who = g->turn;
 	m.move_type = MOVE_REGULAR;
@@ -197,17 +201,17 @@ static void pawnCaps_w(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 		/* Última fila */
 		if (g->board[m.R][c] == EMPTY) {
 			m.C = c;
-			addToRet_promote(m, arr, alen);
+			addToRet_promote(m);
 		}
 
 		if (c > 0 && enemy_piece(g, m.R, c-1)) {
 			m.C = c-1;
-			addToRet_promote(m, arr, alen);
+			addToRet_promote(m);
 		}
 
 		if (c < 7 && enemy_piece(g, m.R, c+1)) {
 			m.C = c+1;
-			addToRet_promote(m, arr, alen);
+			addToRet_promote(m);
 		}
 		return;
 	case 3:
@@ -215,7 +219,7 @@ static void pawnCaps_w(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 		if (g->en_passant_x == 2 && abs(g->en_passant_y - c) == 1) {
 			m.R = g->en_passant_x;
 			m.C = g->en_passant_y;
-			addToRet(m, arr, alen);
+			addToRet(m);
 			m.R = r-1;
 	 	}
 		/* Fall through */
@@ -224,24 +228,24 @@ static void pawnCaps_w(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 	case 5:
 		if (c > 0 && enemy_piece(g, m.R, c-1)) {
 			m.C = c-1;
-			addToRet(m, arr, alen);
+			addToRet(m);
 		}
 
 		if (c < 7 && enemy_piece(g, m.R, c+1)) {
 			m.C = c+1;
-			addToRet(m, arr, alen);
+			addToRet(m);
 		}
 
 		return;
 	case 6:
 		if (c > 0 && enemy_piece(g, m.R, c-1)) {
 			m.C = c-1;
-			addToRet(m, arr, alen);
+			addToRet(m);
 		}
 
 		if (c < 7 && enemy_piece(g, m.R, c+1)) {
 			m.C = c+1;
-			addToRet(m, arr, alen);
+			addToRet(m);
 		}
 
 		return;
@@ -253,7 +257,7 @@ static void pawnCaps_w(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 	}
 }
 
-static void pawnCaps_b(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
+static void pawnCaps_b(i8 r, i8 c, const game g) {
 	move m = {0};
 	m.who = g->turn;
 	m.move_type = MOVE_REGULAR;
@@ -268,17 +272,17 @@ static void pawnCaps_b(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 		/* Última fila */
 		if (g->board[m.R][c] == EMPTY) {
 			m.C = c;
-			addToRet_promote(m, arr, alen);
+			addToRet_promote(m);
 		}
 
 		if (c > 0 && enemy_piece(g, m.R, c-1)) {
 			m.C = c-1;
-			addToRet_promote(m, arr, alen);
+			addToRet_promote(m);
 		}
 
 		if (c < 7 && enemy_piece(g, m.R, c+1)) {
 			m.C = c+1;
-			addToRet_promote(m, arr, alen);
+			addToRet_promote(m);
 		}
 		return;
 	case 4:
@@ -286,7 +290,7 @@ static void pawnCaps_b(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 		if (g->en_passant_x == 5 && abs(g->en_passant_y - c) == 1) {
 			m.R = g->en_passant_x;
 			m.C = g->en_passant_y;
-			addToRet(m, arr, alen);
+			addToRet(m);
 			m.R = r+1;
 		}
 		/* Fall through */
@@ -295,24 +299,24 @@ static void pawnCaps_b(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 	case 5:
 		if (c > 0 && enemy_piece(g, m.R, c-1)) {
 			m.C = c-1;
-			addToRet(m, arr, alen);
+			addToRet(m);
 		}
 
 		if (c < 7 && enemy_piece(g, m.R, c+1)) {
 			m.C = c+1;
-			addToRet(m, arr, alen);
+			addToRet(m);
 		}
 
 		return;
 	case 1:
 		if (c > 0 && enemy_piece(g, m.R, c-1)) {
 			m.C = c-1;
-			addToRet(m, arr, alen);
+			addToRet(m);
 		}
 
 		if (c < 7 && enemy_piece(g, m.R, c+1)) {
 			m.C = c+1;
-			addToRet(m, arr, alen);
+			addToRet(m);
 		}
 
 		return;
@@ -324,7 +328,7 @@ static void pawnCaps_b(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 	}
 }
 
-static void knightSuccs(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
+static void knightSuccs(i8 r, i8 c, const game g) {
 	const int dr[] = { 2,  2, -2, -2, 1,  1, -1, -1 };
 	const int dc[] = { 1, -1,  1, -1, 2, -2,  2, -2 };
 	unsigned i;
@@ -348,11 +352,11 @@ static void knightSuccs(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 		if (own_piece(g, m.R, m.C))
 			continue;
 
-		addToRet(m, arr, alen);
+		addToRet(m);
 	}
 }
 
-static void rookSuccs_col(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
+static void rookSuccs_col(i8 r, i8 c, const game g) {
 	int R, C;
 
 	move m = {0};
@@ -365,7 +369,7 @@ static void rookSuccs_col(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 	for (C=c+1; C<8; C++) {
 		if (!own_piece(g, R, C)) {
 			m.R = R; m.C = C;
-			addToRet(m, arr, alen);
+			addToRet(m);
 		} else break;
 		if (enemy_piece(g, R, C))
 			break;
@@ -374,14 +378,14 @@ static void rookSuccs_col(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 	for (C=c-1; C>=0; C--) {
 		if (!own_piece(g, R, C)) {
 			m.R = R; m.C = C;
-			addToRet(m, arr, alen);
+			addToRet(m);
 		} else break;
 		if (enemy_piece(g, R, C))
 			break;
 	}
 }
 
-static void rookSuccs_row(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
+static void rookSuccs_row(i8 r, i8 c, const game g) {
 	int R, C;
 
 	move m = {0};
@@ -394,7 +398,7 @@ static void rookSuccs_row(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 	for (R=r+1; R<8; R++) {
 		if (!own_piece(g, R, C)) {
 			m.R = R; m.C = C;
-			addToRet(m, arr, alen);
+			addToRet(m);
 		} else break;
 		if (enemy_piece(g, R, C))
 			break;
@@ -403,19 +407,19 @@ static void rookSuccs_row(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 	for (R=r-1; R>=0; R--) {
 		if (!own_piece(g, R, C)) {
 			m.R = R; m.C = C;
-			addToRet(m, arr, alen);
+			addToRet(m);
 		} else break;
 		if (enemy_piece(g, R, C))
 			break;
 	}
 }
 
-static void rookSuccs(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
-	rookSuccs_row(r, c, g, arr, alen);
-	rookSuccs_col(r, c, g, arr, alen);
+static void rookSuccs(i8 r, i8 c, const game g) {
+	rookSuccs_row(r, c, g);
+	rookSuccs_col(r, c, g);
 }
 
-static void bishopSuccs_diag1(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
+static void bishopSuccs_diag1(i8 r, i8 c, const game g) {
 	int R, C;
 
 	move m = {0};
@@ -427,7 +431,7 @@ static void bishopSuccs_diag1(i8 r, i8 c, const game g, struct MS *arr, int *ale
 	for (R=r+1, C=c-1; R<8 && C>=0; R++, C--) {
 		if (!own_piece(g, R, C)) {
 			m.R = R; m.C = C;
-			addToRet(m, arr, alen);
+			addToRet(m);
 		} else break;
 		if (enemy_piece(g, R, C))
 			break;
@@ -436,14 +440,14 @@ static void bishopSuccs_diag1(i8 r, i8 c, const game g, struct MS *arr, int *ale
 	for (R=r-1, C=c+1; R>=0 && C<8; R--, C++) {
 		if (!own_piece(g, R, C)) {
 			m.R = R; m.C = C;
-			addToRet(m, arr, alen);
+			addToRet(m);
 		} else break;
 		if (enemy_piece(g, R, C))
 			break;
 	}
 }
 
-static void bishopSuccs_diag2(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
+static void bishopSuccs_diag2(i8 r, i8 c, const game g) {
 	int R, C;
 
 	move m = {0};
@@ -455,7 +459,7 @@ static void bishopSuccs_diag2(i8 r, i8 c, const game g, struct MS *arr, int *ale
 	for (R=r+1, C=c+1; R<8 && C<8; R++, C++) {
 		if (!own_piece(g, R, C)) {
 			m.R = R; m.C = C;
-			addToRet(m, arr, alen);
+			addToRet(m);
 		} else break;
 		if (enemy_piece(g, R, C))
 			break;
@@ -464,19 +468,19 @@ static void bishopSuccs_diag2(i8 r, i8 c, const game g, struct MS *arr, int *ale
 	for (R=r-1, C=c-1; R>=0 && C>=0; R--, C--) {
 		if (!own_piece(g, R, C)) {
 			m.R = R; m.C = C;
-			addToRet(m, arr, alen);
+			addToRet(m);
 		} else break;
 		if (enemy_piece(g, R, C))
 			break;
 	}
 }
 
-static void bishopSuccs(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
-	bishopSuccs_diag1(r, c, g, arr, alen);
-	bishopSuccs_diag2(r, c, g, arr, alen);
+static void bishopSuccs(i8 r, i8 c, const game g) {
+	bishopSuccs_diag1(r, c, g);
+	bishopSuccs_diag2(r, c, g);
 }
 
-void kingSuccs(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
+void kingSuccs(i8 r, i8 c, const game g) {
 	const int dr[] = {  1, 1,  1, 0, -1, -1, -1, 0  };
 	const int dc[] = { -1, 0,  1, 1,  1,  0, -1, -1 };
 	unsigned i;
@@ -500,16 +504,16 @@ void kingSuccs(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 		if (own_piece(g, m.R, m.C))
 			continue;
 
-		addToRet(m, arr, alen);
+		addToRet(m);
 	}
 }
 
-static void queenSuccs(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
-	rookSuccs(r, c, g, arr, alen);
-	bishopSuccs(r, c, g, arr, alen);
+static void queenSuccs(i8 r, i8 c, const game g) {
+	rookSuccs(r, c, g);
+	bishopSuccs(r, c, g);
 }
 
-static void knightCaps(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
+static void knightCaps(i8 r, i8 c, const game g) {
 	const int dr[] = { 2,  2, -2, -2, 1,  1, -1, -1 };
 	const int dc[] = { 1, -1,  1, -1, 2, -2,  2, -2 };
 	unsigned i;
@@ -537,11 +541,11 @@ static void knightCaps(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 		if (!enemy_piece(g, m.R, m.C))
 			continue;
 
-		addToRet(m, arr, alen);
+		addToRet(m);
 	}
 }
 
-static void rookCaps_row(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
+static void rookCaps_row(i8 r, i8 c, const game g) {
 	int R, C;
 
 	move m = {0};
@@ -557,7 +561,7 @@ static void rookCaps_row(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 	for (C=c+1; C<8; C++) {
 		if (enemy_piece(g, R, C)) {
 			m.R = R; m.C = C;
-			addToRet(m, arr, alen);
+			addToRet(m);
 			break;
 		} else if (own_piece(g, R, C)) {
 			break;
@@ -567,7 +571,7 @@ static void rookCaps_row(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 	for (C=c-1; C>=0; C--) {
 		if (enemy_piece(g, R, C)) {
 			m.R = R; m.C = C;
-			addToRet(m, arr, alen);
+			addToRet(m);
 			break;
 		} else if (own_piece(g, R, C)) {
 			break;
@@ -575,7 +579,7 @@ static void rookCaps_row(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 	}
 }
 
-static void rookCaps_col(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
+static void rookCaps_col(i8 r, i8 c, const game g) {
 	int R, C;
 
 	move m = {0};
@@ -591,7 +595,7 @@ static void rookCaps_col(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 	for (R=r+1; R<8; R++) {
 		if (enemy_piece(g, R, C)) {
 			m.R = R; m.C = C;
-			addToRet(m, arr, alen);
+			addToRet(m);
 			break;
 		} else if (own_piece(g, R, C)) {
 			break;
@@ -601,7 +605,7 @@ static void rookCaps_col(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 	for (R=r-1; R>=0; R--) {
 		if (enemy_piece(g, R, C)) {
 			m.R = R; m.C = C;
-			addToRet(m, arr, alen);
+			addToRet(m);
 			break;
 		} else if (own_piece(g, R, C)) {
 			break;
@@ -609,12 +613,12 @@ static void rookCaps_col(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 	}
 }
 
-static void rookCaps(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
-	rookCaps_row(r, c, g, arr, alen);
-	rookCaps_col(r, c, g, arr, alen);
+static void rookCaps(i8 r, i8 c, const game g) {
+	rookCaps_row(r, c, g);
+	rookCaps_col(r, c, g);
 }
 
-static void bishopCaps_diag1(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
+static void bishopCaps_diag1(i8 r, i8 c, const game g) {
 	int R, C;
 
 	move m = {0};
@@ -629,7 +633,7 @@ static void bishopCaps_diag1(i8 r, i8 c, const game g, struct MS *arr, int *alen
 	for (R=r+1, C=c-1; R<8 && C>=0; R++, C--) {
 		if (enemy_piece(g, R, C)) {
 			m.R = R; m.C = C;
-			addToRet(m, arr, alen);
+			addToRet(m);
 			break;
 		} else if (own_piece(g, R, C)) {
 			break;
@@ -639,7 +643,7 @@ static void bishopCaps_diag1(i8 r, i8 c, const game g, struct MS *arr, int *alen
 	for (R=r-1, C=c+1; R>=0 && C<8; R--, C++) {
 		if (enemy_piece(g, R, C)) {
 			m.R = R; m.C = C;
-			addToRet(m, arr, alen);
+			addToRet(m);
 			break;
 		} else if (own_piece(g, R, C)) {
 			break;
@@ -647,7 +651,7 @@ static void bishopCaps_diag1(i8 r, i8 c, const game g, struct MS *arr, int *alen
 	}
 }
 
-static void bishopCaps_diag2(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
+static void bishopCaps_diag2(i8 r, i8 c, const game g) {
 	int R, C;
 
 	move m = {0};
@@ -662,7 +666,7 @@ static void bishopCaps_diag2(i8 r, i8 c, const game g, struct MS *arr, int *alen
 	for (R=r+1, C=c+1; R<8 && C<8; R++, C++) {
 		if (enemy_piece(g, R, C)) {
 			m.R = R; m.C = C;
-			addToRet(m, arr, alen);
+			addToRet(m);
 			break;
 		} else if (own_piece(g, R, C)) {
 			break;
@@ -672,7 +676,7 @@ static void bishopCaps_diag2(i8 r, i8 c, const game g, struct MS *arr, int *alen
 	for (R=r-1, C=c-1; R>=0 && C>=0; R--, C--) {
 		if (enemy_piece(g, R, C)) {
 			m.R = R; m.C = C;
-			addToRet(m, arr, alen);
+			addToRet(m);
 			break;
 		} else if (own_piece(g, R, C)) {
 			break;
@@ -680,12 +684,12 @@ static void bishopCaps_diag2(i8 r, i8 c, const game g, struct MS *arr, int *alen
 	}
 }
 
-static void bishopCaps(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
-	bishopCaps_diag1(r, c, g, arr, alen);
-	bishopCaps_diag2(r, c, g, arr, alen);
+static void bishopCaps(i8 r, i8 c, const game g) {
+	bishopCaps_diag1(r, c, g);
+	bishopCaps_diag2(r, c, g);
 }
 
-static void kingCaps(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
+static void kingCaps(i8 r, i8 c, const game g) {
 	const int dr[] = {  1, 1,  1, 0, -1, -1, -1, 0  };
 	const int dc[] = { -1, 0,  1, 1,  1,  0, -1, -1 };
 	unsigned i;
@@ -709,16 +713,16 @@ static void kingCaps(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
 		if (!enemy_piece(g, m.R, m.C))
 			continue;
 
-		addToRet(m, arr, alen);
+		addToRet(m);
 	}
 }
 
-static void queenCaps(i8 r, i8 c, const game g, struct MS *arr, int *alen) {
-	rookCaps(r, c, g, arr, alen);
-	bishopCaps(r, c, g, arr, alen);
+static void queenCaps(i8 r, i8 c, const game g) {
+	rookCaps(r, c, g);
+	bishopCaps(r, c, g);
 }
 
-static void castleSuccs(const game g, struct MS *arr, int *alen) {
+static void castleSuccs(const game g) {
 	const piece_t kr = g->turn == WHITE ? 7 : 0;
 	const piece_t rpiece = g->turn == WHITE ? WROOK : BROOK;
 	move m = {0};
@@ -730,7 +734,7 @@ static void castleSuccs(const game g, struct MS *arr, int *alen) {
 	 && g->board[kr][6] == EMPTY
 	 && g->board[kr][7] == rpiece) {
 		m.move_type = MOVE_KINGSIDE_CASTLE;
-		addToRet(m, arr, alen);
+		addToRet(m);
 	}
 
 	if (g->castle_queen[g->turn]
@@ -739,40 +743,40 @@ static void castleSuccs(const game g, struct MS *arr, int *alen) {
 	 && g->board[kr][2] == EMPTY
 	 && g->board[kr][3] == EMPTY) {
 		m.move_type = MOVE_QUEENSIDE_CASTLE;
-		addToRet(m, arr, alen);
+		addToRet(m);
 	}
 }
 
 __always_inline
-static void pieceSuccs(i8 i, i8 j, const game g, struct MS *arr, int *alen) {
+static void pieceSuccs(i8 i, i8 j, const game g) {
 	const piece_t piece = g->board[i][j];
 
 	switch (piece) {
 	case WPAWN:
-		pawnSuccs_w(i, j, g, arr, alen);
+		pawnSuccs_w(i, j, g);
 		break;
 	case BPAWN:
-		pawnSuccs_b(i, j, g, arr, alen);
+		pawnSuccs_b(i, j, g);
 		break;
 	case WKNIGHT:
 	case BKNIGHT:
-		knightSuccs(i, j, g, arr, alen);
+		knightSuccs(i, j, g);
 		break;
 	case WROOK:
 	case BROOK:
-		rookSuccs(i, j, g, arr, alen);
+		rookSuccs(i, j, g);
 		break;
 	case WBISHOP:
 	case BBISHOP:
-		bishopSuccs(i, j, g, arr, alen);
+		bishopSuccs(i, j, g);
 		break;
 	case WQUEEN:
 	case BQUEEN:
-		queenSuccs(i, j, g, arr, alen);
+		queenSuccs(i, j, g);
 		break;
 	case WKING:
 	case BKING:
-		kingSuccs(i, j, g, arr, alen);
+		kingSuccs(i, j, g);
 		break;
 	default:
 		assert(0);
@@ -780,55 +784,49 @@ static void pieceSuccs(i8 i, i8 j, const game g, struct MS *arr, int *alen) {
 }
 
 __always_inline
-static void pieceCaps(i8 i, i8 j, const game g, struct MS *arr, int *alen) {
+static void pieceCaps(i8 i, i8 j, const game g) {
 	const piece_t piece = g->board[i][j];
 
 	switch (piece) {
 	case WPAWN:
-		pawnCaps_w(i, j, g, arr, alen);
+		pawnCaps_w(i, j, g);
 		break;
 	case BPAWN:
-		pawnCaps_b(i, j, g, arr, alen);
+		pawnCaps_b(i, j, g);
 		break;
 	case WKNIGHT:
 	case BKNIGHT:
-		knightCaps(i, j, g, arr, alen);
+		knightCaps(i, j, g);
 		break;
 	case WROOK:
 	case BROOK:
-		rookCaps(i, j, g, arr, alen);
+		rookCaps(i, j, g);
 		break;
 	case WBISHOP:
 	case BBISHOP:
-		bishopCaps(i, j, g, arr, alen);
+		bishopCaps(i, j, g);
 		break;
 	case WQUEEN:
 	case BQUEEN:
-		queenCaps(i, j, g, arr, alen);
+		queenCaps(i, j, g);
 		break;
 	case WKING:
 	case BKING:
-		kingCaps(i, j, g, arr, alen);
+		kingCaps(i, j, g);
 		break;
 	default:
 		assert(0);
 	}
 }
 
-typedef void (*movegen_t)(i8 i, i8 j, const game g, struct MS *arr, int *alen);
+typedef void (*movegen_t)(i8 i, i8 j, const game g);
 
-static int __genSuccs(const game g, struct MS **arr_ret, movegen_t fun) {
-	int i;
-	int alen, asz;
-	struct MS *arr;
+static void  __genSuccs(const game g, movegen_t fun) {
 	u8 rows[32], cols[32];
 	int npcs;
+	int i;
 
-	alen = 0;
-	asz = 100;
-	arr = calloc(asz, sizeof arr[0]);
-	assert(arr != NULL);
-
+	first_succ[ply+1] = first_succ[ply];
 	npcs = on_bits(g->piecemask[g->turn], rows, cols);
 
 	if (copts.reverse && fun == pieceSuccs) {
@@ -836,60 +834,43 @@ static int __genSuccs(const game g, struct MS **arr_ret, movegen_t fun) {
 			const u8 r = rows[i];
 			const u8 c = cols[i];
 
-			fun(r, c, g, arr, &alen);
+			fun(r, c, g);
 		}
 	} else {
 		for (i=0; i<npcs; i++) {
 			const u8 r = rows[i];
 			const u8 c = cols[i];
 
-			fun(r, c, g, arr, &alen);
+			fun(r, c, g);
 		}
 	}
 
-	castleSuccs(g, arr, &alen);
-
-	if (alen > asz) {
-		fprintf(stderr, " !!!!!! TODO MAL !!!!! \n");
-		fprintf(stderr, " !!!!!! TODO MAL !!!!! \n");
-		printBoard(g);
-		fprintf(stderr, " !!!!!! TODO MAL !!!!! \n");
-		fprintf(stderr, " !!!!!! TODO MAL !!!!! \n");
-		abort();
-	}
-
-	*arr_ret = arr;
-	return alen;
+	castleSuccs(g);
 }
 
-int genSuccs(const game g, struct MS **arr_ret) {
-	return __genSuccs(g, arr_ret, pieceSuccs);
+void genSuccs(const game g) {
+	__genSuccs(g, pieceSuccs);
 }
 
-int genCaps(const game g, struct MS **arr_ret) {
-	return __genSuccs(g, arr_ret, pieceCaps);
+void genCaps(const game g) {
+	__genSuccs(g, pieceCaps);
 }
 
-static inline void _addToRet(move m, struct MS *arr, int *len) {
-	arr[*len].m = m;
-	arr[*len].s = 0;
-
-	(*len)++;
+static inline void _addToRet(move m) {
+	gsuccs[first_succ[ply+1]].m = m;
+	gsuccs[first_succ[ply+1]].s = 0;
+	first_succ[ply+1]++;
 }
 
-static inline void addToRet(move m, struct MS *arr, int *len) {
+static inline void addToRet(move m) {
 	assert(m.promote == EMPTY);
-	_addToRet(m, arr, len);
+	_addToRet(m);
 }
 
-static inline void addToRet_promote(move m, struct MS *arr, int *len) {
+static inline void addToRet_promote(move m) {
 	m.promote = WQUEEN;
-	_addToRet(m, arr, len);
+	_addToRet(m);
 
 	m.promote = WKNIGHT;
-	_addToRet(m, arr, len);
-}
-
-void freeSuccs(struct MS *arr, int len __maybe_unused) {
-	free(arr);
+	_addToRet(m);
 }

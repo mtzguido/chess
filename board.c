@@ -171,9 +171,7 @@ bool isDraw(game g) {
 }
 
 int isFinished(game g) {
-	struct MS *succs;
-	int i, n;
-	int r = reps(g);
+	int i, r = reps(g);
 	game ng;
 
 	assert(r > 0);
@@ -184,28 +182,29 @@ int isFinished(game g) {
 	else if (g->idlecount >= 100)
 		return DRAW_50MOVE;
 
-	n = genSuccs(g, &succs);
+	assert(ply == 0);
+	genSuccs(g);
 	ng = copyGame(g);
 
-	for (i=0; i<n; i++) {
+	for (i=first_succ[ply]; i<first_succ[ply+1]; i++) {
 		/*
 		 * Si hay un sucesor válido,
 		 * el juego no terminó
 		 */
-		if (doMove_unchecked(ng, succs[i].m)) {
-			freeGame(ng);
-			freeSuccs(succs, n);
-			return -1;
-		}
+		if (doMove_unchecked(ng, gsuccs[i].m))
+			goto not_finished;
 	}
 
 	freeGame(ng);
-	freeSuccs(succs, n);
 
 	if (inCheck(g, g->turn))
 		return WIN(flipTurn(g->turn));
 	else
 		return DRAW_STALE;
+
+not_finished:
+	freeGame(ng);
+	return -1;
 }
 
 /*

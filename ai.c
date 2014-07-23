@@ -27,44 +27,39 @@ static score quiesce(game g, score alpha, score beta, int curDepth,
 static score negamax(game start, int maxDepth, int curDepth, move *mm,
 		     score alpha, score beta);
 
-static int genCaps_wrap(game g, struct MS **arr, int depth) {
-	int n;
+static void genCaps_wrap(game g, int depth) {
+	genCaps(g);
+	stats.ngen += first_succ[ply+1] - first_succ[ply];
 
-	/* Generar sucesores */
-	n = genCaps(g, arr);
-	stats.ngen += n;
-
-	addon_score_succs(g, *arr, n, depth);
-
-	return n;
+	addon_score_succs(g, depth);
 }
 
-static int genSuccs_wrap(game g, struct MS **arr, int depth) {
-	int n;
+static void genSuccs_wrap(game g, int depth) {
 	int i, j;
 
 	/* Generar sucesores */
-	n = genSuccs(g, arr);
-	stats.ngen += n;
+	genSuccs(g);
+	stats.ngen += first_succ[ply+1] - first_succ[ply];
 
-	addon_score_succs(g, *arr, n, depth);
+	addon_score_succs(g, depth);
 
 	/* Mezclarlos si es necesario */
 	if (copts.shuffle) {
 		struct MS swap;
-		for (i=0; i<n-1; i++) {
-			j = i + rand() % (n-i);
+		const int lo = first_succ[ply];
+		const int hi = first_succ[ply+1];
+
+		for (i=lo; i<hi-1; i++) {
+			j = i + rand() % (hi-i);
 
 			if (i == j)
 				continue;
 
-			swap = (*arr)[j];
-			(*arr)[j] = (*arr)[i];
-			(*arr)[i] = swap;
+			swap = gsuccs[j];
+			gsuccs[j] = gsuccs[i];
+			gsuccs[i] = swap;
 		}
 	}
-
-	return n;
 }
 
 /*
@@ -72,39 +67,39 @@ static int genSuccs_wrap(game g, struct MS **arr, int depth) {
  * Deja en arr[i] el sucesor correcto, asume que arr[0..i-1] ya
  * está ordenado.
  */
-static void sort_succ(game g, struct MS *arr, int i, int len, int depth_rem) {
-	if (i == len-1) {
+static void sort_succ(game g, int i, int depth_rem) {
+	if (!copts.sort)
+		return;
+
+	if (i == first_succ[ply+1] - 1) {
 		/* Nada para hacer */
 		return;
 	}
-
-	if (!copts.sort)
-		return;
 
 	/* Ordenarlos si es necesario */
 	if (depth_rem > 2) {
 		int j;
 		int best = i;
-		score s = arr[i].s;
+		score s = gsuccs[i].s;
 
-		for (j=i+1; j<len; j++) {
-			if (arr[j].s > s) {
+		for (j=i+1; j<first_succ[ply+1]; j++) {
+			if (gsuccs[j].s > s) {
 				best = j;
-				s = arr[j].s;
+				s = gsuccs[j].s;
 			}
 		}
 
 		if (best != i) {
 			struct MS swap;
-			assert(best > i);
-			swap = arr[best];
-			arr[best] = arr[i];
-			arr[i] = swap;
+
+			swap = gsuccs[best];
+			gsuccs[best] = gsuccs[i];
+			gsuccs[i] = swap;
 		}
 	}
 
-	assert(arr[i].m.move_type >= 0);
-	assert(arr[i].s >= 0);
+	assert(gsuccs[i].m.move_type >= 0);
+	assert(gsuccs[i].s >= 0);
 }
 
 static void reset_stats() {
@@ -147,17 +142,15 @@ static void print_time(clock_t t1, clock_t t2) {
 }
 
 static bool forced(const game g, move *m) {
-	struct MS *succs;
-	int n = genSuccs(g, &succs);
 	int i;
 	int c = -1;
 	game ng;
 
+	genSuccs(g);
 	ng = copyGame(g);
-	for (i=0; i<n; i++) {
-		if (doMove_unchecked(ng, succs[i].m)) {
+	for (i=first_succ[ply]; i<first_succ[ply+1]; i++) {
+		if (doMove_unchecked(ng, gsuccs[i].m)) {
 			if (c != -1) {
-				freeSuccs(succs, n);
 				freeGame(ng);
 				return false;
 			}
@@ -168,8 +161,7 @@ static bool forced(const game g, move *m) {
 	}
 
 	assert(c != -1);
-	*m = succs[c].m;
-	freeSuccs(succs, n);
+	*m = gsuccs[c].m;
 	freeGame(ng);
 	return true;
 }
@@ -223,8 +215,7 @@ static int calcExtension(game g, int maxDepth, int curDepth) {
 }
 
 static score quiesce(game g, score alpha, score beta, int curDepth, int maxDepth) {
-	int nsucc, nvalid, i;
-	struct MS *succs;
+	int nvalid, i;
 	int ext;
 	game ng;
 	score ret, t;
@@ -248,24 +239,27 @@ static score quiesce(game g, score alpha, score beta, int curDepth, int maxDepth
 		return t;
 
 	ng = copyGame(g);
-	nsucc = genCaps_wrap(g, &succs, curDepth);
+	genCaps_wrap(g, curDepth);
 	nvalid = 0;
-	for (i=0; i<nsucc; i++) {
-		sort_succ(g, succs, i, nsucc, maxDepth - curDepth);
+	for (i=first_succ[ply]; i<first_succ[ply+1]; i++) {
+		sort_succ(g, i, maxDepth - curDepth);
 
-		if (succs[i].m.move_type != MOVE_REGULAR)
+		if (gsuccs[i].m.move_type != MOVE_REGULAR)
 			continue;
 
 		/* We only consider captures and promotions */
-		assert(isCapture(g, succs[i].m) || isPromotion(g, succs[i].m));
+		assert(isCapture(g, gsuccs[i].m)
+				|| isPromotion(g, gsuccs[i].m));
 
-		if (!doMove_unchecked(ng, succs[i].m))
+		if (!doMove_unchecked(ng, gsuccs[i].m))
 			continue;
 
 		nvalid++;
 
 		mark(ng);
+		ply++;
 		t = -quiesce(ng, -beta, -alpha, curDepth+1, maxDepth);
+		ply--;
 		unmark(ng);
 		*ng = *g;
 
@@ -285,7 +279,6 @@ static score quiesce(game g, score alpha, score beta, int curDepth, int maxDepth
 		ret = alpha;
 
 out:
-	freeSuccs(succs, nsucc);
 	freeGame(ng);
 
 	assert(ret < maxScore);
@@ -297,8 +290,7 @@ out:
 static score negamax(game g, int maxDepth, int curDepth,
 		     move *mm, score alpha, score beta) {
 	score t, ret, best;
-	struct MS *succs = NULL;
-	int i, nsucc;
+	int i;
 	int ext;
 	int nvalid = 0;
 	game ng;
@@ -405,12 +397,12 @@ static score negamax(game g, int maxDepth, int curDepth,
 	stats.nopen_s++;
 	stats.depthsn[curDepth]++;
 
-	nsucc = genSuccs_wrap(g, &succs, curDepth);
+	genSuccs_wrap(g, curDepth);
 
-	for (i=0; i<nsucc; i++) {
-		sort_succ(g, succs, i, nsucc, maxDepth - curDepth);
+	for (i=first_succ[ply]; i<first_succ[ply+1]; i++) {
+		sort_succ(g, i, maxDepth - curDepth);
 
-		if (!doMove_unchecked(ng, succs[i].m))
+		if (!doMove_unchecked(ng, gsuccs[i].m))
 			continue;
 
 		nvalid++;
@@ -420,28 +412,34 @@ static score negamax(game g, int maxDepth, int curDepth,
 		/* LMR */
 		if (copts.lmr
 			&& !doing_lmr
-			&& i >= 4
+			&& i >= 4 + first_succ[ply] /* crap */
 			&& curDepth >= 2
-			&& succs[i].s*10 < succs[0].s
+			&& gsuccs[i].s*10 < gsuccs[first_succ[ply]].s /* 2x crap */
 			&& ext == 0
 			&& !inCheck(ng, ng->turn)
-			&& !isCapture(g, succs[i].m)
-			&& !isPromotion(g, succs[i].m)) {
+			&& !isCapture(g, gsuccs[i].m)
+			&& !isPromotion(g, gsuccs[i].m)) {
 			stats.lmrs++;
 
 			doing_lmr = true;
+			ply++;
 			t = -negamax(ng, maxDepth-1, curDepth+1, NULL, -beta, -alpha);
+			ply--;
 			doing_lmr = false;
 
 			/* Do a full search if it didn't fail low */
 			if (t > alpha && t < beta) {
+				ply++;
 				t = -negamax(ng, maxDepth, curDepth+1, NULL,
 					     -beta, -alpha);
+				ply--;
 			} else {
 				stats.lmrs_ok++;
 			}
 		} else {
+			ply++;
 			t = -negamax(ng, maxDepth, curDepth+1, NULL, -beta, -alpha);
+			ply--;
 		}
 
 		unmark(ng);
@@ -458,13 +456,13 @@ static score negamax(game g, int maxDepth, int curDepth,
 			alpha = t;
 
 		if (alpha >= beta && copts.ab) {
-			addon_notify_cut(g, succs[i].m, curDepth);
+			addon_notify_cut(g, gsuccs[i].m, curDepth);
 			break;
 		}
 	}
 
 	if (bestmove != -1)
-		stats.picked[bestmove]++;
+		stats.picked[bestmove - first_succ[ply]]++;
 	else
 		assert(nvalid == 0);
 
@@ -490,7 +488,7 @@ static score negamax(game g, int maxDepth, int curDepth,
 		assert(bestmove != -1);
 
 		if (mm)
-			*mm = succs[bestmove].m;
+			*mm = gsuccs[bestmove].m;
 
 		/*
 		 * Devolver alpha o best es lo mismo (o son ambos menores o
@@ -510,12 +508,11 @@ static score negamax(game g, int maxDepth, int curDepth,
 			flag = FLAG_EXACT;
 
 		if (maxDepth - curDepth > 1) {
-			addon_notify_return(g, succs[bestmove].m,
+			addon_notify_return(g, gsuccs[bestmove].m,
 					    maxDepth - curDepth, ret, flag);
 		}
 	}
 
-	freeSuccs(succs, nsucc);
 	freeGame(ng);
 
 out:

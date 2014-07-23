@@ -55,15 +55,14 @@ void addon_notify_cut(game g, move m, int depth) {
 	}
 }
 
-void addon_score_succs(game g, struct MS *ss,
-		       int nsucc, int depth) {
+void addon_score_succs(game g, int depth) {
 	unsigned i;
 
 	for (i=0; i<n_addon; i++) {
 		struct addon a = enabled_addons[i];
 
 		if (a.score_succs != NULL)
-			a.score_succs(g, ss, nsucc, depth);
+			a.score_succs(g, depth);
 	}
 }
 

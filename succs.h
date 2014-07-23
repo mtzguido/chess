@@ -3,8 +3,11 @@
 
 #include "board.h"
 
-int genSuccs(game g, struct MS **arr);
-int genCaps(game g, struct MS **arr);
-void freeSuccs(struct MS *arr, int n);
+extern struct MS gsuccs[];
+extern int first_succ[];
+extern int ply;
+
+void genSuccs(game g);
+void genCaps(game g);
 
 #endif

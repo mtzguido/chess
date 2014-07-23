@@ -88,8 +88,7 @@ static int trans_suggest(game g, move *arr, int depth) {
 }
 #endif
 
-static void trans_score_succs(game g, struct MS *ss,
-			      int nsucc, int depth) {
+static void trans_score_succs(game g, int depth) {
 	u64 key = g->zobrist;
 	u64 idx = key % CFG_TTABLE_SIZE;
 
@@ -97,13 +96,13 @@ static void trans_score_succs(game g, struct MS *ss,
 		return;
 
 	int i;
-	for (i=0; i<nsucc; i++) {
-		if (ss[i].m.r == tt[idx].r
-		 && ss[i].m.R == tt[idx].R
-		 && ss[i].m.c == tt[idx].c
-		 && ss[i].m.C == tt[idx].C
-		 && ss[i].m.move_type == tt[idx].type) {
-			ss[i].s += TRANS_SCORE;
+	for (i=first_succ[ply]; i<first_succ[ply+1]; i++) {
+		if (gsuccs[i].m.r == tt[idx].r
+		 && gsuccs[i].m.R == tt[idx].R
+		 && gsuccs[i].m.c == tt[idx].c
+		 && gsuccs[i].m.C == tt[idx].C
+		 && gsuccs[i].m.move_type == tt[idx].type) {
+			gsuccs[i].s += TRANS_SCORE;
 			stats.tt_hits++;
 			break;
 		}
