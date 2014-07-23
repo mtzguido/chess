@@ -3,7 +3,6 @@
 
 #define KILLER_WIDTH 2
 #define KTABLE_SIZE (MAX_DEPTH + 10)
-#define KILLER_SCORE 1000
 
 static move killerTable[KTABLE_SIZE][KILLER_WIDTH];
 

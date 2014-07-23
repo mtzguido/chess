@@ -33,5 +33,19 @@ void addon_score_succs(game g, struct MS *ss,
 void addon_free_mem(void);
 int  addon_suggest(game g, move **arr, int depth);
 
+#define CAPT_SCORE	200
+#define PROMOTE_SCORE	300
+#define CM_SCORE	500
+#define KILLER_SCORE	1000
+#define TRANS_SCORE	10000
+
+/* Most valuable victim / least valuable attacker */
+static inline int mvv_lva(piece_t a, piece_t v) {
+	if (v != EMPTY)
+		return 10 * (v&7) - (a&7);
+	else
+		return 0;
+}
+
 #endif
 

@@ -1,8 +1,6 @@
 #include "addon_cm.h"
 #include "addon.h"
 
-#define CM_SCORE 500
-
 static move counterTable[2][8][8][8][8];
 
 static void cm_reset() {

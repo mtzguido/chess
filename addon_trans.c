@@ -4,8 +4,6 @@
 #include <assert.h>
 #include <stdio.h>
 
-#define TRANS_SCORE 10000
-
 static inline score max(score a, score b) { return a > b ? a : b; }
 static inline score min(score a, score b) { return a < b ? a : b; }
 

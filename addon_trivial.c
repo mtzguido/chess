@@ -14,13 +14,15 @@ static void trivial_score_succs(game g, struct MS *ss,
 			continue;
 
 		if (m.promote != 0)
-			ss[i].s += 100;
+			ss[i].s += PROMOTE_SCORE;
 
-		ss[i].s += g->board[m.r][m.c] & ~8;
-		ss[i].s += 10 * (g->board[m.R][m.C] & ~8);
+		if (enemy_piece(g, m.R, m.C))
+			ss[i].s += KILLER_SCORE;
+
+		ss[i].s += mvv_lva(g->board[m.r][m.c], g->board[m.R][m.C]);
 	}
 }
-		
+
 static struct addon trivial_addon __maybe_unused =
 {
 	.score_succs = trivial_score_succs,
