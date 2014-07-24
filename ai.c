@@ -114,6 +114,7 @@ static void reset_stats() {
 	stats.nopen_q	= 0;
 	stats.ngen	= 0;
 	stats.nall	= 0;
+	stats.null_tot	= 0;
 	stats.null_cuts	= 0;
 	stats.tt_hits	= 0;
 	stats.lmrs	= 0;
@@ -131,7 +132,9 @@ void print_stats(score exp) {
 	fprintf(stderr, "stats: branching aprox: %.3f\n",
 			1.0 * (stats.nall - 1) / stats.nopen_s);
 	fprintf(stderr, "stats: total nodes generated: %lld\n", stats.ngen);
-	fprintf(stderr, "stats: null move cuts: %lld\n", stats.null_cuts);
+	fprintf(stderr, "stats: null move cuts: %lld/%lld (%.2f%%)\n",
+			stats.null_cuts, stats.null_tot,
+			100.0 * stats.null_cuts / stats.null_tot);
 	fprintf(stderr, "stats: TT hits : %lld\n", stats.tt_hits);
 	fprintf(stderr, "stats: Late move reductions : %lld/%lld (%.2f%%)\n",
 			stats.lmrs_ok, stats.lmrs,
@@ -393,6 +396,8 @@ static score negamax(game g, int maxDepth, int curDepth,
 				stats.null_cuts++;
 				ret = beta_orig;
 				goto out;
+			} else {
+				stats.null_tot++;
 			}
 		} else {
 			freeGame(ng);
