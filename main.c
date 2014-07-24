@@ -204,7 +204,9 @@ int nmoves() {
 		if (isFinished(g) != -1)
 			break;
 
+		assert(ply == 0);
 		m = machineMove(g);
+		assert(ply == 0);
 		doMove(g, m);
 		printBoard(g);
 

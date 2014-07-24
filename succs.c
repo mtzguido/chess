@@ -5,8 +5,20 @@
 #include <stdio.h>
 #include <assert.h>
 
-static inline void addToRet(move m);
-static inline void addToRet_promote(move m);
+static inline void addToRet_f(move m);
+static inline void addToRet_promote_f(move m);
+
+#define addToRet_promote(m)			\
+	do {					\
+		assert(m.who == g->turn);	\
+		addToRet_promote_f(m);		\
+	} while(0);
+
+#define addToRet(m)				\
+	do {					\
+		assert(m.who == g->turn);	\
+		addToRet_f(m);			\
+	} while(0);
 
 struct MS gsuccs[2048];
 int first_succ[32];
@@ -846,6 +858,8 @@ static void  __genSuccs(const game g, movegen_t fun) {
 	}
 
 	castleSuccs(g);
+	if (fun == pieceSuccs)
+		assert(first_succ[ply+1] > first_succ[ply]);
 }
 
 void genSuccs(const game g) {
@@ -862,12 +876,12 @@ static inline void _addToRet(move m) {
 	first_succ[ply+1]++;
 }
 
-static inline void addToRet(move m) {
+static inline void addToRet_f(move m) {
 	assert(m.promote == EMPTY);
 	_addToRet(m);
 }
 
-static inline void addToRet_promote(move m) {
+static inline void addToRet_promote_f(move m) {
 	m.promote = WQUEEN;
 	_addToRet(m);
 

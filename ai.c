@@ -76,6 +76,8 @@ static void sort_succ(game g, int i, int depth_rem) {
 		return;
 	}
 
+	assert(gsuccs[i].m.who == g->turn);
+
 	/* Ordenarlos si es necesario */
 	if (depth_rem > 2) {
 		int j;
@@ -83,6 +85,7 @@ static void sort_succ(game g, int i, int depth_rem) {
 		score s = gsuccs[i].s;
 
 		for (j=i+1; j<first_succ[ply+1]; j++) {
+			assert(gsuccs[j].m.who == g->turn);
 			if (gsuccs[j].s > s) {
 				best = j;
 				s = gsuccs[j].s;
@@ -98,7 +101,8 @@ static void sort_succ(game g, int i, int depth_rem) {
 		}
 	}
 
-	assert(gsuccs[i].m.move_type >= 0);
+	assert(gsuccs[i].m.who == g->turn);
+	assert(gsuccs[i].m.move_type != MOVE_INVAL);
 	assert(gsuccs[i].s >= 0);
 }
 
@@ -146,6 +150,7 @@ static bool forced(const game g, move *m) {
 	int c = -1;
 	game ng;
 
+	assert(ply == 0);
 	genSuccs(g);
 	ng = copyGame(g);
 	for (i=first_succ[ply]; i<first_succ[ply+1]; i++) {
@@ -184,10 +189,13 @@ move machineMove(const game start) {
 		/* Profundización para llenar la TT */
 		if (copts.iter) {
 			int d;
-			for (d=2 - copts.depth%2; d<copts.depth; d += 2)
+			for (d=2 - copts.depth%2; d<copts.depth; d += 2) {
+				assert(ply == 0);
 				negamax(start, d, 0, NULL, minScore, maxScore);
+			}
 		}
 
+		assert(ply == 0);
 		score t = negamax(start, copts.depth, 0,
 				  &ret, minScore, maxScore);
 
