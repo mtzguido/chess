@@ -888,8 +888,7 @@ static bool doMoveQCastle(game g, move m, bool check) {
 	return true;
 }
 
-static const int scoreTab[] =
-{
+static const int scoreTab[] = {
 	[EMPTY]		= 0,
 	[WPAWN]		= 100,
 	[WKNIGHT]	= 320,

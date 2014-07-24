@@ -24,11 +24,19 @@ move machineMove(game start);
 
 score boardEval(game g);
 
+/* Board evaluation scores */
 #define ROOK_OPEN_FILE		15
 #define ROOK_SEMI_OPEN_FILE	10
 #define DOUBLED_PAWN		(-10)
 #define ISOLATED_PAWN		(-20)
 #define BACKWARDS_PAWN		(-8)
 #define PASSED_PAWN		20
+
+/* Move ordering scores */
+#define CAPT_SCORE	200
+#define PROMOTE_SCORE	300
+#define CM_SCORE	500
+#define KILLER_SCORE	1000
+#define TRANS_SCORE	10000
 
 #endif
