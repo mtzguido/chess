@@ -6,14 +6,14 @@
 
 static move killerTable[KTABLE_SIZE][KILLER_WIDTH];
 
-static void killer_reset() {
+void killer_reset() {
 	int i, j;
 	for (i=0; i<KTABLE_SIZE; i++)
 		for (j=0; j<KILLER_WIDTH; j++)
 			killerTable[i][j].move_type = MOVE_INVAL;
 }
 
-static void killer_score_succs(game g __maybe_unused, int depth) {
+void killer_score_succs(game g __maybe_unused, int depth) {
 	int i, k;
 
 	/*
@@ -30,7 +30,7 @@ static void killer_score_succs(game g __maybe_unused, int depth) {
 	}
 }
 
-static void killer_notify_cut(game g __maybe_unused,
+void killer_notify_cut(game g __maybe_unused,
 			      move m, int depth) {
 	int i;
 
@@ -47,7 +47,7 @@ static void killer_notify_cut(game g __maybe_unused,
 	killerTable[depth][0] = m;
 }
 
-static int killer_suggest(game g, move *arr, int depth) {
+int killer_suggest(game g, move *arr, int depth) {
 	int i, c;
 
 	if (depth > KTABLE_SIZE)
@@ -65,16 +65,4 @@ static int killer_suggest(game g, move *arr, int depth) {
 	}
 
 	return c;
-}
-
-static struct addon killer_addon __maybe_unused =
-{
-	.reset = killer_reset,
-	.score_succs = killer_score_succs,
-	.notify_cut = killer_notify_cut,
-	.suggest = killer_suggest,
-};
-
-void addon_killer_init() {
-	addon_register(killer_addon);
 }

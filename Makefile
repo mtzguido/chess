@@ -88,7 +88,7 @@ book.gen: book.txt book-gen
 	$(Q)$(SAY) "CPP	$@"
 	$(Q)$(CC) $(CFLAGS) -E $<	-o $@
 
-book-gen: book-gen.o $(filter-out addon_% ai.o book.o,$(objs))
+book-gen: book-gen.o $(filter-out addon% ai.o book.o,$(objs))
 	$(Q)$(SAY) "LD	$@"
 	$(Q)$(CC) $(LFLAGS) $^ -o $@
 

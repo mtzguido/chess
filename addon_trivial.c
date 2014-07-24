@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 
-static void trivial_score_succs(game g, int depth) {
+void trivial_score_succs(game g, int depth) {
 	int i;
 
 	for (i=first_succ[ply]; i<first_succ[ply+1]; i++) {
@@ -20,13 +20,4 @@ static void trivial_score_succs(game g, int depth) {
 
 		gsuccs[i].s += mvv_lva(g->board[m.r][m.c], g->board[m.R][m.C]);
 	}
-}
-
-static struct addon trivial_addon __maybe_unused =
-{
-	.score_succs = trivial_score_succs,
-};
-
-void addon_trivial_init() {
-	addon_register(trivial_addon);
 }

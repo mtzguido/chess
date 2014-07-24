@@ -10,7 +10,6 @@
 #include "pgn.h"
 #include "mem.h"
 #include "ztable.h"
-#include "addon_list.h"
 #include "succs.h"
 #include "user_input.h"
 #include "common.h"
@@ -198,7 +197,6 @@ int nmoves() {
 	game g;
 	move m;
 
-	start_all_addons();
 	g = startingGame2();
 
 	for (i=0; i<copts.nmoves; i++) {
@@ -359,7 +357,6 @@ struct player ui_player =
 };
 
 void ai_start() {
-	start_all_addons();
 }
 
 void nothing() {

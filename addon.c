@@ -1,94 +1,48 @@
+#include "addon_trans.h"
+#include "addon_cm.h"
+#include "addon_killer.h"
+#include "addon_trivial.h"
+
 #include "addon.h"
+#include "ai.h"
+#include "board.h"
 #include <assert.h>
 
-#define MAX_ADDON 10
 
-struct addon enabled_addons[MAX_ADDON] = {{ NULL }};
-unsigned n_addon = 0;
+#define addon_for(name, fun, ...)	\
+	name##_##fun(__VA_ARGS__)
 
-void addon_register(struct addon sa) {
-	assert(n_addon < MAX_ADDON);
-	enabled_addons[n_addon++] = sa;
-}
+#define addon_for_each(fun, ...)			\
+	do {						\
+		addon_for(trans, fun, __VA_ARGS__);	\
+		addon_for(killer, fun, __VA_ARGS__);	\
+		addon_for(cm, fun, __VA_ARGS__);	\
+		addon_for(trivial, fun, __VA_ARGS__);	\
+	} while (0)
 
 void addon_reset() {
-	unsigned i;
-
-	for (i=0; i<n_addon; i++) {
-		struct addon a = enabled_addons[i];
-
-		if (a.reset != NULL)
-			a.reset();
-	}
+	addon_for_each(reset);
 }
 
 void addon_notify_return(game g, move m, int depth, score score, flag_t flag) {
-	unsigned i;
-
-	for (i=0; i<n_addon; i++) {
-		struct addon a = enabled_addons[i];
-
-		if (a.notify_return != NULL)
-			a.notify_return(g, m, depth, score, flag);
-	}
+	addon_for_each(notify_return, g, m, depth, score, flag);
 }
 
 void addon_notify_entry(game g, int depth, score *alpha, score *beta) {
-	unsigned i;
-
-	for (i=0; i<n_addon; i++) {
-		struct addon a = enabled_addons[i];
-
-		if (a.notify_entry != NULL)
-			a.notify_entry(g, depth, alpha, beta);
-	}
+	addon_for_each(notify_entry, g, depth, alpha, beta);
 }
 
 void addon_notify_cut(game g, move m, int depth) {
-	unsigned i;
-
-	for (i=0; i<n_addon; i++) {
-		struct addon a = enabled_addons[i];
-
-		if (a.notify_cut != NULL)
-			a.notify_cut(g, m, depth);
-	}
+	addon_for_each(notify_cut, g, m, depth);
 }
 
 void addon_score_succs(game g, int depth) {
-	unsigned i;
-
-	for (i=0; i<n_addon; i++) {
-		struct addon a = enabled_addons[i];
-
-		if (a.score_succs != NULL)
-			a.score_succs(g, depth);
-	}
-}
-
-void addon_free_mem() {
-	unsigned i;
-
-	for (i=0; i<n_addon; i++) {
-		struct addon a = enabled_addons[i];
-
-		if (a.free_mem != NULL)
-			a.free_mem();
-	}
+	addon_for_each(score_succs, g, depth);
 }
 
 int addon_suggest(game g, move **arr, int depth) {
-	unsigned i;
-	int n = 0;
+	return 0;
+}
 
-	*arr = malloc(64 * sizeof (*arr)[0]);
-
-	for (i=0; i<n_addon; i++) {
-		struct addon a = enabled_addons[i];
-
-		if (a.suggest != NULL)
-			n += a.suggest(g, (*arr)+n, depth);
-	}
-
-	return n;
+void addon_free_mem() {
 }
