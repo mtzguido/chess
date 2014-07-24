@@ -87,7 +87,7 @@ echo "		b/d/w		score (min - max)"
 	fi
 done) | tee -a $DIR/log
 
-[ -f gmon.out ] && gprof chess gmon.sum > $DIR/tests_profile
+[ -f gmon.sum ] && gprof chess gmon.sum > $DIR/tests_profile
 
 rm -f FINISHLOG
 
