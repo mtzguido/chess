@@ -704,6 +704,7 @@ static void bishopCaps(i8 r, i8 c, const game g) {
 static void kingCaps(i8 r, i8 c, const game g) {
 	const int dr[] = {  1, 1,  1, 0, -1, -1, -1, 0  };
 	const int dc[] = { -1, 0,  1, 1,  1,  0, -1, -1 };
+	const int other = flipTurn(g->turn);
 	unsigned i;
 
 	move m = {0};
@@ -711,6 +712,9 @@ static void kingCaps(i8 r, i8 c, const game g) {
 	m.move_type = MOVE_REGULAR;
 	m.r = r;
 	m.c = c;
+
+	if (!(g->piecemask[other] & kingmask[r*8+c]))
+		return;
 
 	for (i=0; i < sizeof dr / sizeof dr[0]; i++) {
 		m.R = r + dr[i];
