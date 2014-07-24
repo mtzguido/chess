@@ -366,6 +366,9 @@ static bool inCheck_diag2(game g, int kr, int kc, int who) {
 static bool inCheck_knig(game g, int kr, int kc, int who) {
 	const piece_t enemy_kn = who == WHITE ? BKNIGHT : WKNIGHT;
 
+	if (!(g->piecemask[flipTurn(who)] & knightmask[kr*8+kc]))
+		return false;
+
 	/* Caballos */
 	if (kr >= 2 && kc >= 1 && g->board[kr-2][kc-1] == enemy_kn) return true; 
 	if (kr <= 5 && kc >= 1 && g->board[kr+2][kc-1] == enemy_kn) return true; 
