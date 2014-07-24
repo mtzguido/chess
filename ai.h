@@ -18,6 +18,8 @@ extern struct stats {
 	long long lmrs_ok;
 } stats;
 
+void print_stats(score exp);
+
 move machineMove(game start);
 
 score boardEval(game g);

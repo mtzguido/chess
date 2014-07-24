@@ -233,6 +233,9 @@ int nmoves() {
 		fprintf(stderr, "Moves %i/%i\n", i+1, copts.nmoves);
 	}
 
+	fprintf(stderr, "\nCollected stats:\n");
+	print_stats(0);
+
 	return 0;
 };
 

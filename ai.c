@@ -126,7 +126,7 @@ static void reset_stats() {
 	}
 }
 
-static void print_stats(score exp) {
+void print_stats(score exp) {
 	fprintf(stderr, "stats: searched %lld (%lld) nodes\n",
 			stats.nopen_s, stats.nopen_q);
 	fprintf(stderr, "stats: branching aprox: %.3f\n",
