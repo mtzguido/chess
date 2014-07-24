@@ -51,7 +51,10 @@ void checkMove(game g, move m) {
 		abort();
 	}
 
-	genSuccs(g);
+	if (isCapture(g, m) || isPromotion(g, m))
+		genCaps(g);
+	else
+		genSuccs(g);
 
 	for (i=first_succ[ply]; i<first_succ[ply+1]; i++) {
 		*t = *g;
