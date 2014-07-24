@@ -12,12 +12,12 @@
 #define addon_for(name, fun, ...)	\
 	name##_##fun(__VA_ARGS__)
 
-#define addon_for_each(fun, ...)			\
-	do {						\
-		addon_for(trans, fun, __VA_ARGS__);	\
-		addon_for(killer, fun, __VA_ARGS__);	\
-		addon_for(cm, fun, __VA_ARGS__);	\
-		addon_for(trivial, fun, __VA_ARGS__);	\
+#define addon_for_each(fun, ...)				\
+	do {							\
+		addon_for(trans,	fun, __VA_ARGS__);	\
+		addon_for(killer,	fun, __VA_ARGS__);	\
+		addon_for(cm,		fun, __VA_ARGS__);	\
+		addon_for(trivial,	fun, __VA_ARGS__);	\
 	} while (0)
 
 void addon_reset() {
@@ -40,9 +40,6 @@ void addon_score_succs(game g, int depth) {
 	addon_for_each(score_succs, g, depth);
 }
 
-int addon_suggest(game g, move **arr, int depth) {
-	return 0;
-}
-
-void addon_free_mem() {
+void addon_suggest(game g, move *arr, int *n,int depth) {
+	addon_for_each(suggest, g, arr, n, depth);
 }

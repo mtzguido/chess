@@ -5,9 +5,6 @@
 #include "common.h"
 #include "mem.h"
 
-void addon_free_mem() {
-}
-
 struct bookmove {
 	u64 hash;
 	move next;

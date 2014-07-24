@@ -38,16 +38,15 @@ void cm_notify_cut(game g, move m, int depth) {
 	counterTable[g->turn][om.r][om.c][om.R][om.C] = m;
 }
 
-int cm_suggest(game g, move *arr, int depth) {
+void cm_suggest(game g, move *arr, int *n, int depth) {
 	move m = g->lastmove;
 	move cm = counterTable[g->turn][m.r][m.c][m.R][m.C];
 
 	if (cm.move_type == MOVE_INVAL)
-		return 0;
+		return;
 
 	if (cm.who != g->turn)
-		return 0;
+		return;
 
-	*arr = cm;
-	return 1;
+	arr[*n++] = cm;
 }

@@ -47,13 +47,12 @@ void killer_notify_cut(game g __maybe_unused,
 	killerTable[depth][0] = m;
 }
 
-int killer_suggest(game g, move *arr, int depth) {
-	int i, c;
+void killer_suggest(game g, move *arr, int *n, int depth) {
+	int i;
 
 	if (depth > KTABLE_SIZE)
-		return 0;
+		return;
 
-	c = 0;
 	for (i=0; i<KILLER_WIDTH; i++) {
 		if (killerTable[depth][i].move_type == MOVE_INVAL)
 			continue;
@@ -61,8 +60,6 @@ int killer_suggest(game g, move *arr, int depth) {
 		if (killerTable[depth][i].who != g->turn)
 			continue;
 
-		arr[c++] = killerTable[depth][i];
+		arr[*n++] = killerTable[depth][i];
 	}
-
-	return c;
 }

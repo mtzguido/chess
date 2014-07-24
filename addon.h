@@ -17,8 +17,7 @@ void addon_notify_return(game g, move m, int depth, score s, flag_t flag);
 void addon_notify_entry(game g, int depth, score *alpha, score *beta);
 void addon_notify_cut(game g, move m, int depth);
 void addon_score_succs(game g, int depth);
-void addon_free_mem(void);
-int  addon_suggest(game g, move **arr, int depth);
+void addon_suggest(game g, move *arr, int *n, int depth);
 
 /* Most valuable victim / least valuable attacker */
 static inline int mvv_lva(piece_t a, piece_t v) {

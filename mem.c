@@ -24,9 +24,6 @@ void init_mem() {
 game galloc() {
 	int t;
 
-	if (nfree == 0)
-		addon_free_mem();
-
 	assert(nfree > 0);
 	nfree--;
 	t = slab_list[nfree];
