@@ -1,5 +1,5 @@
-#ifndef __PIECE_SQUARE_H__
-#define __PIECE_SQUARE_H__
+#ifndef __PIECE_SQUARE_H
+#define __PIECE_SQUARE_H
 
 #include "board.h"
 #include <assert.h>

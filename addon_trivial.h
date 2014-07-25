@@ -1,5 +1,5 @@
-#ifndef __ADDON_TRIVIAL_H__
-#define __ADDON_TRIVIAL_H__
+#ifndef __ADDON_TRIVIAL_H
+#define __ADDON_TRIVIAL_H
 
 #include "addon.h"
 

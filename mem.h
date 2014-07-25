@@ -1,5 +1,5 @@
-#ifndef __MEM_H__
-#define __MEM_H__
+#ifndef __MEM_H
+#define __MEM_H
 
 #include "board.h"
 

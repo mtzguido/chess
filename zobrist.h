@@ -1,5 +1,5 @@
-#ifndef __ZOBRIST_H__
-#define __ZOBRIST_H__
+#ifndef __ZOBRIST_H
+#define __ZOBRIST_H
 
 #include "common.h"
 #include "board.h"

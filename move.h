@@ -1,5 +1,5 @@
-#ifndef __MOVE_H__
-#define __MOVE_H__
+#ifndef __MOVE_H
+#define __MOVE_H
 
 #include "board.h"
 #include <assert.h>

@@ -1,5 +1,5 @@
-#ifndef __ADDON_CM_H__
-#define __ADDON_CM_H__
+#ifndef __ADDON_CM_H
+#define __ADDON_CM_H
 
 #include "addon.h"
 

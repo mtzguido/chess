@@ -1,5 +1,5 @@
-#ifndef __USER_INPUT_H__
-#define __USER_INPUT_H__
+#ifndef __USER_INPUT_H
+#define __USER_INPUT_H
 
 #include "board.h"
 

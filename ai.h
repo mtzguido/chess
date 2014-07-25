@@ -1,5 +1,5 @@
-#ifndef __AI_H__
-#define __AI_H__
+#ifndef __AI_H
+#define __AI_H
 
 #include "board.h"
 

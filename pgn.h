@@ -1,5 +1,5 @@
-#ifndef __PGN_H__
-#define __PGN_H__
+#ifndef __PGN_H
+#define __PGN_H
 
 #include "board.h"
 #include <stdbool.h>

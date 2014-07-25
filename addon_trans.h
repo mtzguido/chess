@@ -1,5 +1,5 @@
-#ifndef __ADDON_TRANS_H__
-#define __ADDON_TRANS_H__
+#ifndef __ADDON_TRANS_H
+#define __ADDON_TRANS_H
 
 #include "addon.h"
 

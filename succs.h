@@ -1,5 +1,5 @@
-#ifndef __SUCCS_H__
-#define __SUCCS_H__
+#ifndef __SUCCS_H
+#define __SUCCS_H
 
 #include "board.h"
 

@@ -1,5 +1,5 @@
-#ifndef __BOOK_H__
-#define __BOOK_H__
+#ifndef __BOOK_H
+#define __BOOK_H
 
 #include "common.h"
 #include "board.h"

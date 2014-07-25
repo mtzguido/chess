@@ -1,5 +1,5 @@
-#ifndef __ADDON_H__
-#define __ADDON_H__
+#ifndef __ADDON_H
+#define __ADDON_H
 
 #include "succs.h"
 #include "board.h"

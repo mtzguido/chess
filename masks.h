@@ -1,5 +1,5 @@
-#ifndef __MASKS_H__
-#define __MASKS_H__
+#ifndef __MASKS_H
+#define __MASKS_H
 
 static const u64 rowmask[8] = {
 	0x00000000000000ff,

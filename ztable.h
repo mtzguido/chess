@@ -1,5 +1,5 @@
-#ifndef __ZTABLE_H__
-#define __ZTABLE_H__
+#ifndef __ZTABLE_H
+#define __ZTABLE_H
 
 #include "board.h"
 

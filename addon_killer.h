@@ -1,5 +1,5 @@
-#ifndef __ADDON_KILLER_H__
-#define __ADDON_KILLER_H__
+#ifndef __ADDON_KILLER_H
+#define __ADDON_KILLER_H
 
 #include "addon.h"
 
