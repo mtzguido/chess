@@ -1,6 +1,7 @@
 .PHONY:clean all re run doc
 CFLAGS=-Wall -Wextra -Wno-unused-parameter $(CFLAGS_EXTRA)
 LFLAGS=
+LFLAGS_UTILS=
 SHELL=/bin/bash
 TARGET=chess
 
@@ -77,6 +78,15 @@ book.gen: book.txt book-gen
 	$(Q)$(SAY) "BOOKGEN"
 	$(Q)./book-gen < book.txt > book.gen
 
+masks.c: mask-gen
+	$(Q)$(SAY) "MASKGEN"
+	$(Q)./mask-gen > masks.c
+
+mask-gen.o: mask-gen.c
+mask-gen: mask-gen.o
+	$(Q)$(SAY) "LD	$@"
+	$(Q)$(CC) $(LFLAGS_UTILS) $<	-o $@
+
 %.o: %.c $(wildcard *.h) .config
 	$(Q)$(SAY) "CC	$@"
 	$(Q)$(CC) $(CFLAGS) -c $<	-o $@
@@ -91,7 +101,7 @@ book.gen: book.txt book-gen
 
 book-gen: book-gen.o $(filter-out addon% ai.o book.o,$(objs))
 	$(Q)$(SAY) "LD	$@"
-	$(Q)$(CC) $(LFLAGS) $^ -o $@
+	$(Q)$(CC) $(LFLAGS_UTILS) $^ -o $@
 
 clean:
 	$(Q)$(SAY) "CLEAN"
@@ -100,6 +110,7 @@ clean:
 	$(Q)rm -f bpipe wpipe
 	$(Q)$(MAKE) -s -C doc clean
 	$(Q)rm -f FINISHLOG gamelog_*
+	$(Q)rm -f masks.c mask-gen
 
 re: clean all
 

@@ -536,7 +536,7 @@ static void knightCaps(i8 r, i8 c, const game g) {
 	unsigned i;
 	int other = flipTurn(g->turn);
 
-	if (!(g->piecemask[other] & knightmask[r*8+c]))
+	if (!(g->piecemask[other] & knight_mask[r*8+c]))
 		return;
 
 	move m = {0};
@@ -562,7 +562,7 @@ static void knightCaps(i8 r, i8 c, const game g) {
 	}
 }
 
-static void rookCaps_row(i8 r, i8 c, const game g) {
+static void rookCaps_row_w(i8 r, i8 c, const game g) {
 	int R, C;
 
 	move m = {0};
@@ -571,7 +571,31 @@ static void rookCaps_row(i8 r, i8 c, const game g) {
 	m.r = r;
 	m.c = c;
 
-	if (!(g->piecemask[flipTurn(g->turn)] & rowmask[r]))
+	if (!(g->piecemask[flipTurn(g->turn)] & row_w_mask[r*8+c]))
+		return;
+
+	R = r;
+	for (C=c-1; C>=0; C--) {
+		if (enemy_piece(g, R, C)) {
+			m.R = R; m.C = C;
+			addToRet(m);
+			break;
+		} else if (own_piece(g, R, C)) {
+			break;
+		}
+	}
+}
+
+static void rookCaps_row_e(i8 r, i8 c, const game g) {
+	int R, C;
+
+	move m = {0};
+	m.who = g->turn;
+	m.move_type = MOVE_REGULAR;
+	m.r = r;
+	m.c = c;
+
+	if (!(g->piecemask[flipTurn(g->turn)] & row_e_mask[r*8+c]))
 		return;
 
 	R = r;
@@ -584,8 +608,22 @@ static void rookCaps_row(i8 r, i8 c, const game g) {
 			break;
 		}
 	}
+}
 
-	for (C=c-1; C>=0; C--) {
+static void rookCaps_col_n(i8 r, i8 c, const game g) {
+	int R, C;
+
+	move m = {0};
+	m.who = g->turn;
+	m.move_type = MOVE_REGULAR;
+	m.r = r;
+	m.c = c;
+
+	if (!(g->piecemask[flipTurn(g->turn)] & col_n_mask[r*8+c]))
+		return;
+
+	C = c;
+	for (R=r-1; R>=0; R--) {
 		if (enemy_piece(g, R, C)) {
 			m.R = R; m.C = C;
 			addToRet(m);
@@ -596,7 +634,7 @@ static void rookCaps_row(i8 r, i8 c, const game g) {
 	}
 }
 
-static void rookCaps_col(i8 r, i8 c, const game g) {
+static void rookCaps_col_s(i8 r, i8 c, const game g) {
 	int R, C;
 
 	move m = {0};
@@ -605,7 +643,7 @@ static void rookCaps_col(i8 r, i8 c, const game g) {
 	m.r = r;
 	m.c = c;
 
-	if (!(g->piecemask[flipTurn(g->turn)] & colmask[c]))
+	if (!(g->piecemask[flipTurn(g->turn)] & col_s_mask[r*8+c]))
 		return;
 
 	C = c;
@@ -618,24 +656,16 @@ static void rookCaps_col(i8 r, i8 c, const game g) {
 			break;
 		}
 	}
-
-	for (R=r-1; R>=0; R--) {
-		if (enemy_piece(g, R, C)) {
-			m.R = R; m.C = C;
-			addToRet(m);
-			break;
-		} else if (own_piece(g, R, C)) {
-			break;
-		}
-	}
 }
 
 static void rookCaps(i8 r, i8 c, const game g) {
-	rookCaps_row(r, c, g);
-	rookCaps_col(r, c, g);
+	rookCaps_row_w(r, c, g);
+	rookCaps_row_e(r, c, g);
+	rookCaps_col_s(r, c, g);
+	rookCaps_col_n(r, c, g);
 }
 
-static void bishopCaps_diag1(i8 r, i8 c, const game g) {
+static void bishopCaps_diag_nw(i8 r, i8 c, const game g) {
 	int R, C;
 
 	move m = {0};
@@ -644,51 +674,8 @@ static void bishopCaps_diag1(i8 r, i8 c, const game g) {
 	m.r = r;
 	m.c = c;
 
-	if (!(g->piecemask[flipTurn(g->turn)] & diag1mask[r+c]))
+	if (!(g->piecemask[flipTurn(g->turn)] & diag_nw_mask[r*8+c]))
 		return;
-
-	for (R=r+1, C=c-1; R<8 && C>=0; R++, C--) {
-		if (enemy_piece(g, R, C)) {
-			m.R = R; m.C = C;
-			addToRet(m);
-			break;
-		} else if (own_piece(g, R, C)) {
-			break;
-		}
-	}
-
-	for (R=r-1, C=c+1; R>=0 && C<8; R--, C++) {
-		if (enemy_piece(g, R, C)) {
-			m.R = R; m.C = C;
-			addToRet(m);
-			break;
-		} else if (own_piece(g, R, C)) {
-			break;
-		}
-	}
-}
-
-static void bishopCaps_diag2(i8 r, i8 c, const game g) {
-	int R, C;
-
-	move m = {0};
-	m.who = g->turn;
-	m.move_type = MOVE_REGULAR;
-	m.r = r;
-	m.c = c;
-
-	if (!(g->piecemask[flipTurn(g->turn)] & diag2mask[c-r+7]))
-		return;
-
-	for (R=r+1, C=c+1; R<8 && C<8; R++, C++) {
-		if (enemy_piece(g, R, C)) {
-			m.R = R; m.C = C;
-			addToRet(m);
-			break;
-		} else if (own_piece(g, R, C)) {
-			break;
-		}
-	}
 
 	for (R=r-1, C=c-1; R>=0 && C>=0; R--, C--) {
 		if (enemy_piece(g, R, C)) {
@@ -701,9 +688,80 @@ static void bishopCaps_diag2(i8 r, i8 c, const game g) {
 	}
 }
 
+static void bishopCaps_diag_ne(i8 r, i8 c, const game g) {
+	int R, C;
+
+	move m = {0};
+	m.who = g->turn;
+	m.move_type = MOVE_REGULAR;
+	m.r = r;
+	m.c = c;
+
+	if (!(g->piecemask[flipTurn(g->turn)] & diag_ne_mask[r*8+c]))
+		return;
+
+	for (R=r-1, C=c+1; R>=0 && C<8; R--, C++) {
+		if (enemy_piece(g, R, C)) {
+			m.R = R; m.C = C;
+			addToRet(m);
+			break;
+		} else if (own_piece(g, R, C)) {
+			break;
+		}
+	}
+}
+
+static void bishopCaps_diag_sw(i8 r, i8 c, const game g) {
+	int R, C;
+
+	move m = {0};
+	m.who = g->turn;
+	m.move_type = MOVE_REGULAR;
+	m.r = r;
+	m.c = c;
+
+	if (!(g->piecemask[flipTurn(g->turn)] & diag_sw_mask[r*8+c]))
+		return;
+
+	for (R=r+1, C=c-1; R<8 && C>=0; R++, C--) {
+		if (enemy_piece(g, R, C)) {
+			m.R = R; m.C = C;
+			addToRet(m);
+			break;
+		} else if (own_piece(g, R, C)) {
+			break;
+		}
+	}
+}
+
+static void bishopCaps_diag_se(i8 r, i8 c, const game g) {
+	int R, C;
+
+	move m = {0};
+	m.who = g->turn;
+	m.move_type = MOVE_REGULAR;
+	m.r = r;
+	m.c = c;
+
+	if (!(g->piecemask[flipTurn(g->turn)] & diag_se_mask[r*8+c]))
+		return;
+
+	for (R=r+1, C=c+1; R<8 && C<8; R++, C++) {
+		if (enemy_piece(g, R, C)) {
+			m.R = R; m.C = C;
+			addToRet(m);
+			break;
+		} else if (own_piece(g, R, C)) {
+			break;
+		}
+	}
+}
+
 static void bishopCaps(i8 r, i8 c, const game g) {
-	bishopCaps_diag1(r, c, g);
-	bishopCaps_diag2(r, c, g);
+	bishopCaps_diag_nw(r, c, g);
+	bishopCaps_diag_sw(r, c, g);
+	bishopCaps_diag_ne(r, c, g);
+	bishopCaps_diag_se(r, c, g);
 }
 
 static void kingCaps(i8 r, i8 c, const game g) {
@@ -718,7 +776,7 @@ static void kingCaps(i8 r, i8 c, const game g) {
 	m.r = r;
 	m.c = c;
 
-	if (!(g->piecemask[other] & kingmask[r*8+c]))
+	if (!(g->piecemask[other] & king_mask[r*8+c]))
 		return;
 
 	for (i=0; i < sizeof dr / sizeof dr[0]; i++) {

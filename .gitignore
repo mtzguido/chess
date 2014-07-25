@@ -2,7 +2,9 @@
 *.gcda
 chess
 book-gen
+mask-gen
 book.gen
+masks.c
 gmon.out
 gmon.sum
 doc/*.aux
