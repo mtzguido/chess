@@ -22,19 +22,19 @@ struct stats stats;
 static bool doing_null_move	= false;
 static bool doing_lmr		= false;
 
-static score quiesce(game g, score alpha, score beta, int curDepth,
-		     int maxDepth);
-static score negamax(game start, int maxDepth, int curDepth, move *mm,
-		     score alpha, score beta);
+static inline score quiesce(game g, score alpha, score beta, int curDepth,
+			    int maxDepth);
+static inline score negamax(game start, int maxDepth, int curDepth, move *mm,
+			    score alpha, score beta);
 
-static void genCaps_wrap(game g, int depth) {
+static inline void genCaps_wrap(game g, int depth) {
 	genCaps(g);
 	stats.ngen += first_succ[ply+1] - first_succ[ply];
 
 	addon_score_succs(g, depth);
 }
 
-static void genSuccs_wrap(game g, int depth) {
+static inline void genSuccs_wrap(game g, int depth) {
 	int i, j;
 
 	/* Generar sucesores */
@@ -67,7 +67,7 @@ static void genSuccs_wrap(game g, int depth) {
  * Deja en arr[i] el sucesor correcto, asume que arr[0..i-1] ya
  * está ordenado.
  */
-static void sort_succ(game g, int i, int depth_rem) {
+static inline void sort_succ(game g, int i, int depth_rem) {
 	if (!copts.sort)
 		return;
 
@@ -106,7 +106,7 @@ static void sort_succ(game g, int i, int depth_rem) {
 	assert(gsuccs[i].s >= 0);
 }
 
-static void reset_stats() {
+static inline void reset_stats() {
 	int i;
 
 	n_collision		= 0;
@@ -143,12 +143,12 @@ void print_stats(score exp) {
 	fprintf(stderr, "stats: Number of hash collisions: %i\n", n_collision);
 }
 
-static void print_time(clock_t t1, clock_t t2) {
+static inline void print_time(clock_t t1, clock_t t2) {
 	fprintf(stderr, "stats: moved in %.3f seconds\n",
 			1.0*(t2-t1)/CLOCKS_PER_SEC);
 }
 
-static bool forced(const game g, move *m) {
+static inline bool forced(const game g, move *m) {
 	int i;
 	int c = -1;
 	game ng;
@@ -216,7 +216,7 @@ move machineMove(const game start) {
 	return ret;
 }
 
-static int calcExtension(game g, int maxDepth, int curDepth) {
+static inline int calcExtension(game g, int maxDepth, int curDepth) {
 	int ret = 0;
 
 	if (inCheck(g, g->turn) || g->lastmove.promote != EMPTY)
@@ -225,8 +225,8 @@ static int calcExtension(game g, int maxDepth, int curDepth) {
 	return ret;
 }
 
-static score null_move_score(game g, int curDepth, int maxDepth,
-			     score alpha, score beta) {
+static inline score null_move_score(game g, int curDepth, int maxDepth,
+				    score alpha, score beta) {
 	score t;
 	game ng;
 	move m = { .move_type = MOVE_NULL, .who = g->turn };
@@ -275,7 +275,8 @@ dont:
 	return alpha;
 }
 
-static score quiesce(game g, score alpha, score beta, int curDepth, int maxDepth) {
+static inline score quiesce(game g, score alpha, score beta, int curDepth,
+			    int maxDepth) {
 	int nvalid, i;
 	int ext, onlymove;
 	game ng;
@@ -374,8 +375,8 @@ out:
 	return ret;
 }
 
-static score negamax(game g, int maxDepth, int curDepth,
-		     move *mm, score alpha, score beta) {
+static inline score negamax(game g, int maxDepth, int curDepth, move *mm,
+			    score alpha, score beta) {
 	score t, ret, best, alpha_orig;
 	int i;
 	int ext;
@@ -605,7 +606,7 @@ out:
 	return ret;
 }
 
-static int pieceScore(const game g) {
+static inline int pieceScore(const game g) {
 	int x = g->pieceScore[WHITE] + g->pieceScore[BLACK] - 40000;
 	int pps = (x*(g->pps_O - g->pps_E))/8000 + g->pps_E;
 
@@ -621,8 +622,8 @@ int pawn_rank[2][10] = {
 	[WHITE] = { [0] = 0, [9] = 0 },
 };
 
-static void fill_ranks(const u8 rows[], const u8 cols[], const int npcs,
-		       const game g) {
+static inline void fill_ranks(const u8 rows[], const u8 cols[], const int npcs,
+			      const game g) {
 	int i;
 
 	for (i=0; i<npcs; i++) {
@@ -644,7 +645,7 @@ static void fill_ranks(const u8 rows[], const u8 cols[], const int npcs,
 	}
 }
 
-static score eval_wpawn(const int i, const int j) {
+static inline score eval_wpawn(const int i, const int j) {
 	score ret = 0;
 
 	if (pawn_rank[WHITE][j+1] > i)
@@ -666,7 +667,7 @@ static score eval_wpawn(const int i, const int j) {
 	return ret;
 }
 
-static score eval_bpawn(const int i, const int j) {
+static inline score eval_bpawn(const int i, const int j) {
 	score ret = 0;
 
 	if (pawn_rank[BLACK][j+1] < i)
@@ -688,8 +689,8 @@ static score eval_bpawn(const int i, const int j) {
 	return ret;
 }
 
-static score eval_with_ranks(const u8 rows[], const u8 cols[], const int npcs,
-			     const game g) {
+static inline score eval_with_ranks(const u8 rows[], const u8 cols[],
+				    const int npcs, const game g) {
 	int i;
 	score score = 0;
 
@@ -727,7 +728,7 @@ static score eval_with_ranks(const u8 rows[], const u8 cols[], const int npcs,
 	return score;
 }
 
-static score castle_score(const game g) {
+static inline score castle_score(const game g) {
 	score score = 0;
 
 	if (!g->castled[WHITE]) {
