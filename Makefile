@@ -60,7 +60,8 @@ mods=	ai	\
 	common	\
 	user_input	\
 	piece-square	\
-	book
+	book	\
+	masks
 
 objs=$(patsubst %,%.o,$(mods))
 crap=$(patsubst %,%.i %.s,$(mods))
