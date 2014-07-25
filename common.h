@@ -64,6 +64,7 @@ struct opts {
 	bool quiesce;			/* Use quiescence search on leaf nodes */
 	bool nullmove;			/* Use Null Move Heuristic */
 	bool lmr;			/* Late move reduction */
+	bool forced_extend;		/* Forced move extension */
 
 	/* Heuristics */
 	bool heur_trans;		/* Transposition table */
@@ -88,6 +89,7 @@ static const struct opts defopts = {
 	.quiesce = true,
 	.nullmove = true,
 	.lmr = true,
+	.forced_extend = true,
 
 	.heur_trans = true,
 	.heur_killer = true,

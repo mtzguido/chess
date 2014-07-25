@@ -227,7 +227,7 @@ static int calcExtension(game g, int maxDepth, int curDepth) {
 
 static score quiesce(game g, score alpha, score beta, int curDepth, int maxDepth) {
 	int nvalid, i;
-	int ext;
+	int ext, onlymove;
 	game ng;
 	score ret, t;
 
@@ -244,11 +244,13 @@ static score quiesce(game g, score alpha, score beta, int curDepth, int maxDepth
 	if (t > alpha)
 		alpha = t;
 
+
 	ext = calcExtension(g, maxDepth, curDepth);
 	maxDepth += ext;
 	if (curDepth >= maxDepth)
 		return t;
 
+	const score alpha_orig = alpha;
 	ng = copyGame(g);
 	genCaps_wrap(g, curDepth);
 	nvalid = 0;
@@ -266,6 +268,7 @@ static score quiesce(game g, score alpha, score beta, int curDepth, int maxDepth
 			continue;
 
 		nvalid++;
+		onlymove = i;
 
 		mark(ng);
 		ply++;
@@ -284,10 +287,33 @@ static score quiesce(game g, score alpha, score beta, int curDepth, int maxDepth
 		}
 	}
 
-	if (nvalid == 0)
+	if (nvalid == 0) {
 		ret = t;
-	else
+	} else if (nvalid == 1 && alpha < beta && copts.forced_extend) {
+		__maybe_unused bool check =
+			doMove_unchecked(ng, gsuccs[onlymove].m);
+		assert(check);
+
+		/*
+		 * If only one move was valid, we're in a forced position,
+		 * so re-search everything with +1 to the depth
+		 */
+
+		alpha = alpha_orig;
+
+		mark(ng);
+		ply++;
+		t = -quiesce(ng, -beta, -alpha, curDepth+1, maxDepth+1);
+		ply--;
+		unmark(ng);
+
+		if (t > alpha)
+			alpha = t;
+
 		ret = alpha;
+	} else {
+		ret = alpha;
+	}
 
 out:
 	freeGame(ng);
@@ -300,14 +326,12 @@ out:
 
 static score negamax(game g, int maxDepth, int curDepth,
 		     move *mm, score alpha, score beta) {
-	score t, ret, best;
+	score t, ret, best, alpha_orig;
 	int i;
 	int ext;
 	int nvalid = 0;
 	game ng;
 	int bestmove = -1;
-	const score alpha_orig __maybe_unused = alpha;
-	const score  beta_orig __maybe_unused = beta;
 
 	stats.nall++;
 	if (isDraw(g)) {
@@ -394,7 +418,7 @@ static score negamax(game g, int maxDepth, int curDepth,
 			/* Failed high */
 			if (t > beta) {
 				stats.null_cuts++;
-				ret = beta_orig;
+				ret = beta;
 				goto out;
 			} else {
 				stats.null_tot++;
@@ -404,6 +428,7 @@ static score negamax(game g, int maxDepth, int curDepth,
 		}
 	}
 
+	alpha_orig = alpha;
 	best = minScore;
 	ng = copyGame(g);
 
@@ -495,6 +520,22 @@ static score negamax(game g, int maxDepth, int curDepth,
 		 * pocos ciclos
 		 */
 		addon_notify_return(g, dummy, 999, ret, FLAG_EXACT);
+	} else if (nvalid == 1 && alpha < beta && copts.forced_extend) {
+		bool check __maybe_unused;
+		check = doMove(ng, gsuccs[bestmove].m);
+		assert(check);
+
+		alpha = alpha_orig;
+		mark(ng);
+		ply++;
+		t = -negamax(ng, maxDepth+1, curDepth+1, NULL, -beta, -alpha);
+		ply--;
+		unmark(ng);
+
+		if (t > alpha)
+			alpha = t;
+
+		ret = alpha;
 	} else {
 		flag_t flag;
 
