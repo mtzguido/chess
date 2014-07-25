@@ -13,7 +13,7 @@ extern struct stats {
 	long long totalopen;
 	long long totalms;
 	long long null_cuts;
-	long long null_tot;
+	long long null_tries;
 	long long tt_hits;
 	long long lmrs;
 	long long lmrs_ok;

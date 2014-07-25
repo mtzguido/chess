@@ -109,16 +109,16 @@ static void sort_succ(game g, int i, int depth_rem) {
 static void reset_stats() {
 	int i;
 
-	n_collision	= 0;
-	stats.nopen_s	= 0;
-	stats.nopen_q	= 0;
-	stats.ngen	= 0;
-	stats.nall	= 0;
-	stats.null_tot	= 0;
-	stats.null_cuts	= 0;
-	stats.tt_hits	= 0;
-	stats.lmrs	= 0;
-	stats.lmrs_ok	= 0;
+	n_collision		= 0;
+	stats.nopen_s		= 0;
+	stats.nopen_q		= 0;
+	stats.ngen		= 0;
+	stats.nall		= 0;
+	stats.null_tries	= 0;
+	stats.null_cuts		= 0;
+	stats.tt_hits		= 0;
+	stats.lmrs		= 0;
+	stats.lmrs_ok		= 0;
 
 	for (i = 0; i < 100; i++) {
 		stats.depthsn[i] = 0;
@@ -133,8 +133,8 @@ void print_stats(score exp) {
 			1.0 * (stats.nall - 1) / stats.nopen_s);
 	fprintf(stderr, "stats: total nodes generated: %lld\n", stats.ngen);
 	fprintf(stderr, "stats: null move cuts: %lld/%lld (%.2f%%)\n",
-			stats.null_cuts, stats.null_tot,
-			100.0 * stats.null_cuts / stats.null_tot);
+			stats.null_cuts, stats.null_tries,
+			100.0 * stats.null_cuts / stats.null_tries);
 	fprintf(stderr, "stats: TT hits : %lld\n", stats.tt_hits);
 	fprintf(stderr, "stats: Late move reductions : %lld/%lld (%.2f%%)\n",
 			stats.lmrs_ok, stats.lmrs,
@@ -223,6 +223,56 @@ static int calcExtension(game g, int maxDepth, int curDepth) {
 		ret++;
 
 	return ret;
+}
+
+static score null_move_score(game g, int curDepth, int maxDepth,
+			     score alpha, score beta) {
+	score t;
+	game ng;
+	move m = { .move_type = MOVE_NULL, .who = g->turn };
+
+	if (!copts.nullmove)
+		goto dont;
+
+	/* Dont do two null moves in the same variation */
+	if (doing_null_move)
+		goto dont;
+
+	/*
+	 * Dont null-move when in check or when low in material since
+	 * we're likely to be in Zugzwang
+	 */
+	if (inCheck(g, g->turn) || g->pieceScore[g->turn] <= 21000)
+		goto dont;
+
+	/* Not even worth it */
+	if (maxDepth - curDepth <= 1)
+		goto dont;
+
+	ng = copyGame(g);
+	if (doMove(ng, m)) {
+		stats.null_tries++;
+
+		mark(ng);
+		doing_null_move = true;
+		t = -negamax(ng, maxDepth-3, curDepth+1, NULL, -beta, -alpha);
+		doing_null_move = false;
+		unmark(ng);
+	} else {
+		/*
+		 * doMoveNull's only restriction is not being in check
+		 * and we already provided a case for that so this
+		 * should never be reached
+		 */
+		assert(0);
+		t = minScore;
+	}
+
+	freeGame(ng);
+	return t;
+
+dont:
+	return alpha;
 }
 
 static score quiesce(game g, score alpha, score beta, int curDepth, int maxDepth) {
@@ -336,7 +386,7 @@ static score negamax(game g, int maxDepth, int curDepth,
 	stats.nall++;
 	if (isDraw(g)) {
 		ret = 0;
-		assert(mm == NULL);
+		assert(!mm);
 		goto out;
 	}
 
@@ -358,7 +408,7 @@ static score negamax(game g, int maxDepth, int curDepth,
 	 * mejorar nuestra evaluación de tablero.
 	 */
 	if (curDepth >= maxDepth) {
-		assert(mm == NULL);
+		assert(!mm);
 
 		/*
 		 * Si esto ocurre, tenemos una recursion mutua
@@ -375,7 +425,20 @@ static score negamax(game g, int maxDepth, int curDepth,
 		goto out;
 	}
 
-	if (mm == NULL)
+	/*
+	 * Only try to null-move if beta was less than maxScore.
+	 * Otherwise will never suceed in the test.
+	 */
+	if (beta < maxScore) {
+		assert(!mm);
+		t = null_move_score(g, curDepth, maxDepth, alpha, beta);
+		if  (t > beta) {
+			stats.null_cuts++;
+			return beta;
+		}
+	}
+
+	if (!mm)
 		addon_notify_entry(g, maxDepth - curDepth, &alpha, &beta);
 
 	if (alpha >= beta && copts.ab) {
@@ -387,45 +450,8 @@ static score negamax(game g, int maxDepth, int curDepth,
 		 */
 		assert(0);
 		ret = alpha_orig;
-		assert(mm == NULL);
+		assert(!mm);
 		goto out;
-	}
-
-	/* NMH */
-	if (copts.nullmove
-		&& beta < maxScore
-		&& !doing_null_move
-		&& !inCheck(g, g->turn)
-		&& g->pieceScore[g->turn] > 21000
-		&& maxDepth - curDepth > 1) {
-		score t;
-		move m = { .move_type = MOVE_NULL, .who = g->turn };
-
-		assert(mm == NULL);
-
-		ng = copyGame(g);
-
-		if (doMove(ng, m)) {
-			mark(ng);
-			doing_null_move = true;
-			t = -negamax(ng, maxDepth-3, curDepth+1,
-				     NULL, -beta, -alpha);
-			doing_null_move = false;
-			unmark(ng);
-
-			freeGame(ng);
-
-			/* Failed high */
-			if (t > beta) {
-				stats.null_cuts++;
-				ret = beta;
-				goto out;
-			} else {
-				stats.null_tot++;
-			}
-		} else {
-			freeGame(ng);
-		}
 	}
 
 	alpha_orig = alpha;
@@ -506,7 +532,7 @@ static score negamax(game g, int maxDepth, int curDepth,
 
 	/* Era un tablero terminal? */
 	if (nvalid == 0) {
-		assert(mm == NULL);
+		assert(!mm);
 
 		move dummy = {0};
 
