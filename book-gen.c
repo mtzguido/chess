@@ -8,14 +8,18 @@
 struct bookmove {
 	u64 hash;
 	move next;
+	char strs[25][200];
+	int nstrs;
 };
 
 struct bookmove book[20000];
 int booklen = 0;
 
-void add_one(u64 hash, move m) {
+void add_one(u64 hash, move m,char *str) {
 	book[booklen].hash = hash;
 	book[booklen].next = m;
+	strcpy(book[booklen].strs[0], str);
+	book[booklen].nstrs = 1;
 	booklen++;
 }
 
@@ -56,12 +60,22 @@ void sort_book() {
 	}
 }
 
+void copy_strs(int i1, int i2) {
+	int i;
+
+	for (i=0; i<book[i2].nstrs; i++) {
+		strcpy(book[i1].strs[book[i1].nstrs], book[i2].strs[i]);
+		book[i1].nstrs++;
+	}
+}
+
 void nodup_book() {
 	int i, j;
 
 	i = 1;
 	while (i < booklen) {
 		if (!entry_cmp(book[i-1], book[i])) {
+			copy_strs(i-1, i);
 			for (j = i; j < booklen-1; j++)
 				book[j] = book[j+1];
 
@@ -86,7 +100,7 @@ char *movetype_str(int type) {
 }
 
 void print_book() {
-	int i;
+	int i, j;
 
 	printf("static struct book_entry book[] = {\n");
 	for (i=0; i<booklen; i++) {
@@ -94,6 +108,11 @@ void print_book() {
 		u64 hash = book[i].hash;
 
 		printf("	{\n");
+		printf("	/*\n");
+		printf("	 * Entry for sequences:\n");
+		for (j=0; j<book[i].nstrs; j++)
+			printf("	 * [%s]\n", book[i].strs[j]);
+		printf("	 */\n");
 		printf("		.hash = 0x%.16" PRIx64 ",\n", hash);
 		printf("		.move_type = %s,\n", movetype_str(m.move_type));
 		if (m.move_type == MOVE_REGULAR) {
@@ -112,6 +131,7 @@ void print_book() {
 void add_rule(char *sequence) {
 	game g = startingGame();
 	int turn = WHITE;
+	char *seq_orig = sequence;
 	char c, C;
 	int r, R;
 	move m;
@@ -152,7 +172,7 @@ void add_rule(char *sequence) {
 	}
 
 	assert(ok);
-	add_one(hash, m);
+	add_one(hash, m, seq_orig);
 
 	freeGame(g);
 }
