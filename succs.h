@@ -3,8 +3,10 @@
 
 #include "board.h"
 
+#define MAX_PLY	64
+
 extern struct MS gsuccs[];
-extern int first_succ[];
+extern int first_succ[MAX_PLY];
 extern int ply;
 
 void genSuccs(game g);

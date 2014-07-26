@@ -295,6 +295,8 @@ static inline score quiesce(game g, score alpha, score beta, int curDepth,
 	if (t > alpha)
 		alpha = t;
 
+	if (ply >= MAX_PLY-1)
+		return t;
 
 	ext = calcExtension(g, maxDepth, curDepth);
 	maxDepth += ext;
@@ -449,6 +451,9 @@ static inline score negamax(game g, int maxDepth, int curDepth, move *mm,
 		assert(!mm);
 		goto out;
 	}
+
+	if (ply >= MAX_PLY-1)
+		return boardEval(g);
 
 	alpha_orig = alpha;
 	best = minScore;

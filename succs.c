@@ -25,8 +25,8 @@ static inline void addToRet_promote_f(move m);
 		addToRet_f(m);						\
 	} while(0)
 
-struct MS gsuccs[2048];
-int first_succ[32];
+struct MS gsuccs[MAX_PLY*200];
+int first_succ[MAX_PLY];
 int ply;
 
 static void pawnSuccs_w(i8 r, i8 c, const game g) {
@@ -945,6 +945,7 @@ void genCaps(const game g) {
 }
 
 static inline void _addToRet(move m) {
+	assert(first_succ[ply+1] < (int)(sizeof gsuccs / sizeof gsuccs[0]));
 	gsuccs[first_succ[ply+1]].m = m;
 	gsuccs[first_succ[ply+1]].s = 0;
 	first_succ[ply+1]++;
