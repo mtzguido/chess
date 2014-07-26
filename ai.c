@@ -443,14 +443,9 @@ static inline score negamax(game g, int maxDepth, int curDepth, move *mm,
 		addon_notify_entry(g, maxDepth - curDepth, &alpha, &beta);
 
 	if (alpha >= beta && copts.ab) {
-		/*
-		 * La posición es no-alcanzable por best play,
-		 * devolvemos alpha_orig para no modificar nada
-		 * en upstream. Deberíamos ser mas agresivos y devolver
-		 * alpha? Es lo mismo?
-		 */
+		/* Deshabilitado por ahora */
 		assert(0);
-		ret = alpha_orig;
+		ret = alpha;
 		assert(!mm);
 		goto out;
 	}
