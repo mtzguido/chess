@@ -2,6 +2,21 @@
 
 set -ue
 
+secs_to_time () {
+	mins=$(($1 / 60))
+	secs=$(($1 % 60))
+
+	echo "${mins}m${secs}s"
+}
+
+percent () {
+	if [ "$2" -eq "0" ]; then
+		echo "inf"
+	else
+		bc -l <<< "scale=2; (100 * $1 / $2)"
+	fi
+}
+
 if false; then
 	CHESS_PROG=hoichess
 	CHESS_ARGS=-x
@@ -12,14 +27,14 @@ fi
 
 rm -f FINISHLOG
 n=0
-total=$1
 
+total=$1
 shift
 
 rm -f wpipe bpipe full_log gmon.sum
 mkfifo wpipe bpipe
 
-if ! [ -x chess ]; then
+if ! [ -x ./chess ]; then
 	echo "Can't find chess program. Run 'make' first" >&2
 	exit 1
 fi
@@ -42,6 +57,9 @@ echo "ARGS=$CHESS_ARGS"		>> $DIR/log
 echo "OPTS=$@"			>> $DIR/log
 echo "Running $total games"	>> $DIR/log
 
+tottime=0
+totowntime=0
+
 echo "		b/d/w		score (min - max)"
 (while [ $n -lt $total ]; do
 	n=$((n+1))
@@ -51,11 +69,9 @@ echo "		b/d/w		score (min - max)"
 	./chess $@ 2>&1 >wpipe <bpipe | tee chesslog | grep -E '^RES:' >> FINISHLOG
 	clock_2=$(date +%s)
 	owntime=$(($(grep '>> Total time:' chesslog | grep -Eo '[0-9]*') / 1000))
-	ownmins=$((owntime / 60))
-	ownsecs=$((owntime % 60))
 	gametime=$((clock_2 - clock_1))
-	gamemins=$((gametime / 60))
-	gamesecs=$((gametime % 60))
+	tottime=$((tottime+gametime))
+	totowntime=$((totowntime+owntime))
 
 	wait # wait for opponent
 
@@ -78,14 +94,14 @@ echo "		b/d/w		score (min - max)"
 	score=$(bc -l <<< "scale=2; (2*$white + $draw)/ (2*$n)")
 	min_score=$(bc -l <<< "scale=2; (2*$white + $draw)/ (2*$total)")
 	max_score=$(bc -l <<< "scale=2; (2*$white + $draw + 2*($total - $n))/ (2*$total)")
-	
-	echo "${gamemins}m${gamesecs}s	$n/$total	$black/$draw/$white		$score ($min_score - $max_score) (owntime: ${ownmins}m${ownsecs}s)"
+
+	echo "$(secs_to_time gametime)	$n/$total	$black/$draw/$white		$score ($min_score - $max_score) (owntime: $(secs_to_time owntime))"
 
 	if [ $((black + draw + white)) -ne $n ]; then
 		echo 'wat!'
 		break;
 	fi
-done) | tee -a $DIR/log
+done; echo ; echo "Time: $(secs_to_time $totowntime)/$(secs_to_time $tottime) ($(percent $totowntime $tottime)%)") | tee -a $DIR/log
 
 [ -f gmon.sum ] && gprof chess gmon.sum > $DIR/tests_profile
 
