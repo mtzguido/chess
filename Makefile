@@ -37,8 +37,8 @@ ifeq (${CONFIG_RELEASE},y)
 	CFLAGS += -O99 -flto
 	LFLAGS += -flto
 else
-	CFLAGS += -g -pg
-	LFLAGS += -pg
+	CFLAGS += -Og -g -pg
+	LFLAGS += -Og -pg
 endif
 
 CFLAGS += -DCFG_MEMSZ=${CONFIG_MEMSZ}
