@@ -3,6 +3,8 @@
 
 struct opts copts;
 
+unsigned seed;
+
 int isPrefix(char *a, char *b) {
 	while (*a && *a++ == *b++)
 		;

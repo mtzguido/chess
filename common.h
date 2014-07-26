@@ -34,6 +34,8 @@ typedef int32_t		i32;
 typedef int16_t		i16;
 typedef int8_t		i8;
 
+extern unsigned seed;
+
 int isPrefix(char *a, char *b);
 char pieceOf(char c);
 

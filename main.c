@@ -292,7 +292,7 @@ void parse_opt(int argc, char **argv) {
 			copts.usebook = false;
 			break;
 		case 0x8:
-			srand(atoi(optarg));
+			seed = atoi(optarg);
 			break;
 		case 0x9:
 			copts.nullmove = false;
@@ -403,10 +403,12 @@ struct player random_player = {
 int main(int argc, char **argv) {
 	int rc = 0;
 
-	srand(time(NULL) + getpid());
+	seed = time(NULL) + getpid();
 	init_mem();
 
 	parse_opt(argc, argv);
+	fprintf(stderr, "random seed: %u\n", seed);
+	srand(seed);
 
 	switch (copts.mode) {
 	case normal:
