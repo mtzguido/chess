@@ -115,6 +115,8 @@ void add_rule(char *sequence) {
 	char c, C;
 	int r, R;
 	move m;
+	u64 hash = 0;
+	__maybe_unused int ok = 0;
 
 	while (sequence &&
 		4 == sscanf(sequence, " %c%i%c%i ", &c, &r, &C, &R)) {
@@ -140,13 +142,17 @@ void add_rule(char *sequence) {
 			m.move_type = MOVE_QUEENSIDE_CASTLE;
 		}
 
-		add_one(g->zobrist, m);
+		hash = g->zobrist;
 		bool rc __maybe_unused = doMove(g, m);
 		assert(rc);
+		ok = 1;
 
 		turn = flipTurn(turn);
 		sequence = strchr(sequence+1, ' ');
 	}
+
+	assert(ok);
+	add_one(hash, m);
 
 	freeGame(g);
 }
@@ -166,7 +172,8 @@ int main () {
 			buf[i++] = c;
 		buf[i] = 0;
 
-		add_rule(buf);
+		if (i > 0)
+			add_rule(buf);
 	}
 
 	sort_book();
