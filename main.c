@@ -141,7 +141,7 @@ int match(struct player pwhite, struct player pblack) {
 
 		rc = isFinished(g);
 		if (rc > 0) {
-			sleep(1);
+			usleep(50000);
 			if (rc == WIN(WHITE)) {
 				fprintf(stderr, "RES: Win (checkmate)\n");
 				return 12;
