@@ -76,7 +76,7 @@ $(TARGET): main.o $(objs)
 book.o: book.gen
 book.gen: book.txt book-gen
 	$(Q)$(SAY) "BOOKGEN"
-	$(Q)./book-gen < book.txt > book.gen
+	$(Q)./book-gen < book.txt > book.gen || (rm -f book.gen && false)
 
 masks.c: mask-gen
 	$(Q)$(SAY) "MASKGEN"
