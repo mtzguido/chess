@@ -99,7 +99,8 @@ mask-gen: mask-gen.o
 	$(Q)$(SAY) "CPP	$@"
 	$(Q)$(CC) $(CFLAGS) -E $<	-o $@
 
-book-gen: book-gen.o $(filter-out addon% ai.o book.o,$(objs))
+book-gen: book-gen.o board.o zobrist.o move.o piece-square.o masks.o \
+	  mem.o succs.o common.o ztable.o
 	$(Q)$(SAY) "LD	$@"
 	$(Q)$(CC) $(LFLAGS_UTILS) $^ -o $@
 
