@@ -5,6 +5,10 @@
 #include <stdio.h>
 #include <assert.h>
 
+#ifndef NDEBUG
+static game dbg_caps = NULL;
+#endif
+
 static inline void addToRet_f(move m);
 static inline void addToRet_promote_f(move m);
 
@@ -12,13 +16,14 @@ static inline void addToRet_promote_f(move m);
 	do {					\
 		assert(m.who == g->turn);	\
 		addToRet_promote_f(m);		\
-	} while(0);
+	} while(0)
 
-#define addToRet(m)				\
-	do {					\
-		assert(m.who == g->turn);	\
-		addToRet_f(m);			\
-	} while(0);
+#define addToRet(m)							\
+	do {								\
+		assert(dbg_caps == NULL || isCapture(dbg_caps,m));	\
+		assert(m.who == g->turn);				\
+		addToRet_f(m);						\
+	} while(0)
 
 struct MS gsuccs[2048];
 int first_succ[32];
@@ -861,17 +866,24 @@ static void  __genSuccs(const game g, movegen_t fun) {
 		}
 	}
 
-	castleSuccs(g);
-	if (fun == pieceSuccs)
-		assert(first_succ[ply+1] > first_succ[ply]);
 }
 
 void genSuccs(const game g) {
 	__genSuccs(g, pieceSuccs);
+	assert(first_succ[ply+1] > first_succ[ply]);
+	castleSuccs(g);
 }
 
 void genCaps(const game g) {
+#ifndef NDEBUG
+	dbg_caps = g;
+#endif
+
 	__genSuccs(g, pieceCaps);
+
+#ifndef NDEBUG
+	dbg_caps = NULL;
+#endif
 }
 
 static inline void _addToRet(move m) {
