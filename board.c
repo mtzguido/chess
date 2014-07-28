@@ -526,7 +526,7 @@ static bool doMoveNull(game g, move m, bool check);
  * 1 : Ok
  * 0 : Movida no válida, deja a g intacto
  */
-bool __doMove(game g, move m, bool check) {
+static bool __doMove(game g, move m, bool check) {
 	assert(m.who == g->turn);
 
 	game old_g = copyGame(g);

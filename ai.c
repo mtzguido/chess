@@ -310,8 +310,7 @@ static inline score quiesce(game g, score alpha, score beta, int curDepth,
 	for (i=first_succ[ply]; i<first_succ[ply+1]; i++) {
 		sort_succ(g, i, maxDepth - curDepth);
 
-		if (gsuccs[i].m.move_type != MOVE_REGULAR)
-			continue;
+		assert(gsuccs[i].m.move_type == MOVE_REGULAR);
 
 		/* We only consider captures and promotions */
 		assert(isCapture(g, gsuccs[i].m)

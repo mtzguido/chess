@@ -3,7 +3,7 @@
 
 #include "addon.h"
 
-void cm_reset() ;
+void cm_reset();
 void cm_score_succs(game g, int depth);
 void cm_notify_cut(game g, move m, int depth);
 void cm_suggest(game g, move *arr, int *n, int depth);

@@ -8,7 +8,6 @@
 #include "board.h"
 #include <assert.h>
 
-
 #define addon_for(name, fun, ...)	\
 	name##_##fun(__VA_ARGS__)
 
