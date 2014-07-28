@@ -14,8 +14,6 @@
 
 char charOf(int piece);
 
-static int scoreOf(int piece);
-
 static const struct game_struct
 init = {
 	.board= {
@@ -957,7 +955,7 @@ static const int scoreTab[] = {
 	[WKING]		= 20000,
 };
 
-static int scoreOf(int piece) {
+int scoreOf(int piece) {
 	return scoreTab[piece & 7];
 }
 

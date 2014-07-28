@@ -156,6 +156,7 @@ static inline bool equalMove(move a, move b) {
 }
 
 typedef int score;
+score scoreOf(int piece);
 
 struct MS {
 	move m;

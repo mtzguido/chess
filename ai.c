@@ -292,6 +292,16 @@ static inline score quiesce(game g, score alpha, score beta, int curDepth,
 	if (t >= beta)
 		return beta;
 
+	if (copts.delta_prune) {
+		score delta = scoreOf(WQUEEN) - scoreOf(WPAWN);
+
+		if (g->lastmove.promote != EMPTY)
+			delta += scoreOf(WQUEEN);
+
+		if (t + delta < alpha)
+			return alpha;
+	}
+
 	if (t > alpha)
 		alpha = t;
 

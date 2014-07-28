@@ -67,6 +67,7 @@ struct opts {
 	bool nullmove;			/* Use Null Move Heuristic */
 	bool lmr;			/* Late move reduction */
 	bool forced_extend;		/* Forced move extension */
+	bool delta_prune;		/* Quiescence delta pruning */
 
 	/* Heuristics */
 	bool heur_trans;		/* Transposition table */
@@ -92,6 +93,7 @@ static const struct opts defopts = {
 	.nullmove = true,
 	.lmr = true,
 	.forced_extend = true,
+	.delta_prune = true,
 
 	.heur_trans = true,
 	.heur_killer = true,

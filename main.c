@@ -244,6 +244,7 @@ void parse_opt(int argc, char **argv) {
 		{ "no-lmr",	no_argument,		0, 0xb },
 		{ "no-sort",	no_argument,		0, 0xd },
 		{ "no-forced",	no_argument,		0, 0xe },
+		{ "no-delta",	no_argument,		0, 0xf },
 		{ 0,0,0,0 }
 	};
 
@@ -312,6 +313,9 @@ void parse_opt(int argc, char **argv) {
 			break;
 		case 0xe:
 			copts.forced_extend = false;
+			break;
+		case 0xf:
+			copts.delta_prune = false;
 			break;
 		case '?':
 		default:
