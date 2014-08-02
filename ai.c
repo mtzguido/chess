@@ -242,7 +242,7 @@ static inline score null_move_score(game g, int curDepth, int maxDepth,
 	 * Dont null-move when in check or when low in material since
 	 * we're likely to be in Zugzwang
 	 */
-	if (inCheck(g, g->turn) || g->pieceScore[g->turn] <= 21000)
+	if (inCheck(g, g->turn) || g->pieceScore[g->turn] <= NMH_THRESHOLD)
 		goto dont;
 
 	/* Not even worth it */
@@ -439,7 +439,7 @@ static inline score negamax(game g, int maxDepth, int curDepth, move *mm,
 
 	/*
 	 * Only try to null-move if beta was less than maxScore.
-	 * Otherwise will never suceed in the test.
+	 * Otherwise we will never suceed in the test.
 	 */
 	if (beta < maxScore) {
 		assert(!mm);
@@ -702,6 +702,7 @@ static inline score eval_bpawn(const int i, const int j) {
 static inline score eval_with_ranks(const u8 rows[], const u8 cols[],
 				    const int npcs, const game g) {
 	int i;
+	int bishop_count[2] = {0};
 	score score = 0;
 
 	for (i=0; i<npcs; i++) {
@@ -713,6 +714,25 @@ static inline score eval_with_ranks(const u8 rows[], const u8 cols[],
 		case WPAWN:
 			score += eval_wpawn(r, c);
 			break;
+		case BPAWN:
+			score -= eval_bpawn(r, c);
+			break;
+
+		/* Penalize knight at end game */
+		case WKNIGHT:
+			score -= interpolate(g, 0, KNIGHT_ENDGAME);
+			break;
+		case BKNIGHT:
+			score += interpolate(g, 0, KNIGHT_ENDGAME);
+			break;
+
+		case WBISHOP:
+			bishop_count[WHITE]++;
+			break;
+		case BBISHOP:
+			bishop_count[BLACK]++;
+			break;
+
 		case WROOK:
 			if (pawn_rank[WHITE][c+1] == 0) {
 				if (pawn_rank[BLACK][c+1] == 7)
@@ -720,9 +740,6 @@ static inline score eval_with_ranks(const u8 rows[], const u8 cols[],
 				else
 					score += ROOK_SEMI_OPEN_FILE;
 			}
-			break;
-		case BPAWN:
-			score -= eval_bpawn(r, c);
 			break;
 		case BROOK:
 			if (pawn_rank[BLACK][c+1] == 7) {
@@ -735,6 +752,9 @@ static inline score eval_with_ranks(const u8 rows[], const u8 cols[],
 		}
 	}
 
+	if (bishop_count[WHITE] > 1) score += DOUBLE_BISHOP;
+	if (bishop_count[BLACK] > 1) score -= DOUBLE_BISHOP;
+
 	return score;
 }
 
@@ -743,19 +763,19 @@ static inline score castle_score(const game g) {
 
 	if (!g->castled[WHITE]) {
 		switch(2*g->castle_king[WHITE] + g->castle_queen[WHITE]) {
-		case 0x00: score -= 15; break;
-		case 0x01: score -= 12; break;
-		case 0x02: score -= 8;  break;
-		case 0x03: score -= 5;  break;
+		case 0x00: score += CASTLE_NN; break;
+		case 0x01: score += CASTLE_NY; break;
+		case 0x02: score += CASTLE_YN; break;
+		case 0x03: score += CASTLE_YY; break;
 		}
 	}
 
 	if (!g->castled[BLACK]) {
 		switch(2*g->castle_king[BLACK] + g->castle_queen[BLACK]) {
-		case 0x00: score += 15; break;
-		case 0x01: score += 12; break;
-		case 0x02: score += 8;  break;
-		case 0x03: score += 5;  break;
+		case 0x00: score -= CASTLE_NN; break;
+		case 0x01: score -= CASTLE_NY; break;
+		case 0x02: score -= CASTLE_YN; break;
+		case 0x03: score -= CASTLE_YY; break;
 		}
 	}
 
@@ -794,15 +814,15 @@ score boardEval(const game g) {
 	/* Penalizamos según posibilidades de enroque */
 	score += castle_score(g);
 
-	if (inCheck(g, WHITE)) score -= 200;
-	if (inCheck(g, BLACK)) score += 200;
+	if (inCheck(g, WHITE)) score += INCHECK;
+	if (inCheck(g, BLACK)) score -= INCHECK;
 
 	/*
 	 * Acercamos a 0 los tableros que tengan
 	 * muchos movimientos idle
 	 */
-	if (unlikely(g->idlecount > 68))
-		score = (score * (100 - g->idlecount))/32;
+	if (unlikely(g->idlecount > 100-FIFTYMOVE_THRESHOLD))
+		score = (score * (100 - g->idlecount))/FIFTYMOVE_THRESHOLD;
 
 	assert(score < maxScore);
 	assert(score > minScore);

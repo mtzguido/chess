@@ -32,12 +32,34 @@ score boardEval(game g);
 #define ISOLATED_PAWN		(-20)
 #define BACKWARDS_PAWN		(-8)
 #define PASSED_PAWN		20
+#define INCHECK			(-100)
+#define DOUBLE_BISHOP		15
+#define KNIGHT_ENDGAME		(-10)
+
+/* Define a fuzzy threshold for boards near 50 idle moves */
+#define FIFTYMOVE_THRESHOLD	32
+
+/* Castling penalties */
+#define CASTLE_NN		(-15)
+#define CASTLE_NY		(-12)
+#define CASTLE_YN		(-8)
+#define CASTLE_YY		(-5)
 
 /* Move ordering scores */
-#define CAPT_SCORE	200
-#define PROMOTE_SCORE	300
-#define CM_SCORE	500
-#define KILLER_SCORE	1000
-#define TRANS_SCORE	10000
+#define CAPT_SCORE		200
+#define PROMOTE_SCORE		300
+#define CM_SCORE		500
+#define KILLER_SCORE		1000
+#define TRANS_SCORE		10000
+
+/* Piece scores */
+#define QUEEN_SCORE		900
+#define ROOK_SCORE		500
+#define BISHOP_SCORE		330
+#define KNIGHT_SCORE		320
+#define PAWN_SCORE		100
+
+/* Heuristics config */
+#define NMH_THRESHOLD		1000
 
 #endif

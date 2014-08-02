@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "ai.h"
 #include "move.h"
 #include "masks.h"
 #include "piece-square.h"
@@ -947,11 +948,11 @@ static bool doMoveQCastle(game g, move m, bool check) {
 
 static const int scoreTab[] = {
 	[EMPTY]		= 0,
-	[WPAWN]		= 100,
-	[WKNIGHT]	= 320,
-	[WBISHOP]	= 330,
-	[WROOK]		= 500,
-	[WQUEEN]	= 900,
+	[WPAWN]		= PAWN_SCORE,
+	[WKNIGHT]	= KNIGHT_SCORE,
+	[WBISHOP]	= BISHOP_SCORE,
+	[WROOK]		= ROOK_SCORE,
+	[WQUEEN]	= QUEEN_SCORE,
 	[WKING]		= 0,
 };
 
