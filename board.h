@@ -155,6 +155,11 @@ static inline bool equalMove(move a, move b) {
 	    && a.promote == b.promote;
 }
 
+static inline int interpolate(game g, int start, int finish) {
+	int t = g->pieceScore[WHITE] + g->pieceScore[BLACK];
+	return (t*(start - finish)/8000) + finish;
+}
+
 typedef int score;
 score scoreOf(int piece);
 

@@ -616,8 +616,7 @@ out:
 }
 
 static inline int pieceScore(const game g) {
-	int x = g->pieceScore[WHITE] + g->pieceScore[BLACK] - 40000;
-	int pps = (x*(g->pps_O - g->pps_E))/8000 + g->pps_E;
+	int pps = interpolate(g, g->pps_O, g->pps_E);
 
 	return g->pieceScore[WHITE] - g->pieceScore[BLACK] + pps;
 }

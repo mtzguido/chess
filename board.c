@@ -952,7 +952,7 @@ static const int scoreTab[] = {
 	[WBISHOP]	= 330,
 	[WROOK]		= 500,
 	[WQUEEN]	= 900,
-	[WKING]		= 20000,
+	[WKING]		= 0,
 };
 
 int scoreOf(int piece) {
