@@ -8,7 +8,7 @@ TARGET=chess
 ifeq (${V},1)
 	Q=
 else
-	Q = @
+	Q=@
 endif
 
 SAY = echo
