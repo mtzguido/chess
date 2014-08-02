@@ -616,9 +616,11 @@ out:
 }
 
 static inline int pieceScore(const game g) {
-	int pps = interpolate(g, g->pps_O, g->pps_E);
+	const int pps = interpolate(g, g->pps_O, g->pps_E);
+	const int w = g->pieceScore[WHITE];
+	const int b = g->pieceScore[BLACK];
 
-	return g->pieceScore[WHITE] - g->pieceScore[BLACK] + pps;
+	return w - b + pps;
 }
 
 /*
