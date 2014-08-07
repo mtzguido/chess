@@ -2,6 +2,10 @@
 
 set -ue
 
+CHESS_PROG=./chess
+OPPONENT_PROG=fairymax
+OPPONENT_ARGS=
+
 secs_to_time () {
 	mins=$(($1 / 60))
 	secs=$(($1 % 60))
@@ -17,25 +21,12 @@ percent () {
 	fi
 }
 
-if false; then
-	CHESS_PROG=hoichess
-	CHESS_ARGS=-x
-else
-	CHESS_PROG=fairymax
-	CHESS_ARGS=
-fi
+msg () {
+	echo "$@" | tee -a $DIR/log
+}
 
-rm -f FINISHLOG
-n=0
-
-total=$1
-shift
-
-rm -f wpipe bpipe full_log gmon.sum
-mkfifo wpipe bpipe
-
-if ! [ -x ./chess ]; then
-	echo "Can't find chess program. Run 'make' first" >&2
+if ! [ -x $CHESS_PROG ]; then
+	echo "Can't find chess program. Maybe you should run 'make' first?" >&2
 	exit 1
 fi
 
@@ -48,27 +39,55 @@ else
 	echo $seq > games/.seq
 	seq=$(printf "%04d" $seq)
 fi
-
 DIR=games/$seq
 mkdir $DIR
-
-echo "PROG=$CHESS_PROG"		>> $DIR/log
-echo "ARGS=$CHESS_ARGS"		>> $DIR/log
-echo "OPTS=$@"			>> $DIR/log
-echo "Running $total games"	>> $DIR/log
 
 tottime=0
 totowntime=0
 
-echo "		b/d/w		score (min - max)"
-(while [ $n -lt $total ]; do
-	n=$((n+1))
+# Make pipes
+WPIPE=$(mktemp -u --suffix=.gchess)
+BPIPE=$(mktemp -u --suffix=.gchess)
+
+cleanup () {
+	rm -f $WPIPE $BPIPE
+}
+
+trap cleanup EXIT
+
+mkfifo $WPIPE
+mkfifo $BPIPE
+
+# Reset profiling data
+rm -f gmon.sum
+
+# Get number of tests and options
+total=$1
+shift
+CHESS_ARGS=$@
+
+msg "OPPONENT_PROG=$OPPONENT_PROG"
+msg "OPPONENT_ARGS=$OPPONENT_ARGS"
+msg "CHESS_PROG=$CHESS_PROG"
+msg "CHESS_ARGS=$CHESS_ARGS"
+msg
+msg "Running $total games"
+
+msg "	b/d/w		score	time"
+ii=0
+black=0
+draw=0
+white=0
+while [ $ii -lt $total ]; do
+	ii=$((ii+1))
 
 	clock_1=$(date +%s)
-	${CHESS_PROG} ${CHESS_ARGS} <wpipe | tee fairylog >bpipe &
-	./chess $@ 2>&1 >wpipe <bpipe | tee chesslog | grep -E '^RES:' >> FINISHLOG
+
+	${OPPONENT_PROG} ${OPPONENT_ARGS} <$WPIPE | tee opponent_log >$BPIPE &
+	./chess $@ 2>chess_log >$WPIPE <$BPIPE
+
 	clock_2=$(date +%s)
-	owntime=$(($(grep '>> Total time:' chesslog | grep -Eo '[0-9]*') / 1000))
+	owntime=$(($(grep '>> Total time:' chess_log | grep -Eo '[0-9]*') / 1000))
 	gametime=$((clock_2 - clock_1))
 	tottime=$((tottime+gametime))
 	totowntime=$((totowntime+owntime))
@@ -76,35 +95,39 @@ echo "		b/d/w		score (min - max)"
 	wait # wait for opponent
 
 	if [ -f gmon.out ]; then
-		gprof chess gmon.out > $DIR/prof_$n
-		if [ $n -eq 1 ]; then
+		gprof chess gmon.out > $DIR/prof_$ii
+		if [ $ii -eq 1 ]; then
 			mv gmon.out gmon.sum
 		else
 			gprof -s chess gmon.out gmon.sum
 		fi
 	fi
 
-	mv gamelog	$DIR/gamelog_$n
-	mv fairylog	$DIR/fairylog_$n
-	mv chesslog	$DIR/chesslog_$n
-
-	black=$(grep Lose FINISHLOG | wc -l)
-	draw=$(grep Draw FINISHLOG | wc -l)
-	white=$(grep Win FINISHLOG | wc -l)
-	score=$(bc -l <<< "scale=2; (2*$white + $draw)/ (2*$n)")
-	min_score=$(bc -l <<< "scale=2; (2*$white + $draw)/ (2*$total)")
-	max_score=$(bc -l <<< "scale=2; (2*$white + $draw + 2*($total - $n))/ (2*$total)")
-
-	echo "$(secs_to_time gametime)	$n/$total	$black/$draw/$white		$score ($min_score - $max_score) (owntime: $(secs_to_time owntime))"
-
-	if [ $((black + draw + white)) -ne $n ]; then
-		echo 'wat!'
-		break;
+	if grep -E '^RES: Lose' chess_log &>/dev/null; then
+		black=$((black+1))
+	elif grep -E '^RES: Win' chess_log &>/dev/null; then
+		white=$((white+1))
+	elif grep -E '^RES: Draw' chess_log &>/dev/null; then
+		draw=$((draw+1))
+	else
+		echo '?????' >&2
 	fi
-done; echo ; echo "Time: $(secs_to_time $totowntime)/$(secs_to_time $tottime) ($(percent $totowntime $tottime)%)") | tee -a $DIR/log
+
+	mv gamelog	$DIR/gamelog_$ii
+	mv opponent_log	$DIR/opponent_log_$ii
+	mv chess_log	$DIR/chess_log_$ii
+
+	score=$(bc -l <<< "scale=2; (2.00*$white + $draw)/ (2.00*$ii)")
+
+	msg "$ii/$total	$black/$draw/$white		$score	$(secs_to_time owntime)/$(secs_to_time gametime)"
+
+done
+
+msg
+msg "Time: $(secs_to_time $totowntime)/$(secs_to_time $tottime) ($(percent $totowntime $tottime)%)"
 
 [ -f gmon.sum ] && gprof chess gmon.sum > $DIR/tests_profile
 
-rm -f FINISHLOG
+cleanup
 
 exit 0
