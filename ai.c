@@ -699,6 +699,94 @@ static inline score eval_bpawn(const int i, const int j) {
 	return ret;
 }
 
+static inline score eval_wshield(const int c) {
+	score ret = 0;
+
+	switch (pawn_rank[WHITE][c+1]) {
+		case 6:		ret -= 0;	/* Never moved */
+		case 5:		ret -= 10;	/* Moded 1 square */
+		case 0:		ret -= 25;	/* No pawn */
+		default:	ret -= 20;	/* Somewhere else */
+	}
+
+	switch (pawn_rank[BLACK][c+1]) {
+		case 7:		ret -= 0;	/* No pawn */
+		case 4:		ret -= 5;	/* Close */
+		case 5:		ret -= 10;	/* Closer */
+		default:	ret += 5;	/* Somewhere else */
+	}
+
+	return ret;
+}
+
+static inline score eval_wking(const int r, const int c) {
+	score ret = 0;
+
+	/* Evaluate the pawn shield when the king has castled */
+	if (r < 3) {
+		ret += eval_wshield(0);
+		ret += eval_wshield(1);
+		ret += eval_wshield(2) / 2;
+	} else if (r > 4) {
+		ret += eval_wshield(5) / 2;
+		ret += eval_wshield(6);
+		ret += eval_wshield(7);
+	} else {
+		if (pawn_rank[BLACK][c] == 7 && pawn_rank[WHITE][c] == 0)
+			ret -= 10;
+		if (pawn_rank[BLACK][c+1] == 7 && pawn_rank[WHITE][c+1] == 0)
+			ret -= 10;
+		if (pawn_rank[BLACK][c+2] == 7 && pawn_rank[WHITE][c+2] == 0)
+			ret -= 10;
+	}
+
+	return ret;
+}
+
+static inline score eval_bshield(const int c) {
+	score ret = 0;
+
+	switch (pawn_rank[BLACK][c+1]) {
+		case 1:		ret -= 0;	/* Never moved */
+		case 2:		ret -= 10;	/* Moded 1 square */
+		case 7:		ret -= 25;	/* No pawn */
+		default:	ret -= 20;	/* Somewhere else */
+	}
+
+	switch (pawn_rank[WHITE][c+1]) {
+		case 0:		ret -= 0;	/* No pawn */
+		case 3:		ret -= 5;	/* Close */
+		case 2:		ret -= 10;	/* Closer */
+		default:	ret += 5;	/* Somewhere else */
+	}
+
+	return ret;
+}
+
+static inline score eval_bking(const int r, const int c) {
+	score ret = 0;
+
+	/* Evaluate the pawn shield when the king has castled */
+	if (r < 3) {
+		ret += eval_bshield(0);
+		ret += eval_bshield(1);
+		ret += eval_bshield(2) / 2;
+	} else if (r > 4) {
+		ret += eval_bshield(5) / 2;
+		ret += eval_bshield(6);
+		ret += eval_bshield(7);
+	} else {
+		if (pawn_rank[BLACK][c] == 7 && pawn_rank[WHITE][c] == 0)
+			ret -= 10;
+		if (pawn_rank[BLACK][c+1] == 7 && pawn_rank[WHITE][c+1] == 0)
+			ret -= 10;
+		if (pawn_rank[BLACK][c+2] == 7 && pawn_rank[WHITE][c+2] == 0)
+			ret -= 10;
+	}
+
+	return ret;
+}
+
 static inline score eval_with_ranks(const u8 rows[], const u8 cols[],
 				    const int npcs, const game g) {
 	int i;
@@ -711,6 +799,7 @@ static inline score eval_with_ranks(const u8 rows[], const u8 cols[],
 		const piece_t piece = g->board[r][c];
 
 		switch (piece) {
+		/* Evaluate pawns individually */
 		case WPAWN:
 			score += eval_wpawn(r, c);
 			break;
@@ -726,6 +815,7 @@ static inline score eval_with_ranks(const u8 rows[], const u8 cols[],
 			score += interpolate(g, 0, KNIGHT_ENDGAME);
 			break;
 
+		/* Count bishops */
 		case WBISHOP:
 			bishop_count[WHITE]++;
 			break;
@@ -733,6 +823,7 @@ static inline score eval_with_ranks(const u8 rows[], const u8 cols[],
 			bishop_count[BLACK]++;
 			break;
 
+		/* Bonus for rook on (semi)open files */
 		case WROOK:
 			if (pawn_rank[WHITE][c+1] == 0) {
 				if (pawn_rank[BLACK][c+1] == 7)
@@ -748,6 +839,17 @@ static inline score eval_with_ranks(const u8 rows[], const u8 cols[],
 				else
 					score -= ROOK_SEMI_OPEN_FILE;
 			}
+			break;
+
+		/* Evaluate king safety */
+		case WKING:
+			score += eval_wking(r, c)
+				* g->pieceScore[BLACK] / SIDE_SCORE ;
+			break;
+
+		case BKING:
+			score -= eval_bking(r, c)
+				* g->pieceScore[WHITE] / SIDE_SCORE ;
 			break;
 		}
 	}
