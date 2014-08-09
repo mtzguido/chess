@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <time.h>
+#include <math.h>
 
 /* Score definition */
 static const score minScore = -1e7;
@@ -205,6 +206,8 @@ move machineMove(const game start) {
 		assert(ret.move_type != MOVE_INVAL);
 		assert(ret.who == start->turn);
 		print_stats(t);
+		fprintf(stderr, "move was %i %i %i %i %i\n",
+				ret.move_type, ret.r, ret.c, ret.R, ret.C);
 	}
 	t2 = clock();
 
@@ -620,7 +623,12 @@ static inline int pieceScore(const game g) {
 	const int w = g->pieceScore[WHITE];
 	const int b = g->pieceScore[BLACK];
 
-	return w - b + pps;
+	const double bonus = fabs(log2((double)(w + 1)/(b + 1)));
+	const int ret = (w - b) * (1 + bonus) + pps;
+
+	assert(ret <  99000);
+	assert(ret > -99000);
+	return ret;
 }
 
 /*
