@@ -52,13 +52,6 @@ score boardEval(game g);
 #define KILLER_SCORE		1000
 #define TRANS_SCORE		10000
 
-/* Piece scores */
-#define QUEEN_SCORE		900
-#define ROOK_SCORE		500
-#define BISHOP_SCORE		330
-#define KNIGHT_SCORE		320
-#define PAWN_SCORE		100
-
 /* Heuristics config */
 #define NMH_THRESHOLD		1000
 

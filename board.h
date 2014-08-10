@@ -155,9 +155,20 @@ static inline bool equalMove(move a, move b) {
 	    && a.promote == b.promote;
 }
 
+/* Piece scores */
+#define QUEEN_SCORE		900
+#define ROOK_SCORE		500
+#define BISHOP_SCORE		330
+#define KNIGHT_SCORE		320
+#define PAWN_SCORE		100
+
+#define SIDE_SCORE		(QUEEN_SCORE + 2 * ROOK_SCORE + \
+				 2 * BISHOP_SCORE + 2 * KNIGHT_SCORE + \
+				 8 * PAWN_SCORE)
+
 static inline int interpolate(game g, int start, int finish) {
 	int t = g->pieceScore[WHITE] + g->pieceScore[BLACK];
-	return (t*(start - finish)/8000) + finish;
+	return (t*(start - finish)/(2*SIDE_SCORE)) + finish;
 }
 
 typedef int score;
