@@ -717,7 +717,7 @@ static inline score eval_wshield(const int c) {
 
 	switch (pawn_rank[WHITE][c+1]) {
 		case 6:		ret -= 0;	/* Never moved */
-		case 5:		ret -= 10;	/* Moded 1 square */
+		case 5:		ret -= 10;	/* Moved 1 square */
 		case 0:		ret -= 25;	/* No pawn */
 		default:	ret -= 20;	/* Somewhere else */
 	}
@@ -761,7 +761,7 @@ static inline score eval_bshield(const int c) {
 
 	switch (pawn_rank[BLACK][c+1]) {
 		case 1:		ret -= 0;	/* Never moved */
-		case 2:		ret -= 10;	/* Moded 1 square */
+		case 2:		ret -= 10;	/* Moved 1 square */
 		case 7:		ret -= 25;	/* No pawn */
 		default:	ret -= 20;	/* Somewhere else */
 	}
