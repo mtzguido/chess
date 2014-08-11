@@ -622,8 +622,13 @@ static inline int pieceScore(const game g) {
 	const int pps = interpolate(g, g->pps_O, g->pps_E);
 	const int w = g->pieceScore[WHITE];
 	const int b = g->pieceScore[BLACK];
+	double bonus;
 
-	const double bonus = fabs(log2((double)(w + 1)/(b + 1)));
+	if (copts.h11n)
+		bonus = fabs(log2((double)(w + 1)/(b + 1)));
+	else
+		bonus = 0;
+
 	const int ret = (w - b) * (1 + bonus) + pps;
 
 	assert(ret <  99000);

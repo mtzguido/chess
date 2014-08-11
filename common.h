@@ -61,6 +61,7 @@ struct opts {
 
 	bool reverse;			/* Reverse the order of succ generation (debug) */
 
+	/* Search */
 	bool iter;			/* Iterative deepening */
 	bool ab;			/* Alpha-beta */
 	bool quiesce;			/* Use quiescence search on leaf nodes */
@@ -69,11 +70,14 @@ struct opts {
 	bool forced_extend;		/* Forced move extension */
 	bool delta_prune;		/* Quiescence delta pruning */
 
-	/* Heuristics */
+	/* Heuristics (mostly move ordering) */
 	bool heur_trans;		/* Transposition table */
 	bool heur_killer;		/* Killer Heuristic */
 	bool heur_cm;			/* Countermove Heuristic */
 	bool heur_trivial;		/* Trivial and cheap move ordering */
+
+	/* Board evaluation */
+	bool h11n;			/* 1-1-n heuristic */
 };
 
 static const struct opts defopts = {
@@ -99,6 +103,8 @@ static const struct opts defopts = {
 	.heur_killer = true,
 	.heur_cm = true,
 	.heur_trivial = true,
+
+	.h11n = true,
 };
 
 extern struct opts copts;
