@@ -70,7 +70,7 @@ msg "OPPONENT_PROG=$OPPONENT_PROG"
 msg "OPPONENT_ARGS=$OPPONENT_ARGS"
 msg "CHESS_PROG=$CHESS_PROG"
 msg "CHESS_ARGS=$CHESS_ARGS"
-msg "Git version: $(git describe)"
+msg "Git version: $(git describe --dirty)"
 msg
 msg "Running $total games"
 
