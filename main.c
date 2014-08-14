@@ -34,6 +34,14 @@ game startingGame2() {
 	return g;
 }
 
+static int board_eval_mode() {
+	game g = startingGame2();
+
+	fprintf(stderr, "Board evaluation: %i\n", boardEval(g));
+
+	return 0;
+}
+
 void checkMove(game g, move m) {
 	game t = galloc();
 	game ng = galloc();
@@ -246,6 +254,7 @@ void parse_opt(int argc, char **argv) {
 		{ "no-forced",	no_argument,		0, 0xe },
 		{ "no-delta",	no_argument,		0, 0xf },
 		{ "no-11n",	no_argument,		0, 0x10 },
+		{ "board-eval", no_argument,		0, 0x11 },
 		{ 0,0,0,0 }
 	};
 
@@ -320,6 +329,9 @@ void parse_opt(int argc, char **argv) {
 			break;
 		case 0x10:
 			copts.h11n = false;
+			break;
+		case 0x11:
+			copts.mode = board_eval;
 			break;
 		case '?':
 		default:
@@ -441,6 +453,9 @@ int main(int argc, char **argv) {
 		break;
 	case ai_vs_rand:
 		rc = match(ai_player, random_player);
+		break;
+	case board_eval:
+		board_eval_mode();
 		break;
 	}
 

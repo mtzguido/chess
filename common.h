@@ -45,6 +45,7 @@ enum play_mode {
 	moves,
 	randplay,
 	ai_vs_rand,
+	board_eval,
 };
 
 struct opts {
