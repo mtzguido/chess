@@ -51,7 +51,9 @@ enum play_mode {
 struct opts {
 	enum play_mode mode;
 	int nmoves;			/* Amount of moves to calculate */
-	int depth;			/* Search depth */
+	int depth;			/* Maximum search depth */
+	bool fixed_depth;		/* Fix depth, do not cut by time */
+	unsigned long timelimit;	/* Time limit for each move, in ms */
 	bool shuffle;			/* Shuffle the succ moves */
 	bool usebook;			/* Use opening book */
 	bool black;			/* Play as black */
@@ -85,6 +87,8 @@ static const struct opts defopts = {
 	.mode = normal,
 	.nmoves = 0,
 	.depth = 6,
+	.fixed_depth = false,
+	.timelimit = 1000,
 	.shuffle = true,
 	.usebook = true,
 	.black = false,

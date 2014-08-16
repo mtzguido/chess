@@ -255,6 +255,8 @@ void parse_opt(int argc, char **argv) {
 		{ "no-delta",	no_argument,		0, 0xf },
 		{ "no-11n",	no_argument,		0, 0x10 },
 		{ "board-eval", no_argument,		0, 0x11 },
+		{ "fix-depth",  no_argument,		0, 0x12 },
+		{ "time-limit", required_argument,	0, 0x13 },
 		{ 0,0,0,0 }
 	};
 
@@ -332,6 +334,12 @@ void parse_opt(int argc, char **argv) {
 			break;
 		case 0x11:
 			copts.mode = board_eval;
+			break;
+		case 0x12:
+			copts.fixed_depth = true;
+			break;
+		case 0x13:
+			copts.timelimit = atoi(optarg);
 			break;
 		case '?':
 		default:

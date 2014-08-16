@@ -14,6 +14,7 @@
 #include <stdbool.h>
 #include <time.h>
 #include <math.h>
+#include <sys/time.h>
 
 /* Score definition */
 static const score minScore = -1e7;
@@ -175,9 +176,23 @@ static inline bool forced(const game g, move *m) {
 	return true;
 }
 
+static unsigned long getms() {
+	struct timeval tv;
+	gettimeofday(&tv, NULL);
+
+	return tv.tv_sec * 1000 + tv.tv_usec / 1000;
+}
+
+/* Time limit data */
+bool timelimited;
+bool timeup;
+unsigned long timelimit;
+int ticks;
+
 move machineMove(const game start) {
 	move ret = {0};
 	clock_t t1,t2;
+	score expected;
 
 	ret.move_type = MOVE_INVAL;
 
@@ -189,7 +204,9 @@ move machineMove(const game start) {
 		fprintf(stderr, "stats: book move.\n");
 	} else if (forced(start, &ret)) {
 		fprintf(stderr, "stats: forced move.\n");
-	} else {
+	} else if (copts.fixed_depth) {
+		timelimited = false;
+
 		/* Profundización para llenar la TT */
 		if (copts.iter) {
 			int d;
@@ -200,16 +217,38 @@ move machineMove(const game start) {
 		}
 
 		assert(ply == 0);
-		score t = negamax(start, copts.depth, 0,
-				  &ret, minScore, maxScore);
+		expected = negamax(start, copts.depth, 0, &ret, minScore, maxScore);
+	} else {
+		int d;
+		move temp;
+		score t;
 
-		assert(ret.move_type != MOVE_INVAL);
-		assert(ret.who == start->turn);
-		print_stats(t);
-		fprintf(stderr, "move was %i %i %i %i %i\n",
-				ret.move_type, ret.r, ret.c, ret.R, ret.C);
+		expected = minScore;
+		timelimited = true;
+		timeup = false;
+		timelimit = getms() + copts.timelimit;
+		ticks = 0;
+
+		for (d=1; d<copts.depth && !timeup; d++) {
+			assert(ply == 0);
+			t = negamax(start, d, 0, &temp, minScore, maxScore);
+
+			if (!timeup) {
+				expected = t;
+				ret = temp;
+			}
+		}
+		if (timeup)
+			fprintf(stderr, "machineMove: time up!\n");
+		assert(ply == 0);
 	}
 	t2 = clock();
+
+	print_stats(expected);
+	assert(ret.move_type != MOVE_INVAL);
+	assert(ret.who == start->turn);
+	fprintf(stderr, "move was %i %i %i %i %i\n",
+			ret.move_type, ret.r, ret.c, ret.R, ret.C);
 
 	stats.totalopen += stats.nopen_s + stats.nopen_q;
 	stats.totalms += 1000*(t2-t1)/CLOCKS_PER_SEC;
@@ -315,6 +354,17 @@ static inline score quiesce(game g, score alpha, score beta, int curDepth,
 	maxDepth += ext;
 	if (curDepth >= maxDepth)
 		return t;
+
+	if (timelimited && !timeup) {
+		ticks++;
+
+		if ((ticks & 0xfff) == 0) {
+			if (getms() > timelimit)
+				timeup = true;
+		}
+	} else if (timeup) {
+		return minScore;
+	}
 
 	const score alpha_orig = alpha;
 	ng = copyGame(g);
@@ -466,6 +516,17 @@ static inline score negamax(game g, int maxDepth, int curDepth, move *mm,
 
 	if (ply >= MAX_PLY-1)
 		return boardEval(g);
+
+	if (timelimited && !timeup) {
+		ticks++;
+
+		if ((ticks & 0xfff) == 0) {
+			if (getms() > timelimit)
+				timeup = true;
+		}
+	} else if (timeup && !mm) {
+		return alpha;
+	}
 
 	alpha_orig = alpha;
 	best = minScore;
