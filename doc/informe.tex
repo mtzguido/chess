@@ -1,13 +1,14 @@
 \documentclass{article}
 \usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
 \usepackage{fullpage}
+\usepackage{hyperref}
 
 \renewcommand{\refname}{\section{Referencias}}
 
 \begin{document}
 
-\title{Proyecto IIA - Ajedrez}
-\date{11 de Marzo, 2014}
+\title{Proyecto IIA - Motor de Ajedrez}
 
 \author{Guido Martínez \\ LCC, FCEIA, UNR }
 
@@ -15,39 +16,190 @@
 
 \section{Objetivo}
 
-Crear una inteligencia artificial para jugar al ajedrez, usando métodos tradicionales. Priorizar la eficiencia ante la claridad del código, y priorizar la calidad de cada movida al tiempo de ejecución (mientras sea razonable).
+Crear una inteligencia artificial para jugar al ajedrez (un \emph {Motor
+de Ajedrez}, usando métodos tradicionales. Priorizar el entendimiento
+y claridad del código ante la performance, siempre que esto no haga a
+nuestro motor demasiado lento como para competir con otros.
 
-\section{Implementación}
+\section{Overview}
 
-El algoritmo de búsqueda elegido es Minimax, con las mejoras de poda alfa-beta y {\it Killer Heuristic}.
-La profundidad usada es de 6  {\it plies} (movidas de algún jugador).
-Está profundidad máxima se extiende en el caso de que la última movida sea una captura, una promoción, o un jaque.
-Esto ayuda a evitar el efecto horizonte, porque tendemos a no dejar de buscar si la última movida fue {\it ruidosa}. 
-El algoritmo es {\bf determinista} y no tiene en cuenta el tiempo que tarda.\\
+Como es usual, el algoritmo de búsqueda elegido es Alpha-Beta con una
+búsqueda de quietud (\emph{Quiescence Search}) en los nodos terminales
+de la búsqueda.
+También se incluye un límite de tiempo para que una movida no tarde
+una cantidad exagerada de tiempo.
+\\
 
-La función de evaluación del tablero combina:
+Lo que mayormente define al motor son la representación del tablero,
+las heurísticas de ordenamiento de movidas, las reducciones y
+extensiones de búsqueda, y la evaluación de tablero.
+
+Pasamos a detallar esas categorías para nuestro motor
+\\
+
+\subsection{Representación de tablero}
+Se usa un array de 8x8 con las piezas. También se usan máscaras
+de 64 bits para acelerar algunos cálculos. En la estructura del
+tablero, además de estar la información del juego en sí, se mantienen
+incrementalmente (se ajustan/recalculan luego de cada movida):
+
 \begin{itemize}
-\item Puntaje de fichas individuales
-\item Puntaje de fichas por posición
-\item Jaques actuales
+\item Puntaje de piezas de cada lado
+\item Un hash del tablero para comparar rápidamente por igualdad
+\item Los puntajes pieza-posición
+\item Las máscaras previamente mencionadas
 \end{itemize}
 
-Las tablas ficha-posición fueron tomadas de \cite{piece-square-table} y ligeramente modificadas.\\
+Se mantienen estos datos incrementalmente para no tener que recorrer
+todo el tablero al momento de la evaluación para calcularlos. El hash
+fue específicamente elegido debido a que su cálculo es incremental con
+cada movida (\emph{Zobrist hash}).
 
-La representación del tablero se hizo de cero e incluye muchos datos sobre el tablero, que se calculan incrementalmente en vez de calcularse nuevamente para cada tablero, esto permite calcular el puntaje de las fichas muy rápidamente.
-También, al ver si un tablero está en jaque, se guarda el resultado en la misma estructura para no recalcularlo varias veces.
-Al hacer una movida, se decide si la jugada puede haber influenciado la amenaza al rey, y en caso negativo, no se recalcula el jaque.
+\subsection{Heurísticas de ordenamiento de movidas}
+En orden de importancia (puntaje que aportan al ordenamiento):
+\begin{itemize}
+\item Tablas de transposición
+\item Killer Move Heuristic
+\item Countermove Heuristic
+\item LVV-MVA
+\end{itemize}
+
+\subsection{Reducciones}
+
+\begin{itemize}
+\item Null-move heuristic (para nodos \emph{fail-high})
+\item Late move reduction (para nodos \emph{fail-low})
+\end{itemize}
+
+\subsection{Extensiones}
+\begin{itemize}
+\item Check extension
+\item Extension por promoción
+\end{itemize}
+
+\subsection{Evaluación del tablero}
+Para la evaluación del tablero se tienen en cuenta:
+\begin{itemize}
+\item Puntaje de piezas
+\item Puntaje pieza-posición
+\item Estado de Jaque
+\item Estado de filas
+\item Estado de enroque
+\item King-safety
+\end{itemize}
+
+Las tablas pieza-posición fueron tomadas de \cite{piece-square-table} y ligeramente modificadas.\\
+
+\section{Diseño general}
+
+Habiendo tantos motores de Ajedrez hechos, hay mucho material para
+investigar. La mayoría de los motores optan por tener un sólo tablero
+del juego en memoria (representado de diversas formas), y una \emph
+{Pila de Historia} (\emph {History Stack}) con información para
+deshacer las movidas hechas. Yo opté por copiar el tablero original,
+realizar la movida sobre la copia y luego descartar la copia al terminar
+de usarla.
+\\
+
+Los motores realizan una búsqueda sobre un grafo \emph{implícito},
+en donde el nodo actual es siempre el tablero en cuestión (el
+único en memoria). A este tablero se le generan las movidas
+\emph{pseudo-sucesoras}. Cada una de estas movidas es evaluada y
+puntuada para hacer un ordenamiento (dado que el algoritmo Alpha-Beta
+funciona mejor cuando las mejores movidas son evaludas primero). Una vez
+ordenadas por puntaje, la búsqueda prosige hasta alguna profundidad.
+\\
+
+Por pseudo-sucesoras nos referimos a que se consideran algunas movidas
+que pueden no ser realmente válidas, como por ejemplo alguna movida que
+deje al jugador en jaque. La razón de esto es que para verificar que
+una movida es realmente válida debemos hacer bastante trabajo, y por la
+naturaleza del Alpha-Beta es probable que aunque generemos 30 sucesores,
+encontremos un corte mucho antes de llegar al último, por lo cual ese
+trabajo nunca se haría.
+\\
+
+\section{Detalles}
+Detallamos las técnicas usadas que son relevantes a la materia.
+
+\subsection{Algoritmo Alpha-Beta}
+
+El algoritmo Alpha-Beta es una mejora al algoritmo clásico Minimax,
+que resuelve juegos de suma-cero (rápidamente, aquellos en que una
+ganancia de un jugador es una pérdida directa del otro). Minimax puede
+usarse para juegos en que las partes ``mueven'' al mismo tiempo, pero
+ignoraremos eso y nos concentraremos en su aplicación para este juego.
+\\
+
+El Minimax más básico funciona explorando el árbol de movidas del
+juego, de a un turno, considerando todas las movidas posibles de cada
+jugador, hasta llegar a un nodo terminal (juego finalizado). Cada nodo
+terminal tiene un puntaje asociado según quien ganó. Para el Ajedrez,
+podría ser 1 cuando ganan las blancas, -1 cuando ganan las negras y 0
+cuando empatan. Minimax nos devolverá el puntaje que podemos conseguir
+y la movida que debemos jugar.
+\\
+
+Hacer una búsqueda hasta los nodos terminales no funciona para juegos
+con un tamaño mayor al Ta-Te-Tí (y aún ahí se nota cierta lentitud)
+debido a la cantidad de nodos explorados. Recordando el factor de
+ramificación promedio de 30 y las 80 media-movidas (movidas por
+jugador) por partido del Ajedrez esto resulta impracticable. Por
+está razón se agrega un límite de profundidad, y si llegamos a él
+devolvemos un \emph{valor heurístico} del tablero, que representa
+de alguna manera el puntaje de cada jugador. Con ésta modificación
+Minimax nos devolverá un ``valor esperado'' y la movida que debemos
+hacer.
+\\
+
+Está evaluación de tablero guiará la búsqueda casi en su
+totalidad, por lo cual es necesario que realmente se corresponda con
+la situación y dé puntajes adecuados según quién va ganando.
+También es necesaria cierta estabilidad de esta función. Citando a
+\href{http://chessprogramming.wikispaces.com/}{chessprogramming.wikispaces.com}:
+\\
+
+\noindent
+\framebox{\parbox{\dimexpr\linewidth-2\fboxsep-2\fboxrule}{\itshape\center
+	``It is better to be wrong by 10 centipawns all the time than to be
+	completely correct 99.9\% of the time and wrong by 300 centipawns 0.1\% of
+	the time.''
+}}
+\\
+
+El algoritmo Minimax tiene una peculiaridad, si al analizar la primera
+movida que podemos hacer generamos un Jaque mate (el mejor resultado
+posible), la búsqueda seguirá y calculará los valores esperados de
+todos los nodos del árbol. Este caso particular podría detectarse y
+mejorarse, pero hay una idea aún mejor que da resultados muchísimo
+mejores: la poda Alpha-Beta.
+
+\section{Reflexiones}
+Hay varias decisiones de diseño que me gustaría cambiar, pero a esta
+altura ya resulta muy laborioso. La primera es la decisión de no usar
+un único tablero con una Pila de Historia. Creo que esto es bastante
+más benefioso que lo hecho debido a que la copia de todo el tablero es
+probablemente mas lenta que hacer la movida y retractarla. A su vez,
+creo que se beneficiaría de la localidad de caché de los procesadores.
+Este es claramente un lugar para una mejora futura.
+\\
+
+Sin duda algo a mejorar es la evaluación de tablero. Escribir una buena
+función de evaluación de tablero requiere muchísimo conocimiento
+del dominio, y por lo general es llevado a cabo por expertos en el
+juego junto a programadores. Sin duda, yo no tengo un nivel ni siquiera
+intermedio del juego, por lo cual me limité a leer y aplicar técnicas
+existentes y bien conocidas.
+\\
+
+Otras mejoras pueden ser hacer que el límite de tiempo sea algo más
+inteligente (tener en cuenta cuanto tiempo lleva usado cada jugador,
+y el límite del partido, si es que existe) y hacer que nuestro motor
+``piense'' durante el turno del otro (conocido como \emph{Pondering}).
+\\
 
 \section{Resultados}
-Probando nuestra IA contra otras ya existentes, notamos muy buenos resultados. A continuación, algunos de ellos:
-
-Tabla velocidad con MM / P$\alpha$-$\beta$ / Killer.
-
-\begin{itemize}
-\item Nombre IA: \hfill x/y/z, porcentajes de ganados, tablas, perdidos
-\item Contra Fairy (IA por defecto de xboard): \hfill ?/?/?
-\end{itemize}
-
+Proximamente
 
 \begin{thebibliography}{9}
 
