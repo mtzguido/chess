@@ -67,11 +67,11 @@ mods=	ai	\
 objs=$(patsubst %,%.o,$(mods))
 crap=$(patsubst %,%.i %.s,$(mods))
 
-all: $(TARGET) book-gen
-
 $(TARGET): main.o $(objs)
 	$(Q)$(SAY) "LD	$@"
 	$(Q)$(CC) $(LFLAGS) main.o $(objs) -o $(TARGET)
+
+all: $(TARGET) doc
 
 book.o: book.gen
 book.gen: book.txt book-gen
@@ -113,7 +113,7 @@ clean:
 	$(Q)rm -f FINISHLOG gamelog_*
 	$(Q)rm -f masks.c mask-gen
 
-re: clean all
+re: clean $(TARGET)
 
 run: $(TARGET)
 	./$(TARGET)
