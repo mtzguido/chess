@@ -218,6 +218,7 @@ int nmoves() {
 		assert(ply == 0);
 		doMove(g, m);
 		printBoard(g);
+		printMove(m);
 
 		dbg("Moves %i/%i\n", i+1, copts.nmoves);
 	}
