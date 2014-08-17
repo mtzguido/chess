@@ -128,7 +128,7 @@ static inline void reset_stats() {
 	}
 }
 
-void print_stats(score exp) {
+void print_stats(score exp, bool expect_ok) {
 	fprintf(stderr, "stats: searched %lld (%lld) nodes\n",
 			stats.nopen_s, stats.nopen_q);
 	fprintf(stderr, "stats: branching aprox: %.3f\n",
@@ -141,7 +141,11 @@ void print_stats(score exp) {
 	fprintf(stderr, "stats: Late move reductions : %lld/%lld (%.2f%%)\n",
 			stats.lmrs_ok, stats.lmrs,
 			100.0 * stats.lmrs_ok / stats.lmrs);
-	fprintf(stderr, "stats: expected score: %i\n", exp);
+	if (expect_ok)
+		fprintf(stderr, "stats: expected score: %i\n", exp);
+	else
+		fprintf(stderr, "stats: expected score: ????\n");
+
 	fprintf(stderr, "stats: Number of hash collisions: %i\n", n_collision);
 }
 
@@ -193,6 +197,7 @@ move machineMove(const game start) {
 	move ret = {0};
 	clock_t t1,t2;
 	score expected;
+	bool expect_ok;
 
 	ret.move_type = MOVE_INVAL;
 
@@ -202,8 +207,10 @@ move machineMove(const game start) {
 	t1 = clock();
 	if (copts.usebook && bookMove(start, &ret)) {
 		fprintf(stderr, "stats: book move.\n");
+		expect_ok = false;
 	} else if (forced(start, &ret)) {
 		fprintf(stderr, "stats: forced move.\n");
+		expect_ok = false;
 	} else if (copts.fixed_depth) {
 		timelimited = false;
 
@@ -218,6 +225,7 @@ move machineMove(const game start) {
 
 		assert(ply == 0);
 		expected = negamax(start, copts.depth, 0, &ret, minScore, maxScore);
+		expect_ok = true;
 	} else {
 		int d;
 		move temp;
@@ -240,11 +248,13 @@ move machineMove(const game start) {
 		}
 		if (timeup)
 			fprintf(stderr, "machineMove: time up!\n");
+
+		expect_ok = true;
 		assert(ply == 0);
 	}
 	t2 = clock();
 
-	print_stats(expected);
+	print_stats(expected, expect_ok);
 	assert(ret.move_type != MOVE_INVAL);
 	assert(ret.who == start->turn);
 	fprintf(stderr, "move was %i %i %i %i %i\n",
