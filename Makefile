@@ -115,9 +115,6 @@ clean:
 
 re: clean $(TARGET)
 
-run: $(TARGET)
-	./$(TARGET)
-
 doc:
 	$(Q)$(SAY) "DOC     "
 	$(Q)$(MAKE) -s -C doc
