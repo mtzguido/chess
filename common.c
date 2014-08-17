@@ -1,5 +1,7 @@
 #include "common.h"
 #include "board.h"
+#include <stdarg.h>
+#include <stdio.h>
 
 struct opts copts;
 
@@ -127,4 +129,16 @@ int on_bits(u64 x, u8 *rows, u8 *cols) {
 	/* A lo sumo hay 32 piezas en el tablero */
 	assert(ret <= 32);
 	return ret;
+}
+
+void dbg(char *s, ...) {
+	va_list l;
+
+	if (!copts.debug)
+		return;
+
+	va_start(l, s);
+	vfprintf(stderr, s, l);
+	fflush(stderr);
+	va_end(l);
 }

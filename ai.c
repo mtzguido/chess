@@ -129,28 +129,29 @@ static inline void reset_stats() {
 }
 
 void print_stats(score exp, bool expect_ok) {
-	fprintf(stderr, "stats: searched %lld (%lld) nodes\n",
+	dbg("stats: searched %lld (%lld) nodes\n",
 			stats.nopen_s, stats.nopen_q);
-	fprintf(stderr, "stats: branching aprox: %.3f\n",
+	dbg("stats: branching aprox: %.3f\n",
 			1.0 * (stats.nall - 1) / stats.nopen_s);
-	fprintf(stderr, "stats: total nodes generated: %lld\n", stats.ngen);
-	fprintf(stderr, "stats: null move cuts: %lld/%lld (%.2f%%)\n",
+	dbg("stats: total nodes generated: %lld\n", stats.ngen);
+	dbg("stats: null move cuts: %lld/%lld (%.2f%%)\n",
 			stats.null_cuts, stats.null_tries,
 			100.0 * stats.null_cuts / stats.null_tries);
-	fprintf(stderr, "stats: TT hits : %lld\n", stats.tt_hits);
-	fprintf(stderr, "stats: Late move reductions : %lld/%lld (%.2f%%)\n",
+	dbg("stats: TT hits : %lld\n", stats.tt_hits);
+	dbg("stats: Late move reductions : %lld/%lld (%.2f%%)\n",
 			stats.lmrs_ok, stats.lmrs,
 			100.0 * stats.lmrs_ok / stats.lmrs);
-	if (expect_ok)
-		fprintf(stderr, "stats: expected score: %i\n", exp);
-	else
-		fprintf(stderr, "stats: expected score: ????\n");
 
-	fprintf(stderr, "stats: Number of hash collisions: %i\n", n_collision);
+	if (expect_ok)
+		dbg("stats: expected score: %i\n", exp);
+	else
+		dbg("stats: expected score: ????\n");
+
+	dbg("stats: Number of hash collisions: %i\n", n_collision);
 }
 
 static inline void print_time(clock_t t1, clock_t t2) {
-	fprintf(stderr, "stats: moved in %.3f seconds\n",
+	dbg("stats: moved in %.3f seconds\n",
 			1.0*(t2-t1)/CLOCKS_PER_SEC);
 }
 
@@ -206,10 +207,10 @@ move machineMove(const game start) {
 
 	t1 = clock();
 	if (copts.usebook && bookMove(start, &ret)) {
-		fprintf(stderr, "stats: book move.\n");
+		dbg("stats: book move.\n");
 		expect_ok = false;
 	} else if (forced(start, &ret)) {
-		fprintf(stderr, "stats: forced move.\n");
+		dbg("stats: forced move.\n");
 		expect_ok = false;
 	} else if (copts.fixed_depth) {
 		timelimited = false;
@@ -247,7 +248,7 @@ move machineMove(const game start) {
 			}
 		}
 		if (timeup)
-			fprintf(stderr, "machineMove: time up!\n");
+			dbg("machineMove: time up!\n");
 
 		expect_ok = true;
 		assert(ply == 0);
@@ -257,7 +258,7 @@ move machineMove(const game start) {
 	print_stats(expected, expect_ok);
 	assert(ret.move_type != MOVE_INVAL);
 	assert(ret.who == start->turn);
-	fprintf(stderr, "move was %i %i %i %i %i\n",
+	dbg("move was %i %i %i %i %i\n",
 			ret.move_type, ret.r, ret.c, ret.R, ret.C);
 
 	stats.totalopen += stats.nopen_s + stats.nopen_q;

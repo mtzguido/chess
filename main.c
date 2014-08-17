@@ -37,7 +37,7 @@ game startingGame2() {
 static int board_eval_mode() {
 	game g = startingGame2();
 
-	fprintf(stderr, "Board evaluation: %i\n", boardEval(g));
+	dbg("Board evaluation: %i\n", boardEval(g));
 
 	return 0;
 }
@@ -50,11 +50,11 @@ void checkMove(game g, move m) {
 	*ng = *g;
 	__maybe_unused int rc = doMove(ng, m);
 	if (!rc) {
-		fprintf(stderr, "-----------------------------------\n");
-		fprintf(stderr, "MOVIDA ILEGAL?!?!?!!\n");
+		dbg("-----------------------------------\n");
+		dbg("MOVIDA ILEGAL?!?!?!!\n");
 		printBoard(g);
-		fprintf(stderr, "%i %i %i %i %i\n", m.move_type, m.r, m.c, m.R, m.C);
-		fprintf(stderr, "-----------------------------------\n");
+		dbg("%i %i %i %i %i\n", m.move_type, m.r, m.c, m.R, m.C);
+		dbg("-----------------------------------\n");
 		abort();
 	}
 
@@ -72,11 +72,11 @@ void checkMove(game g, move m) {
 			goto ok;
 	}
 
-	fprintf(stderr, "-----------------------------------\n");
-	fprintf(stderr, "MOVIDA NO CONTEMPLADA!!!!\n");
+	dbg("-----------------------------------\n");
+	dbg("MOVIDA NO CONTEMPLADA!!!!\n");
 	printBoard(g);
-	fprintf(stderr, "%i %i %i %i %i\n", m.move_type, m.r, m.c, m.R, m.C);
-	fprintf(stderr, "-----------------------------------\n");
+	dbg("%i %i %i %i %i\n", m.move_type, m.r, m.c, m.R, m.C);
+	dbg("-----------------------------------\n");
 	abort();
 
 ok:
@@ -112,12 +112,12 @@ move playerMove(game g) {
 	getline(&line, &crap, stdin);
 	line[strlen(line)-1] = 0;
 
-	fprintf(stderr, "LINE= <%s>\n", line);
+	dbg("LINE= <%s>\n", line);
 
 	if (isPrefix("1/2-1/2 {", line)
 			|| isPrefix("0-1 {", line)
 			|| isPrefix("1-0 {", line)) {
-		fprintf(stderr, "CLAIMED RES: <%s>\n", line);
+		dbg("CLAIMED RES: <%s>\n", line);
 		exit(1);
 	}
 
@@ -151,19 +151,19 @@ int match(struct player pwhite, struct player pblack) {
 		if (rc > 0) {
 			usleep(50000);
 			if (rc == WIN(WHITE)) {
-				fprintf(stderr, "RES: Win (checkmate)\n");
+				dbg("RES: Win (checkmate)\n");
 				return 12;
 			} else if (rc == WIN(BLACK)) {
-				fprintf(stderr, "RES: Lose (checkmate)\n");
+				dbg("RES: Lose (checkmate)\n");
 				return 10;
 			} else if (rc == DRAW_3FOLD) {
-				fprintf(stderr, "RES: Draw (threefold)\n");
+				dbg("RES: Draw (threefold)\n");
 				return 11;
 			} else if (rc == DRAW_50MOVE) {
-				fprintf(stderr, "RES: Draw (fifty move)\n");
+				dbg("RES: Draw (fifty move)\n");
 				return 11;
 			} else if (rc == DRAW_STALE) {
-				fprintf(stderr, "RES: Draw (stalemate)\n");
+				dbg("RES: Draw (stalemate)\n");
 				return 11;
 			} else {
 				assert(0);
@@ -195,7 +195,7 @@ int match(struct player pwhite, struct player pblack) {
 	printf("quit\n");
 
 	freeGame(g);
-	fprintf(stderr, "RES: WHAT?");
+	dbg("RES: WHAT?");
 
 	return 0;
 }
@@ -219,7 +219,7 @@ int nmoves() {
 		doMove(g, m);
 		printBoard(g);
 
-		fprintf(stderr, "Moves %i/%i\n", i+1, copts.nmoves);
+		dbg("Moves %i/%i\n", i+1, copts.nmoves);
 	}
 
 	return 0;
@@ -254,6 +254,7 @@ void parse_opt(int argc, char **argv) {
 		{ "board-eval", no_argument,		0, 0x11 },
 		{ "fix-depth",  no_argument,		0, 0x12 },
 		{ "time-limit", required_argument,	0, 0x13 },
+		{ "no-debug",   no_argument,		0, 0x14 },
 		{ 0,0,0,0 }
 	};
 
@@ -276,7 +277,7 @@ void parse_opt(int argc, char **argv) {
 		case 'd':
 			copts.depth = atoi(optarg);
 			if (copts.depth < 0 || copts.depth > MAX_DEPTH) {
-				fprintf(stderr, "Invalid depth\n");
+				dbg("Invalid depth\n");
 				exit(1);
 			}
 			break;
@@ -337,6 +338,9 @@ void parse_opt(int argc, char **argv) {
 			break;
 		case 0x13:
 			copts.timelimit = atoi(optarg);
+			break;
+		case 0x14:
+			copts.debug = false;
 			break;
 		case '?':
 		default:
@@ -432,7 +436,7 @@ int main(int argc, char **argv) {
 	init_mem();
 
 	parse_opt(argc, argv);
-	fprintf(stderr, "random seed: %u\n", seed);
+	dbg("random seed: %u\n", seed);
 	srand(seed);
 
 	switch (copts.mode) {
@@ -464,8 +468,8 @@ int main(int argc, char **argv) {
 		break;
 	}
 
-	fprintf(stderr, ">> Total nodes: %lld\n", stats.totalopen);
-	fprintf(stderr, ">> Total time: %lldms\n", stats.totalms);
-	fprintf(stderr, "program returned %i\n", rc);
+	dbg(">> Total nodes: %lld\n", stats.totalopen);
+	dbg(">> Total time: %lldms\n", stats.totalms);
+	dbg("program returned %i\n", rc);
 	return 0;
 }

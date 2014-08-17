@@ -62,6 +62,7 @@ struct opts {
 	bool custom_start;		/* Use a custom starting board */
 	char custom_start_str[100];	/* Custom board spec */
 
+	bool debug;			/* Print debug information */
 	bool reverse;			/* Reverse the order of succ generation (debug) */
 
 	/* Search */
@@ -94,6 +95,7 @@ static const struct opts defopts = {
 	.black = false,
 	.sort = true,
 
+	.debug = true,
 	.reverse = false,
 
 	.iter = true,
@@ -115,5 +117,7 @@ static const struct opts defopts = {
 extern struct opts copts;
 
 int on_bits(u64 x, u8 *rows, u8 *cols);
+
+void dbg(char *s, ...);
 
 #endif
