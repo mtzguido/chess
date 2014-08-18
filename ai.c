@@ -193,7 +193,7 @@ int ticks;
 move machineMove(const game start) {
 	move ret = {0};
 	clock_t t1,t2;
-	score expected;
+	score expected = 0;
 	bool expect_ok;
 
 	ret.move_type = MOVE_INVAL;
