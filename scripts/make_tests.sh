@@ -22,6 +22,10 @@ percent () {
 }
 
 msg () {
+	echo "$@" | tee -a $DIR/log | tee -a $DIR/summary
+}
+
+msg_interactive () {
 	echo "$@" | tee -a $DIR/log
 }
 
@@ -74,7 +78,7 @@ msg "Git version: $(git describe --dirty --tags)"
 msg
 msg "Running $total games"
 
-msg "	b/d/w		score	time"
+msg_interactive "	b/d/w		score	time"
 ii=0
 black=0
 draw=0
@@ -120,9 +124,14 @@ while [ $ii -lt $total ]; do
 
 	score=$(bc -l <<< "scale=2; (2.00*$white + $draw)/ (2.00*$ii)")
 
-	msg "$ii/$total	$black/$draw/$white		$score	$(secs_to_time owntime)/$(secs_to_time gametime)"
+	msg_interactive "$ii/$total	$black/$draw/$white		$score	$(secs_to_time owntime)/$(secs_to_time gametime)"
 
 done
+
+msg_interactive
+msg "Results:"
+msg "	b/d/w		score	time"
+msg "$ii/$total	$black/$draw/$white		$score	$(secs_to_time owntime)/$(secs_to_time gametime)"
 
 msg
 msg "Time: $(secs_to_time $totowntime)/$(secs_to_time $tottime) ($(percent $totowntime $tottime)%)"
