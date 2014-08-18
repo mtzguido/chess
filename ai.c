@@ -343,6 +343,7 @@ static inline score quiesce(game g, score alpha, score beta, int curDepth,
 	int ext, onlymove;
 	game ng;
 	score ret, t;
+	score alpha_orig;
 
 	if (isDraw(g) || reps(g) >= 2)
 		return 0;
@@ -386,7 +387,7 @@ static inline score quiesce(game g, score alpha, score beta, int curDepth,
 		return t;
 	}
 
-	const score alpha_orig = alpha;
+	alpha_orig = alpha;
 	ng = copyGame(g);
 	genCaps_wrap(g, curDepth);
 	nvalid = 0;
@@ -626,9 +627,8 @@ static inline score negamax(game g, int maxDepth, int curDepth, move *mm,
 
 	/* Era un tablero terminal? */
 	if (nvalid == 0) {
-		assert(!mm);
-
 		move dummy = {0};
+		assert(!mm);
 
 		if (inCheck(g, g->turn))
 			ret = -100000 + curDepth;

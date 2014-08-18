@@ -92,11 +92,11 @@ int trans_suggest(game g, move *arr, int depth) {
 void trans_score_succs(game g, int depth) {
 	u64 key = g->zobrist;
 	u64 idx = key % CFG_TTABLE_SIZE;
+	int i;
 
 	if (tt[idx].key != key || tt[idx].seq != trans_seq)
 		return;
 
-	int i;
 	for (i=first_succ[ply]; i<first_succ[ply+1]; i++) {
 		if (gsuccs[i].m.r == tt[idx].r
 		 && gsuccs[i].m.R == tt[idx].R

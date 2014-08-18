@@ -19,13 +19,5 @@ void addon_notify_cut(game g, move m, int depth);
 void addon_score_succs(game g, int depth);
 void addon_suggest(game g, move *arr, int *n, int depth);
 
-/* Most valuable victim / least valuable attacker */
-static inline int mvv_lva(piece_t a, piece_t v) {
-	if (v != EMPTY)
-		return 10 * (v&7) - (a&7);
-	else
-		return 0;
-}
-
 #endif
 

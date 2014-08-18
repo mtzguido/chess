@@ -9,9 +9,9 @@
 extern const u64 zobrist_keys[794];
 
 static inline u64 ZOBR_PIECE(piece_t piece, int r, int c) {
+	const int p = piece > 6 ? piece - 2 : piece;
 	assert(piece != 0);
 
-	const int p = piece > 6 ? piece - 2 : piece;
 	return zobrist_keys[r*8*12 + c*12 + p];
 }
 

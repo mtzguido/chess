@@ -3,6 +3,14 @@
 
 #include <stdio.h>
 
+/* Most valuable victim / least valuable attacker */
+static inline int mvv_lva(piece_t a, piece_t v) {
+	if (v != EMPTY)
+		return 10 * (v&7) - (a&7);
+	else
+		return 0;
+}
+
 void trivial_score_succs(game g, int depth) {
 	int i;
 
