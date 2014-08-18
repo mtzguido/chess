@@ -224,7 +224,7 @@ move machineMove(const game start) {
 		expected = negamax(start, copts.depth, 0, &ret, minScore, maxScore);
 		expect_ok = true;
 	} else {
-		int d;
+		int d, md;
 		move temp;
 		score t;
 
@@ -233,18 +233,30 @@ move machineMove(const game start) {
 		timeup = false;
 		timelimit = getms() + copts.timelimit;
 		ticks = 0;
+		md = -1;
 
-		for (d=1; d<copts.depth && !timeup; d++) {
+		/*
+		 * Do depth=1 unconditionally, so we have at least one
+		 * legal move and something meaningful to return
+		 */
+
+		assert(ply == 0);
+		expected = negamax(start, 1, 0, &ret, minScore, maxScore);
+
+		for (d=2; d<copts.depth && !timeup; d++) {
 			assert(ply == 0);
 			t = negamax(start, d, 0, &temp, minScore, maxScore);
 
 			if (!timeup) {
 				expected = t;
 				ret = temp;
+				md = d;
 			}
 		}
-		if (timeup)
+		if (timeup) {
 			dbg("machineMove: time up!\n");
+			dbg("machineMove: actual depth was: %i\n", md);
+		}
 
 		expect_ok = true;
 		assert(ply == 0);
@@ -366,11 +378,11 @@ static inline score quiesce(game g, score alpha, score beta, int curDepth,
 		ticks++;
 
 		if ((ticks & 0xfff) == 0) {
-			if (getms() > timelimit)
+			if (getms() >= timelimit)
 				timeup = true;
 		}
 	} else if (timeup) {
-		return minScore;
+		return t;
 	}
 
 	const score alpha_orig = alpha;
@@ -528,11 +540,11 @@ static inline score negamax(game g, int maxDepth, int curDepth, move *mm,
 		ticks++;
 
 		if ((ticks & 0xfff) == 0) {
-			if (getms() > timelimit)
+			if (getms() >= timelimit)
 				timeup = true;
 		}
 	} else if (timeup && !mm) {
-		return alpha;
+		return boardEval(g);
 	}
 
 	alpha_orig = alpha;
