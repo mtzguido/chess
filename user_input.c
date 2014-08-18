@@ -3,32 +3,49 @@
 #include <stdio.h>
 #include <assert.h>
 
-void printMove(move m) {
+void printMove(FILE *stream, move m) {
 	if (m.move_type == MOVE_KINGSIDE_CASTLE) {
 		if (m.who == BLACK) {
-			printf("e8g8\n");
+			fprintf(stream, "e8g8\n");
 			dbg("e8g8\n");
 		} else {
-			printf("e1g1\n");
+			fprintf(stream, "e1g1\n");
 			dbg("e1g1\n");
 		}
 	} else if (m.move_type == MOVE_QUEENSIDE_CASTLE) {
 		if (m.who == BLACK) {
-			printf("e8c8\n");
+			fprintf(stream, "e8c8\n");
 			dbg("e8c8\n");
 		} else {
-			printf("e1c1\n");
+			fprintf(stream, "e1c1\n");
 			dbg("e1c1\n");
 		}
 	} else {
 		assert(m.move_type == MOVE_REGULAR);
 
 		if (m.promote != 0) {
-			printf("%c%c%c%c%c\n", m.c + 'a', '8'-m.r, m.C + 'a', '8'-m.R, tolower(charOf(m.promote)));
-			dbg("%c%c%c%c%c\n", m.c + 'a', '8'-m.r, m.C + 'a', '8'-m.R, tolower(charOf(m.promote)));
+			fprintf(stream, "%c%c%c%c%c\n",
+					m.c + 'a',
+					'8'-m.r,
+					m.C + 'a',
+					'8'-m.R,
+					tolower(charOf(m.promote)));
+			dbg("%c%c%c%c%c\n",
+					m.c + 'a',
+					'8'-m.r,
+					m.C + 'a',
+					'8'-m.R,
+					tolower(charOf(m.promote)));
 		} else {
-			printf("%c%c%c%c\n", m.c + 'a', '8'-m.r, m.C + 'a', '8'-m.R);
-			dbg("%c%c%c%c\n", m.c + 'a', '8'-m.r, m.C + 'a', '8'-m.R);
+			fprintf(stream, "%c%c%c%c\n",
+					m.c + 'a',
+					'8'-m.r,
+					m.C + 'a',
+					'8'-m.R);
+			dbg("%c%c%c%c\n", m.c + 'a',
+					'8'-m.r,
+					m.C + 'a',
+					'8'-m.R);
 		}
 	}
 }

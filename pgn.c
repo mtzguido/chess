@@ -163,4 +163,3 @@ void stringPGN(char *buf, struct pgn p) {
 
 	o += sprintf(buf+o, "%c%c", p.dest_file, p.dest_rank);
 }
-

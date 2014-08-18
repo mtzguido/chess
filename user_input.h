@@ -2,8 +2,9 @@
 #define __USER_INPUT_H
 
 #include "board.h"
+#include <stdio.h>
 
-void printMove(move m);
+void printMove(FILE *stream, move m);
 move parseMove(game g, char *line);
 
 #endif
