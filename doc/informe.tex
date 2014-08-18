@@ -52,8 +52,9 @@ incrementalmente (se ajustan/recalculan luego de cada movida):
 
 Se mantienen estos datos incrementalmente para no tener que recorrer
 todo el tablero al momento de la evaluación para calcularlos. El hash
-fue específicamente elegido debido a que su cálculo es incremental con
-cada movida (\emph{Zobrist hash}).
+fue específicamente elegido debido a que su cálculo es incremental
+con cada movida y da muy buenos resultados (\emph{Zobrist hashing}
+\cite{zobrist}).
 
 \subsection{Heurísticas de ordenamiento de movidas}
 En orden de importancia (puntaje que aportan al ordenamiento):
@@ -61,7 +62,7 @@ En orden de importancia (puntaje que aportan al ordenamiento):
 \item Tablas de transposición
 \item Killer Move Heuristic
 \item Countermove Heuristic
-\item LVV-MVA
+\item MVV-LVA
 \end{itemize}
 
 \subsection{Reducciones}
@@ -73,7 +74,7 @@ En orden de importancia (puntaje que aportan al ordenamiento):
 
 \subsection{Extensiones}
 \begin{itemize}
-\item Check extension
+\item Extensión por jaque
 \item Extension por promoción
 \end{itemize}
 
@@ -82,7 +83,7 @@ Para la evaluación del tablero se tienen en cuenta:
 \begin{itemize}
 \item Puntaje de piezas
 \item Puntaje pieza-posición
-\item Estado de Jaque
+\item Estado de jaque
 \item Estado de filas
 \item Estado de enroque
 \item King-safety
@@ -168,11 +169,88 @@ También es necesaria cierta estabilidad de esta función. Citando a
 \\
 
 El algoritmo Minimax tiene una peculiaridad, si al analizar la primera
-movida que podemos hacer generamos un Jaque mate (el mejor resultado
+movida que podemos hacer generamos un jaque mate (el mejor resultado
 posible), la búsqueda seguirá y calculará los valores esperados de
 todos los nodos del árbol. Este caso particular podría detectarse y
 mejorarse, pero hay una idea aún mejor que da resultados muchísimo
 mejores: la poda Alpha-Beta.
+\\
+
+El algoritmo Alpha-Beta extiende al Minimax llevando cuenta de una
+``ventana'' de búsqueda. Dos valores llamados Alpha y Beta que
+representan respectivamente los puntajes ``garantizados'' del jugador
+maximizante y minimizante. Por garantizado se entiende a que el jugador
+puede ``forzar'' un resultado de al menos ese puntaje. Ambos se inician
+en el peor resultado posible ($-\infty$ y $+\infty$ respectivamente)
+y se actualizan en la búsqueda. Si en algún vemos que una movida
+del jugador maximizante resulta en un puntaje mayor a Beta, podemos
+asegurar que esta rama que estamos explorando no tiene sentido, debido
+a que jugador minimizante seguiría otra rama (la que le da el puntaje
+garantizado) en vez de la actual.
+\\
+
+El mismo corte puede ocurrir en turnos del jugador minimizante. El
+algoritmo Alpha-Beta siempre da el mismo resultado que Minimax,
+pero su complejidad temporal promedio disminuye de $O(b^d)$ a
+$O(b^{(3d/4)})$\footnotemark. Lo que significa que podemos hacer una
+búsqueda un 33\% mas de profundidad en el mismo tiempo. La complejidad
+en el peor caso se mantiene ($O(b^d)$) y la del mejor caso es aún
+mejor: $O(\sqrt{b^d})$. El peor y mejor caso dependen de la cantidad de
+cortes que encuentre el algoritmo.
+\\
+
+\footnotetext{$b$ es el factor de ramificación promedio y $d$ la
+profundidad de la búsqueda}
+
+Estos cortes tienden a ocurrir más frecuentemente si las mejoras
+movidas de cada jugador se analizan primero. Para lograr esto se emplean
+muchas heurísticas de ordenamiento de movidas.
+\\
+
+\subsection{Killer move heuristic}
+Una de las heurísticas de ordenamiento de movidas mas simple y
+rendidora es la Killer move heuristic. Consiste en guardar en una tabla
+la movida que generó un corte, indexada por la profundidad en la cual
+se hizo la movida.
+\\
+
+\subsection{Tabla de transposición}
+La tabla de transposición es la manera de eliminar nodos duplicados
+en la búsqueda. Al usar Alpha-Beta no podemos simplemente guardar el
+resultado que devolvimos, si no que también hay que tener en cuenta el
+contexto en el cual lo generamos, y saber si estamos tratando con un
+resultado exacto, o una cota superior o inferior.
+\\
+
+TBD
+\\
+
+\subsection{Countermove heuristic}
+Es una heurística similar a la Killer Move, pero en vez de registrar
+los cortes indexados por la profundidad de la búsqueda, lo hace según
+la movida realizada anteriormente a la actual, bajo la premisa de que
+hay movidas que tienen una ``respuesta natural'' independientemente de
+la profundidad y el tablero. Da resultados no muy buenos, pero es fácil
+de implementar.
+\\
+
+\subsection{MVV-LVA}
+MVV-LVA significa ``\emph{Most valuable victim, least valuable
+attacker}'', es una heurística simple que puntúa las capturas. Una
+captura es mejor que otra si captura a una pieza de mayor valor, o
+realiza la captura con una pieza propia de menor valor. La fórmula
+usada para puntuar es $10*v - a$ en donde $v$ es el puntaje de la pieza
+víctima y $a$ el puntaje de la pieza atacante.
+\\
+
+Funciona bastante bien para ser algo tan simple de implementar. En
+especial para la búsqueda de quietud, en donde sólo consideramos las
+capturas. Hace una diferencia muy importante en ese caso debido a que no
+tenemos un límite de profundidad como en la búsqueda principal.
+\\
+
+\section{Resultados}
+Proximamente
 
 \section{Reflexiones}
 Hay varias decisiones de diseño que me gustaría cambiar, pero a esta
@@ -192,22 +270,27 @@ intermedio del juego, por lo cual me limité a leer y aplicar técnicas
 existentes y bien conocidas.
 \\
 
+Se podría paralelizar la búsqueda, aunque esto es algo no trivial
+debido a la naturaleza secuencial del Alpha-Beta. Al paralelizar
+seguramente exploraríamos mas nodos que de forma secuencial, debido a
+que no conoceremos exactamente la ventana en la cual tenemos que buscar.
+Sin embargo, creo que se verían mejoras notables.
+\\
+
 Otras mejoras pueden ser hacer que el límite de tiempo sea algo más
 inteligente (tener en cuenta cuanto tiempo lleva usado cada jugador,
 y el límite del partido, si es que existe) y hacer que nuestro motor
 ``piense'' durante el turno del otro (conocido como \emph{Pondering}).
 \\
 
-\section{Resultados}
-Proximamente
-
 \begin{thebibliography}{9}
 
 \bibitem{piece-square-table}
   http://chessprogramming.wikispaces.com/Simplified+evaluation+function
 
+\bibitem{zobrist}
+  http://en.wikipedia.org/wiki/Zobrist\_hashing
+
 \end{thebibliography}
-
-
 
 \end{document}
