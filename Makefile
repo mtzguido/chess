@@ -47,6 +47,7 @@ CFLAGS += -DCFG_TTABLE_SIZE=${CONFIG_TTABLE_SIZE}
 
 mods=	ai	\
 	board	\
+	eval	\
 	move	\
 	succs	\
 	pgn	\

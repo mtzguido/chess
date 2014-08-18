@@ -172,6 +172,9 @@ static inline int interpolate(game g, int start, int finish) {
 }
 
 typedef int score;
+static const score minScore = -1e7;
+static const score maxScore =  1e7;
+
 score scoreOf(int piece);
 
 struct MS {
