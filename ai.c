@@ -440,8 +440,8 @@ static inline score quiesce(game g, score alpha, score beta, int curDepth,
 out:
 	freeGame(ng);
 
-	assert(ret < maxScore);
-	assert(ret > minScore);
+	assert(timeup || ret > minScore);
+	assert(timeup || ret < maxScore);
 
 	return ret;
 }
@@ -609,7 +609,7 @@ static inline score negamax(game g, int maxDepth, int curDepth, move *mm,
 	if (bestmove != -1)
 		stats.picked[bestmove - first_succ[ply]]++;
 	else
-		assert(nvalid == 0);
+		assert(timeup || nvalid == 0);
 
 	/* Era un tablero terminal? */
 	if (nvalid == 0) {
@@ -680,8 +680,8 @@ out:
 	if (mm)
 		assert(mm->move_type != MOVE_INVAL);
 
-	assert(ret > minScore);
-	assert(ret < maxScore);
+	assert(timeup || ret > minScore);
+	assert(timeup || ret < maxScore);
 
 	return ret;
 }
