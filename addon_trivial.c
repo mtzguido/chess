@@ -16,7 +16,7 @@ void trivial_score_succs(game g, int depth) {
 			gsuccs[i].s += PROMOTE_SCORE;
 
 		if (enemy_piece(g, m.R, m.C))
-			gsuccs[i].s += KILLER_SCORE;
+			gsuccs[i].s += CAPT_SCORE;
 
 		gsuccs[i].s += mvv_lva(g->board[m.r][m.c], g->board[m.R][m.C]);
 	}
