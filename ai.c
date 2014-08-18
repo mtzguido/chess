@@ -243,7 +243,7 @@ move machineMove(const game start) {
 		assert(ply == 0);
 		expected = negamax(start, 1, 0, &ret, minScore, maxScore);
 
-		for (d=2; d<copts.depth && !timeup; d++) {
+		for (d = 2; d <= copts.depth && !timeup; d++) {
 			assert(ply == 0);
 			t = negamax(start, d, 0, &temp, minScore, maxScore);
 
@@ -255,8 +255,9 @@ move machineMove(const game start) {
 		}
 		if (timeup) {
 			dbg("machineMove: time up!\n");
-			dbg("machineMove: actual depth was: %i\n", md);
 		}
+
+		dbg("machineMove: actual depth was: %i\n", md);
 
 		expect_ok = true;
 		assert(ply == 0);
