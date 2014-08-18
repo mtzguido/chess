@@ -108,7 +108,7 @@ book-gen: book-gen.o board.o zobrist.o move.o piece-square.o masks.o \
 clean:
 	$(Q)$(SAY) "CLEAN"
 	$(Q)rm -f $(TARGET) $(crap) gmon.out
-	$(Q)rm -f main.o book.gen *.o
+	$(Q)rm -f main.o book.gen *.o book-gen
 	$(Q)rm -f bpipe wpipe
 	$(Q)$(MAKE) -s -C doc clean
 	$(Q)rm -f FINISHLOG gamelog_*
