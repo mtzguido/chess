@@ -44,6 +44,9 @@ endif
 CFLAGS += -DCFG_MEMSZ=${CONFIG_MEMSZ}
 CFLAGS += -DCFG_ZTABLE_SIZE=${CONFIG_ZTABLE_SIZE}
 CFLAGS += -DCFG_TTABLE_SIZE=${CONFIG_TTABLE_SIZE}
+CFLAGS += -DCHESS_VERSION='"$(shell git describe --dirty --tags)"'
+CFLAGS += -DCHESS_BUILD_DATE='"$(shell date)"'
+CFLAGS += -DCHESS_BUILD_HOST='"$(shell hostname)"'
 
 mods=	ai	\
 	board	\
@@ -54,6 +57,7 @@ mods=	ai	\
 	mem	\
 	ztable	\
 	zobrist	\
+	autoversion \
 	addon_trans	\
 	addon_killer	\
 	addon_cm	\

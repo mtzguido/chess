@@ -1,10 +1,3 @@
-#include <assert.h>
-#include <getopt.h>
-#include <stdio.h>
-#include <string.h>
-#include <time.h>
-#include <unistd.h>
-
 #include "ai.h"
 #include "board.h"
 #include "pgn.h"
@@ -13,6 +6,14 @@
 #include "succs.h"
 #include "user_input.h"
 #include "common.h"
+#include "autoversion.h"
+
+#include <assert.h>
+#include <getopt.h>
+#include <stdio.h>
+#include <string.h>
+#include <time.h>
+#include <unistd.h>
 
 struct player {
 	void (*start)(int color);
@@ -256,6 +257,7 @@ void parse_opt(int argc, char **argv) {
 		{ "fix-depth",  no_argument,		0, 0x12 },
 		{ "time-limit", required_argument,	0, 0x13 },
 		{ "no-debug",   no_argument,		0, 0x14 },
+		{ "version",    no_argument,		0, 0x15 },
 		{ 0,0,0,0 }
 	};
 
@@ -342,6 +344,10 @@ void parse_opt(int argc, char **argv) {
 			break;
 		case 0x14:
 			copts.debug = false;
+			break;
+		case 0x15:
+			print_version();
+			exit(0);
 			break;
 		case '?':
 		default:
