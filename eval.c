@@ -1,3 +1,4 @@
+#include "ai.h"
 #include "eval.h"
 
 static inline int pieceScore(const game g) {
@@ -22,7 +23,7 @@ static inline int pieceScore(const game g) {
  * Compartido por todas las funciones de
  * evaluación de tablero.
  */
-int pawn_rank[2][10] = {
+static int pawn_rank[2][10] = {
 	[BLACK] = { [0] = 7, [9] = 7 },
 	[WHITE] = { [0] = 0, [9] = 0 },
 };
