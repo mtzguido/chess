@@ -116,8 +116,16 @@ static const struct opts defopts = {
 
 extern struct opts copts;
 
-int on_bits(u64 x, u8 *rows, u8 *cols);
-
 void dbg(char *s, ...);
+
+#define mask_for_each(mask, temp, i)				\
+	for ((temp) = (mask);					\
+	     (temp) != 0 && ((i) = __builtin_ffsll(temp), 1);	\
+	     (temp) = (temp) & ~((u64)1 << ((i)-1)))
+
+static inline u64 u64_reverse(u64 x) {
+	/* Fake it till you make it */
+	return x;
+}
 
 #endif

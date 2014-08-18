@@ -901,24 +901,24 @@ static void pieceCaps(i8 i, i8 j, const game g) {
 typedef void (*movegen_t)(i8 i, i8 j, const game g);
 
 static void  __genSuccs(const game g, movegen_t fun) {
-	u8 rows[32], cols[32];
-	int npcs;
+	u64 temp, m;
 	int i;
 
 	first_succ[ply+1] = first_succ[ply];
-	npcs = on_bits(g->piecemask[g->turn], rows, cols);
+	m = g->piecemask[g->turn];
 
 	if (copts.reverse && fun == pieceSuccs) {
-		for (i=npcs-1; i>=0; i--) {
-			const u8 r = rows[i];
-			const u8 c = cols[i];
+		m = u64_reverse(m);
+		mask_for_each(m, temp, i) {
+			const u8 r = (i-1) / 8;
+			const u8 c = (i-1) % 8;
 
 			fun(r, c, g);
 		}
 	} else {
-		for (i=0; i<npcs; i++) {
-			const u8 r = rows[i];
-			const u8 c = cols[i];
+		mask_for_each(m, temp, i) {
+			const u8 r = (i-1) / 8;
+			const u8 c = (i-1) % 8;
 
 			fun(r, c, g);
 		}
