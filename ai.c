@@ -383,7 +383,8 @@ static inline score quiesce(game g, score alpha, score beta, int curDepth,
 			if (getms() >= timelimit)
 				timeup = true;
 		}
-	} else if (timeup) {
+	}
+	if (timeup) {
 		return t;
 	}
 
@@ -545,7 +546,8 @@ static inline score negamax(game g, int maxDepth, int curDepth, move *mm,
 			if (getms() >= timelimit)
 				timeup = true;
 		}
-	} else if (timeup && !mm) {
+	}
+	if (timeup && !mm) {
 		return boardEval(g);
 	}
 
