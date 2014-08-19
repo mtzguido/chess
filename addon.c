@@ -39,6 +39,6 @@ void addon_score_succs(game g, int depth) {
 	addon_for_each(score_succs, g, depth);
 }
 
-void addon_suggest(game g, move *arr, int *n,int depth) {
+void addon_suggest(game g, move *arr, int *n, int depth) {
 	addon_for_each(suggest, g, arr, n, depth);
 }
