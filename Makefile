@@ -73,7 +73,7 @@ objs=$(patsubst %,%.o,$(mods))
 crap=$(patsubst %,%.i %.s,$(mods))
 
 $(TARGET): main.o $(objs)
-	$(Q)$(SAY) "LD	$@"
+	$(Q)$(SAY) "  LD	$@"
 	$(Q)$(CC) $(LFLAGS) main.o $(objs) -o $(TARGET)
 
 all: $(TARGET) doc
@@ -89,24 +89,24 @@ masks.c: mask-gen
 
 mask-gen.o: mask-gen.c
 mask-gen: mask-gen.o
-	$(Q)$(SAY) "LD	$@"
+	$(Q)$(SAY) "  LD	$@"
 	$(Q)$(CC) $(LFLAGS_UTILS) $<	-o $@
 
 %.o: %.c $(wildcard *.h) .config
-	$(Q)$(SAY) "CC	$@"
+	$(Q)$(SAY) "  CC	$@"
 	$(Q)$(CC) $(CFLAGS) -c $<	-o $@
 
 %.s: %.c $(wildcard *.h) .config
-	$(Q)$(SAY) "AS	$@"
+	$(Q)$(SAY) "  AS	$@"
 	$(Q)$(CC) $(CFLAGS) -S -fverbose-asm $<	-o $@
 
 %.i: %.c $(wildcard *.h) .config
-	$(Q)$(SAY) "CPP	$@"
+	$(Q)$(SAY) "  CPP	$@"
 	$(Q)$(CC) $(CFLAGS) -E $<	-o $@
 
 book-gen: book-gen.o board.o zobrist.o move.o piece-square.o masks.o \
 	  mem.o succs.o common.o ztable.o
-	$(Q)$(SAY) "LD	$@"
+	$(Q)$(SAY) "  LD	$@"
 	$(Q)$(CC) $(LFLAGS_UTILS) $^ -o $@
 
 clean:
@@ -121,5 +121,5 @@ clean:
 re: clean $(TARGET)
 
 doc:
-	$(Q)$(SAY) "DOC     "
+	$(Q)$(SAY) "  DOC	"
 	$(Q)$(MAKE) -s -C doc
