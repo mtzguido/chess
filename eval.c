@@ -97,24 +97,48 @@ static inline score eval_bpawn(const int i, const int j) {
 	return ret;
 }
 
+static const score shield_own[8] = {
+	[0] = -999999,	/* Impossible */
+	[1] = 0,	/* Never moved */
+	[2] = -10,	/* Moved 1 square */
+	[3] = -20,	/* Moved 2 or more squares */
+	[4] = -20,
+	[5] = -20,
+	[6] = -20,
+	[7] = -25,	/* No pawn */
+};
+
+static const score shield_opp[8] = {
+	[0] = -999999,	/* Impossible */
+	[1] = 5,	/* Never moved */
+	[2] = 5,	/* Moved 1 or more squares */
+	[3] = 5,
+	[4] = -5,	/* Close to us */
+	[5] = -10,	/* Closer */
+	[6] = 5,	/* ????? */
+	[7] = 0,	/* No pawn */
+};
+
+/*
+ * Subtract 7 for white to keep it from 0 to 7. 7 being
+ * no pawn and 1 being a maximally advanced pawn
+ */
 static inline score eval_wshield(const int c) {
-	score ret = 0;
+	assert(pawn_rank[BLACK][c+1] > 0);
+	assert(pawn_rank[BLACK][c+1] < 8);
+	assert(7 - pawn_rank[WHITE][c+1] > 0);
+	assert(7 - pawn_rank[WHITE][c+1] < 8);
+	return shield_own[7 - pawn_rank[WHITE][c+1]]
+	     + shield_opp[pawn_rank[BLACK][c+1]];
+}
 
-	switch (pawn_rank[WHITE][c+1]) {
-		case 6:		ret -= 0;	/* Never moved */
-		case 5:		ret -= 10;	/* Moved 1 square */
-		case 0:		ret -= 25;	/* No pawn */
-		default:	ret -= 20;	/* Somewhere else */
-	}
-
-	switch (pawn_rank[BLACK][c+1]) {
-		case 7:		ret -= 0;	/* No pawn */
-		case 4:		ret -= 5;	/* Close */
-		case 5:		ret -= 10;	/* Closer */
-		default:	ret += 5;	/* Somewhere else */
-	}
-
-	return ret;
+static inline score eval_bshield(const int c) {
+	assert(pawn_rank[BLACK][c+1] > 0);
+	assert(pawn_rank[BLACK][c+1] < 8);
+	assert(7 - pawn_rank[WHITE][c+1] > 0);
+	assert(7 - pawn_rank[WHITE][c+1] < 8);
+	return shield_own[pawn_rank[BLACK][c+1]]
+	     + shield_opp[7 - pawn_rank[WHITE][c+1]];
 }
 
 static inline score eval_wking(const int r, const int c) {
@@ -136,26 +160,6 @@ static inline score eval_wking(const int r, const int c) {
 			ret -= 10;
 		if (pawn_rank[BLACK][c+2] == 7 && pawn_rank[WHITE][c+2] == 0)
 			ret -= 10;
-	}
-
-	return ret;
-}
-
-static inline score eval_bshield(const int c) {
-	score ret = 0;
-
-	switch (pawn_rank[BLACK][c+1]) {
-		case 1:		ret -= 0;	/* Never moved */
-		case 2:		ret -= 10;	/* Moved 1 square */
-		case 7:		ret -= 25;	/* No pawn */
-		default:	ret -= 20;	/* Somewhere else */
-	}
-
-	switch (pawn_rank[WHITE][c+1]) {
-		case 0:		ret -= 0;	/* No pawn */
-		case 3:		ret -= 5;	/* Close */
-		case 2:		ret -= 10;	/* Closer */
-		default:	ret += 5;	/* Somewhere else */
 	}
 
 	return ret;
