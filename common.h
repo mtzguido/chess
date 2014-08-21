@@ -46,72 +46,75 @@ enum play_mode {
 	randplay,
 	ai_vs_rand,
 	board_eval,
+	version,
+	help,
 };
 
 struct opts {
-	enum play_mode mode;
+	int mode;			/* Program mode */
+
 	int nmoves;			/* Amount of moves to calculate */
 	int depth;			/* Maximum search depth */
-	bool fixed_depth;		/* Fix depth, do not cut by time */
+	int timed;			/* Do not stop by time */
 	unsigned long timelimit;	/* Time limit for each move, in ms */
-	bool shuffle;			/* Shuffle the succ moves */
-	bool usebook;			/* Use opening book */
-	bool black;			/* Play as black */
-	bool sort;			/* Use move sorting */
+	int shuffle;			/* Shuffle the succ moves */
+	int book;			/* Use opening book */
+	int black;			/* Play as black */
+	int sort;			/* Use move sorting */
 
 	bool custom_start;		/* Use a custom starting board */
 	char custom_start_str[100];	/* Custom board spec */
 
-	bool debug;			/* Print debug information */
-	bool reverse;			/* Reverse the order of succ generation (debug) */
+	/* Misc options */
+	int debug;			/* Print debug information */
+	int seed;			/* Random seed */
 
 	/* Search */
-	bool iter;			/* Iterative deepening */
-	bool ab;			/* Alpha-beta */
-	bool quiesce;			/* Use quiescence search on leaf nodes */
-	bool nullmove;			/* Use Null Move Heuristic */
-	bool lmr;			/* Late move reduction */
-	bool forced_extend;		/* Forced move extension */
-	bool delta_prune;		/* Quiescence delta pruning */
+	int iter;			/* Iterative deepening */
+	int ab;				/* Alpha-beta */
+	int quiesce;			/* Use quiescence search on leaf nodes */
+	int null;			/* Use Null Move Heuristic */
+	int lmr;			/* Late move reduction */
+	int forced_extend;		/* Forced move extension */
+	int delta_prune;		/* Quiescence delta pruning */
 
 	/* Heuristics (mostly move ordering) */
-	bool heur_trans;		/* Transposition table */
-	bool heur_killer;		/* Killer Heuristic */
-	bool heur_cm;			/* Countermove Heuristic */
-	bool heur_trivial;		/* Trivial and cheap move ordering */
+	int heur_trans;			/* Transposition table */
+	int heur_killer;		/* Killer Heuristic */
+	int heur_cm;			/* Countermove Heuristic */
+	int heur_trivial;		/* Trivial and cheap move ordering */
 
 	/* Board evaluation */
-	bool h11n;			/* 1-1-n heuristic */
+	int h11n;			/* 1-1-n heuristic */
 };
 
 static const struct opts defopts = {
-	.mode = normal,
-	.nmoves = 0,
-	.depth = 6,
-	.fixed_depth = false,
-	.timelimit = 1000,
-	.shuffle = true,
-	.usebook = true,
-	.black = false,
-	.sort = true,
+	.mode =			normal,
+	.nmoves =		0,
+	.depth =		6,
+	.timed = 		1,
+	.timelimit =		1000,
+	.shuffle =		1,
+	.book =			1,
+	.black =		0,
+	.sort =			1,
 
-	.debug = true,
-	.reverse = false,
+	.debug =		0,
 
-	.iter = true,
-	.ab = true,
-	.quiesce = true,
-	.nullmove = true,
-	.lmr = true,
-	.forced_extend = true,
-	.delta_prune = true,
+	.iter =			1,
+	.ab =			1,
+	.quiesce =		1,
+	.null =			1,
+	.lmr =			1,
+	.forced_extend =	1,
+	.delta_prune =		1,
 
-	.heur_trans = true,
-	.heur_killer = true,
-	.heur_cm = true,
-	.heur_trivial = true,
+	.heur_trans =		1,
+	.heur_killer =		1,
+	.heur_cm =		1,
+	.heur_trivial =		1,
 
-	.h11n = true,
+	.h11n =			1,
 };
 
 extern struct opts copts;
@@ -122,10 +125,5 @@ void dbg(char *s, ...);
 	for ((temp) = (mask);					\
 	     (temp) != 0 && ((i) = __builtin_ffsll(temp), 1);	\
 	     (temp) = (temp) & ~((u64)1 << ((i)-1)))
-
-static inline u64 u64_reverse(u64 x) {
-	/* Fake it till you make it */
-	return x;
-}
 
 #endif

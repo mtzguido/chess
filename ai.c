@@ -202,13 +202,13 @@ move machineMove(const game start) {
 	reset_stats();
 
 	t1 = clock();
-	if (copts.usebook && bookMove(start, &ret)) {
+	if (copts.book && bookMove(start, &ret)) {
 		dbg("stats: book move.\n");
 		expect_ok = false;
 	} else if (forced(start, &ret)) {
 		dbg("stats: forced move.\n");
 		expect_ok = false;
-	} else if (copts.fixed_depth) {
+	} else if (!copts.timed) {
 		timelimited = false;
 
 		/* Profundización para llenar la TT */
@@ -293,7 +293,7 @@ static inline score null_move_score(game g, int curDepth, int maxDepth,
 	game ng;
 	move m = { .move_type = MOVE_NULL, .who = g->turn };
 
-	if (!copts.nullmove)
+	if (!copts.null)
 		goto dont;
 
 	/* Dont do two null moves in the same variation */

@@ -42,6 +42,7 @@ void dbg(char *s, ...) {
 		return;
 
 	va_start(l, s);
+	fprintf(stderr, ">> ");
 	vfprintf(stderr, s, l);
 	fflush(stderr);
 	va_end(l);

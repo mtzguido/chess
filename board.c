@@ -560,7 +560,7 @@ static bool __doMove(game g, move m, bool check) {
 		break;
 
 	case MOVE_NULL:
-		assert(copts.nullmove);
+		assert(copts.null);
 		if (!doMoveNull(g, m, check))
 			goto fail;
 

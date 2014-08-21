@@ -58,6 +58,7 @@ mods=	ai	\
 	ztable	\
 	zobrist	\
 	autoversion \
+	opts \
 	addon_trans	\
 	addon_killer	\
 	addon_cm	\

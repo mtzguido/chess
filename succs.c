@@ -907,21 +907,11 @@ static void  __genSuccs(const game g, movegen_t fun) {
 	first_succ[ply+1] = first_succ[ply];
 	m = g->piecemask[g->turn];
 
-	if (copts.reverse && fun == pieceSuccs) {
-		m = u64_reverse(m);
-		mask_for_each(m, temp, i) {
-			const u8 r = (i-1) / 8;
-			const u8 c = (i-1) % 8;
+	mask_for_each(m, temp, i) {
+		const u8 r = (i-1) / 8;
+		const u8 c = (i-1) % 8;
 
-			fun(r, c, g);
-		}
-	} else {
-		mask_for_each(m, temp, i) {
-			const u8 r = (i-1) / 8;
-			const u8 c = (i-1) % 8;
-
-			fun(r, c, g);
-		}
+		fun(r, c, g);
 	}
 
 }
