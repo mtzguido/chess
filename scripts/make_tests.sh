@@ -69,6 +69,7 @@ rm -f gmon.sum
 total=$1
 shift
 CHESS_ARGS=$@
+CHESS_ARGS+=" --debug"
 
 msg "OPPONENT_PROG=$OPPONENT_PROG"
 msg "OPPONENT_ARGS=$OPPONENT_ARGS"
@@ -89,7 +90,7 @@ while [ $ii -lt $total ]; do
 	clock_1=$(date +%s)
 
 	${OPPONENT_PROG} ${OPPONENT_ARGS} <$WPIPE | tee opponent_log >$BPIPE &
-	./chess $@ 2>chess_log >$WPIPE <$BPIPE
+	./chess ${CHESS_ARGS} 2>chess_log >$WPIPE <$BPIPE
 
 	clock_2=$(date +%s)
 	owntime=$(($(grep '>> Total time:' chess_log | grep -Eo '[0-9]*') / 1000))
@@ -108,11 +109,11 @@ while [ $ii -lt $total ]; do
 		fi
 	fi
 
-	if grep -E '^RES: Lose' chess_log &>/dev/null; then
+	if grep -E 'RES: Lose' chess_log &>/dev/null; then
 		black=$((black+1))
-	elif grep -E '^RES: Win' chess_log &>/dev/null; then
+	elif grep -E 'RES: Win' chess_log &>/dev/null; then
 		white=$((white+1))
-	elif grep -E '^RES: Draw' chess_log &>/dev/null; then
+	elif grep -E 'RES: Draw' chess_log &>/dev/null; then
 		draw=$((draw+1))
 	else
 		echo '?????' >&2
