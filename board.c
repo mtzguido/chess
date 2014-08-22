@@ -117,11 +117,12 @@ void printBoard(game g) {
 
 			l += sprintf(bbuf+l, " ");
 		}
-		l += sprintf(bbuf+l, "\n");
+		dbg("%s\n", bbuf);
+		l = 0;
 	}
 
-	dbg("%s", bbuf);
-	dbg("\n   a b c d e f g h\n");
+	dbg("\n");
+	dbg("   a b c d e f g h\n");
 	dbg("[ castle_king = %i %i \n", g->castle_king[0], g->castle_king[1]);
 	dbg("[ castle_queen = %i %i \n", g->castle_queen[0], g->castle_queen[1]);
 	dbg("[ kingx = %i %i \n", g->kingx[0], g->kingx[1]);
