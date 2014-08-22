@@ -48,6 +48,14 @@ void checkMove(game g, move m) {
 	game ng = galloc();
 	int i;
 
+	/*
+	 * Fix promotions to Knights or Queens,
+	 * we don't care about not generating rook
+	 * promotions
+	 */
+	if (isPromotion(g, m) && m.promote != WKNIGHT)
+		m.promote = WQUEEN;
+
 	*ng = *g;
 	__maybe_unused int rc = doMove(ng, m);
 	if (!rc) {
