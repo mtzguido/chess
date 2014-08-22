@@ -13,7 +13,6 @@
 #include <getopt.h>
 #include <stdio.h>
 #include <string.h>
-#include <time.h>
 #include <unistd.h>
 
 struct player {
@@ -311,7 +310,6 @@ struct player random_player = {
 int main(int argc, char **argv) {
 	int rc = 0;
 
-	copts.seed = time(NULL) + getpid();
 	init_mem();
 
 	if (!parse_opt(argc, argv)) {

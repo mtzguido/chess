@@ -5,6 +5,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <time.h>
 
 #define BOOL_OPT2(name, var)					\
 	{ #name, no_argument, &copts.var, 1 },			\
@@ -80,7 +81,10 @@ int sanity_check() {
 
 int parse_opt(int argc, char **argv) {
 	int c, idx;
+
 	copts = defopts;
+	copts.seed = time(NULL) + getpid();
+
 	while (c = getopt_long(argc, argv, "", long_opts, &idx), c != -1) {
 		switch (c) {
 		case OPT_depth:	copts.depth = atoi(optarg); break;
