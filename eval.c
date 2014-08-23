@@ -213,10 +213,10 @@ static inline score eval_with_ranks(const game g) {
 
 		/* Penalize knight at end game */
 		case WKNIGHT:
-			score -= interpolate(g, 0, KNIGHT_ENDGAME);
+			score += interpolate(g, 0, KNIGHT_ENDGAME);
 			break;
 		case BKNIGHT:
-			score += interpolate(g, 0, KNIGHT_ENDGAME);
+			score -= interpolate(g, 0, KNIGHT_ENDGAME);
 			break;
 
 		/* Count bishops */
