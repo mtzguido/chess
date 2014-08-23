@@ -6,11 +6,12 @@ CHESS_PROG=./chess
 OPPONENT_PROG=fairymax
 OPPONENT_ARGS=
 
-secs_to_time () {
-	mins=$(($1 / 60))
-	secs=$(($1 % 60))
+msecs_to_time () {
+	mins=$(($1 / 60000))
+	secs=$((($1 / 1000) % 60))
+	msec=$(printf "%03d" $(($1 % 1000)))
 
-	echo "${mins}m${secs}s"
+	echo "${mins}m${secs}.${msec}s"
 }
 
 percent () {
@@ -93,8 +94,8 @@ while [ $ii -lt $total ]; do
 	./chess ${CHESS_ARGS} 2>chess_log >$WPIPE <$BPIPE
 
 	clock_2=$(date +%s)
-	owntime=$(($(grep '>> Total time:' chess_log | grep -Eo '[0-9]*') / 1000))
-	gametime=$((clock_2 - clock_1))
+	owntime=$(($(grep '>> Total time:' chess_log | grep -Eo '[0-9]*')))
+	gametime=$((1000 * (clock_2 - clock_1)))
 	tottime=$((tottime+gametime))
 	totowntime=$((totowntime+owntime))
 
@@ -125,17 +126,17 @@ while [ $ii -lt $total ]; do
 
 	score=$(bc -l <<< "scale=2; (2.00*$white + $draw)/ (2.00*$ii)")
 
-	msg_interactive "$ii/$total	$black/$draw/$white		$score	$(secs_to_time owntime)/$(secs_to_time gametime)"
+	msg_interactive "$ii/$total	$black/$draw/$white		$score	$(msecs_to_time owntime)/$(msecs_to_time gametime)"
 
 done
 
 msg_interactive
 msg "Results:"
 msg "	b/d/w		score	time"
-msg "$ii/$total	$black/$draw/$white		$score	$(secs_to_time owntime)/$(secs_to_time gametime)"
+msg "$ii/$total	$black/$draw/$white		$score"
 
 msg
-msg "Time: $(secs_to_time $totowntime)/$(secs_to_time $tottime) ($(percent $totowntime $tottime)%)"
+msg "Total time: $(msecs_to_time $totowntime) vs $(msecs_to_time $(($tottime - $totowntime))) ($(percent $totowntime $tottime)% of total)"
 
 [ -f gmon.sum ] && gprof chess gmon.sum > $DIR/tests_profile
 
