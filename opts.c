@@ -66,7 +66,7 @@ static const struct option long_opts[] = {
 	{ 0 }
 };
 
-int sanity_check() { 
+static int sanity_check() {
 	if (copts.depth < 0) {
 		fprintf(stderr, "error: depth can't be negative\n");
 		return 0;

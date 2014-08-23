@@ -996,7 +996,7 @@ void tostr(game g, char *s) {
 	*s = 0;
 }
 
-game fromstr(char *s) {
+game fromstr(const char *s) {
 	int i, j;
 	game ret = galloc();
 	char buf[3];

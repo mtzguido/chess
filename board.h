@@ -105,7 +105,7 @@ bool isDraw(game g);
 void printBoard(game b);
 
 void tostr(game g, char *s);
-game fromstr(char *s);
+game fromstr(const char *s);
 
 bool equalGame(game a, game b);
 

@@ -117,7 +117,11 @@ static const struct opts defopts = {
 	.h11n =			1,
 };
 
+#ifdef FIXOPTS
+#define copts defopts
+#else
 extern struct opts copts;
+#endif
 
 void dbg(char *s, ...);
 

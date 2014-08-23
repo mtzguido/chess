@@ -28,6 +28,10 @@ ifeq (${CONFIG_OWNMEM},y)
 	CFLAGS += -DCFG_OWNMEM
 endif
 
+ifeq (${CONFIG_FIXOPTS},y)
+	CFLAGS += -DFIXOPTS
+endif
+
 ifeq (${CONFIG_DEBUG},y)
 else
 	CFLAGS += -DNDEBUG
@@ -58,7 +62,6 @@ mods=	ai	\
 	ztable	\
 	zobrist	\
 	autoversion \
-	opts \
 	addon_trans	\
 	addon_killer	\
 	addon_cm	\
@@ -70,6 +73,10 @@ mods=	ai	\
 	book	\
 	masks
 
+ifeq (${CONFIG_FIXOPTS},y)
+else
+	mods += opts
+endif
 objs=$(patsubst %,%.o,$(mods))
 crap=$(patsubst %,%.i %.s,$(mods))
 

@@ -3,7 +3,9 @@
 #include <stdarg.h>
 #include <stdio.h>
 
+#ifndef FIXOPTS
 struct opts copts;
+#endif
 
 int isPrefix(char *a, char *b) {
 	while (*a && *a++ == *b++)
