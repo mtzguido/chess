@@ -71,7 +71,6 @@ struct opts {
 	int seed;			/* Random seed */
 
 	/* Search */
-	int iter;			/* Iterative deepening */
 	int asp;			/* Use aspiration windows */
 	int ab;				/* Alpha-beta */
 	int quiesce;			/* Use quiescence search on leaf nodes */
@@ -96,7 +95,7 @@ static const struct opts defopts = {
 	.depth =		6,
 	.timed = 		1,
 	.timelimit =		1000,
-	.lbound = 		0,
+	.lbound =		0,
 	.shuffle =		1,
 	.book =			1,
 	.black =		0,
@@ -104,8 +103,7 @@ static const struct opts defopts = {
 
 	.debug =		0,
 
-	.iter =			1,
-	.asp = 			1,
+	.asp =			1,
 	.ab =			1,
 	.quiesce =		1,
 	.null =			1,
