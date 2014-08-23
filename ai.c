@@ -212,7 +212,10 @@ move machineMove(const game start) {
 		int d, md;
 		move temp;
 		score t;
+		score alpha, beta;
 
+		alpha = minScore;
+		beta = maxScore;
 		expected = minScore;
 		timelimited = copts.timed;
 		timeup = false;
@@ -220,26 +223,43 @@ move machineMove(const game start) {
 		ticks = 0;
 		md = -1;
 
-		/*
-		 * Do depth=1 unconditionally, so we have at least one
-		 * legal move and something meaningful to return
-		 */
-
-		assert(ply == 0);
-		expected = negamax(start, 1, 0, &ret, minScore, maxScore);
-
-		for (d = 2; d <= copts.depth && !timeup; d++) {
+		for (d = 1; d <= copts.depth && !timeup; d++) {
 			assert(ply == 0);
-			t = negamax(start, d, 0, &temp, minScore, maxScore);
+			t = negamax(start, d, 0, &temp, alpha, beta);
+			dbg("negamax: %i %i %i\n", t, alpha, beta);
 
-			if (!timeup) {
-				expected = t;
-				ret = temp;
-				md = d;
+			if (t >= beta) {
+				beta = maxScore;
+				t = negamax(start, d, 0, &temp, alpha, beta);
+				dbg("negamax.1: %i %i %i\n", t, alpha, maxScore);
+			} else if (t <= alpha) {
+				alpha = minScore;
+				t = negamax(start, d, 0, &temp, alpha, beta);
+				dbg("negamax.2: %i %i %i\n", t, minScore, beta);
 			}
-		}
-		if (timeup) {
-			dbg("machineMove: time up!\n");
+
+			if (t <= alpha || t >= beta) {
+				dbg("%i %i\n", t<=alpha, t>=beta);
+				alpha = minScore;
+				beta = maxScore;
+				t = negamax(start, d, 0, &temp, alpha, beta);
+				dbg("negamax.3: %i %i %i\n", t, minScore, maxScore);
+			}
+
+			if (timeup) {
+				/*
+				 * If we have a timeout, don't even consider
+				 * this iteration
+				 */
+				dbg("machineMove: time up!\n");
+				break;
+			}
+
+			expected = t;
+			ret = temp;
+			md = d;
+			alpha = copts.asp ? t - ASPIRATION_WINDOW : minScore;
+			beta  = copts.asp ? t + ASPIRATION_WINDOW : maxScore;
 		}
 
 		dbg("machineMove: actual depth was: %i\n", md);
@@ -501,8 +521,7 @@ static inline score negamax(game g, int maxDepth, int curDepth, move *mm,
 	 * Only try to null-move if beta was less than maxScore.
 	 * Otherwise we will never suceed in the test.
 	 */
-	if (beta < maxScore) {
-		assert(!mm);
+	if (!mm && beta < maxScore) {
 		t = null_move_score(g, curDepth, maxDepth, alpha, beta);
 		if  (t > beta) {
 			stats.null_cuts++;

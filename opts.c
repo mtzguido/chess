@@ -54,6 +54,7 @@ static const struct option long_opts[] = {
 	BOOL_OPT(book),
 	BOOL_OPT(iter),
 	BOOL_OPT(sort),
+	BOOL_OPT(asp),
 	BOOL_OPT2(forced-extend, forced_extend),
 	BOOL_OPT2(delta, delta_prune),
 	BOOL_OPT(debug),

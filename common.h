@@ -71,6 +71,7 @@ struct opts {
 
 	/* Search */
 	int iter;			/* Iterative deepening */
+	int asp;			/* Use aspiration windows */
 	int ab;				/* Alpha-beta */
 	int quiesce;			/* Use quiescence search on leaf nodes */
 	int null;			/* Use Null Move Heuristic */
@@ -102,6 +103,7 @@ static const struct opts defopts = {
 	.debug =		0,
 
 	.iter =			1,
+	.asp = 			1,
 	.ab =			1,
 	.quiesce =		1,
 	.null =			1,

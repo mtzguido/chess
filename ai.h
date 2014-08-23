@@ -52,5 +52,6 @@ score boardEval(game g);
 
 /* Heuristics config */
 #define NMH_THRESHOLD		1000
+#define ASPIRATION_WINDOW	35
 
 #endif
