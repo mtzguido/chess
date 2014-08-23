@@ -55,6 +55,6 @@ score boardEval(game g);
 #define ASPIRATION_WINDOW	35
 
 /* Misc tunables */
-#define SORT_DEPTH_THRESHOLD	2
+#define SORT_DEPTH_THRESHOLD	0
 
 #endif
