@@ -25,6 +25,7 @@ enum {
 	OPT_depth,
 	OPT_seed,
 	OPT_limit,
+	OPT_lbound,
 };
 
 static const struct option long_opts[] = {
@@ -46,6 +47,7 @@ static const struct option long_opts[] = {
 	INT_OPT(depth),
 	INT_OPT(seed),
 	INT_OPT(limit),
+	INT_OPT(lbound),
 
 	BOOL_OPT(timed),
 	BOOL_OPT(shuffle),
@@ -88,9 +90,10 @@ int parse_opt(int argc, char **argv) {
 
 	while (c = getopt_long(argc, argv, "", long_opts, &idx), c != -1) {
 		switch (c) {
-		case OPT_depth:	copts.depth = atoi(optarg); break;
-		case OPT_seed:	copts.seed = atoi(optarg); break;
-		case OPT_limit:	copts.timelimit = atoi(optarg); break;
+		case OPT_depth:		copts.depth = atoi(optarg); break;
+		case OPT_seed:		copts.seed = atoi(optarg); break;
+		case OPT_limit:		copts.timelimit = atoi(optarg); break;
+		case OPT_lbound:	copts.lbound = atoi(optarg); break;
 
 		case 0x1:
 			copts.mode = moves;

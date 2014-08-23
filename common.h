@@ -56,7 +56,8 @@ struct opts {
 	int nmoves;			/* Amount of moves to calculate */
 	int depth;			/* Maximum search depth */
 	int timed;			/* Do not stop by time */
-	unsigned long timelimit;	/* Time limit for each move, in ms */
+	unsigned long timelimit;	/* Max time for each move, in ms */
+	unsigned long lbound;		/* Min time for each move, in ms */
 	int shuffle;			/* Shuffle the succ moves */
 	int book;			/* Use opening book */
 	int black;			/* Play as black */
@@ -95,6 +96,7 @@ static const struct opts defopts = {
 	.depth =		6,
 	.timed = 		1,
 	.timelimit =		1000,
+	.lbound = 		0,
 	.shuffle =		1,
 	.book =			1,
 	.black =		0,

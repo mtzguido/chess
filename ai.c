@@ -188,6 +188,7 @@ static unsigned long getms() {
 bool timelimited;
 bool timeup;
 unsigned long timelimit;
+unsigned long timestart;
 int ticks;
 
 move machineMove(const game start) {
@@ -213,17 +214,19 @@ move machineMove(const game start) {
 		move temp;
 		score t;
 		score alpha, beta;
+		bool stop = false;
 
 		alpha = minScore;
 		beta = maxScore;
 		expected = minScore;
 		timelimited = copts.timed;
 		timeup = false;
+		timestart = getms();
 		timelimit = getms() + copts.timelimit;
 		ticks = 0;
 		md = -1;
 
-		for (d = 1; d <= copts.depth && !timeup; d++) {
+		for (d = 1; !stop && !timeup; d++) {
 			assert(ply == 0);
 			t = negamax(start, d, 0, &temp, alpha, beta);
 			dbg("negamax: %i %i %i\n", t, alpha, beta);
@@ -260,6 +263,14 @@ move machineMove(const game start) {
 			md = d;
 			alpha = copts.asp ? t - ASPIRATION_WINDOW : minScore;
 			beta  = copts.asp ? t + ASPIRATION_WINDOW : maxScore;
+
+			/*
+			 * Stop at the maximum depth, but think for at least
+			 * copts.lbound miliseconds.
+			 */
+			stop = d >= copts.depth &&
+				(copts.lbound == 0 ||
+				getms() - timestart > copts.lbound);
 		}
 
 		dbg("machineMove: actual depth was: %i\n", md);
