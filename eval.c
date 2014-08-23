@@ -115,7 +115,7 @@ static const score shield_opp[8] = {
 	[3] = 5,
 	[4] = -5,	/* Close to us */
 	[5] = -10,	/* Closer */
-	[6] = 5,	/* ????? */
+	[6] = -25,	/* ????? */
 	[7] = 0,	/* No pawn */
 };
 
@@ -193,9 +193,8 @@ static inline score eval_with_ranks(const game g) {
 	int i;
 	int bishop_count[2] = {0};
 	score score = 0;
-	u64 temp, full;
-
-	full = g->piecemask[WHITE] | g->piecemask[BLACK];
+	u64 temp;
+	const u64 full = g->piecemask[WHITE] | g->piecemask[BLACK];
 
 	mask_for_each(full, temp, i) {
 		const int r = (i-1) / 8;
