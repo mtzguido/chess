@@ -77,7 +77,7 @@ static inline void sort_succ(game g, int i, int depth_rem) {
 	assert(gsuccs[i].m.who == g->turn);
 
 	/* Ordenarlos si es necesario */
-	if (depth_rem > 2) {
+	if (depth_rem > SORT_DEPTH_THRESHOLD) {
 		int j;
 		int best = i;
 		score s = gsuccs[i].s;
@@ -185,11 +185,11 @@ static unsigned long getms() {
 }
 
 /* Time limit data */
-bool timelimited;
-bool timeup;
-unsigned long timelimit;
-unsigned long timestart;
-int ticks;
+static bool timelimited;
+static bool timeup;
+static unsigned long timelimit;
+static unsigned long timestart;
+static int ticks;
 
 move machineMove(const game start) {
 	move ret = {0};

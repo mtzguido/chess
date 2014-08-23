@@ -54,4 +54,7 @@ score boardEval(game g);
 #define NMH_THRESHOLD		1000
 #define ASPIRATION_WINDOW	35
 
+/* Misc tunables */
+#define SORT_DEPTH_THRESHOLD	2
+
 #endif
