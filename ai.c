@@ -208,28 +208,13 @@ move machineMove(const game start) {
 	} else if (forced(start, &ret)) {
 		dbg("stats: forced move.\n");
 		expect_ok = false;
-	} else if (!copts.timed) {
-		timelimited = false;
-
-		/* Profundización para llenar la TT */
-		if (copts.iter) {
-			int d;
-			for (d=2 - copts.depth%2; d<copts.depth; d += 2) {
-				assert(ply == 0);
-				negamax(start, d, 0, NULL, minScore, maxScore);
-			}
-		}
-
-		assert(ply == 0);
-		expected = negamax(start, copts.depth, 0, &ret, minScore, maxScore);
-		expect_ok = true;
 	} else {
 		int d, md;
 		move temp;
 		score t;
 
 		expected = minScore;
-		timelimited = true;
+		timelimited = copts.timed;
 		timeup = false;
 		timelimit = getms() + copts.timelimit;
 		ticks = 0;
