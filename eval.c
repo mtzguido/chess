@@ -326,4 +326,3 @@ score boardEval(const game g) {
 
 	return g->turn == WHITE ? score : -score;
 }
-
