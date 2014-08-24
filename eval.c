@@ -29,26 +29,21 @@ static int pawn_rank[2][10] = {
 };
 
 static inline void fill_ranks(const game g) {
-	int i;
-	u64 temp, full;
+	int r, c;
 
-	full = g->piecemask[WHITE] | g->piecemask[BLACK];
-
-	mask_for_each(full, temp, i) {
-		const int r = (i-1) / 8;
-		const int c = (i-1) % 8;
-		const piece_t piece = g->board[r][c];
-
-		switch (piece) {
-		case WPAWN:
-			if (pawn_rank[WHITE][c+1] < r)
-				pawn_rank[WHITE][c+1] = r;
-			break;
-
-		case BPAWN:
-			if (pawn_rank[BLACK][c+1] > r)
+	for (c = 0; c < 8; c++) {
+		for (r = 0; r < 7; r++) {
+			if (g->board[r][c] == BPAWN) {
 				pawn_rank[BLACK][c+1] = r;
-			break;
+				break;
+			}
+		}
+
+		for (r = 7; r >= 0; r--) {
+			if (g->board[r][c] == WPAWN) {
+				pawn_rank[WHITE][c+1] = r;
+				break;
+			}
 		}
 	}
 }
