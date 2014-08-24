@@ -111,7 +111,3 @@ void trans_score_succs(game g, int depth) {
 		}
 	}
 }
-
-/*
- * [1]: http://www.chess.com/blog/kurtgodden/the-longest-possible-chess-game
- */
