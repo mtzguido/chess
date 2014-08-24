@@ -294,7 +294,7 @@ move machineMove(const game start) {
 	return ret;
 }
 
-static inline int calcExtension(game g, int maxDepth, int curDepth) {
+static inline int calcExtension(const game g, int maxDepth, int curDepth) {
 	int ret = 0;
 
 	if (inCheck(g, g->turn) || g->lastmove.promote != EMPTY)
