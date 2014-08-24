@@ -124,7 +124,7 @@ while [ $ii -lt $total ]; do
 	mv opponent_log	$DIR/opponent_log_$ii
 	mv chess_log	$DIR/chess_log_$ii
 
-	score=$(bc -l <<< "scale=2; (2.00*$white + $draw)/ (2.00*$ii)")
+	score=$(bc -l <<< "scale=4; (2.00*$white + $draw)/ (2.00*$ii)" | awk '{ printf "%.04f", $0 }')
 
 	msg_interactive "$ii/$total	$black/$draw/$white		$score	$(msecs_to_time owntime)/$(msecs_to_time gametime)"
 
