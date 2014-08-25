@@ -13,27 +13,16 @@
 #include "ztable.h"
 #include "succs.h"
 
-char charOf(int piece);
-
-static const struct game_struct
-init = {
-	.board= {
-		{ BROOK, BKNIGHT, BBISHOP, BQUEEN, BKING, BBISHOP, BKNIGHT, BROOK },
-		{ BPAWN, BPAWN, BPAWN, BPAWN, BPAWN, BPAWN, BPAWN, BPAWN },
-		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
-		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
-		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
-		{ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
-		{ WPAWN, WPAWN, WPAWN, WPAWN, WPAWN, WPAWN, WPAWN, WPAWN },
-		{ WROOK, WKNIGHT, WBISHOP, WQUEEN, WKING, WBISHOP, WKNIGHT, WROOK }
-	},
-	.turn = WHITE,
-	.lastmove = { 0 },
-	.idlecount = 0,
-	.castle_king = { 1, 1 },
-	.castle_queen = { 1, 1 },
-	.castled = { 0, 0 },
-};
+static const char *init =
+	"rnbqkbnr"
+	"pppppppp"
+	"........"
+	"........"
+	"........"
+	"........"
+	"PPPPPPPP"
+	"RNBQKBNR"
+	"W0011110000";
 
 static void fix(game g) {
 	int i, j;
@@ -54,12 +43,12 @@ static void fix(game g) {
 				g->kingy[colorOf(piece)] = j;
 			}
 
-			g->pieceScore[colorOf(piece)] += scoreOf(piece);
-
-			if (piece) {
+			if (piece != EMPTY) {
+				if (piece != WKING && piece != BKING)
+					g->pieceScore[colorOf(piece)] += scoreOf(piece);
 				g->zobrist ^= ZOBR_PIECE(piece, i, j);
-				g->piecemask[colorOf(piece)]
-					|= ((u64)1) <<(i*8 + j);
+				g->piecemask[colorOf(piece)] |=
+					((u64)1) <<(i*8 + j);
 			}
 		}
 	}
@@ -83,10 +72,7 @@ static void fix(game g) {
 }
 
 game startingGame() {
-	game g = galloc();
-	*g = init;
-	fix(g);
-	return g;
+	return fromstr(init);
 }
 
 game copyGame(game g) {
@@ -686,7 +672,11 @@ static bool doMoveRegular(game g, move m, bool check) {
 		/* No pisar piezas propias */
 		if (own_piece(g, m.R, m.C))
 			return false;
+	} else {
+		assert(isValid(g, m));
+		assert(!own_piece(g, m.R, m.C));
 	}
+
 
 	/* Es válida */
 	g->lastmove = m;
@@ -951,16 +941,17 @@ static bool doMoveQCastle(game g, move m, bool check) {
 }
 
 static const int scoreTab[] = {
-	[EMPTY]		= 0,
 	[WPAWN]		= PAWN_SCORE,
 	[WKNIGHT]	= KNIGHT_SCORE,
 	[WBISHOP]	= BISHOP_SCORE,
 	[WROOK]		= ROOK_SCORE,
 	[WQUEEN]	= QUEEN_SCORE,
-	[WKING]		= 0,
 };
 
 int scoreOf(int piece) {
+	assert(piece != WKING);
+	assert(piece != BKING);
+	assert(piece != EMPTY);
 	return scoreTab[piece & 7];
 }
 
