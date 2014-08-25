@@ -14,6 +14,13 @@ msecs_to_time () {
 	echo "${mins}m${secs}.${msec}s"
 }
 
+get_ms () {
+	S=$(date +%s)
+	NS=$(date +%N)
+
+	echo ${S}${NS:0:3}
+}
+
 percent () {
 	if [ "$2" -eq "0" ]; then
 		echo "inf"
@@ -88,14 +95,14 @@ white=0
 while [ $ii -lt $total ]; do
 	ii=$((ii+1))
 
-	clock_1=$(date +%s)
+	clock_1=$(get_ms)
 
 	${OPPONENT_PROG} ${OPPONENT_ARGS} <$WPIPE | tee opponent_log >$BPIPE &
 	./chess ${CHESS_ARGS} 2>chess_log >$WPIPE <$BPIPE
 
-	clock_2=$(date +%s)
+	clock_2=$(get_ms)
 	owntime=$(($(grep '>> Total time:' chess_log | grep -Eo '[0-9]*')))
-	gametime=$((1000 * (clock_2 - clock_1)))
+	gametime=$((clock_2 - clock_1))
 	tottime=$((tottime+gametime))
 	totowntime=$((totowntime+owntime))
 
