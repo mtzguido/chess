@@ -52,7 +52,7 @@ score boardEval(game g);
 
 /* Heuristics config */
 #define NMH_THRESHOLD		1000
-#define ASPIRATION_WINDOW	35
+#define ASPIRATION_WINDOW	25
 
 /* Misc tunables */
 #define SORT_DEPTH_THRESHOLD	0
