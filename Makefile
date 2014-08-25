@@ -1,6 +1,6 @@
 .PHONY:clean all re run doc
 CFLAGS=-Wall -Wextra -Wno-unused-parameter $(CFLAGS_EXTRA)
-LFLAGS=-lm
+LFLAGS=
 LFLAGS_UTILS=
 SHELL=/bin/bash
 TARGET=chess
@@ -39,7 +39,7 @@ endif
 
 ifeq (${CONFIG_RELEASE},y)
 	CFLAGS += -O99 -flto
-	LFLAGS += -flto
+	LFLAGS += -flto=4 -fwhole-program
 else
 	CFLAGS += -g -pg
 	LFLAGS += -pg
