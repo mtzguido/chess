@@ -200,6 +200,8 @@ move machineMove(const game start) {
 	clock_t t1,t2;
 	score expected = 0;
 	bool expect_ok;
+	unsigned long long iterstart;
+	unsigned long long now;
 
 	ret.move_type = MOVE_INVAL;
 
@@ -226,12 +228,13 @@ move machineMove(const game start) {
 		timelimited = copts.timed;
 		timeup = false;
 		timestart = getms();
-		timelimit = getms() + copts.timelimit;
+		timelimit = timestart + copts.timelimit;
 		ticks = 0;
 		md = -1;
 
 		for (d = 1; !stop && !timeup; d++) {
 			assert(ply == 0);
+			iterstart = getms();
 			t = negamax(start, d, 0, &temp, alpha, beta);
 			dbg("negamax: %i %i %i\n", t, alpha, beta);
 
@@ -267,6 +270,18 @@ move machineMove(const game start) {
 			md = d;
 			alpha = copts.asp ? t - ASPIRATION_WINDOW : minScore;
 			beta  = copts.asp ? t + ASPIRATION_WINDOW : maxScore;
+			/*
+			 * Smart stop, assume the next iteration will
+			 * take _at least_ as long as the current one,
+			 * and if we would time out, just time out now
+			 */
+			now = getms();
+			if (now + (now - iterstart) >= timelimit) {
+				dbg("Smart stopping! I think I saved %llu ms\n",
+						timelimit - now);
+				stop = true;
+				continue;
+			}
 
 			/*
 			 * Stop at the maximum depth, but think for at least
@@ -274,7 +289,7 @@ move machineMove(const game start) {
 			 */
 			stop = d >= copts.depth &&
 				(copts.lbound == 0 ||
-				getms() - timestart > copts.lbound);
+				now - timestart > copts.lbound);
 		}
 
 		dbg("machineMove: actual depth was: %i\n", md);
