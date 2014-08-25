@@ -218,6 +218,11 @@ bool inCheck(game g, int who) {
 	if (g->inCheck[who] != -1)
 		return g->inCheck[who];
 
+	if (!(g->piecemask[flipTurn(who)] & all_mask[8*g->kingx[who] + g->kingy[who]])) {
+		g->inCheck[who] = 0;
+		return 0;
+	}
+
 	kr = g->kingx[who];
 	kc = g->kingy[who];
 
