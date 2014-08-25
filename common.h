@@ -38,7 +38,7 @@ int isPrefix(char *a, char *b);
 char pieceOf(char c);
 
 enum play_mode {
-	normal,
+	xboard,
 	self,
 	moves,
 	randplay,
@@ -52,6 +52,7 @@ struct opts {
 	int mode;			/* Program mode */
 
 	int nmoves;			/* Amount of moves to calculate */
+	int log;			/* Write gamelog to file*/
 	int depth;			/* Maximum search depth */
 	int timed;			/* Do not stop by time */
 	unsigned long timelimit;	/* Max time for each move, in ms */
@@ -59,7 +60,6 @@ struct opts {
 	int smart_stop;			/* Smart stopping */
 	int shuffle;			/* Shuffle the succ moves */
 	int book;			/* Use opening book */
-	int black;			/* Play as black */
 	int sort;			/* Use move sorting */
 
 	bool custom_start;		/* Use a custom starting board */
@@ -89,8 +89,9 @@ struct opts {
 };
 
 static const struct opts defopts = {
-	.mode =			normal,
+	.mode =			xboard,
 	.nmoves =		0,
+	.log =			1,
 	.depth =		6,
 	.timed = 		1,
 	.timelimit =		1000,
@@ -98,7 +99,6 @@ static const struct opts defopts = {
 	.smart_stop =		1,
 	.shuffle =		1,
 	.book =			1,
-	.black =		0,
 	.sort =			1,
 
 	.debug =		0,

@@ -15,14 +15,7 @@
 #include <string.h>
 #include <unistd.h>
 
-struct player {
-	void (*start)(int color);
-	move (*getMove)(game);
-	void (*notify)(game, move);
-	void (*notify_res)(int res);
-};
-
-game startingGame2() {
+static game startingGame2() {
 	game g;
 
 	if (copts.custom_start) {
@@ -35,185 +28,12 @@ game startingGame2() {
 	return g;
 }
 
-static int board_eval_mode() {
-	game g = startingGame2();
-
-	dbg("Board evaluation: %i\n", boardEval(g));
-
-	return 0;
-}
-
-void checkMove(game g, move m) {
-	game t = galloc();
-	game ng = galloc();
-	int i;
-
-	/*
-	 * Fix promotions to Knights or Queens,
-	 * we don't care about not generating rook
-	 * promotions
-	 */
-	if (isPromotion(g, m) && m.promote != WKNIGHT)
-		m.promote = WQUEEN;
-
-	*ng = *g;
-	__maybe_unused int rc = doMove(ng, m);
-	if (!rc) {
-		dbg("-----------------------------------\n");
-		dbg("MOVIDA ILEGAL?!?!?!!\n");
-		printBoard(g);
-		dbg("%i %i %i %i %i\n", m.move_type, m.r, m.c, m.R, m.C);
-		dbg("-----------------------------------\n");
-		abort();
-	}
-
-	if (isCapture(g, m) || isPromotion(g, m))
-		genCaps(g);
-	else
-		genSuccs(g);
-
-	for (i=first_succ[ply]; i<first_succ[ply+1]; i++) {
-		*t = *g;
-		if (!doMove(t, gsuccs[i].m))
-			continue;
-
-		if (equalGame(t, ng))
-			goto ok;
-	}
-
-	dbg("-----------------------------------\n");
-	dbg("MOVIDA NO CONTEMPLADA!!!!\n");
-	printBoard(g);
-	dbg("%i %i %i %i %i\n", m.move_type, m.r, m.c, m.R, m.C);
-	dbg("-----------------------------------\n");
-	abort();
-
-ok:
-	freeGame(t);
-	freeGame(ng);
-}
-
-void logToBook(game g, move m) {
-	static FILE *game_log = NULL;
-	static int movenum = 1;
-	struct pgn pp;
-	char mbuf[10];
-
-	if (game_log == NULL)
-		game_log = fopen("gamelog", "w");
-
-	pp = toPGN(g, m);
-	stringPGN(mbuf, pp);
-
-	fprintf(game_log, "%i. %s ", movenum, mbuf);
-
-	if (movenum % 2 == 0)
-		fprintf(game_log, "\n");
-
-	movenum++;
-}
-
-move playerMove(game g) {
-	char *line = NULL;
-	size_t crap = 0;
-	move m;
-
-	getline(&line, &crap, stdin);
-	line[strlen(line)-1] = 0;
-
-	dbg("LINE= <%s>\n", line);
-
-	if (isPrefix("1/2-1/2 {", line)
-			|| isPrefix("0-1 {", line)
-			|| isPrefix("1-0 {", line)) {
-		dbg("CLAIMED RES: <%s>\n", line);
-		exit(1);
-	}
-
-	if (!isPrefix("move ", line))
-		return playerMove(g);
-
-	m = parseMove(g, line+5);
-
-	if (m.move_type == MOVE_INVAL)
-		return playerMove(g);
-
-	free(line);
-	return m;
-}
-
-int match(struct player pwhite, struct player pblack) {
-	move m;
-	game g;
-
-	g = startingGame2();
-
-	pwhite.start(WHITE);
-	pblack.start(BLACK);
-
-	while(1) {
-		int rc;
-
-		mark(g);
-
-		rc = isFinished(g);
-		if (rc > 0) {
-			usleep(50000);
-			if (rc == WIN(WHITE)) {
-				dbg("RES: Win (checkmate)\n");
-				return 12;
-			} else if (rc == WIN(BLACK)) {
-				dbg("RES: Lose (checkmate)\n");
-				return 10;
-			} else if (rc == DRAW_3FOLD) {
-				dbg("RES: Draw (threefold)\n");
-				return 11;
-			} else if (rc == DRAW_50MOVE) {
-				dbg("RES: Draw (fifty move)\n");
-				return 11;
-			} else if (rc == DRAW_STALE) {
-				dbg("RES: Draw (stalemate)\n");
-				return 11;
-			} else {
-				assert(0);
-			}
-		}
-
-		printBoard(g);
-
-		game prev = copyGame(g);
-
-		if (g->turn == WHITE) {
-			m = pwhite.getMove(g);
-			checkMove(g, m);
-			__maybe_unused int rc = doMove(g, m);
-			assert(rc);
-			pblack.notify(g, g->lastmove);
-		} else {
-			m = pblack.getMove(g);
-			checkMove(g, m);
-			__maybe_unused int rc = doMove(g, m);
-			assert(rc);
-			pwhite.notify(g, g->lastmove);
-		}
-
-		logToBook(prev, g->lastmove);
-		freeGame(prev);
-	}
-
-	printf("quit\n");
-
-	freeGame(g);
-	dbg("RES: WHAT?");
-
-	return 0;
-}
-
-int nmoves() {
+static int nmoves() {
 	int i;
 	game g;
 	move m;
 
+	init_mem();
 	g = startingGame2();
 
 	for (i=0; i<copts.nmoves; i++) {
@@ -235,91 +55,137 @@ int nmoves() {
 	return 0;
 };
 
-void printMove_wrap(game g, move m) {
-	printMove(stdout, m);
-	fflush(NULL);
+static int board_eval_mode() {
+	game g = startingGame2();
+	dbg("Board evaluation: %i\n", boardEval(g));
+	return 0;
 }
 
-void fairy_start(int col) {
-	printf("new\n");
-	if (col == WHITE) 
-		printf("go\n");
-}
-
-void fairy_notify_res(int res) {
-	switch (res) {
-	case WIN(WHITE):
-		printf("1-0 {White mates G}\n");
-		break;
-	case WIN(BLACK):
-		printf("0-1 {Black mates G}\n");
-		break;
-	case DRAW_3FOLD:
-		printf("1/2-1/2 {Draw by repetition G}\n");
-		break;
-	case DRAW_50MOVE:
-		printf("1/2-1/2 {50 Move rule G}\n");
-		break;
-	case DRAW_STALE:
-		printf("1/2-1/2 {Stalemate G}\n");
-		break;
-	}
-	fflush(NULL);
-}
-
-struct player ui_player =
-{
-	.getMove = playerMove,
-	.notify = printMove_wrap,
-	.start = fairy_start,
-	.notify_res = fairy_notify_res,
-};
-
-void ai_start() {
-}
-
-void nothing() {
-}
-
-struct player ai_player =
-{
-	.start = ai_start,
-	.getMove = machineMove,
-	.notify = nothing,
-	.notify_res = nothing,
-};
-
-move random_move(game g) {
+static int checkMove(game g, move m) {
+	game ng;
 	int i;
 
-	genSuccs(g);
-	game ng = copyGame(g);
-	do {
-		i = rand()%(first_succ[ply+1] - first_succ[ply]) +
-			first_succ[ply];
+	/*
+	 * Fix promotions to Knights or Queens,
+	 * we don't care about not generating rook/bishop
+	 * promotions. Fairymax doesn't even care about
+	 * knights so we're being extra kind here.
+	 */
+	if (isPromotion(g, m) && m.promote != WKNIGHT)
+		m.promote = WQUEEN;
 
-		if (doMove(ng, gsuccs[i].m)) {
-			struct MS temp = gsuccs[i];
-			freeGame(ng);
-			return temp.m;
-		}
+	ng = copyGame(g);
+	int rc = doMove(ng, m);
+	freeGame(ng);
 
-		*ng = *g;
-	} while (1);
+	if (rc != true)
+		return 1;
+
+	if (isCapture(g, m) || isPromotion(g, m))
+		genCaps(g);
+	else
+		genSuccs(g);
+
+	for (i=first_succ[ply]; i<first_succ[ply+1]; i++) {
+		if (equalMove(m, gsuccs[i].m))
+			return 0;
+	}
+
+	/*
+	 * We didn't anticipate that move, just call it illegal
+	 * like a good proud player and try to carry on
+	 */
+	printf("Illegal move\n");
+	return 1;
 }
 
-struct player random_player = {
-	.start = nothing,
-	.notify = nothing,
-	.getMove = random_move,
-	.notify_res = nothing,
-};
+static void logToBook(game g, move m) {
+	static FILE *game_log = NULL;
+	static int movenum = 1;
+	struct pgn pp;
+	char mbuf[10];
 
-int main(int argc, char **argv) {
-	int rc = 0;
+	if (!copts.log)
+		return;
+
+	if (game_log == NULL)
+		game_log = fopen("gamelog", "w");
+
+	pp = toPGN(g, m);
+	stringPGN(mbuf, pp);
+
+	fprintf(game_log, "%i. %s ", movenum, mbuf);
+
+	if (movenum % 2 == 0)
+		fprintf(game_log, "\n");
+
+	movenum++;
+}
+
+static void xboard_printmove(move m) {
+	printMove(stdout, m);
+}
+
+static void xboard_main() {
+	int curPlayer = WHITE;
+	int ourPlayer = BLACK;
+	char buf[500];
+	game g;
+
+	printf("\n");
+	printf("dogui's chess engine\n");
+	printf("Guido Martínez, 2014\n");
+	printf("\n");
 
 	init_mem();
+	g = startingGame();
 
+	for (;;) {
+		if (curPlayer == ourPlayer) {
+			move m = machineMove(g);
+			xboard_printmove(m);
+			curPlayer = flipTurn(curPlayer);
+			continue;
+		}
+
+		if (!fgets(buf, sizeof buf, stdin)) {
+			fprintf(stderr, "Unexpected end of input\n");
+			exit(1);
+		}
+
+		if (buf[strlen(buf)-1] == '\n')
+			buf[strlen(buf)-1] = 0;
+
+		if (isPrefix("move ", buf)) {
+			move m = parseMove(g, buf+5);
+			if (checkMove(g, m)) {
+				printf("Error (illegal move): %s\n", buf+5);
+				continue;
+			}
+
+			doMove(g, m);
+			curPlayer = flipTurn(curPlayer);
+		} else if (isPrefix("new", buf)) {
+			freeGame(g);
+			g = startingGame();
+		} else if (isPrefix("go", buf)) {
+			__unused bool check;
+			move m = machineMove(g);
+
+			check = doMove(g, m);
+			assert(check);
+
+			xboard_printmove(m);
+			curPlayer = flipTurn(curPlayer);
+			ourPlayer = flipTurn(ourPlayer);
+		} else if (isPrefix("xboard", buf)) {
+		} else {
+			printf("Error (unknown command): %s\n", buf);
+		}
+	}
+}
+
+int main(int argc, char **argv) {
 	if (!parse_opt(argc, argv)) {
 		fprintf(stderr, "FATAL: could not parse options\n");
 		exit(1);
@@ -329,36 +195,23 @@ int main(int argc, char **argv) {
 	srand(copts.seed);
 
 	switch (copts.mode) {
-	case normal:
-		if (copts.black)
-			rc = match(ui_player, ai_player);
-		else
-			rc = match(ai_player, ui_player);
+	case xboard:
+		xboard_main();
+		break;
 
-		break;
-	case self:
-		rc = match(ai_player, ai_player);
-		break;
 	case moves:
-		rc = nmoves();
+		nmoves();
 		break;
-	case randplay:
-		if (copts.black)
-			rc = match(ui_player, random_player);
-		else
-			rc = match(random_player, ui_player);
 
-		break;
-	case ai_vs_rand:
-		rc = match(ai_player, random_player);
-		break;
 	case board_eval:
 		board_eval_mode();
 		break;
+
 	case version:
 		print_version();
 		exit(0);
 		break;
+
 	case help:
 		print_help(argv[0]);
 		exit(0);
@@ -367,6 +220,5 @@ int main(int argc, char **argv) {
 
 	dbg("Total nodes: %lld\n", stats.totalopen);
 	dbg("Total time: %lldms\n", stats.totalms);
-	dbg("Returned %i\n", rc);
 	return 0;
 }

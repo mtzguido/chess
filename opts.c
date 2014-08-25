@@ -30,7 +30,7 @@ enum {
 
 static const struct option long_opts[] = {
 	/* Program modes, totally exclusive */
-	MODE_OPT(normal, normal),
+	MODE_OPT(xboard, xboard),
 	MODE_OPT(self, self),
 	MODE_OPT(rand, randplay),
 	MODE_OPT(ai-vs-rand, ai_vs_rand),
@@ -40,7 +40,6 @@ static const struct option long_opts[] = {
 	{ "moves",	required_argument,	0, 0x1 },
 
 	/* Game parameters */
-	BOOL_OPT(black),
 	{ "init",	required_argument,	0, 0x2 },
 
 	/* Search options */
