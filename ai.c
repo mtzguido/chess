@@ -32,9 +32,28 @@ static inline void genCaps_wrap(game g, int depth) {
 	addon_score_succs(g, depth);
 }
 
-static inline void genSuccs_wrap(game g, int depth) {
+static inline void shuffle_succs() {
+	struct MS swap;
+	const int lo = first_succ[ply];
+	const int hi = first_succ[ply+1];
 	int i, j;
 
+	if (!copts.shuffle)
+		return ;
+
+	for (i=lo; i<hi-1; i++) {
+		j = i + rand() % (hi-i);
+
+		if (i == j)
+			continue;
+
+		swap = gsuccs[j];
+		gsuccs[j] = gsuccs[i];
+		gsuccs[i] = swap;
+	}
+}
+
+static inline void genSuccs_wrap(game g, int depth) {
 	/* Generar sucesores */
 	genSuccs(g);
 	stats.ngen += first_succ[ply+1] - first_succ[ply];
@@ -42,22 +61,7 @@ static inline void genSuccs_wrap(game g, int depth) {
 	addon_score_succs(g, depth);
 
 	/* Mezclarlos si es necesario */
-	if (copts.shuffle) {
-		struct MS swap;
-		const int lo = first_succ[ply];
-		const int hi = first_succ[ply+1];
-
-		for (i=lo; i<hi-1; i++) {
-			j = i + rand() % (hi-i);
-
-			if (i == j)
-				continue;
-
-			swap = gsuccs[j];
-			gsuccs[j] = gsuccs[i];
-			gsuccs[i] = swap;
-		}
-	}
+	shuffle_succs();
 }
 
 /*
