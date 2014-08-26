@@ -265,6 +265,9 @@ move machineMove(const game start) {
 				break;
 			}
 
+			now = getms();
+			dbg("Iteration %d took %.3f\n", d, 0.001*(now-iterstart));
+
 			expected = t;
 			ret = temp;
 			md = d;
@@ -272,11 +275,13 @@ move machineMove(const game start) {
 			beta  = copts.asp ? t + ASPIRATION_WINDOW : maxScore;
 			/*
 			 * Smart stop, assume the next iteration will
-			 * take _at least_ as long as the current one,
-			 * and if we would time out, just time out now
+			 * take _at least twice_ as long as the current one,
+			 * and if we would time out, just time out now and
+			 * save some precious sceconds
 			 */
-			now = getms();
-			if (now + (now - iterstart) >= timelimit) {
+			if (timelimited
+				&& copts.smart_stop
+				&& now + 2*(now - iterstart) >= timelimit) {
 				dbg("Smart stopping! I think I saved %llu ms\n",
 						timelimit - now);
 				stop = true;

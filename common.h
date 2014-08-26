@@ -56,6 +56,7 @@ struct opts {
 	int timed;			/* Do not stop by time */
 	unsigned long timelimit;	/* Max time for each move, in ms */
 	unsigned long lbound;		/* Min time for each move, in ms */
+	int smart_stop;			/* Smart stopping */
 	int shuffle;			/* Shuffle the succ moves */
 	int book;			/* Use opening book */
 	int black;			/* Play as black */
@@ -94,6 +95,7 @@ static const struct opts defopts = {
 	.timed = 		1,
 	.timelimit =		1000,
 	.lbound =		0,
+	.smart_stop =		1,
 	.shuffle =		1,
 	.book =			1,
 	.black =		0,

@@ -58,6 +58,7 @@ static const struct option long_opts[] = {
 	BOOL_OPT(asp),
 	BOOL_OPT2(forced-extend, forced_extend),
 	BOOL_OPT2(delta, delta_prune),
+	BOOL_OPT2(smart-stop, smart_stop),
 	BOOL_OPT(debug),
 	BOOL_OPT(null),
 	BOOL_OPT2(tt, heur_trans),
