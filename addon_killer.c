@@ -13,7 +13,7 @@ void killer_reset() {
 			killerTable[i][j].move_type = MOVE_INVAL;
 }
 
-void killer_score_succs(const game g __maybe_unused, int depth) {
+void killer_score_succs(const game g __unused, int depth) {
 	int i, k;
 
 	if (depth > MAX_DEPTH)
@@ -33,7 +33,7 @@ void killer_score_succs(const game g __maybe_unused, int depth) {
 	}
 }
 
-void killer_notify_cut(const game g __maybe_unused, move m, int depth) {
+void killer_notify_cut(const game g __unused, move m, int depth) {
 	int i;
 
 	if (depth > KTABLE_SIZE)

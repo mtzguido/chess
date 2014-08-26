@@ -1,5 +1,5 @@
 .PHONY:clean all re run doc
-CFLAGS=-Wall -Wextra -Wno-unused-parameter $(CFLAGS_EXTRA)
+CFLAGS=-Wc++-compat -Wall -Wextra -Wno-unused-parameter $(CFLAGS_EXTRA)
 LFLAGS=
 LFLAGS_UTILS=
 SHELL=/bin/bash

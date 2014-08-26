@@ -6,7 +6,7 @@ struct book_entry {
 	u8 c:4;
 	u8 R:4;
 	u8 C:4;
-	u8 move_type:2;
+	enum move_types move_type:3;
 } __attribute__((packed));
 
 /* Define the actual book */

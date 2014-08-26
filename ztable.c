@@ -27,7 +27,7 @@ void mark(game g) {
 	if (p) {
 		p->n++;
 	} else {
-		p = malloc(sizeof *p);
+		p = (struct bucket *) malloc(sizeof *p);
 		p->key = g->zobrist;
 		p->n = 1;
 		p->next = ztable[idx];

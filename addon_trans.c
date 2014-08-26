@@ -10,7 +10,7 @@ static int trans_seq = 0;
 
 struct tt_entry {
 	u64	key;
-	score	score;
+	score	val;
 	u16	r:3, c:3, R:3, C:3, type:3;
 	u8	depth, seq;
 };
@@ -59,13 +59,13 @@ void trans_notify_entry(game g, int depth, score *alpha, score *beta) {
 
 	switch (tt[idx].flag) {
 	case FLAG_EXACT:
-		*alpha = *beta = tt[idx].score;
+		*alpha = *beta = tt[idx].val;
 		break;
 	case FLAG_LOWER_BOUND:
-		*alpha = max(*alpha, tt[idx].score);
+		*alpha = max(*alpha, tt[idx].val);
 		break;
 	case FLAG_UPPER_BOUND:
-		*beta = min(*beta, tt[idx].score);
+		*beta = min(*beta, tt[idx].val);
 		break;
 	}
 }

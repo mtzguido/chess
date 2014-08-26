@@ -99,6 +99,7 @@ static int checkMove(game g, move m) {
 	return 1;
 }
 
+__unused
 static void logToBook(game g, move m) {
 	static FILE *game_log = NULL;
 	static int movenum = 1;

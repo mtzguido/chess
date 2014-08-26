@@ -9,7 +9,7 @@
 #define MAX_DEPTH 30
 
 #define ARRSIZE(a) ((sizeof (a))/(sizeof ((a)[0])))
-#define __maybe_unused  __attribute__((unused))
+#define __unused  __attribute__((unused))
 
 #define unlikely(c) __builtin_expect(c, 0)
 #define   likely(c) __builtin_expect(c, 1)

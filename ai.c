@@ -467,8 +467,8 @@ static inline score quiesce(game g, score alpha, score beta, int curDepth,
 	if (nvalid == 0) {
 		ret = t;
 	} else if (nvalid == 1 && alpha < beta && copts.forced_extend) {
-		__maybe_unused bool check =
-			doMove_unchecked(ng, gsuccs[onlymove].m);
+		__unused bool check;
+		check = doMove_unchecked(ng, gsuccs[onlymove].m);
 		assert(check);
 
 		/*
@@ -682,7 +682,7 @@ static inline score negamax(game g, int maxDepth, int curDepth, move *mm,
 		 */
 		addon_notify_return(g, dummy, 999, ret, FLAG_EXACT);
 	} else if (nvalid == 1 && alpha < beta && copts.forced_extend) {
-		bool check __maybe_unused;
+		__unused bool check;
 		check = doMove(ng, gsuccs[bestmove].m);
 		assert(check);
 
