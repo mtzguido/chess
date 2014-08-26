@@ -35,9 +35,9 @@ static int nmoves() {
 
 	init_mem();
 	g = startingGame2();
+	mark(g);
 
 	for (i=0; i<copts.nmoves; i++) {
-		mark(g);
 
 		if (isFinished(g) != -1)
 			break;
@@ -46,6 +46,7 @@ static int nmoves() {
 		m = machineMove(g);
 		assert(ply == 0);
 		doMove(g, m);
+		mark(g);
 		printBoard(g);
 		printMove(stdout, m);
 
@@ -140,6 +141,7 @@ static void xboard_main() {
 
 	init_mem();
 	g = startingGame();
+	mark(g);
 
 	for (;;) {
 		if (curPlayer == ourPlayer) {
@@ -165,6 +167,7 @@ static void xboard_main() {
 			}
 
 			doMove(g, m);
+			mark(g);
 			curPlayer = flipTurn(curPlayer);
 		} else if (isPrefix("new", buf)) {
 			freeGame(g);
@@ -174,6 +177,7 @@ static void xboard_main() {
 			move m = machineMove(g);
 
 			check = doMove(g, m);
+			mark(g);
 			assert(check);
 
 			xboard_printmove(m);
