@@ -88,7 +88,6 @@ void freeGame(game g) {
 
 void printBoard(game g) {
 	int i, j;
-
 	char bbuf[200];
 	int l = 0;
 
@@ -106,17 +105,16 @@ void printBoard(game g) {
 		dbg("%s\n", bbuf);
 		l = 0;
 	}
-
 	dbg("\n");
 	dbg("   a b c d e f g h\n");
-	dbg("[ castle_king = %i %i \n", g->castle_king[0], g->castle_king[1]);
-	dbg("[ castle_queen = %i %i \n", g->castle_queen[0], g->castle_queen[1]);
-	dbg("[ kingx = %i %i \n", g->kingx[0], g->kingx[1]);
-	dbg("[ kingy = %i %i \n", g->kingy[0], g->kingy[1]);
+
+	dbg("[ castle_king = %i %i \n", g->castle_king[WHITE], g->castle_king[BLACK]);
+	dbg("[ castle_queen = %i %i \n", g->castle_queen[WHITE], g->castle_queen[BLACK]);
+	dbg("[ kingx = %i %i \n", g->kingx[WHITE], g->kingx[BLACK]);
+	dbg("[ kingy = %i %i \n", g->kingy[WHITE], g->kingy[BLACK]);
 	dbg("[ en_passant = %i %i \n", g->en_passant_x, g->en_passant_y);
-	dbg("[ inCheck = %i %i \n", g->inCheck[0], g->inCheck[1]);
-	dbg("[ scores = %i %i\n", g->pieceScore[WHITE],
-					      g->pieceScore[BLACK]);
+	dbg("[ inCheck = %i %i \n", g->inCheck[WHITE], g->inCheck[BLACK]);
+	dbg("[ scores = %i %i\n", g->pieceScore[WHITE], g->pieceScore[BLACK]);
 	dbg("[ pps o e = %i %i\n", g->pps_O, g->pps_E);
 	dbg("[ zobrist = 0x%" PRIx64 "\n", g->zobrist);
 	dbg("[ idlecount = %i\n", g->idlecount);

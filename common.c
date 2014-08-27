@@ -2,20 +2,11 @@
 #include "board.h"
 #include <stdarg.h>
 #include <stdio.h>
+#include <syslog.h>
 
 #ifndef FIXOPTS
 struct opts copts;
 #endif
-
-int isPrefix(char *a, char *b) {
-	while (*a && *a++ == *b++)
-		;
-
-	if (*a == 0)
-		return 1;
-
-	return 0;
-}
 
 char pieceOf(char c) {
 	switch (c) {
@@ -38,7 +29,7 @@ char pieceOf(char c) {
 void dbg(char *s, ...) {
 	va_list l;
 
-	if (!copts.debug)
+	if (copts.verbosity <= 0)
 		return;
 
 	va_start(l, s);

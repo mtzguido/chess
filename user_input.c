@@ -6,43 +6,43 @@
 void printMove(FILE *stream, move m) {
 	if (m.move_type == MOVE_KINGSIDE_CASTLE) {
 		if (m.who == BLACK) {
-			fprintf(stream, "e8g8\n");
-			dbg("e8g8\n");
+			fprintf(stream, "move e8g8\n");
+			dbg("move e8g8\n");
 		} else {
-			fprintf(stream, "e1g1\n");
-			dbg("e1g1\n");
+			fprintf(stream, "move e1g1\n");
+			dbg("move e1g1\n");
 		}
 	} else if (m.move_type == MOVE_QUEENSIDE_CASTLE) {
 		if (m.who == BLACK) {
-			fprintf(stream, "e8c8\n");
-			dbg("e8c8\n");
+			fprintf(stream, "move e8c8\n");
+			dbg("move e8c8\n");
 		} else {
-			fprintf(stream, "e1c1\n");
-			dbg("e1c1\n");
+			fprintf(stream, "move e1c1\n");
+			dbg("move e1c1\n");
 		}
 	} else {
 		assert(m.move_type == MOVE_REGULAR);
 
 		if (m.promote != 0) {
-			fprintf(stream, "%c%c%c%c%c\n",
+			fprintf(stream, "move %c%c%c%c%c\n",
 					m.c + 'a',
 					'8'-m.r,
 					m.C + 'a',
 					'8'-m.R,
 					tolower(charOf(m.promote)));
-			dbg("%c%c%c%c%c\n",
+			dbg("move %c%c%c%c%c\n",
 					m.c + 'a',
 					'8'-m.r,
 					m.C + 'a',
 					'8'-m.R,
 					tolower(charOf(m.promote)));
 		} else {
-			fprintf(stream, "%c%c%c%c\n",
+			fprintf(stream, "move %c%c%c%c\n",
 					m.c + 'a',
 					'8'-m.r,
 					m.C + 'a',
 					'8'-m.R);
-			dbg("%c%c%c%c\n", m.c + 'a',
+			dbg("move %c%c%c%c\n", m.c + 'a',
 					'8'-m.r,
 					m.C + 'a',
 					'8'-m.R);

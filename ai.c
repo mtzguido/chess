@@ -236,16 +236,15 @@ move machineMove(const game start) {
 			assert(ply == 0);
 			iterstart = getms();
 			t = negamax(start, d, 0, &temp, alpha, beta);
-			dbg("negamax: %i %i %i\n", t, alpha, beta);
 
 			if (t >= beta) {
 				beta = maxScore;
 				t = negamax(start, d, 0, &temp, alpha, beta);
-				dbg("negamax.1: %i %i %i\n", t, alpha, maxScore);
+				dbg("ASP_HIGH: %i %i %i\n", t, alpha, maxScore);
 			} else if (t <= alpha) {
 				alpha = minScore;
 				t = negamax(start, d, 0, &temp, alpha, beta);
-				dbg("negamax.2: %i %i %i\n", t, minScore, beta);
+				dbg("ASP_LOW: %i %i %i\n", t, minScore, beta);
 			}
 
 			if (t <= alpha || t >= beta) {
@@ -253,7 +252,7 @@ move machineMove(const game start) {
 				alpha = minScore;
 				beta = maxScore;
 				t = negamax(start, d, 0, &temp, alpha, beta);
-				dbg("negamax.3: %i %i %i\n", t, minScore, maxScore);
+				dbg("ASP_DUB: %i %i %i\n", t, minScore, maxScore);
 			}
 
 			if (timeup) {
@@ -266,7 +265,9 @@ move machineMove(const game start) {
 			}
 
 			now = getms();
-			dbg("Iteration %d took %.3f\n", d, 0.001*(now-iterstart));
+
+			printf("%02d %7i %llu %8llu e1f1\n", d, t, now-iterstart,
+					stats.nopen_s);
 
 			expected = t;
 			ret = temp;

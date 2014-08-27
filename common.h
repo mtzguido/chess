@@ -34,7 +34,6 @@ typedef int32_t		i32;
 typedef int16_t		i16;
 typedef int8_t		i8;
 
-int isPrefix(char *a, char *b);
 char pieceOf(char c);
 
 enum play_mode {
@@ -66,7 +65,7 @@ struct opts {
 	char custom_start_str[100];	/* Custom board spec */
 
 	/* Misc options */
-	int debug;			/* Print debug information */
+	int verbosity;			/* Verbosity level */
 	int seed;			/* Random seed */
 
 	/* Search */
@@ -101,7 +100,7 @@ static const struct opts defopts = {
 	.book =			1,
 	.sort =			1,
 
-	.debug =		0,
+	.verbosity =		0,
 
 	.asp =			1,
 	.ab =			1,

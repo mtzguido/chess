@@ -16,6 +16,9 @@
 #define INT_OPT(name)						\
 	{ #name, required_argument, NULL, OPT_##name }
 
+#define MAYBE_INT_OPT(name)					\
+	{ #name, optional_argument, NULL, OPT_##name }
+
 #define MODE_OPT(name, value)					\
 	{ #name, no_argument, &copts.mode, value }
 
@@ -26,6 +29,7 @@ enum {
 	OPT_seed,
 	OPT_limit,
 	OPT_lbound,
+	OPT_verbose,
 };
 
 static const struct option long_opts[] = {
@@ -47,6 +51,7 @@ static const struct option long_opts[] = {
 	INT_OPT(seed),
 	INT_OPT(limit),
 	INT_OPT(lbound),
+	MAYBE_INT_OPT(verbose),
 
 	BOOL_OPT(timed),
 	BOOL_OPT(shuffle),
@@ -58,7 +63,6 @@ static const struct option long_opts[] = {
 	BOOL_OPT2(forced-extend, forced_extend),
 	BOOL_OPT2(delta, delta_prune),
 	BOOL_OPT2(smart-stop, smart_stop),
-	BOOL_OPT(debug),
 	BOOL_OPT(null),
 	BOOL_OPT2(tt, heur_trans),
 	BOOL_OPT2(11n, h11n),
@@ -89,11 +93,24 @@ int parse_opt(int argc, char **argv) {
 
 	while (c = getopt_long(argc, argv, "", long_opts, &idx), c != -1) {
 		switch (c) {
-		case OPT_depth:		copts.depth = atoi(optarg); break;
-		case OPT_seed:		copts.seed = atoi(optarg); break;
-		case OPT_limit:		copts.timelimit = atoi(optarg); break;
-		case OPT_lbound:	copts.lbound = atoi(optarg); break;
-
+		case OPT_depth:
+			copts.depth = atoi(optarg);
+			break;
+		case OPT_seed:
+			copts.seed = atoi(optarg);
+			break;
+		case OPT_limit:
+			copts.timelimit = atoi(optarg);
+			break;
+		case OPT_lbound:
+			copts.lbound = atoi(optarg);
+			break;
+		case OPT_verbose:
+			if (optarg)
+				copts.verbosity = atoi(optarg);
+			else
+				copts.verbosity = 1;
+			break;
 		case 0x1:
 			copts.mode = moves;
 			copts.nmoves = atoi(optarg);
