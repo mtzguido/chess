@@ -26,6 +26,9 @@ void trans_notify_return(game g, move move, int depth, score score,
 	u64 key = g->zobrist;
 	u64 idx = key % CFG_TTABLE_SIZE;
 
+	if (tt[idx].key && tt[idx].key != key)
+		stats.tt_collision++;
+
 	tt[idx].key = key;
 	tt[idx].seq = trans_seq;
 	tt[idx].m = move;

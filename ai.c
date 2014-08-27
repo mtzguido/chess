@@ -136,8 +136,9 @@ void print_stats(score exp, bool expect_ok) {
 	dbg("stats: null move cuts: %lld/%lld (%.2f%%)\n",
 			stats.null_cuts, stats.null_tries,
 			100.0 * stats.null_cuts / stats.null_tries);
-	dbg("stats: TT hits : %lld\n", stats.tt_hits);
-	dbg("stats: Late move reductions : %lld/%lld (%.2f%%)\n",
+	dbg("stats: TT hits: %lld\n", stats.tt_hits);
+	dbg("stats: TT collisions: %lld\n", stats.tt_collision);
+	dbg("stats: Late move reductions: %lld/%lld (%.2f%%)\n",
 			stats.lmrs_ok, stats.lmrs,
 			100.0 * stats.lmrs_ok / stats.lmrs);
 
