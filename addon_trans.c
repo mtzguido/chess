@@ -9,10 +9,10 @@ static inline score min(score a, score b) { return a < b ? a : b; }
 static int trans_seq = 0;
 
 struct tt_entry {
-	u64	key;
-	score	val;
-	u16	r:3, c:3, R:3, C:3, type:3;
-	u8	depth, seq;
+	u64 key;
+	score val;
+	move m;
+	u8 depth, seq;
 };
 
 struct tt_entry tt[CFG_TTABLE_SIZE] __attribute__((aligned(4096)));
@@ -26,14 +26,9 @@ void trans_notify_return(game g, move move, int depth, score score,
 	u64 key = g->zobrist;
 	u64 idx = key % CFG_TTABLE_SIZE;
 
-	tt[idx].key	= key;
-	tt[idx].seq	= trans_seq;
-
-	tt[idx].r = move.r;
-	tt[idx].R = move.R;
-	tt[idx].c = move.c;
-	tt[idx].C = move.C;
-	tt[idx].type = move.move_type;
+	tt[idx].key = key;
+	tt[idx].seq = trans_seq;
+	tt[idx].m = move;
 }
 
 #define trans_notify_entry(...)	do { } while (0)
@@ -96,15 +91,11 @@ void trans_score_succs(game g, int depth) {
 	u64 idx = key % CFG_TTABLE_SIZE;
 	int i;
 
-	if (tt[idx].key != key || tt[idx].seq != trans_seq)
+	if (tt[idx].key != key)
 		return;
 
 	for (i=first_succ[ply]; i<first_succ[ply+1]; i++) {
-		if (gsuccs[i].m.r == tt[idx].r
-		 && gsuccs[i].m.R == tt[idx].R
-		 && gsuccs[i].m.c == tt[idx].c
-		 && gsuccs[i].m.C == tt[idx].C
-		 && gsuccs[i].m.move_type == tt[idx].type) {
+		if (equalMove(gsuccs[i].m, tt[idx].m)) {
 			gsuccs[i].s += TRANS_SCORE;
 			stats.tt_hits++;
 			break;
