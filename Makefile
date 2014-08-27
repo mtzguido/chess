@@ -53,6 +53,7 @@ CFLAGS += -DCHESS_BUILD_DATE='"$(shell date)"'
 CFLAGS += -DCHESS_BUILD_HOST='"$(shell hostname)"'
 
 mods=	ai	\
+	search	\
 	board	\
 	eval	\
 	move	\

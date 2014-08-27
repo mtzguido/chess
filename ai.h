@@ -20,6 +20,13 @@ extern struct stats {
 	long long lmrs_ok;
 } stats;
 
+/* Time limit data, for search.c */
+extern bool timelimited;
+extern bool timeup;
+extern unsigned long timelimit;
+extern unsigned long timestart;
+extern int ticks;
+
 move machineMove(game start, unsigned long long maxms);
 
 score boardEval(game g);
