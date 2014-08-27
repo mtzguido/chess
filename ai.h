@@ -19,7 +19,7 @@ extern struct stats {
 	long long lmrs_ok;
 } stats;
 
-move machineMove(game start);
+move machineMove(game start, unsigned long long maxms);
 
 score boardEval(game g);
 

@@ -6,7 +6,7 @@
 #include <stdbool.h>
 #include <assert.h>
 
-#define MAX_DEPTH 30
+#define MAX_DEPTH 120
 
 #define ARRSIZE(a) ((sizeof (a))/(sizeof ((a)[0])))
 #define __unused  __attribute__((unused))
@@ -33,6 +33,8 @@ typedef int64_t		i64;
 typedef int32_t		i32;
 typedef int16_t		i16;
 typedef int8_t		i8;
+
+unsigned long getms();
 
 char pieceOf(char c);
 
@@ -91,7 +93,7 @@ static const struct opts defopts = {
 	.mode =			xboard,
 	.nmoves =		0,
 	.log =			1,
-	.depth =		6,
+	.depth =		30,
 	.timed = 		1,
 	.timelimit =		1000,
 	.lbound =		0,

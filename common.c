@@ -3,6 +3,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <syslog.h>
+#include <sys/time.h>
 
 #ifndef FIXOPTS
 struct opts copts;
@@ -37,4 +38,11 @@ void dbg(char *s, ...) {
 	vfprintf(stderr, s, l);
 	fflush(stderr);
 	va_end(l);
+}
+
+unsigned long getms() {
+	struct timeval tv;
+	gettimeofday(&tv, NULL);
+
+	return tv.tv_sec * 1000 + tv.tv_usec / 1000;
 }

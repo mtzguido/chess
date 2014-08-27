@@ -45,7 +45,7 @@ static int nmoves() {
 			break;
 
 		assert(ply == 0);
-		m = machineMove(g);
+		m = machineMove(g, 0);
 		assert(ply == 0);
 		doMove(g, m);
 		mark(g);
@@ -141,6 +141,10 @@ static void xboard_main() {
 	char cmd[500];
 	game g;
 
+	/* Timing info */
+	int movesmax, movesleft;
+	int timeinc, timemax, timeleft;
+
 	/* Ignore SIGINT, because xboard is a crappy protocol */
 	signal(SIGINT, SIG_IGN);
 	signal(SIGTERM, sigterm);
@@ -155,7 +159,25 @@ static void xboard_main() {
 	for (;;) {
 		if (isFinished(g) == -1 && curPlayer == ourPlayer) {
 			__unused bool check;
-			move m = machineMove(g);
+			unsigned long t1, t2;
+
+			int maxms = timeleft / movesleft;
+
+			t1 = getms();
+			move m = machineMove(g, maxms);
+			t2 = getms();
+
+			timeleft -= t2 -t1;
+			movesleft--;
+			if (movesleft == 0) {
+				movesleft = movesmax;
+				if (movesmax == 1)
+					timeleft = timemax;
+				else
+					timeleft += timemax;
+
+				timemax += timeinc;
+			}
 
 			check = doMove(g, m);
 			mark(g);
@@ -196,11 +218,23 @@ static void xboard_main() {
 			ourPlayer = 2; /* No one */
 		} else if (!strcmp("hard", cmd)) {
 		} else if (!strcmp("level", cmd)) {
+			sscanf(buf, "level %i %i %i", &movesmax, &timemax, &timeinc);
+
+			timemax *= 60 * 1000;
+			timeinc *= 1000;
+
+			movesleft = movesmax;
+			timeleft = timemax;
 		} else if (!strcmp("nopost", cmd)) {
 		} else if (!strcmp("otim", cmd)) {
 		} else if (!strcmp("post", cmd)) {
 		} else if (!strcmp("protver", cmd)) {
 		} else if (!strcmp("st", cmd)) {
+			sscanf(buf, "st %d", &timemax);
+			timemax *= 1000;
+			timeleft = timemax;
+			movesleft = movesmax = 1;
+			timeinc = 0;
 		} else if (!strcmp("quit", cmd)) {
 			break;
 		} else if (!strcmp("random", cmd)) {

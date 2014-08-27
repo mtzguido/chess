@@ -14,7 +14,6 @@
 #include <stdbool.h>
 #include <time.h>
 #include <math.h>
-#include <sys/time.h>
 
 struct stats stats;
 static bool doing_null_move	= false;
@@ -181,13 +180,6 @@ static inline bool forced(const game g, move *m) {
 	return true;
 }
 
-static unsigned long getms() {
-	struct timeval tv;
-	gettimeofday(&tv, NULL);
-
-	return tv.tv_sec * 1000 + tv.tv_usec / 1000;
-}
-
 /* Time limit data */
 static bool timelimited;
 static bool timeup;
@@ -195,7 +187,7 @@ static unsigned long timelimit;
 static unsigned long timestart;
 static int ticks;
 
-move machineMove(const game start) {
+move machineMove(const game start, unsigned long long maxms) {
 	move ret = {0};
 	clock_t t1,t2;
 	score expected = 0;
@@ -225,10 +217,10 @@ move machineMove(const game start) {
 		alpha = minScore;
 		beta = maxScore;
 		expected = minScore;
-		timelimited = copts.timed;
+		timelimited = maxms != 0;
 		timeup = false;
 		timestart = getms();
-		timelimit = timestart + copts.timelimit;
+		timelimit = timestart + maxms;
 		ticks = 0;
 		md = -1;
 
@@ -268,6 +260,7 @@ move machineMove(const game start) {
 
 			printf("%02d %7i %llu %8llu e1f1\n", d, t, now-iterstart,
 					stats.nopen_s);
+			fflush(stdout);
 
 			expected = t;
 			ret = temp;
