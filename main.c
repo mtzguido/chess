@@ -134,12 +134,17 @@ static void sigterm(__unused int n) {
 	dbg("Received SIGTERM!\n");
 }
 
+typedef struct state {
+	game g;
+	struct state *prev;
+} state;
+
 static void xboard_main() {
 	int curPlayer = WHITE;
 	int ourPlayer = BLACK;
 	char buf[500];
 	char cmd[500];
-	game g;
+	state *State;
 
 	/* Timing info */
 	int movesmax, movesleft;
@@ -153,13 +158,16 @@ static void xboard_main() {
 	printf("tellics say Written by Guido Martínez, 2014\n");
 
 	init_mem();
-	g = startingGame();
-	mark(g);
+	State = (state*) malloc(sizeof *State);
+	State->g = startingGame();
+	State->prev = NULL;
+	mark(State->g);
 
 	for (;;) {
-		if (isFinished(g) == -1 && curPlayer == ourPlayer) {
+		if (isFinished(State->g) == -1 && curPlayer == ourPlayer) {
 			__unused bool check;
 			unsigned long t1, t2;
+			state *newst;
 
 			int maxms;
 
@@ -169,7 +177,7 @@ static void xboard_main() {
 				maxms = timeleft / movesleft;
 
 			t1 = getms();
-			move m = machineMove(g, maxms);
+			move m = machineMove(State->g, maxms);
 			t2 = getms();
 
 			timeleft -= t2 -t1;
@@ -184,16 +192,20 @@ static void xboard_main() {
 				timemax += timeinc;
 			}
 
-			check = doMove(g, m);
-			mark(g);
+			newst = (state*) malloc(sizeof *newst);
+			newst->g = copyGame(State->g);
+			check = doMove(newst->g, m);
 			assert(check);
+			mark(newst->g);
+			newst->prev = State;
+			State = newst;
 
 			xboard_printmove(m);
 			curPlayer = flipTurn(curPlayer);
 			continue;
 		}
 
-		printBoard(g);
+		printBoard(State->g);
 		dbg("expecting input...\n");
 
 		if (!fgets(buf, sizeof buf, stdin)) {
@@ -212,8 +224,17 @@ static void xboard_main() {
 		dbg("received: <%s>, cmd = %s\n", buf, cmd);
 
 		if (!strcmp("new", cmd)) {
-			freeGame(g);
-			g = startingGame();
+			while (State) {
+				state *t;
+				t = State->prev;
+				freeGame(State->g);
+				free(State);
+				State = t;
+			}
+
+			State = (state*) malloc(sizeof *State);
+			State->prev = NULL;
+			State->g = startingGame();
 		} else if (!strcmp("go", cmd)) {
 			ourPlayer = curPlayer;
 		} else if (!strcmp("black", cmd)) {
@@ -250,16 +271,22 @@ static void xboard_main() {
 		} else if (!strcmp("random", cmd)) {
 		} else if (!strcmp("result", cmd)) {
 		} else if (!strcmp("undo", cmd)) {
-			dbg("Ignoring undo command\n");
+			if (State->prev) {
+				state *t = State->prev;
+				freeGame(State->g);
+				free(State);
+				State = t;
+			}
 		} else if (!strcmp("white", cmd)) {
 		} else if (!strcmp("white", cmd)) {
 		} else if (!strcmp("xboard", cmd)) {
 		} else if (!strcmp("?", cmd)) {
 		} else {
 			__unused bool check;
+			state *newst;
 			/* It's likely a move, try to parse it */
 			dbg("is it a move?\n");
-			move m = parseMove(g, buf);
+			move m = parseMove(State->g, buf);
 
 			/* Couldn't parse it */
 			if (m.move_type == MOVE_INVAL) {
@@ -267,14 +294,18 @@ static void xboard_main() {
 				continue;
 			}
 
-			if (checkMove(g, m)) {
+			if (checkMove(State->g, m)) {
 				printf("Error (illegal move): %s\n", buf);
 				continue;
 			}
 
-			check = doMove(g, m);
+			newst = (state*) malloc(sizeof *newst);
+			newst->g = copyGame(State->g);
+			check = doMove(newst->g, m);
 			assert(check);
-			mark(g);
+			mark(newst->g);
+			newst->prev = State;
+			State = newst;
 			curPlayer = flipTurn(curPlayer);
 		}
 	}
