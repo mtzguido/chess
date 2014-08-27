@@ -258,8 +258,9 @@ move machineMove(const game start, unsigned long long maxms) {
 
 			now = getms();
 
-			printf("%02d %7i %llu %8llu e1f1\n", d, t, now-iterstart,
-					stats.nopen_s);
+			/* Time should be in centiseconds. No, really. */
+			printf("%2d %6i %8llu %10llu e1f1\n", d, t,
+					(now-iterstart)/10, stats.nopen_s);
 			fflush(stdout);
 
 			expected = t;
