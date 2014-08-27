@@ -161,7 +161,12 @@ static void xboard_main() {
 			__unused bool check;
 			unsigned long t1, t2;
 
-			int maxms = timeleft / movesleft;
+			int maxms;
+
+			if (movesmax == 0)
+				maxms = timeleft / 50;
+			else
+				maxms = timeleft / movesleft;
 
 			t1 = getms();
 			move m = machineMove(g, maxms);
@@ -218,11 +223,16 @@ static void xboard_main() {
 			ourPlayer = 2; /* No one */
 		} else if (!strcmp("hard", cmd)) {
 		} else if (!strcmp("level", cmd)) {
-			sscanf(buf, "level %i %i %i", &movesmax, &timemax, &timeinc);
-
-			timemax *= 60 * 1000;
-			timeinc *= 1000;
-
+			int t;
+			if (sscanf(buf, "level %i %i %i", &movesmax, &timemax,
+						&timeinc) == 3) {
+				timemax *= 60 * 1000;
+				timeinc *= 1000;
+			} else if (sscanf(buf, "level %i %i:%i %i", &movesmax,
+						&timemax, &t, &timeinc) == 4) {
+				timemax = timemax * 60 * 1000 + t * 1000;
+				timeinc *= 1000;
+			}
 			movesleft = movesmax;
 			timeleft = timemax;
 		} else if (!strcmp("nopost", cmd)) {
