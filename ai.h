@@ -51,7 +51,7 @@ score boardEval(game g);
 #define TRANS_SCORE		10000
 
 /* Heuristics config */
-#define NMH_THRESHOLD		1000
+#define NMH_THRESHOLD		1500
 #define ASPIRATION_WINDOW	25
 
 /* Misc tunables */
