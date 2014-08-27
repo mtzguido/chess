@@ -404,7 +404,7 @@ score negamax(game g, int maxDepth, int curDepth, move *mm, score alpha,
 			doing_lmr = false;
 
 			/* Do a full search if it didn't fail low */
-			if (t > alpha && t < beta) {
+			if (t > alpha) {
 				ply++;
 				t = -negamax(ng, maxDepth, curDepth+1, NULL,
 					     -beta, -alpha);
