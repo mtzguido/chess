@@ -287,6 +287,16 @@ score negamax(game g, int maxDepth, int curDepth, move *mm, score alpha,
 	int bestmove = -1;
 
 	stats.nall++;
+
+	/*
+	 * The absolute best we can ever do is CHECKMATE_SCORE - curDepth -
+	 * 1, so use it as a bound. This causes the search to run a lot more
+	 * quickly in the final endgame.
+	 */
+	if (alpha >= CHECKMATE_SCORE - curDepth - 1)
+		return alpha;
+
+
 	if (isDraw(g)) {
 		ret = 0;
 		assert(!mm);
@@ -448,7 +458,7 @@ score negamax(game g, int maxDepth, int curDepth, move *mm, score alpha,
 		assert(!mm);
 
 		if (inCheck(g, g->turn))
-			ret = -100000 + curDepth;
+			ret = -CHECKMATE_SCORE + curDepth;
 		else
 			ret = 0; /* Stalemate */
 
@@ -517,5 +527,7 @@ out:
 }
 
 score search(game g, int maxDepth, move *mm, score alpha, score beta) {
+	alpha = clamp(alpha, 1-CHECKMATE_SCORE, CHECKMATE_SCORE-1);
+	beta  = clamp(beta , 1-CHECKMATE_SCORE, CHECKMATE_SCORE-1);
 	return negamax(g, maxDepth, 0, mm, alpha, beta);
 }

@@ -64,5 +64,6 @@ score boardEval(game g);
 
 /* Misc tunables */
 #define SORT_DEPTH_THRESHOLD	0
+#define CHECKMATE_SCORE		100000
 
 #endif
