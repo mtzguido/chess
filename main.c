@@ -147,8 +147,8 @@ static void xboard_main() {
 	state *State;
 
 	/* Timing info */
-	int movesmax, movesleft;
-	int timeinc, timemax, timeleft;
+	int movesmax = 40, movesleft = 40;
+	int timeinc = 0, timemax = 300000, timeleft = 300000;
 
 	/* Ignore SIGINT, because xboard is a crappy protocol */
 	signal(SIGINT, SIG_IGN);
