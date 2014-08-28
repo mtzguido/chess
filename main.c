@@ -183,16 +183,30 @@ static void xboard_main() {
 			__unused bool check;
 			unsigned long t1, t2;
 			state *newst;
-
 			int maxms;
+
+			t1 = getms();
 
 			if (movesmax == 0)
 				maxms = timeleft / 50;
 			else
 				maxms = timeleft / movesleft;
 
-			t1 = getms();
+			/* Leave some room, just in case */
+			maxms = maxms >= 1000 ? maxms - 50 : maxms * 0.95;
+
 			move m = machineMove(State->g, maxms);
+
+			newst = (state*) malloc(sizeof *newst);
+			newst->g = copyGame(State->g);
+			check = doMove(newst->g, m);
+			assert(check);
+			mark(newst->g);
+			newst->prev = State;
+			State = newst;
+
+			xboard_printmove(m);
+
 			t2 = getms();
 
 			timeleft -= t2 -t1;
@@ -207,15 +221,6 @@ static void xboard_main() {
 				timemax += timeinc;
 			}
 
-			newst = (state*) malloc(sizeof *newst);
-			newst->g = copyGame(State->g);
-			check = doMove(newst->g, m);
-			assert(check);
-			mark(newst->g);
-			newst->prev = State;
-			State = newst;
-
-			xboard_printmove(m);
 			curPlayer = flipTurn(curPlayer);
 			continue;
 		}
