@@ -137,7 +137,7 @@ void piecePosFullRecalc(game g) {
 	g->pps_O = 0;
 	g->pps_E = 0;
 
-	for (i=0; i<8; i++)
+	for (i=0; i<8; i++) {
 		for (j=0; j<8; j++) {
 			if (!g->board[i][j])
 				continue;
@@ -145,4 +145,5 @@ void piecePosFullRecalc(game g) {
 			g->pps_O += piece_square_val_O(g->board[i][j], i, j);
 			g->pps_E += piece_square_val_E(g->board[i][j], i, j);
 		}
+	}
 }
