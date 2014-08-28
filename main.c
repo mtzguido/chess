@@ -64,6 +64,21 @@ static int board_eval_mode() {
 	return 0;
 }
 
+static int bench_eval_mode() {
+	const int N = 1e6;
+	int i;
+	unsigned long long t1, t2;
+	game g = startingGame2();
+
+	t1 = getms();
+	for (i = 0; i < N; i++)
+		boardEval(g);
+	t2 = getms();
+
+	printf("%i evals in %.3fs\n", N, (t2-t1)/1000.0);
+	return 0;
+}
+
 static int checkMove(game g, move m) {
 	game ng;
 	int i;
@@ -331,6 +346,10 @@ int main(int argc, char **argv) {
 
 	case board_eval:
 		board_eval_mode();
+		break;
+
+	case bench_eval:
+		bench_eval_mode();
 		break;
 
 	case version:

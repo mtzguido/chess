@@ -40,11 +40,9 @@ char pieceOf(char c);
 
 enum play_mode {
 	xboard,
-	self,
 	moves,
-	randplay,
-	ai_vs_rand,
 	board_eval,
+	bench_eval,
 	version,
 	help,
 };
