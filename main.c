@@ -278,6 +278,10 @@ static void xboard_main() {
 			timeleft = timemax;
 		} else if (!strcmp("nopost", cmd)) {
 		} else if (!strcmp("otim", cmd)) {
+		} else if (!strcmp("ping", cmd)) {
+			int n;
+			sscanf(buf, "ping %d", &n);
+			printf("pong %d\n", n);
 		} else if (!strcmp("post", cmd)) {
 		} else if (!strcmp("protver", cmd)) {
 		} else if (!strcmp("st", cmd)) {
@@ -290,6 +294,9 @@ static void xboard_main() {
 			break;
 		} else if (!strcmp("random", cmd)) {
 		} else if (!strcmp("result", cmd)) {
+		} else if (!strcmp("time", cmd)) {
+			sscanf(buf, "time %d", &timeleft);
+			timeleft *= 10; /* cs to ms */
 		} else if (!strcmp("undo", cmd)) {
 			if (State->prev) {
 				state *t = State->prev;
