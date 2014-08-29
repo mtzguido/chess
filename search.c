@@ -6,9 +6,6 @@
 #include "ai.h"
 #include <stdbool.h>
 
-static bool doing_null_move;
-static bool doing_lmr;
-
 score negamax(game g, int curDepth, int maxDepth, move *mm, score alpha, score beta);
 
 static inline void genCaps_wrap(game g, int depth) {
@@ -105,6 +102,7 @@ static inline int calcExtension(const game g, int maxDepth, int curDepth) {
 
 static inline score null_move_score(game g, int curDepth, int maxDepth,
 				    score alpha, score beta) {
+	static bool doing_null_move = false;
 	score t;
 	game ng;
 	move m = { .move_type = MOVE_NULL, .who = g->turn };
@@ -279,6 +277,7 @@ out:
 
 score negamax(game g, int maxDepth, int curDepth, move *mm, score alpha,
 		score beta) {
+	static bool doing_lmr = false;
 	score t, ret, best, alpha_orig;
 	int i;
 	int ext;
