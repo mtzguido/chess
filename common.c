@@ -2,7 +2,6 @@
 #include "board.h"
 #include <stdarg.h>
 #include <stdio.h>
-#include <syslog.h>
 #include <sys/time.h>
 
 #ifndef FIXOPTS

@@ -16,6 +16,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <signal.h>
+#include <syslog.h>
 
 static game startingGame2() {
 	game g;
@@ -157,7 +158,7 @@ typedef struct state {
 static void xboard_main() {
 	int curPlayer = WHITE;
 	int ourPlayer = BLACK;
-	char buf[500];
+	char line[500];
 	char cmd[500];
 	state *State;
 
@@ -228,20 +229,20 @@ static void xboard_main() {
 		printBoard(State->g);
 		dbg("expecting input...\n");
 
-		if (!fgets(buf, sizeof buf, stdin)) {
+		if (!fgets(line, sizeof line, stdin)) {
 			fprintf(stderr, "Unexpected end of input\n");
 			exit(1);
 		}
 
-		if (buf[0] == '\n')
+		if (line[0] == '\n')
 			continue;
 
-		sscanf(buf, "%s", cmd);
+		sscanf(line, "%s", cmd);
 
-		if (buf[strlen(buf)-1] == '\n')
-			buf[strlen(buf)-1] = 0;
+		if (line[strlen(line)-1] == '\n')
+			line[strlen(line)-1] = 0;
 
-		dbg("received: <%s>, cmd = %s\n", buf, cmd);
+		dbg("received: <%s>, cmd = %s\n", line, cmd);
 
 		if (!strcmp("new", cmd)) {
 			while (State) {
@@ -255,48 +256,71 @@ static void xboard_main() {
 			State = (state*) malloc(sizeof *State);
 			State->prev = NULL;
 			State->g = startingGame();
+			continue;
 		} else if (!strcmp("go", cmd)) {
 			ourPlayer = curPlayer;
+			continue;
 		} else if (!strcmp("black", cmd)) {
+			/* Ignore */
+			continue;
 		} else if (!strcmp("computer", cmd)) {
+			/* Ignore */
+			continue;
 		} else if (!strcmp("easy", cmd)) {
+			/* Ignore */
+			continue;
 		} else if (!strcmp("force", cmd)) {
 			ourPlayer = 2; /* No one */
+			continue;
 		} else if (!strcmp("hard", cmd)) {
+			/* Ignore */
+			continue;
 		} else if (!strcmp("level", cmd)) {
 			int t;
-			if (sscanf(buf, "level %i %i %i", &movesmax, &timemax,
+			if (sscanf(line, "level %i %i %i", &movesmax, &timemax,
 						&timeinc) == 3) {
 				timemax *= 60 * 1000;
 				timeinc *= 1000;
-			} else if (sscanf(buf, "level %i %i:%i %i", &movesmax,
+			} else if (sscanf(line, "level %i %i:%i %i", &movesmax,
 						&timemax, &t, &timeinc) == 4) {
 				timemax = timemax * 60 * 1000 + t * 1000;
 				timeinc *= 1000;
 			}
 			movesleft = movesmax;
 			timeleft = timemax;
+			continue;
 		} else if (!strcmp("nopost", cmd)) {
 		} else if (!strcmp("otim", cmd)) {
+			/* Ignore */
+			continue;
 		} else if (!strcmp("ping", cmd)) {
 			int n;
-			sscanf(buf, "ping %d", &n);
+			sscanf(line, "ping %d", &n);
 			printf("pong %d\n", n);
+			continue;
 		} else if (!strcmp("post", cmd)) {
+			/* Ignore */
+			continue;
 		} else if (!strcmp("protver", cmd)) {
 		} else if (!strcmp("st", cmd)) {
-			sscanf(buf, "st %d", &timemax);
+			sscanf(line, "st %d", &timemax);
 			timemax *= 1000;
 			timeleft = timemax;
 			movesleft = movesmax = 1;
 			timeinc = 0;
+			continue;
 		} else if (!strcmp("quit", cmd)) {
 			break;
 		} else if (!strcmp("random", cmd)) {
+			/* Ignore */
+			continue;
 		} else if (!strcmp("result", cmd)) {
+			/* Ignore */
+			continue;
 		} else if (!strcmp("time", cmd)) {
-			sscanf(buf, "time %d", &timeleft);
+			sscanf(line, "time %d", &timeleft);
 			timeleft *= 10; /* cs to ms */
+			continue;
 		} else if (!strcmp("undo", cmd)) {
 			if (State->prev) {
 				state *t = State->prev;
@@ -304,25 +328,29 @@ static void xboard_main() {
 				free(State);
 				State = t;
 			}
+			continue;
 		} else if (!strcmp("white", cmd)) {
-		} else if (!strcmp("white", cmd)) {
+			/* Ignore */
+			continue;
 		} else if (!strcmp("xboard", cmd)) {
+			/* Ignore */
+			continue;
 		} else if (!strcmp("?", cmd)) {
 		} else {
 			__unused bool check;
 			state *newst;
 			/* It's likely a move, try to parse it */
 			dbg("is it a move?\n");
-			move m = parseMove(State->g, buf);
+			move m = parseMove(State->g, line);
 
 			/* Couldn't parse it */
 			if (m.move_type == MOVE_INVAL) {
-				printf("Error (unknown command): %s\n", buf);
+				printf("Error (unknown command): %s\n", line);
 				continue;
 			}
 
 			if (checkMove(State->g, m)) {
-				printf("Error (illegal move): %s\n", buf);
+				printf("Error (illegal move): %s\n", line);
 				continue;
 			}
 
@@ -334,7 +362,10 @@ static void xboard_main() {
 			newst->prev = State;
 			State = newst;
 			curPlayer = flipTurn(curPlayer);
+			continue;
 		}
+
+		syslog(LOG_ERR, "Error (unknown command): %s\n", cmd);
 	}
 }
 
