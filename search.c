@@ -161,10 +161,10 @@ static inline score quiesce(game g, score alpha, score beta, int curDepth) {
 		return beta;
 
 	if (copts.delta_prune) {
-		score delta = scoreOf(WQUEEN) - scoreOf(WPAWN);
+		score delta = QUEEN_SCORE - PAWN_SCORE;
 
 		if (g->lastmove.promote != EMPTY)
-			delta += scoreOf(WQUEEN);
+			delta += QUEEN_SCORE;
 
 		if (t + delta < alpha)
 			return alpha;
@@ -191,16 +191,16 @@ static inline score quiesce(game g, score alpha, score beta, int curDepth) {
 	ng = copyGame(g);
 	genCaps_wrap(g, curDepth);
 	nvalid = 0;
-	for (i=first_succ[ply]; i<first_succ[ply+1]; i++) {
+	for (i = first_succ[ply]; i < first_succ[ply+1]; i++) {
 		sort_succ(g, i);
+		const move m = gsuccs[i].m;
 
-		assert(gsuccs[i].m.move_type == MOVE_REGULAR);
+		assert(m.move_type == MOVE_REGULAR);
 
 		/* We only consider captures and promotions */
-		assert(isCapture(g, gsuccs[i].m)
-				|| isPromotion(g, gsuccs[i].m));
+		assert(isCapture(g, m) || isPromotion(g, m));
 
-		if (!doMove_unchecked(ng, gsuccs[i].m))
+		if (!doMove_unchecked(ng, m))
 			continue;
 
 		nvalid++;
@@ -255,7 +255,6 @@ score negamax(game g, int maxDepth, int curDepth, move *mm, score alpha,
 	 */
 	if (alpha >= CHECKMATE_SCORE - curDepth - 1)
 		return alpha;
-
 
 	if (isDraw(g)) {
 		ret = 0;
@@ -349,10 +348,11 @@ score negamax(game g, int maxDepth, int curDepth, move *mm, score alpha,
 
 	genSuccs_wrap(g, curDepth);
 
-	for (i=first_succ[ply]; i<first_succ[ply+1]; i++) {
+	for (i = first_succ[ply]; i < first_succ[ply+1]; i++) {
 		sort_succ(g, i);
+		const move m = gsuccs[i].m;
 
-		if (!doMove_unchecked(ng, gsuccs[i].m))
+		if (!doMove_unchecked(ng, m))
 			continue;
 
 		nvalid++;
@@ -368,8 +368,8 @@ score negamax(game g, int maxDepth, int curDepth, move *mm, score alpha,
 			&& gsuccs[i].s*10 < gsuccs[first_succ[ply]].s /* 2x crap */
 			&& ext == 0
 			&& !inCheck(ng, ng->turn)
-			&& !isCapture(g, gsuccs[i].m)
-			&& !isPromotion(g, gsuccs[i].m)) {
+			&& !isCapture(g, m)
+			&& !isPromotion(g, m)) {
 			stats.lmrs++;
 
 			doing_lmr = true;
@@ -407,7 +407,7 @@ score negamax(game g, int maxDepth, int curDepth, move *mm, score alpha,
 			alpha = t;
 
 		if (alpha >= beta && copts.ab) {
-			addon_notify_cut(g, gsuccs[i].m, curDepth);
+			addon_notify_cut(g, m, curDepth);
 			break;
 		}
 	}
