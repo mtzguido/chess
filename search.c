@@ -52,38 +52,29 @@ static inline void genSuccs_wrap(game g, int depth) {
  * Deja en arr[i] el sucesor correcto, asume que arr[0..i-1] ya
  * está ordenado.
  */
-static inline void sort_succ(game g, int i, int depth_rem) {
-	if (!copts.sort)
-		return;
-
-	if (i == first_succ[ply+1] - 1) {
-		/* Nada para hacer */
-		return;
-	}
+static inline void sort_succ(game g, int i) {
+	int j;
+	int best;
 
 	assert(gsuccs[i].m.who == g->turn);
 
-	/* Ordenarlos si es necesario */
-	if (depth_rem > SORT_DEPTH_THRESHOLD) {
-		int j;
-		int best = i;
-		score s = gsuccs[i].s;
+	score s = gsuccs[i].s;
+	best = i;
 
-		for (j=i+1; j<first_succ[ply+1]; j++) {
-			assert(gsuccs[j].m.who == g->turn);
-			if (gsuccs[j].s > s) {
-				best = j;
-				s = gsuccs[j].s;
-			}
+	for (j=i+1; j<first_succ[ply+1]; j++) {
+		assert(gsuccs[j].m.who == g->turn);
+		if (gsuccs[j].s > s) {
+			best = j;
+			s = gsuccs[j].s;
 		}
+	}
 
-		if (best != i) {
-			struct MS swap;
+	if (best != i) {
+		struct MS swap;
 
-			swap = gsuccs[best];
-			gsuccs[best] = gsuccs[i];
-			gsuccs[i] = swap;
-		}
+		swap = gsuccs[best];
+		gsuccs[best] = gsuccs[i];
+		gsuccs[i] = swap;
 	}
 
 	assert(gsuccs[i].m.who == g->turn);
@@ -122,7 +113,7 @@ static inline score null_move_score(game g, int curDepth, int maxDepth,
 		goto dont;
 
 	/* Not even worth it */
-	if (maxDepth - curDepth <= 3)
+	if (maxDepth - curDepth <= NMH_REDUCTION)
 		goto dont;
 
 	ng = copyGame(g);
@@ -131,7 +122,8 @@ static inline score null_move_score(game g, int curDepth, int maxDepth,
 
 		mark(ng);
 		doing_null_move = true;
-		t = -negamax(ng, maxDepth-3, curDepth+1, NULL, -beta, -alpha);
+		t = -negamax(ng, maxDepth - NMH_REDUCTION, curDepth+1, NULL,
+				-beta, -alpha);
 		doing_null_move = false;
 		unmark(ng);
 	} else {
@@ -151,13 +143,10 @@ dont:
 	return alpha;
 }
 
-static inline score quiesce(game g, score alpha, score beta, int curDepth,
-			    int maxDepth) {
+static inline score quiesce(game g, score alpha, score beta, int curDepth) {
 	int nvalid, i;
-	int ext, onlymove;
 	game ng;
 	score ret, t;
-	score alpha_orig;
 
 	if (isDraw(g) || reps(g) >= 2)
 		return 0;
@@ -185,11 +174,6 @@ static inline score quiesce(game g, score alpha, score beta, int curDepth,
 	if (ply >= MAX_PLY-1)
 		return t;
 
-	ext = calcExtension(g, maxDepth, curDepth);
-	maxDepth += ext;
-	if (curDepth >= maxDepth)
-		return t;
-
 	if (timelimited && !timeup) {
 		ticks++;
 
@@ -202,12 +186,11 @@ static inline score quiesce(game g, score alpha, score beta, int curDepth,
 		return t;
 	}
 
-	alpha_orig = alpha;
 	ng = copyGame(g);
 	genCaps_wrap(g, curDepth);
 	nvalid = 0;
 	for (i=first_succ[ply]; i<first_succ[ply+1]; i++) {
-		sort_succ(g, i, maxDepth - curDepth);
+		sort_succ(g, i);
 
 		assert(gsuccs[i].m.move_type == MOVE_REGULAR);
 
@@ -219,11 +202,10 @@ static inline score quiesce(game g, score alpha, score beta, int curDepth,
 			continue;
 
 		nvalid++;
-		onlymove = i;
 
 		mark(ng);
 		ply++;
-		t = -quiesce(ng, -beta, -alpha, curDepth+1, maxDepth);
+		t = -quiesce(ng, -beta, -alpha, curDepth+1);
 		ply--;
 		unmark(ng);
 		*ng = *g;
@@ -238,33 +220,10 @@ static inline score quiesce(game g, score alpha, score beta, int curDepth,
 		}
 	}
 
-	if (nvalid == 0) {
+	if (nvalid == 0)
 		ret = t;
-	} else if (nvalid == 1 && alpha < beta && copts.forced_extend) {
-		__unused bool check;
-		check = doMove_unchecked(ng, gsuccs[onlymove].m);
-		assert(check);
-
-		/*
-		 * If only one move was valid, we're in a forced position,
-		 * so re-search everything with +1 to the depth
-		 */
-
-		alpha = alpha_orig;
-
-		mark(ng);
-		ply++;
-		t = -quiesce(ng, -beta, -alpha, curDepth+1, maxDepth+1);
-		ply--;
-		unmark(ng);
-
-		if (t > alpha)
-			alpha = t;
-
+	else
 		ret = alpha;
-	} else {
-		ret = alpha;
-	}
 
 out:
 	freeGame(ng);
@@ -331,7 +290,7 @@ score negamax(game g, int maxDepth, int curDepth, move *mm, score alpha,
 		assert(!inCheck(g, g->turn));
 
 		if (copts.quiesce)
-			ret = quiesce(g, alpha, beta, curDepth, 999);
+			ret = quiesce(g, alpha, beta, curDepth);
 		else
 			ret = boardEval(g);
 
@@ -386,7 +345,7 @@ score negamax(game g, int maxDepth, int curDepth, move *mm, score alpha,
 	genSuccs_wrap(g, curDepth);
 
 	for (i=first_succ[ply]; i<first_succ[ply+1]; i++) {
-		sort_succ(g, i, maxDepth - curDepth);
+		sort_succ(g, i);
 
 		if (!doMove_unchecked(ng, gsuccs[i].m))
 			continue;
@@ -398,8 +357,8 @@ score negamax(game g, int maxDepth, int curDepth, move *mm, score alpha,
 		/* LMR */
 		if (copts.lmr
 			&& !doing_lmr
-			&& i >= 4 + first_succ[ply] /* crap */
-			&& curDepth >= 2
+			&& i >= first_succ[ply] + LMR_FULL
+			&& curDepth >= LMR_MINDEPTH
 			&& maxDepth - curDepth >= 2
 			&& gsuccs[i].s*10 < gsuccs[first_succ[ply]].s /* 2x crap */
 			&& ext == 0

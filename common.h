@@ -59,7 +59,6 @@ struct opts {
 	int smart_stop;			/* Smart stopping */
 	int shuffle;			/* Shuffle the succ moves */
 	int book;			/* Use opening book */
-	int sort;			/* Use move sorting */
 
 	bool custom_start;		/* Use a custom starting board */
 	char custom_start_str[100];	/* Custom board spec */
@@ -98,7 +97,6 @@ static const struct opts defopts = {
 	.smart_stop =		1,
 	.shuffle =		1,
 	.book =			1,
-	.sort =			1,
 
 	.verbosity =		0,
 

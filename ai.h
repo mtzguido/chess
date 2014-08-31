@@ -60,7 +60,10 @@ score boardEval(game g);
 
 /* Heuristics config */
 #define NMH_THRESHOLD		1500
+#define NMH_REDUCTION		3
 #define ASPIRATION_WINDOW	25
+#define LMR_FULL		4
+#define LMR_MINDEPTH		2
 
 /* Misc tunables */
 #define SORT_DEPTH_THRESHOLD	0
