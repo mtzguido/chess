@@ -122,7 +122,7 @@ static inline score null_move_score(game g, int curDepth, int maxDepth,
 		goto dont;
 
 	/* Not even worth it */
-	if (maxDepth - curDepth <= 1)
+	if (maxDepth - curDepth <= 3)
 		goto dont;
 
 	ng = copyGame(g);
@@ -321,6 +321,7 @@ score negamax(game g, int maxDepth, int curDepth, move *mm, score alpha,
 	 */
 	if (curDepth >= maxDepth) {
 		assert(!mm);
+		assert(curDepth == maxDepth);
 
 		/*
 		 * Si esto ocurre, tenemos una recursion mutua
@@ -343,7 +344,7 @@ score negamax(game g, int maxDepth, int curDepth, move *mm, score alpha,
 	 */
 	if (!mm && beta < maxScore) {
 		t = null_move_score(g, curDepth, maxDepth, alpha, beta);
-		if  (t > beta) {
+		if (t >= beta) {
 			stats.null_cuts++;
 			return beta;
 		}
@@ -399,6 +400,7 @@ score negamax(game g, int maxDepth, int curDepth, move *mm, score alpha,
 			&& !doing_lmr
 			&& i >= 4 + first_succ[ply] /* crap */
 			&& curDepth >= 2
+			&& maxDepth - curDepth >= 2
 			&& gsuccs[i].s*10 < gsuccs[first_succ[ply]].s /* 2x crap */
 			&& ext == 0
 			&& !inCheck(ng, ng->turn)
