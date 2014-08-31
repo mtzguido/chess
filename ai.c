@@ -101,7 +101,7 @@ int ticks;
 
 move machineMove(const game start, unsigned long long maxms) {
 	move ret = {0};
-	clock_t t1,t2;
+	clock_t t1, t2;
 	score expected = 0;
 	bool expect_ok;
 	unsigned long long iterstart;
@@ -184,7 +184,7 @@ move machineMove(const game start, unsigned long long maxms) {
 			 * Smart stop, assume the next iteration will
 			 * take _at least twice_ as long as the current one,
 			 * and if we would time out, just time out now and
-			 * save some precious sceconds
+			 * save some precious seconds
 			 */
 			if (timelimited
 				&& copts.smart_stop
