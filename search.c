@@ -57,6 +57,8 @@ static inline void sort_succ(game g, int i) {
 	int best;
 
 	assert(gsuccs[i].m.who == g->turn);
+	assert(i >= first_succ[ply]);
+	assert(i < first_succ[ply+1]);
 
 	score s = gsuccs[i].s;
 	best = i;
