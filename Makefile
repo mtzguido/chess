@@ -72,6 +72,7 @@ mods=	ai	\
 	user_input	\
 	piece-square	\
 	book	\
+	main \
 	masks
 
 ifeq (${CONFIG_FIXOPTS},y)
@@ -81,9 +82,9 @@ endif
 objs=$(patsubst %,%.o,$(mods))
 crap=$(patsubst %,%.i %.s,$(mods))
 
-$(TARGET): main.o $(objs)
+$(TARGET): $(objs)
 	$(Q)$(SAY) "  LD	$@"
-	$(Q)$(CC) $(LFLAGS) main.o $(objs) -o $(TARGET)
+	$(Q)$(CC) $(LFLAGS) $(objs) -o $(TARGET)
 
 all: $(TARGET) doc
 
@@ -96,7 +97,6 @@ masks.c: mask-gen
 	$(Q)$(SAY) "MASKGEN"
 	$(Q)./mask-gen > masks.c
 
-mask-gen.o: mask-gen.c
 mask-gen: mask-gen.o
 	$(Q)$(SAY) "  LD	$@"
 	$(Q)$(CC) $(LFLAGS_UTILS) $<	-o $@
@@ -121,7 +121,7 @@ book-gen: book-gen.o board.o zobrist.o move.o piece-square.o masks.o \
 clean:
 	$(Q)$(SAY) "CLEAN"
 	$(Q)rm -f $(TARGET) $(crap) gmon.out
-	$(Q)rm -f main.o book.gen *.o book-gen
+	$(Q)rm -f book.gen *.o book-gen
 	$(Q)rm -f bpipe wpipe
 	$(Q)$(MAKE) -s -C doc clean
 	$(Q)rm -f FINISHLOG gamelog_*
