@@ -42,8 +42,10 @@ static int nmoves() {
 
 	for (i=0; i<copts.nmoves; i++) {
 
-		if (isFinished(g) != -1)
+		if (isFinished(g) != -1) {
+			dbg("Game finished: %i\n", isFinished(g));
 			break;
+		}
 
 		assert(ply == 0);
 		m = machineMove(g, 0);

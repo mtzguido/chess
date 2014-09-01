@@ -112,6 +112,8 @@ move machineMove(const game start, unsigned long long maxms) {
 	addon_reset();
 	reset_stats();
 
+	assert(isFinished(start) == -1);
+
 	t1 = clock();
 	if (copts.book && bookMove(start, &ret)) {
 		dbg("stats: book move.\n");
