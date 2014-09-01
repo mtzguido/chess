@@ -18,6 +18,8 @@
 #include <signal.h>
 #include <syslog.h>
 
+static char arg_string[1024] = "";
+
 static game startingGame2() {
 	game g;
 
@@ -171,7 +173,8 @@ static void xboard_main() {
 	/* Ignore SIGINT, because xboard is a crappy protocol */
 	signal(SIGINT, SIG_IGN);
 	signal(SIGTERM, sigterm);
-	printf("feature sigint=0 sigterm=0 myname=\"%s\"\n", short_version());
+	printf("feature sigint=0 sigterm=0 myname=\"%s%s\"\n", short_version(),
+			arg_string);
 	printf("feature colors=0 setboard=0 playother=0 reuse=0\n");
 	printf("feature done=1\n");
 
@@ -375,6 +378,19 @@ int main(int argc, char **argv) {
 	if (!parse_opt(argc, argv)) {
 		fprintf(stderr, "FATAL: could not parse options\n");
 		exit(1);
+	}
+
+	if (argc > 1) {
+		int i;
+
+		strcat(arg_string, " args = [");
+
+		for (i = 1; i < argc-1; i++) {
+			strcat(arg_string, argv[i]);
+			strcat(arg_string, ", ");
+		}
+		strcat(arg_string, argv[argc-1]);
+		strcat(arg_string, "]");
 	}
 
 	dbg("random seed: %u\n", copts.seed);
