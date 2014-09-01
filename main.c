@@ -171,6 +171,9 @@ static void xboard_main() {
 	/* Ignore SIGINT, because xboard is a crappy protocol */
 	signal(SIGINT, SIG_IGN);
 	signal(SIGTERM, sigterm);
+	printf("feature sigint=0 sigterm=0 myname=\"%s\"\n", short_version());
+	printf("feature colors=0 setboard=0 playother=0 reuse=0\n");
+	printf("feature done=1\n");
 
 	printf("tellics say dogui's chess engine\n");
 	printf("tellics say Written by Guido Martínez, 2014\n");

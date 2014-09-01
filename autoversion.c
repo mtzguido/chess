@@ -6,3 +6,8 @@ void print_version() {
 	fprintf(stderr, "built on %s at %s\n", CHESS_BUILD_DATE,
 			CHESS_BUILD_HOST);
 }
+
+static const char *shortv = "ICE 2014 " CHESS_VERSION;
+const char *short_version() {
+	return shortv;
+}
