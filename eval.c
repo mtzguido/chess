@@ -117,13 +117,13 @@ static const score shield_opp[8] = {
 	[3] = 5,
 	[4] = -5,	/* Close to us */
 	[5] = -10,	/* Closer */
-	[6] = -25,	/* ????? */
+	[6] = -25,	/* Dangerously close */
 	[7] = 0,	/* No pawn */
 };
 
 /*
  * Subtract 7 for white to keep it from 0 to 7. 7 being
- * no pawn and 1 being a maximally advanced pawn
+ * no pawn and 1 being a never advanced pawn
  */
 static inline score eval_wshield(const int c) {
 	assert(pawn_rank[BLACK][c+1] > 0);
@@ -143,19 +143,22 @@ static inline score eval_bshield(const int c) {
 	     + shield_opp[7 - pawn_rank[WHITE][c+1]];
 }
 
-static inline score eval_wking(const int r, const int c) {
+static inline score eval_king(const u8 col, const int r, const int c) {
 	score ret = 0;
+	score (* const eval_shield)(int) =
+		col == WHITE ? eval_wshield : eval_bshield;
 
 	/* Evaluate the pawn shield when the king has castled */
 	if (r < 3) {
-		ret += eval_wshield(0);
-		ret += eval_wshield(1);
-		ret += eval_wshield(2) / 2;
+		ret += eval_shield(0);
+		ret += eval_shield(1);
+		ret += eval_shield(2) / 2;
 	} else if (r > 4) {
-		ret += eval_wshield(5) / 2;
-		ret += eval_wshield(6);
-		ret += eval_wshield(7);
+		ret += eval_shield(5) / 2;
+		ret += eval_shield(6);
+		ret += eval_shield(7);
 	} else {
+		/* Penalize open files near the king */
 		if (pawn_rank[BLACK][c] == 7 && pawn_rank[WHITE][c] == 0)
 			ret -= 10;
 		if (pawn_rank[BLACK][c+1] == 7 && pawn_rank[WHITE][c+1] == 0)
@@ -165,37 +168,6 @@ static inline score eval_wking(const int r, const int c) {
 	}
 
 	return ret;
-}
-
-static inline score eval_bking(const int r, const int c) {
-	score ret = 0;
-
-	/* Evaluate the pawn shield when the king has castled */
-	if (r < 3) {
-		ret += eval_bshield(0);
-		ret += eval_bshield(1);
-		ret += eval_bshield(2) / 2;
-	} else if (r > 4) {
-		ret += eval_bshield(5) / 2;
-		ret += eval_bshield(6);
-		ret += eval_bshield(7);
-	} else {
-		if (pawn_rank[BLACK][c] == 7 && pawn_rank[WHITE][c] == 0)
-			ret -= 10;
-		if (pawn_rank[BLACK][c+1] == 7 && pawn_rank[WHITE][c+1] == 0)
-			ret -= 10;
-		if (pawn_rank[BLACK][c+2] == 7 && pawn_rank[WHITE][c+2] == 0)
-			ret -= 10;
-	}
-
-	return ret;
-}
-
-static inline score eval_king(const u8 col, const int i, const int j) {
-	if (col == WHITE)
-		return eval_wking(i, j);
-	else
-		return eval_bking(i, j);
 }
 
 static inline score eval_with_ranks(const u8 col, const game g) {
