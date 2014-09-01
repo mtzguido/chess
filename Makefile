@@ -82,7 +82,7 @@ endif
 objs=$(patsubst %,%.o,$(mods))
 crap=$(patsubst %,%.i %.s,$(mods))
 
-$(TARGET): $(objs)
+$(TARGET): $(objs) .config
 	$(Q)$(SAY) "  LD	$@"
 	$(Q)$(CC) $(LFLAGS) $(objs) -o $(TARGET)
 
@@ -101,15 +101,15 @@ mask-gen: mask-gen.o
 	$(Q)$(SAY) "  LD	$@"
 	$(Q)$(CC) $(LFLAGS_UTILS) $<	-o $@
 
-%.o: %.c $(wildcard *.h) .config
+%.o: %.c .config
 	$(Q)$(SAY) "  CC	$@"
 	$(Q)$(CC) $(CFLAGS) -c $<	-o $@
 
-%.s: %.c $(wildcard *.h) .config
+%.s: %.c .config
 	$(Q)$(SAY) "  AS	$@"
 	$(Q)$(CC) $(CFLAGS) -S -fverbose-asm $<	-o $@
 
-%.i: %.c $(wildcard *.h) .config
+%.i: %.c .config
 	$(Q)$(SAY) "  CPP	$@"
 	$(Q)$(CC) $(CFLAGS) -E $<	-o $@
 
@@ -122,7 +122,6 @@ clean:
 	$(Q)$(SAY) "CLEAN"
 	$(Q)rm -f $(TARGET) $(crap) gmon.out
 	$(Q)rm -f book.gen *.o book-gen
-	$(Q)rm -f bpipe wpipe
 	$(Q)$(MAKE) -s -C doc clean
 	$(Q)rm -f FINISHLOG gamelog_*
 	$(Q)rm -f masks.c mask-gen
@@ -132,3 +131,8 @@ re: clean $(TARGET)
 doc:
 	$(Q)$(SAY) "  DOC	"
 	$(Q)$(MAKE) -s -C doc
+
+.depend:
+	$(CC) -MM $(patsubst %.o,%.c,$(objs)) > .depend
+
+include .depend
