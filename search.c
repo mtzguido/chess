@@ -150,6 +150,19 @@ static inline score quiesce(game g, score alpha, score beta, int curDepth) {
 	game ng;
 	score ret, t;
 
+	if (timeup) {
+		return 0;
+	} else if (timelimited) {
+		ticks++;
+
+		if ((ticks & 0xfff) == 0) {
+			if (getms() >= timelimit) {
+				timeup = true;
+				return 0;
+			}
+		}
+	}
+
 	if (isDraw(g) || reps(g) >= 2)
 		return 0;
 
@@ -175,18 +188,6 @@ static inline score quiesce(game g, score alpha, score beta, int curDepth) {
 
 	if (ply >= MAX_PLY-1)
 		return t;
-
-	if (timelimited && !timeup) {
-		ticks++;
-
-		if ((ticks & 0xfff) == 0) {
-			if (getms() >= timelimit)
-				timeup = true;
-		}
-	}
-	if (timeup) {
-		return t;
-	}
 
 	ng = copyGame(g);
 	genCaps_wrap(g, curDepth);
@@ -247,6 +248,19 @@ score negamax(game g, int maxDepth, int curDepth, move *mm, score alpha,
 	int bestmove = -1;
 
 	stats.nall++;
+
+	if (timeup) {
+		return 0;
+	} else if (timelimited) {
+		ticks++;
+
+		if ((ticks & 0xfff) == 0) {
+			if (getms() >= timelimit) {
+				timeup = true;
+				return 0;
+			}
+		}
+	}
 
 	/*
 	 * The absolute best we can ever do is CHECKMATE_SCORE - curDepth -
@@ -323,18 +337,6 @@ score negamax(game g, int maxDepth, int curDepth, move *mm, score alpha,
 
 	if (ply >= MAX_PLY-1)
 		return boardEval(g);
-
-	if (timelimited && !timeup) {
-		ticks++;
-
-		if ((ticks & 0xfff) == 0) {
-			if (getms() >= timelimit)
-				timeup = true;
-		}
-	}
-	if (timeup && !mm) {
-		return boardEval(g);
-	}
 
 	alpha_orig = alpha;
 	best = minScore;

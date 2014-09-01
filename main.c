@@ -50,7 +50,7 @@ static int nmoves() {
 		}
 
 		assert(ply == 0);
-		m = machineMove(g, 0);
+		m = machineMove(g, copts.timelimit);
 		assert(ply == 0);
 		doMove(g, m);
 		mark(g);
