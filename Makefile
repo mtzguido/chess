@@ -3,7 +3,7 @@ CFLAGS=-Wc++-compat -Wall -Wextra -Wno-unused-parameter $(CFLAGS_EXTRA)
 LFLAGS=
 LFLAGS_UTILS=
 SHELL=/bin/bash
-TARGET=chess
+TARGET=ice
 
 ifeq (${V},1)
 	Q=

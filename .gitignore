@@ -1,6 +1,6 @@
 *.o
 *.gcda
-chess
+ice
 book-gen
 mask-gen
 book.gen
