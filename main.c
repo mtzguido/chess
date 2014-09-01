@@ -191,12 +191,9 @@ static void xboard_main() {
 			t1 = getms();
 
 			if (movesmax == 0)
-				maxms = timeleft / 50;
+				maxms = (timeleft - 500) / 50;
 			else
-				maxms = timeleft / movesleft;
-
-			/* Leave some room, just in case */
-			maxms = maxms >= 1000 ? maxms - 100 : maxms * 0.90;
+				maxms = (timeleft - 500) / movesleft;
 
 			move m = machineMove(State->g, maxms);
 
