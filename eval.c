@@ -19,84 +19,56 @@ static inline int pieceScore(const game g) {
 	return ret;
 }
 
-/*
- * Compartido por todas las funciones de
- * evaluación de tablero.
- */
-static int pawn_rank[2][10] = {
-	[BLACK] = { [0] = 7, [9] = 7 },
-	[WHITE] = { [0] = 0, [9] = 0 },
-};
-
-static inline void fill_ranks(const game g) {
-	int r, c;
-
-	for (c = 0; c < 8; c++) {
-		for (r = 0; r < 7; r++) {
-			if (g->board[r][c] == BPAWN) {
-				pawn_rank[BLACK][c+1] = r;
-				break;
-			}
-		}
-
-		for (r = 7; r >= 0; r--) {
-			if (g->board[r][c] == WPAWN) {
-				pawn_rank[WHITE][c+1] = r;
-				break;
-			}
-		}
-	}
-}
-
-static inline score eval_wpawn(const int i, const int j) {
+static inline score eval_wpawn(const game g, const int i, const int j) {
 	score ret = 0;
 
-	if (pawn_rank[WHITE][j+1] > i)
+	if (g->pawn_rank[WHITE][j+1] > i)
 		ret += DOUBLED_PAWN;
 
-	if (pawn_rank[WHITE][j] == 0
-			&& pawn_rank[WHITE][j+2] == 0)
+	if (g->pawn_rank[WHITE][j] == 0
+			&& g->pawn_rank[WHITE][j+2] == 0)
 		ret += ISOLATED_PAWN;
 
-	if (pawn_rank[WHITE][j] < i &&
-			pawn_rank[WHITE][j+2] < i)
+	if (g->pawn_rank[WHITE][j] < i &&
+			g->pawn_rank[WHITE][j+2] < i)
 		ret += BACKWARDS_PAWN;
 
-	if (pawn_rank[BLACK][j] >= i &&
-			pawn_rank[BLACK][j+1] >= i &&
-			pawn_rank[BLACK][j+2] >= i)
+	if (g->pawn_rank[BLACK][j] >= i &&
+			g->pawn_rank[BLACK][j+1] >= i &&
+			g->pawn_rank[BLACK][j+2] >= i)
 		ret += (7 - i) * PASSED_PAWN;
 
 	return ret;
 }
 
-static inline score eval_bpawn(const int i, const int j) {
+static inline score eval_bpawn(const game g, const int i, const int j) {
 	score ret = 0;
 
-	if (pawn_rank[BLACK][j+1] < i)
+	if (g->pawn_rank[BLACK][j+1] < i)
 		ret += DOUBLED_PAWN;
 
-	if (pawn_rank[BLACK][j] == 0
-			&& pawn_rank[BLACK][j+2] == 0)
+	if (g->pawn_rank[BLACK][j] == 0
+			&& g->pawn_rank[BLACK][j+2] == 0)
 		ret += ISOLATED_PAWN;
 
-	if (pawn_rank[BLACK][j] > i &&
-			pawn_rank[BLACK][j+2] > i)
+	if (g->pawn_rank[BLACK][j] > i &&
+			g->pawn_rank[BLACK][j+2] > i)
 		ret += BACKWARDS_PAWN;
 
-	if (pawn_rank[WHITE][j] <= i &&
-			pawn_rank[WHITE][j+1] <= i &&
-			pawn_rank[WHITE][j+2] <= i)
+	if (g->pawn_rank[WHITE][j] <= i &&
+			g->pawn_rank[WHITE][j+1] <= i &&
+			g->pawn_rank[WHITE][j+2] <= i)
 		ret += i * PASSED_PAWN;
 
 	return ret;
 }
 
-static inline score eval_pawn(const u8 col, const int i, const int j) {
+static inline score eval_pawn(const game g, const u8 col, const int i,
+			      const int j) {
 	if (col == WHITE)
-		return eval_wpawn(i, j);
+		return eval_wpawn(g, i, j);
 	else
-		return eval_bpawn(i, j);
+		return eval_bpawn(g, i, j);
 }
 
 static const score shield_own[8] = {
@@ -125,45 +97,46 @@ static const score shield_opp[8] = {
  * Subtract 7 for white to keep it from 0 to 7. 7 being
  * no pawn and 1 being a never advanced pawn
  */
-static inline score eval_wshield(const int c) {
-	assert(pawn_rank[BLACK][c+1] > 0);
-	assert(pawn_rank[BLACK][c+1] < 8);
-	assert(7 - pawn_rank[WHITE][c+1] > 0);
-	assert(7 - pawn_rank[WHITE][c+1] < 8);
-	return shield_own[7 - pawn_rank[WHITE][c+1]]
-	     + shield_opp[pawn_rank[BLACK][c+1]];
+static inline score eval_wshield(const game g, const int c) {
+	assert(g->pawn_rank[BLACK][c+1] > 0);
+	assert(g->pawn_rank[BLACK][c+1] < 8);
+	assert(7 - g->pawn_rank[WHITE][c+1] > 0);
+	assert(7 - g->pawn_rank[WHITE][c+1] < 8);
+	return shield_own[7 - g->pawn_rank[WHITE][c+1]]
+	     + shield_opp[g->pawn_rank[BLACK][c+1]];
 }
 
-static inline score eval_bshield(const int c) {
-	assert(pawn_rank[BLACK][c+1] > 0);
-	assert(pawn_rank[BLACK][c+1] < 8);
-	assert(7 - pawn_rank[WHITE][c+1] > 0);
-	assert(7 - pawn_rank[WHITE][c+1] < 8);
-	return shield_own[pawn_rank[BLACK][c+1]]
-	     + shield_opp[7 - pawn_rank[WHITE][c+1]];
+static inline score eval_bshield(const game g, const int c) {
+	assert(g->pawn_rank[BLACK][c+1] > 0);
+	assert(g->pawn_rank[BLACK][c+1] < 8);
+	assert(7 - g->pawn_rank[WHITE][c+1] > 0);
+	assert(7 - g->pawn_rank[WHITE][c+1] < 8);
+	return shield_own[g->pawn_rank[BLACK][c+1]]
+	     + shield_opp[7 - g->pawn_rank[WHITE][c+1]];
 }
 
-static inline score eval_king(const u8 col, const int r, const int c) {
+static inline score eval_king(const game g, const u8 col, const int r,
+			      const int c) {
 	score ret = 0;
-	score (* const eval_shield)(int) =
+	score (* const eval_shield)(const game, int) =
 		col == WHITE ? eval_wshield : eval_bshield;
 
 	/* Evaluate the pawn shield when the king has castled */
 	if (r < 3) {
-		ret += eval_shield(0);
-		ret += eval_shield(1);
-		ret += eval_shield(2) / 2;
+		ret += eval_shield(g, 0);
+		ret += eval_shield(g, 1);
+		ret += eval_shield(g, 2) / 2;
 	} else if (r > 4) {
-		ret += eval_shield(5) / 2;
-		ret += eval_shield(6);
-		ret += eval_shield(7);
+		ret += eval_shield(g, 5) / 2;
+		ret += eval_shield(g, 6);
+		ret += eval_shield(g, 7);
 	} else {
 		/* Penalize open files near the king */
-		if (pawn_rank[BLACK][c] == 7 && pawn_rank[WHITE][c] == 0)
+		if (g->pawn_rank[BLACK][c] == 7 && g->pawn_rank[WHITE][c] == 0)
 			ret -= 10;
-		if (pawn_rank[BLACK][c+1] == 7 && pawn_rank[WHITE][c+1] == 0)
+		if (g->pawn_rank[BLACK][c+1] == 7 && g->pawn_rank[WHITE][c+1] == 0)
 			ret -= 10;
-		if (pawn_rank[BLACK][c+2] == 7 && pawn_rank[WHITE][c+2] == 0)
+		if (g->pawn_rank[BLACK][c+2] == 7 && g->pawn_rank[WHITE][c+2] == 0)
 			ret -= 10;
 	}
 
@@ -188,7 +161,7 @@ static inline score eval_with_ranks(const u8 col, const game g) {
 		switch (piece&7) {
 		/* Evaluate pawns individually */
 		case WPAWN:
-			score += eval_pawn(col, r, c);
+			score += eval_pawn(g, col, r, c);
 			break;
 
 		/* Penalize knight at end game */
@@ -203,8 +176,8 @@ static inline score eval_with_ranks(const u8 col, const game g) {
 
 		/* Bonus for rook on (semi)open files */
 		case WROOK:
-			if (pawn_rank[col][c+1] == top) {
-				if (pawn_rank[opp][c+1] == bot)
+			if (g->pawn_rank[col][c+1] == top) {
+				if (g->pawn_rank[opp][c+1] == bot)
 					score += ROOK_OPEN_FILE;
 				else
 					score += ROOK_SEMI_OPEN_FILE;
@@ -213,7 +186,7 @@ static inline score eval_with_ranks(const u8 col, const game g) {
 
 		/* Evaluate king safety */
 		case WKING:
-			score += eval_king(col, r, c)
+			score += eval_king(g, col, r, c)
 				* g->pieceScore[opp] / SIDE_SCORE ;
 			break;
 		}
@@ -238,26 +211,9 @@ static inline score castle_score(const u8 col, const game g) {
 
 score boardEval(const game g) {
 	score score = pieceScore(g);
-	int i;
-
-	assert(pawn_rank[WHITE][0] == 0);
-	assert(pawn_rank[WHITE][9] == 0);
-	assert(pawn_rank[BLACK][0] == 7);
-	assert(pawn_rank[BLACK][9] == 7);
-
-	for (i=1; i<9; i++) {
-		pawn_rank[WHITE][i] = 0;
-		pawn_rank[BLACK][i] = 7;
-	}
 
 	/*
-	 * Primera pasada, llenamos pawn_rank con el peon
-	 * menos avanzado de cada lado.
-	 */
-	fill_ranks(g);
-
-	/*
-	 * Segunda pasada. Con la información de los peones
+	 * Con la información de los peones
 	 * evaluamos filas abiertas y status de peones
 	 */
 	score += eval_with_ranks(WHITE, g);

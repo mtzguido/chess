@@ -34,8 +34,13 @@ static void fix(game g) {
 	g->piecemask[BLACK] = 0;
 	g->piecemask[WHITE] = 0;
 
-	for (i=0; i<8; i++) {
-		for (j=0; j<8; j++) {
+	for (i=0; i<10; i++) {
+		g->pawn_rank[WHITE][i] = 0;
+		g->pawn_rank[BLACK][i] = 7;
+	}
+
+	for (i = 0; i < 8; i++) {
+		for (j = 0; j < 8; j++) {
 			int piece = g->board[i][j];
 
 			if (isKing(piece)) {
@@ -49,6 +54,14 @@ static void fix(game g) {
 				g->zobrist ^= ZOBR_PIECE(piece, i, j);
 				g->piecemask[colorOf(piece)] |=
 					((u64)1) <<(i*8 + j);
+			}
+
+			if (piece == WPAWN) {
+				if (i > g->pawn_rank[WHITE][j+1])
+					g->pawn_rank[WHITE][j+1] = i;
+			} else if (piece == BPAWN) {
+				if (i < g->pawn_rank[BLACK][j+1])
+					g->pawn_rank[BLACK][j+1] = i;
 			}
 		}
 	}
@@ -600,6 +613,25 @@ static inline void epCapture(game g, move m);
 static inline void epCalc(game g, move m);
 static inline void calcPromotion(game g, move m);
 
+static void recalcPawnRank(game g, int col, int c) {
+	int i;
+
+	if (col == WHITE) {
+		for (i = 6; i > 0; i--)
+			if (g->board[i][c] == WPAWN)
+				break;
+
+		g->pawn_rank[WHITE][c+1] = i;
+	} else {
+		for (i = 1; i < 7; i++)
+			if (g->board[i][c] == BPAWN)
+				break;
+
+		g->pawn_rank[BLACK][c+1] = i;
+	}
+
+}
+
 static void setPiece(game g, i8 r, i8 c, piece_t piece) {
 	piece_t old_piece = g->board[r][c];
 	u8 old_who = colorOf(old_piece);
@@ -615,6 +647,12 @@ static void setPiece(game g, i8 r, i8 c, piece_t piece) {
 	}
 
 	g->board[r][c] = piece;
+
+	if (isPawn(piece))
+		recalcPawnRank(g, who, c);
+
+	if (isPawn(old_piece))
+		recalcPawnRank(g, old_who, c);
 
 	if (piece) {
 		g->piecemask[who]	^= ((u64)1) << (r*8 + c);
@@ -662,6 +700,18 @@ static void movePiece(game g, i8 r, i8 c, i8 R, i8 C) {
 		g->zobrist		^= ZOBR_PIECE(to, R, C);
 		g->piecemask[enemy]	^= ((u64)1) << (R*8 + C);
 	}
+
+	if (isPawn(from)) {
+		if (c == C) {
+			recalcPawnRank(g, who, c);
+		} else {
+			recalcPawnRank(g, who, c);
+			recalcPawnRank(g, who, C);
+		}
+	}
+
+	if (isPawn(to))
+		recalcPawnRank(g, enemy, C);
 }
 
 static bool doMoveRegular(game g, move m, bool check) {

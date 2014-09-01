@@ -38,8 +38,8 @@ struct game_struct {
 	uint64_t zobrist;
 	int pps_O;
 	int pps_E;
-	u8 turn:1;
 	int pieceScore[2];
+	int pawn_rank[2][10];
 
 	move lastmove;
 	u8 idlecount;
@@ -51,6 +51,7 @@ struct game_struct {
 	u8 kingx[2];
 	u8 kingy[2];
 	i8 inCheck[2];
+	u8 turn:1;
 };
 
 typedef struct game_struct *game;
