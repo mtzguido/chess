@@ -14,10 +14,10 @@ endif
 SAY = echo
 
 .config:
-	@echo USING DEFAULT CONFIG
-	./scripts/defconfig
+	$(Q)$(SAY) "  DEFCONFIG"
+	$(Q)./scripts/defconfig
 
-include .config
+-include .config
 
 ifeq (${CONFIG_PROFOPT},y)
 	CFLAGS += -fprofile-generate -fprofile-use
@@ -71,16 +71,19 @@ mods=	ai	\
 	common	\
 	user_input	\
 	piece-square	\
-	book	\
-	main \
-	masks
+	main
+
+automods=	book	\
+		masks
+
+utils=	mask-gen	\
+	book-gen
 
 ifeq (${CONFIG_FIXOPTS},y)
 else
 	mods += opts
 endif
-objs=$(patsubst %,%.o,$(mods))
-crap=$(patsubst %,%.i %.s,$(mods))
+objs=$(patsubst %,%.o,$(mods) $(automods))
 
 $(TARGET): $(objs) .config
 	$(Q)$(SAY) "  LD	$@"
@@ -92,6 +95,11 @@ book.o: book.gen
 book.gen: book.txt book-gen
 	$(Q)$(SAY) "BOOKGEN"
 	$(Q)./book-gen < book.txt > book.gen || (rm -f book.gen && false)
+
+book-gen: book-gen.o board.o masks.o common.o piece-square.o succs.o mem.o \
+	  move.o zobrist.o ztable.o
+	$(Q)$(SAY) "  LD	$@"
+	$(Q)$(CC) $(LFLAGS_UTILS) $^	-o $@
 
 masks.c: mask-gen
 	$(Q)$(SAY) "MASKGEN"
@@ -113,26 +121,32 @@ mask-gen: mask-gen.o
 	$(Q)$(SAY) "  CPP	$@"
 	$(Q)$(CC) $(CFLAGS) -E $<	-o $@
 
-book-gen: book-gen.o board.o zobrist.o move.o piece-square.o masks.o \
-	  mem.o succs.o common.o ztable.o
-	$(Q)$(SAY) "  LD	$@"
-	$(Q)$(CC) $(LFLAGS_UTILS) $^ -o $@
-
 clean:
 	$(Q)$(SAY) "CLEAN"
-	$(Q)rm -f $(TARGET) $(crap) gmon.out
-	$(Q)rm -f book.gen *.o book-gen
+	$(Q)rm -f $(TARGET) gmon.out
+	$(Q)rm -f book.gen book-gen mask-gen masks.c
+	$(Q)rm -f $(patsubst %,%.o, $(automods))
+	$(Q)rm -f $(patsubst %,%.i, $(automods))
+	$(Q)rm -f $(patsubst %,%.s, $(automods))
+	$(Q)rm -f $(patsubst %,%.o, $(mods))
+	$(Q)rm -f $(patsubst %,%.i, $(mods))
+	$(Q)rm -f $(patsubst %,%.s, $(mods))
+	$(Q)rm -f $(patsubst %,%.o, $(utils))
+	$(Q)rm -f $(patsubst %,%.i, $(utils))
+	$(Q)rm -f $(patsubst %,%.s, $(utils))
 	$(Q)$(MAKE) -s -C doc clean
-	$(Q)rm -f FINISHLOG gamelog_*
-	$(Q)rm -f masks.c mask-gen
+	$(Q)rm -f .deps
 
 re: clean $(TARGET)
 
 doc:
-	$(Q)$(SAY) "  DOC	"
+	$(Q)$(SAY) "  DOC"
 	$(Q)$(MAKE) -s -C doc
 
-.depend:
-	$(CC) -MM $(patsubst %.o,%.c,$(objs)) > .depend
+.deps: $(patsubst %,%.c,$(mods))
+	$(Q)$(SAY) "  DEPS"
+	$(Q)$(CC) -MM $(patsubst %,%.c,$(utils) $(mods)) > .deps
 
-include .depend
+ifneq ($(MAKECMDGOALS),clean)
+-include .deps
+endif

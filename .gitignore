@@ -17,4 +17,4 @@ tags
 games/
 *.log
 *.pgn
-.depend
+.deps
