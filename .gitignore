@@ -18,3 +18,5 @@ games/
 *.log
 *.pgn
 .deps
+profile
+vprof
