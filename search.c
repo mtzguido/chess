@@ -308,9 +308,6 @@ score negamax(game g, int maxDepth, int curDepth, move *mm, score alpha,
 			stats.null_cuts++;
 			return beta;
 		}
-
-		if (t > alpha)
-			alpha = t;
 	}
 
 	if (!mm)
