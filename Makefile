@@ -14,7 +14,7 @@ endif
 SAY = echo
 
 .config:
-	$(Q)$(SAY) "  DEFCONFIG"
+	$(Q)$(SAY) "DEFCONFIG"
 	$(Q)./scripts/defconfig
 
 -include .config
@@ -144,7 +144,7 @@ doc:
 	$(Q)$(MAKE) -s -C doc
 
 .deps: $(patsubst %,%.c,$(mods))
-	$(Q)$(SAY) "  DEPS"
+	$(Q)$(SAY) "DEPS"
 	$(Q)$(CC) -MM $(patsubst %,%.c,$(utils) $(mods)) > .deps
 
 ifneq ($(MAKECMDGOALS),clean)
