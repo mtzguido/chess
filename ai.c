@@ -115,7 +115,8 @@ move machineMove(const game start, unsigned long long maxms) {
 	assert(isFinished(start) == -1);
 
 	t1 = clock();
-	if (copts.book && bookMove(start, &ret)) {
+	G = start;
+	if (copts.book && bookMove(&ret)) {
 		dbg("stats: book move.\n");
 		expect_ok = false;
 	} else if (forced(start, &ret)) {

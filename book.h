@@ -4,6 +4,6 @@
 #include "common.h"
 #include "board.h"
 
-bool bookMove(const game g, move *m);
+bool bookMove(move *m);
 
 #endif

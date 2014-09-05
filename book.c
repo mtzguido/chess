@@ -12,7 +12,7 @@ struct book_entry {
 /* Define the actual book */
 #include "book.gen"
 
-bool bookMove(const game g, move *m) {
+bool bookMove(move *m) {
 	int i;
 	int chance = 0;
 	int match = -1;
@@ -22,7 +22,7 @@ bool bookMove(const game g, move *m) {
 		return false;
 
 	for (i=0; i<booklen; i++) {
-		if (book[i].hash == g->zobrist) {
+		if (book[i].hash == G->zobrist) {
 			if (!copts.shuffle) {
 				match = i;
 				break;
@@ -40,7 +40,7 @@ bool bookMove(const game g, move *m) {
 		m->R = book[match].R;
 		m->C = book[match].C;
 		m->move_type = book[match].move_type;
-		m->who = g->turn;
+		m->who = G->turn;
 		m->promote = 0;
 		return true;
 	}
