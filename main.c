@@ -181,7 +181,6 @@ static void xboard_main() {
 	printf("tellics say dogui's chess engine\n");
 	printf("tellics say Written by Guido Martínez, 2014\n");
 
-	init_mem();
 	State = (state*) malloc(sizeof *State);
 	State->g = startingGame();
 	State->prev = NULL;
@@ -395,6 +394,7 @@ int main(int argc, char **argv) {
 
 	dbg("random seed: %u\n", copts.seed);
 	srand(copts.seed);
+	init_mem();
 
 	switch (copts.mode) {
 	case xboard:
