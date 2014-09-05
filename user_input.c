@@ -50,7 +50,7 @@ void printMove(FILE *stream, move m) {
 	}
 }
 
-move parseMove(game g, char *line) {
+move parseMove(char *line) {
 	int t;
 	char c, C;
 	int r, R;
@@ -64,7 +64,7 @@ move parseMove(game g, char *line) {
 		return m;
 	}
 
-	m.who = g->turn;
+	m.who = G->turn;
 
 	c = tolower(c);
 	C = tolower(C);
@@ -81,22 +81,22 @@ move parseMove(game g, char *line) {
 	if (m.who == BLACK
 		&& c == 'e' && r == 8
 		&& C == 'g' && R == 8
-		&& g->castle_king[m.who]) {
+		&& G->castle_king[m.who]) {
 		m.move_type = MOVE_KINGSIDE_CASTLE;
 	} else if (m.who == BLACK
 		&& c == 'e' && r == 8
 		&& C == 'c' && R == 8
-		&& g->castle_queen[m.who]) {
+		&& G->castle_queen[m.who]) {
 		m.move_type = MOVE_QUEENSIDE_CASTLE;
 	} else if (m.who == WHITE
 		&& c == 'e' && r == 1
 		&& C == 'g' && R == 1
-		&& g->castle_king[m.who]) {
+		&& G->castle_king[m.who]) {
 		m.move_type = MOVE_KINGSIDE_CASTLE;
 	} else if (m.who == WHITE
 		&& c == 'e' && r == 1
 		&& C == 'c' && R == 1
-		&& g->castle_queen[m.who]) {
+		&& G->castle_queen[m.who]) {
 		m.move_type = MOVE_QUEENSIDE_CASTLE;
 	} else {
 		m.move_type = MOVE_REGULAR;

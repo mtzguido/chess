@@ -5,6 +5,6 @@
 #include <stdio.h>
 
 void printMove(FILE *stream, move m);
-move parseMove(game g, char *line);
+move parseMove(char *line);
 
 #endif

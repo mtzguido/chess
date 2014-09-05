@@ -349,7 +349,8 @@ static void xboard_main() {
 			state *newst;
 			/* It's likely a move, try to parse it */
 			dbg("is it a move?\n");
-			move m = parseMove(State->g, line);
+			G = State->g;
+			move m = parseMove(line);
 
 			/* Couldn't parse it */
 			if (m.move_type == MOVE_INVAL) {
