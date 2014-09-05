@@ -135,7 +135,7 @@ void printBoard(game g) {
 	dbg("[ piecemask[B] = 0x%.16" PRIx64 "\n", g->piecemask[BLACK]);
 	tostr(g, bbuf);
 	dbg("[ tostr = <%s>\n", bbuf);
-
+	dbg("[ reps = %i\n", reps(g));
 
 	fflush(stdout);
 }
