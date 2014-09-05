@@ -328,6 +328,7 @@ static void xboard_main() {
 		} else if (!strcmp("undo", cmd)) {
 			if (State->prev) {
 				state *t = State->prev;
+				unmark(State->g);
 				freeGame(State->g);
 				free(State);
 				State = t;
