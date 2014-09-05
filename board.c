@@ -84,7 +84,8 @@ static void fix(game g) {
 	g->castled[WHITE] = 0;
 	g->castled[BLACK] = 0;
 
-	piecePosFullRecalc(g);
+	G = g;
+	piecePosFullRecalc();
 }
 
 game startingGame() {

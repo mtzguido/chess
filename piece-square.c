@@ -131,19 +131,19 @@ char piece_square_val_E(piece_t piece, i8 r, i8 c) {
 	__builtin_unreachable();
 }
 
-void piecePosFullRecalc(game g) {
+void piecePosFullRecalc() {
 	int i, j;
 
-	g->pps_O = 0;
-	g->pps_E = 0;
+	G->pps_O = 0;
+	G->pps_E = 0;
 
 	for (i=0; i<8; i++) {
 		for (j=0; j<8; j++) {
-			if (!g->board[i][j])
+			if (G->board[i][j] == EMPTY)
 				continue;
 
-			g->pps_O += piece_square_val_O(g->board[i][j], i, j);
-			g->pps_E += piece_square_val_E(g->board[i][j], i, j);
+			G->pps_O += piece_square_val_O(G->board[i][j], i, j);
+			G->pps_E += piece_square_val_E(G->board[i][j], i, j);
 		}
 	}
 }

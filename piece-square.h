@@ -11,6 +11,6 @@
 
 char piece_square_val_O(piece_t piece, i8 r, i8 c);
 char piece_square_val_E(piece_t piece, i8 r, i8 c);
-void piecePosFullRecalc(game g);
+void piecePosFullRecalc(void);
 
 #endif
