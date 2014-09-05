@@ -23,22 +23,22 @@ void addon_reset() {
 	addon_for_each(reset);
 }
 
-void addon_notify_return(game g, move m, int depth, score score, flag_t flag) {
-	addon_for_each(notify_return, g, m, depth, score, flag);
+void addon_notify_return(move m, int depth, score score, flag_t flag) {
+	addon_for_each(notify_return, m, depth, score, flag);
 }
 
-void addon_notify_entry(game g, int depth, score *alpha, score *beta) {
-	addon_for_each(notify_entry, g, depth, alpha, beta);
+void addon_notify_entry(int depth, score *alpha, score *beta) {
+	addon_for_each(notify_entry, depth, alpha, beta);
 }
 
-void addon_notify_cut(game g, move m, int depth) {
-	addon_for_each(notify_cut, g, m, depth);
+void addon_notify_cut(move m, int depth) {
+	addon_for_each(notify_cut, m, depth);
 }
 
-void addon_score_succs(game g, int depth) {
-	addon_for_each(score_succs, g, depth);
+void addon_score_succs(int depth) {
+	addon_for_each(score_succs, depth);
 }
 
-void addon_suggest(game g, move *arr, int *n, int depth) {
-	addon_for_each(suggest, g, arr, n, depth);
+void addon_suggest(move *arr, int *n, int depth) {
+	addon_for_each(suggest, arr, n, depth);
 }

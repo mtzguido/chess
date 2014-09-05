@@ -13,11 +13,11 @@ typedef enum {
 } flag_t;
 
 void addon_reset(void);
-void addon_notify_return(game g, move m, int depth, score s, flag_t flag);
-void addon_notify_entry(game g, int depth, score *alpha, score *beta);
-void addon_notify_cut(game g, move m, int depth);
-void addon_score_succs(game g, int depth);
-void addon_suggest(game g, move *arr, int *n, int depth);
+void addon_notify_return(move m, int depth, score s, flag_t flag);
+void addon_notify_entry(int depth, score *alpha, score *beta);
+void addon_notify_cut(move m, int depth);
+void addon_score_succs(int depth);
+void addon_suggest(move *arr, int *n, int depth);
 
 #endif
 

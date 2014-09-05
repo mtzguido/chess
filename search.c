@@ -13,7 +13,8 @@ static inline void genCaps_wrap(game g, int depth) {
 	genCaps(g);
 	stats.ngen += first_succ[ply+1] - first_succ[ply];
 
-	addon_score_succs(g, depth);
+	G = g;
+	addon_score_succs(depth);
 }
 
 static inline void shuffle_succs() {
@@ -42,7 +43,8 @@ static inline void genSuccs_wrap(game g, int depth) {
 	genSuccs(g);
 	stats.ngen += first_succ[ply+1] - first_succ[ply];
 
-	addon_score_succs(g, depth);
+	G = g;
+	addon_score_succs(depth);
 
 	/* Mezclarlos si es necesario */
 	shuffle_succs();
@@ -328,8 +330,10 @@ score negamax(game g, int maxDepth, int curDepth, move *mm, score alpha,
 		}
 	}
 
-	if (!mm)
-		addon_notify_entry(g, maxDepth - curDepth, &alpha, &beta);
+	if (!mm) {
+		G = g;
+		addon_notify_entry(maxDepth - curDepth, &alpha, &beta);
+	}
 
 	if (alpha >= beta && copts.ab) {
 		/* Deshabilitado por ahora */
@@ -412,7 +416,8 @@ score negamax(game g, int maxDepth, int curDepth, move *mm, score alpha,
 			alpha = t;
 
 		if (alpha >= beta && copts.ab) {
-			addon_notify_cut(g, m, curDepth);
+			G = g;
+			addon_notify_cut(m, curDepth);
 			break;
 		}
 	}
@@ -436,7 +441,8 @@ score negamax(game g, int maxDepth, int curDepth, move *mm, score alpha,
 		 * Lo guardamos en la TT, podría ahorrar unos
 		 * pocos ciclos
 		 */
-		addon_notify_return(g, dummy, 999, ret, FLAG_EXACT);
+		G = g;
+		addon_notify_return(dummy, 999, ret, FLAG_EXACT);
 	} else if (nvalid == 1 && alpha < beta && copts.forced_extend) {
 		__unused bool check;
 		check = doMove(ng, gsuccs[bestmove].m);
@@ -479,7 +485,8 @@ score negamax(game g, int maxDepth, int curDepth, move *mm, score alpha,
 			flag = FLAG_EXACT;
 
 		if (maxDepth - curDepth > 1) {
-			addon_notify_return(g, gsuccs[bestmove].m,
+			G = g;
+			addon_notify_return(gsuccs[bestmove].m,
 					    maxDepth - curDepth, ret, flag);
 		}
 	}

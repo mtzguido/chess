@@ -21,9 +21,9 @@ void trans_reset() {
 	trans_seq++;
 }
 
-void trans_notify_return(game g, move move, int depth, score score,
+void trans_notify_return(move move, int depth, score score,
 				flag_t flag) {
-	u64 key = g->zobrist;
+	u64 key = G->zobrist;
 	u64 idx = key % CFG_TTABLE_SIZE;
 
 	if (tt[idx].key && tt[idx].key != key)
@@ -39,8 +39,8 @@ void trans_notify_return(game g, move move, int depth, score score,
 #define trans_suggest(...)	do { } while (0)
 
 #if 0
-void trans_notify_entry(game g, int depth, score *alpha, score *beta) {
-	u64 key = g->zobrist;
+void trans_notify_entry(int depth, score *alpha, score *beta) {
+	u64 key = G->zobrist;
 	u64 idx = key % CFG_TTABLE_SIZE;
 
 	if (tt[idx].seq != trans_seq)
@@ -68,8 +68,8 @@ void trans_notify_entry(game g, int depth, score *alpha, score *beta) {
 	}
 }
 
-int trans_suggest(game g, move *arr, int depth) {
-	u64 key = g->zobrist;
+int trans_suggest(move *arr, int depth) {
+	u64 key = G->zobrist;
 	u64 idx = key % CFG_TTABLE_SIZE;
 
 	if (tt[idx].key != key)
@@ -79,7 +79,7 @@ int trans_suggest(game g, move *arr, int depth) {
 		return 0;
 
 	arr[0].move_type = MOVE_REGULAR;
-	arr[0].who = g->turn;
+	arr[0].who = G->turn;
 	arr[0].r = tt[idx].r;
 	arr[0].R = tt[idx].R;
 	arr[0].c = tt[idx].c;
@@ -89,8 +89,8 @@ int trans_suggest(game g, move *arr, int depth) {
 }
 #endif
 
-void trans_score_succs(game g, int depth) {
-	u64 key = g->zobrist;
+void trans_score_succs(int depth) {
+	u64 key = G->zobrist;
 	u64 idx = key % CFG_TTABLE_SIZE;
 	int i;
 

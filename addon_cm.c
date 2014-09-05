@@ -15,12 +15,12 @@ void cm_reset() {
 		counterTable[a][b][c][d][e].move_type = MOVE_INVAL;
 }
 
-void cm_score_succs(game g, int depth) {
+void cm_score_succs(int depth) {
 	int i;
 
 	/* Buscamos la counter move */
-	move l = g->lastmove;
-	move m = counterTable[g->turn][l.r][l.c][l.R][l.C];
+	move l = G->lastmove;
+	move m = counterTable[G->turn][l.r][l.c][l.R][l.C];
 
 	if (m.move_type == MOVE_INVAL)
 		return;
@@ -33,19 +33,19 @@ void cm_score_succs(game g, int depth) {
 	}
 }
 
-void cm_notify_cut(game g, move m, int depth) {
-	move om = g->lastmove;
-	counterTable[g->turn][om.r][om.c][om.R][om.C] = m;
+void cm_notify_cut(move m, int depth) {
+	move om = G->lastmove;
+	counterTable[G->turn][om.r][om.c][om.R][om.C] = m;
 }
 
-void cm_suggest(game g, move *arr, int *n, int depth) {
-	move m = g->lastmove;
-	move cm = counterTable[g->turn][m.r][m.c][m.R][m.C];
+void cm_suggest(move *arr, int *n, int depth) {
+	move m = G->lastmove;
+	move cm = counterTable[G->turn][m.r][m.c][m.R][m.C];
 
 	if (cm.move_type == MOVE_INVAL)
 		return;
 
-	if (cm.who != g->turn)
+	if (cm.who != G->turn)
 		return;
 
 	arr[*n++] = cm;
