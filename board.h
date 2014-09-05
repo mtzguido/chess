@@ -115,16 +115,16 @@ bool equalGame(game a, game b);
 
 char charOf(int piece);
 
-static inline bool own_piece(game g, i8 r, i8 c) {
-	return g->piecemask[g->turn] & ((u64)1 << (r*8 + c));
+static inline bool own_piece(i8 r, i8 c) {
+	return G->piecemask[G->turn] & ((u64)1 << (r*8 + c));
 }
 
-static inline bool enemy_piece(game g, i8 r, i8 c) {
-	return g->piecemask[flipTurn(g->turn)] & ((u64)1 << (r*8 + c));
+static inline bool enemy_piece(i8 r, i8 c) {
+	return G->piecemask[flipTurn(G->turn)] & ((u64)1 << (r*8 + c));
 }
 
-static inline bool any_piece(game g, i8 r, i8 c) {
-	return (g->piecemask[BLACK] | g->piecemask[WHITE])
+static inline bool any_piece(i8 r, i8 c) {
+	return (G->piecemask[BLACK] | G->piecemask[WHITE])
 			& ((u64)1 << (r*8 + c));
 }
 
@@ -132,7 +132,8 @@ static inline bool isCapture(game g, move m) {
 	if (m.move_type != MOVE_REGULAR)
 		return false;
 
-	return enemy_piece(g, m.R, m.C)
+	G = g;
+	return enemy_piece(m.R, m.C)
 		|| (m.R == g->en_passant_x
 			&& m.C == g->en_passant_y
 			&& isPawn(g->board[m.r][m.c]));

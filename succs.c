@@ -47,12 +47,12 @@ static void pawnSuccs_w(i8 r, i8 c) {
 			addToRet_promote(m);
 		}
 
-		if (c > 0 && enemy_piece(G, m.R, c-1)) {
+		if (c > 0 && enemy_piece(m.R, c-1)) {
 			m.C = c-1;
 			addToRet_promote(m);
 		}
 
-		if (c < 7 && enemy_piece(G, m.R, c+1)) {
+		if (c < 7 && enemy_piece(m.R, c+1)) {
 			m.C = c+1;
 			addToRet_promote(m);
 		}
@@ -74,12 +74,12 @@ static void pawnSuccs_w(i8 r, i8 c) {
 			addToRet(m);
 		}
 
-		if (c > 0 && enemy_piece(G, m.R, c-1)) {
+		if (c > 0 && enemy_piece(m.R, c-1)) {
 			m.C = c-1;
 			addToRet(m);
 		}
 
-		if (c < 7 && enemy_piece(G, m.R, c+1)) {
+		if (c < 7 && enemy_piece(m.R, c+1)) {
 			m.C = c+1;
 			addToRet(m);
 		}
@@ -97,12 +97,12 @@ static void pawnSuccs_w(i8 r, i8 c) {
 			}
 		}
 
-		if (c > 0 && enemy_piece(G, m.R, c-1)) {
+		if (c > 0 && enemy_piece(m.R, c-1)) {
 			m.C = c-1;
 			addToRet(m);
 		}
 
-		if (c < 7 && enemy_piece(G, m.R, c+1)) {
+		if (c < 7 && enemy_piece(m.R, c+1)) {
 			m.C = c+1;
 			addToRet(m);
 		}
@@ -134,12 +134,12 @@ static void pawnSuccs_b(i8 r, i8 c) {
 			addToRet_promote(m);
 		}
 
-		if (c > 0 && enemy_piece(G, m.R, c-1)) {
+		if (c > 0 && enemy_piece(m.R, c-1)) {
 			m.C = c-1;
 			addToRet_promote(m);
 		}
 
-		if (c < 7 && enemy_piece(G, m.R, c+1)) {
+		if (c < 7 && enemy_piece(m.R, c+1)) {
 			m.C = c+1;
 			addToRet_promote(m);
 		}
@@ -161,12 +161,12 @@ static void pawnSuccs_b(i8 r, i8 c) {
 			addToRet(m);
 		}
 
-		if (c > 0 && enemy_piece(G, m.R, c-1)) {
+		if (c > 0 && enemy_piece(m.R, c-1)) {
 			m.C = c-1;
 			addToRet(m);
 		}
 
-		if (c < 7 && enemy_piece(G, m.R, c+1)) {
+		if (c < 7 && enemy_piece(m.R, c+1)) {
 			m.C = c+1;
 			addToRet(m);
 		}
@@ -184,12 +184,12 @@ static void pawnSuccs_b(i8 r, i8 c) {
 			}
 		}
 
-		if (c > 0 && enemy_piece(G, m.R, c-1)) {
+		if (c > 0 && enemy_piece(m.R, c-1)) {
 			m.C = c-1;
 			addToRet(m);
 		}
 
-		if (c < 7 && enemy_piece(G, m.R, c+1)) {
+		if (c < 7 && enemy_piece(m.R, c+1)) {
 			m.C = c+1;
 			addToRet(m);
 		}
@@ -221,12 +221,12 @@ static void pawnCaps_w(i8 r, i8 c) {
 			addToRet_promote(m);
 		}
 
-		if (c > 0 && enemy_piece(G, m.R, c-1)) {
+		if (c > 0 && enemy_piece(m.R, c-1)) {
 			m.C = c-1;
 			addToRet_promote(m);
 		}
 
-		if (c < 7 && enemy_piece(G, m.R, c+1)) {
+		if (c < 7 && enemy_piece(m.R, c+1)) {
 			m.C = c+1;
 			addToRet_promote(m);
 		}
@@ -243,24 +243,24 @@ static void pawnCaps_w(i8 r, i8 c) {
 	case 2:
 	case 4:
 	case 5:
-		if (c > 0 && enemy_piece(G, m.R, c-1)) {
+		if (c > 0 && enemy_piece(m.R, c-1)) {
 			m.C = c-1;
 			addToRet(m);
 		}
 
-		if (c < 7 && enemy_piece(G, m.R, c+1)) {
+		if (c < 7 && enemy_piece(m.R, c+1)) {
 			m.C = c+1;
 			addToRet(m);
 		}
 
 		return;
 	case 6:
-		if (c > 0 && enemy_piece(G, m.R, c-1)) {
+		if (c > 0 && enemy_piece(m.R, c-1)) {
 			m.C = c-1;
 			addToRet(m);
 		}
 
-		if (c < 7 && enemy_piece(G, m.R, c+1)) {
+		if (c < 7 && enemy_piece(m.R, c+1)) {
 			m.C = c+1;
 			addToRet(m);
 		}
@@ -292,12 +292,12 @@ static void pawnCaps_b(i8 r, i8 c) {
 			addToRet_promote(m);
 		}
 
-		if (c > 0 && enemy_piece(G, m.R, c-1)) {
+		if (c > 0 && enemy_piece(m.R, c-1)) {
 			m.C = c-1;
 			addToRet_promote(m);
 		}
 
-		if (c < 7 && enemy_piece(G, m.R, c+1)) {
+		if (c < 7 && enemy_piece(m.R, c+1)) {
 			m.C = c+1;
 			addToRet_promote(m);
 		}
@@ -314,24 +314,24 @@ static void pawnCaps_b(i8 r, i8 c) {
 	case 2:
 	case 3:
 	case 5:
-		if (c > 0 && enemy_piece(G, m.R, c-1)) {
+		if (c > 0 && enemy_piece(m.R, c-1)) {
 			m.C = c-1;
 			addToRet(m);
 		}
 
-		if (c < 7 && enemy_piece(G, m.R, c+1)) {
+		if (c < 7 && enemy_piece(m.R, c+1)) {
 			m.C = c+1;
 			addToRet(m);
 		}
 
 		return;
 	case 1:
-		if (c > 0 && enemy_piece(G, m.R, c-1)) {
+		if (c > 0 && enemy_piece(m.R, c-1)) {
 			m.C = c-1;
 			addToRet(m);
 		}
 
-		if (c < 7 && enemy_piece(G, m.R, c+1)) {
+		if (c < 7 && enemy_piece(m.R, c+1)) {
 			m.C = c+1;
 			addToRet(m);
 		}
@@ -366,7 +366,7 @@ static void knightSuccs(i8 r, i8 c) {
 		if (m.C < 0 || m.C > 7)
 			continue;
 
-		if (own_piece(G, m.R, m.C))
+		if (own_piece(m.R, m.C))
 			continue;
 
 		addToRet(m);
@@ -384,20 +384,20 @@ static void rookSuccs_col(i8 r, i8 c) {
 
 	R = r;
 	for (C=c+1; C<8; C++) {
-		if (!own_piece(G, R, C)) {
+		if (!own_piece(R, C)) {
 			m.R = R; m.C = C;
 			addToRet(m);
 		} else break;
-		if (enemy_piece(G, R, C))
+		if (enemy_piece(R, C))
 			break;
 	}
 
 	for (C=c-1; C>=0; C--) {
-		if (!own_piece(G, R, C)) {
+		if (!own_piece(R, C)) {
 			m.R = R; m.C = C;
 			addToRet(m);
 		} else break;
-		if (enemy_piece(G, R, C))
+		if (enemy_piece(R, C))
 			break;
 	}
 }
@@ -413,20 +413,20 @@ static void rookSuccs_row(i8 r, i8 c) {
 
 	C = c;
 	for (R=r+1; R<8; R++) {
-		if (!own_piece(G, R, C)) {
+		if (!own_piece(R, C)) {
 			m.R = R; m.C = C;
 			addToRet(m);
 		} else break;
-		if (enemy_piece(G, R, C))
+		if (enemy_piece(R, C))
 			break;
 	}
 
 	for (R=r-1; R>=0; R--) {
-		if (!own_piece(G, R, C)) {
+		if (!own_piece(R, C)) {
 			m.R = R; m.C = C;
 			addToRet(m);
 		} else break;
-		if (enemy_piece(G, R, C))
+		if (enemy_piece(R, C))
 			break;
 	}
 }
@@ -446,20 +446,20 @@ static void bishopSuccs_diag1(i8 r, i8 c) {
 	m.c = c;
 
 	for (R=r+1, C=c-1; R<8 && C>=0; R++, C--) {
-		if (!own_piece(G, R, C)) {
+		if (!own_piece(R, C)) {
 			m.R = R; m.C = C;
 			addToRet(m);
 		} else break;
-		if (enemy_piece(G, R, C))
+		if (enemy_piece(R, C))
 			break;
 	}
 
 	for (R=r-1, C=c+1; R>=0 && C<8; R--, C++) {
-		if (!own_piece(G, R, C)) {
+		if (!own_piece(R, C)) {
 			m.R = R; m.C = C;
 			addToRet(m);
 		} else break;
-		if (enemy_piece(G, R, C))
+		if (enemy_piece(R, C))
 			break;
 	}
 }
@@ -474,20 +474,20 @@ static void bishopSuccs_diag2(i8 r, i8 c) {
 	m.c = c;
 
 	for (R=r+1, C=c+1; R<8 && C<8; R++, C++) {
-		if (!own_piece(G, R, C)) {
+		if (!own_piece(R, C)) {
 			m.R = R; m.C = C;
 			addToRet(m);
 		} else break;
-		if (enemy_piece(G, R, C))
+		if (enemy_piece(R, C))
 			break;
 	}
 
 	for (R=r-1, C=c-1; R>=0 && C>=0; R--, C--) {
-		if (!own_piece(G, R, C)) {
+		if (!own_piece(R, C)) {
 			m.R = R; m.C = C;
 			addToRet(m);
 		} else break;
-		if (enemy_piece(G, R, C))
+		if (enemy_piece(R, C))
 			break;
 	}
 }
@@ -518,7 +518,7 @@ void kingSuccs(i8 r, i8 c) {
 		if (m.C < 0 || m.C > 7)
 			continue;
 
-		if (own_piece(G, m.R, m.C))
+		if (own_piece(m.R, m.C))
 			continue;
 
 		addToRet(m);
@@ -555,7 +555,7 @@ static void knightCaps(i8 r, i8 c) {
 		if (m.C < 0 || m.C > 7)
 			continue;
 
-		if (!enemy_piece(G, m.R, m.C))
+		if (!enemy_piece(m.R, m.C))
 			continue;
 
 		addToRet(m);
@@ -576,11 +576,11 @@ static void rookCaps_row_w(i8 r, i8 c) {
 
 	R = r;
 	for (C=c-1; C>=0; C--) {
-		if (enemy_piece(G, R, C)) {
+		if (enemy_piece(R, C)) {
 			m.R = R; m.C = C;
 			addToRet(m);
 			break;
-		} else if (own_piece(G, R, C)) {
+		} else if (own_piece(R, C)) {
 			break;
 		}
 	}
@@ -600,11 +600,11 @@ static void rookCaps_row_e(i8 r, i8 c) {
 
 	R = r;
 	for (C=c+1; C<8; C++) {
-		if (enemy_piece(G, R, C)) {
+		if (enemy_piece(R, C)) {
 			m.R = R; m.C = C;
 			addToRet(m);
 			break;
-		} else if (own_piece(G, R, C)) {
+		} else if (own_piece(R, C)) {
 			break;
 		}
 	}
@@ -624,11 +624,11 @@ static void rookCaps_col_n(i8 r, i8 c) {
 
 	C = c;
 	for (R=r-1; R>=0; R--) {
-		if (enemy_piece(G, R, C)) {
+		if (enemy_piece(R, C)) {
 			m.R = R; m.C = C;
 			addToRet(m);
 			break;
-		} else if (own_piece(G, R, C)) {
+		} else if (own_piece(R, C)) {
 			break;
 		}
 	}
@@ -648,11 +648,11 @@ static void rookCaps_col_s(i8 r, i8 c) {
 
 	C = c;
 	for (R=r+1; R<8; R++) {
-		if (enemy_piece(G, R, C)) {
+		if (enemy_piece(R, C)) {
 			m.R = R; m.C = C;
 			addToRet(m);
 			break;
-		} else if (own_piece(G, R, C)) {
+		} else if (own_piece(R, C)) {
 			break;
 		}
 	}
@@ -678,11 +678,11 @@ static void bishopCaps_diag_nw(i8 r, i8 c) {
 		return;
 
 	for (R=r-1, C=c-1; R>=0 && C>=0; R--, C--) {
-		if (enemy_piece(G, R, C)) {
+		if (enemy_piece(R, C)) {
 			m.R = R; m.C = C;
 			addToRet(m);
 			break;
-		} else if (own_piece(G, R, C)) {
+		} else if (own_piece(R, C)) {
 			break;
 		}
 	}
@@ -701,11 +701,11 @@ static void bishopCaps_diag_ne(i8 r, i8 c) {
 		return;
 
 	for (R=r-1, C=c+1; R>=0 && C<8; R--, C++) {
-		if (enemy_piece(G, R, C)) {
+		if (enemy_piece(R, C)) {
 			m.R = R; m.C = C;
 			addToRet(m);
 			break;
-		} else if (own_piece(G, R, C)) {
+		} else if (own_piece(R, C)) {
 			break;
 		}
 	}
@@ -724,11 +724,11 @@ static void bishopCaps_diag_sw(i8 r, i8 c) {
 		return;
 
 	for (R=r+1, C=c-1; R<8 && C>=0; R++, C--) {
-		if (enemy_piece(G, R, C)) {
+		if (enemy_piece(R, C)) {
 			m.R = R; m.C = C;
 			addToRet(m);
 			break;
-		} else if (own_piece(G, R, C)) {
+		} else if (own_piece(R, C)) {
 			break;
 		}
 	}
@@ -747,11 +747,11 @@ static void bishopCaps_diag_se(i8 r, i8 c) {
 		return;
 
 	for (R=r+1, C=c+1; R<8 && C<8; R++, C++) {
-		if (enemy_piece(G, R, C)) {
+		if (enemy_piece(R, C)) {
 			m.R = R; m.C = C;
 			addToRet(m);
 			break;
-		} else if (own_piece(G, R, C)) {
+		} else if (own_piece(R, C)) {
 			break;
 		}
 	}
@@ -789,7 +789,7 @@ static void kingCaps(i8 r, i8 c) {
 		if (m.C < 0 || m.C > 7)
 			continue;
 
-		if (!enemy_piece(G, m.R, m.C))
+		if (!enemy_piece(m.R, m.C))
 			continue;
 
 		addToRet(m);

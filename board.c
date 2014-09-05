@@ -241,6 +241,7 @@ bool inCheck(game g, int who) {
 	kr = g->kingx[who];
 	kc = g->kingy[who];
 
+	G = g;
 	g->inCheck[who] =  inCheck_diag_sw(g, kr, kc, who)
 			|| inCheck_diag_se(g, kr, kc, who)
 			|| inCheck_diag_nw(g, kr, kc, who)
@@ -266,7 +267,7 @@ static bool inCheck_row_e(game g, int kr, int kc, int who) {
 
 	i = kr;
 	for (j=kc+1; j<8; j++) {
-		if (any_piece(g, i, j)) {
+		if (any_piece(i, j)) {
 			if (g->board[i][j] == enemy_q
 					|| g->board[i][j] == enemy_r)
 				return true;
@@ -288,7 +289,7 @@ static bool inCheck_row_w(game g, int kr, int kc, int who) {
 
 	i = kr;
 	for (j=kc-1; j>=0; j--) {
-		if (any_piece(g, i, j)) {
+		if (any_piece(i, j)) {
 			if (g->board[i][j] == enemy_q
 					|| g->board[i][j] == enemy_r)
 				return true;
@@ -310,7 +311,7 @@ static bool inCheck_col_s(game g, int kr, int kc, int who) {
 
 	j = kc;
 	for (i=kr+1; i<8; i++) {
-		if (any_piece(g, i, j)) {
+		if (any_piece(i, j)) {
 			if (g->board[i][j] == enemy_q
 					|| g->board[i][j] == enemy_r)
 				return true;
@@ -332,7 +333,7 @@ static bool inCheck_col_n(game g, int kr, int kc, int who) {
 
 	j = kc;
 	for (i=kr-1; i>=0; i--) {
-		if (any_piece(g, i, j)) {
+		if (any_piece(i, j)) {
 			if (g->board[i][j] == enemy_q
 					|| g->board[i][j] == enemy_r)
 				return true;
@@ -354,7 +355,7 @@ static bool inCheck_diag_sw(game g, int kr, int kc, int who) {
 
 	j = kc;
 	for (i=kr+1, j=kc-1; i<8 && j>=0; i++, j--) {
-		if (any_piece(g, i, j)) {
+		if (any_piece(i, j)) {
 			if (g->board[i][j] == enemy_q
 					|| g->board[i][j] == enemy_b)
 				return true;
@@ -375,7 +376,7 @@ static bool inCheck_diag_nw(game g, int kr, int kc, int who) {
 		return false;
 
 	for (i=kr-1, j=kc-1; i>=0 && j>=0; i--, j--) {
-		if (any_piece(g, i, j)) {
+		if (any_piece(i, j)) {
 			if (g->board[i][j] == enemy_q
 					|| g->board[i][j] == enemy_b)
 				return true;
@@ -396,7 +397,7 @@ static bool inCheck_diag_se(game g, int kr, int kc, int who) {
 		return false;
 
 	for (i=kr+1, j=kc+1; i<8 && j<8; i++, j++) {
-		if (any_piece(g, i, j)) {
+		if (any_piece(i, j)) {
 			if (g->board[i][j] == enemy_q
 					|| g->board[i][j] == enemy_b)
 				return true;
@@ -417,7 +418,7 @@ static bool inCheck_diag_ne(game g, int kr, int kc, int who) {
 		return false;
 
 	for (i=kr-1, j=kc+1; i>=0 && j<8; i--, j++) {
-		if (any_piece(g, i, j)) {
+		if (any_piece(i, j)) {
 			if (g->board[i][j] == enemy_q
 					|| g->board[i][j] == enemy_b)
 				return true;
@@ -538,6 +539,7 @@ static bool doMoveNull(game g, move m, bool check);
 static bool __doMove(game g, move m, bool check) {
 	game old_g = copyGame(g);
 
+	G = g;
 	assert(m.who == g->turn);
 
 	switch (m.move_type) {
@@ -727,11 +729,11 @@ static bool doMoveRegular(game g, move m, bool check) {
 			return false;
 
 		/* No pisar piezas propias */
-		if (own_piece(g, m.R, m.C))
+		if (own_piece(m.R, m.C))
 			return false;
 	} else {
 		assert(isValid(g, m));
-		assert(!own_piece(g, m.R, m.C));
+		assert(!own_piece(m.R, m.C));
 	}
 
 
@@ -760,7 +762,7 @@ static bool doMoveRegular(game g, move m, bool check) {
 		set_ep(g, -1, -1);
 	}
 
-	if (enemy_piece(g, m.R, m.C))
+	if (enemy_piece(m.R, m.C))
 		g->idlecount = 0;
 
 	/* Movemos */

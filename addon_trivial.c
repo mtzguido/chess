@@ -23,7 +23,7 @@ void trivial_score_succs(int depth) {
 			gsuccs[i].s += PROMOTE_SCORE;
 		}
 
-		if (enemy_piece(G, m.R, m.C)) {
+		if (enemy_piece(m.R, m.C)) {
 			gsuccs[i].s += CAPT_SCORE;
 			gsuccs[i].s += mvv_lva(G->board[m.r][m.c], G->board[m.R][m.C]);
 		}
