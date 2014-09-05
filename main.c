@@ -8,6 +8,7 @@
 #include "common.h"
 #include "opts.h"
 #include "autoversion.h"
+#include "eval.h"
 
 #include <syslog.h>
 #include <assert.h>
@@ -65,7 +66,8 @@ static int nmoves() {
 
 static int board_eval_mode() {
 	game g = startingGame2();
-	dbg("Board evaluation: %i\n", boardEval(g));
+	G = g;
+	dbg("Board evaluation: %i\n", boardEval());
 	return 0;
 }
 
@@ -76,8 +78,9 @@ static int bench_eval_mode() {
 	game g = startingGame2();
 
 	t1 = getms();
+	G = g;
 	for (i = 0; i < N; i++)
-		boardEval(g);
+		boardEval();
 	t2 = getms();
 
 	printf("%i evals in %.3fs\n", N, (t2-t1)/1000.0);

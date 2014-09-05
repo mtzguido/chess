@@ -29,8 +29,6 @@ extern int ticks;
 
 move machineMove(game start, unsigned long long maxms);
 
-score boardEval(game g);
-
 /* Board evaluation scores */
 #define ROOK_OPEN_FILE		15
 #define ROOK_SEMI_OPEN_FILE	10

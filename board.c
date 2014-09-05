@@ -13,6 +13,9 @@
 #include "ztable.h"
 #include "succs.h"
 
+struct game_struct _G;
+game G = &_G;
+
 static const char *init =
 	"rnbqkbnr"
 	"pppppppp"

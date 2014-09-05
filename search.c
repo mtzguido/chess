@@ -4,6 +4,7 @@
 #include "ztable.h"
 #include "common.h"
 #include "ai.h"
+#include "eval.h"
 #include <stdbool.h>
 
 score negamax(game g, int curDepth, int maxDepth, move *mm, score alpha, score beta);
@@ -168,7 +169,8 @@ static inline score quiesce(game g, score alpha, score beta, int curDepth) {
 
 	stats.nopen_q++;
 
-	t = boardEval(g);
+	G = g;
+	t = boardEval();
 
 	if (t >= beta)
 		return beta;
@@ -304,10 +306,12 @@ score negamax(game g, int maxDepth, int curDepth, move *mm, score alpha,
 		 */
 		assert(!inCheck(g, g->turn));
 
-		if (copts.quiesce)
+		if (copts.quiesce) {
 			ret = quiesce(g, alpha, beta, curDepth);
-		else
-			ret = boardEval(g);
+		} else {
+			G = g;
+			ret = boardEval();
+		}
 
 		goto out;
 	}
@@ -335,8 +339,10 @@ score negamax(game g, int maxDepth, int curDepth, move *mm, score alpha,
 		goto out;
 	}
 
-	if (ply >= MAX_PLY-1)
-		return boardEval(g);
+	if (ply >= MAX_PLY-1) {
+		G = g;
+		return boardEval();
+	}
 
 	alpha_orig = alpha;
 	best = minScore;

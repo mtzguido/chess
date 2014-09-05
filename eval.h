@@ -4,6 +4,6 @@
 #include "ai.h"
 #include "board.h"
 
-score boardEval(game g);
+score boardEval(void);
 
 #endif
