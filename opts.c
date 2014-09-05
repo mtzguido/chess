@@ -51,7 +51,6 @@ static const struct option long_opts[] = {
 	INT_OPT(lbound),
 	MAYBE_INT_OPT(verbose),
 
-	BOOL_OPT(timed),
 	BOOL_OPT(shuffle),
 	BOOL_OPT(ab),
 	BOOL_OPT(quiesce),
@@ -135,7 +134,6 @@ void print_help(char *progname) {
 	fprintf(stderr, "usage: %s <opts>\n", progname);
 	fprintf(stderr, "\n");
 	fprintf(stderr, "<opts> can be any combination of:\n");
-	fprintf(stderr, "	--timed     : use a time limit for moves (default=%s)\n", defopts.timed ? "true" : "false" );
 	fprintf(stderr, "	... etcetera ...\n");
 	fprintf(stderr, "\n");
 	fprintf(stderr, "if an option appears more than once, or it invalidates another one,\n");

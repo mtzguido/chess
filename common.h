@@ -53,8 +53,7 @@ struct opts {
 	int nmoves;			/* Amount of moves to calculate */
 	int log;			/* Write gamelog to file*/
 	int depth;			/* Maximum search depth */
-	int timed;			/* Do not stop by time */
-	unsigned long timelimit;	/* Max time for each move, in ms */
+	unsigned long timelimit;	/* Max time for each move, in ms (0 = inf)*/
 	unsigned long lbound;		/* Min time for each move, in ms */
 	int smart_stop;			/* Smart stopping */
 	int shuffle;			/* Shuffle the succ moves */
@@ -91,8 +90,7 @@ static const struct opts defopts = {
 	.nmoves =		0,
 	.log =			1,
 	.depth =		30,
-	.timed = 		1,
-	.timelimit =		1000,
+	.timelimit =		0,
 	.lbound =		0,
 	.smart_stop =		1,
 	.shuffle =		1,
