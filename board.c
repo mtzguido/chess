@@ -229,6 +229,7 @@ static bool inCheck_king(game g);
 
 bool inCheck(game g, int who) {
 	u8 kr, kc;
+	game bak = G;
 
 	if (g->inCheck[who] != -1)
 		return g->inCheck[who];
@@ -254,6 +255,7 @@ bool inCheck(game g, int who) {
 			|| inCheck_pawn(g, kr, kc, who)
 			|| inCheck_king(g);
 
+	G = bak;
 	return g->inCheck[who];
 }
 

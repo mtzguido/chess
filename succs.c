@@ -903,6 +903,7 @@ typedef void (*movegen_t)(i8 i, i8 j);
 static void  __genSuccs(const game g, movegen_t fun) {
 	u64 temp;
 	int i;
+	game bak = G;
 
 	G = g;
 	first_succ[ply+1] = first_succ[ply];
@@ -914,6 +915,7 @@ static void  __genSuccs(const game g, movegen_t fun) {
 		fun(r, c);
 	}
 
+	G = bak;
 }
 
 void genSuccs(const game g) {
