@@ -27,7 +27,7 @@ static inline void shuffle_succs() {
 	int i, j;
 
 	if (!copts.shuffle)
-		return ;
+		return;
 
 	for (i=lo; i<hi-1; i++) {
 		j = i + rand() % (hi-i);
@@ -161,20 +161,24 @@ static inline score quiesce(game g, score alpha, score beta, int curDepth) {
 	score ret, t;
 
 	if (timeup) {
-		return 0;
+		ret = 0;
+		goto out;
 	} else if (timelimited) {
 		ticks++;
 
 		if ((ticks & 0xfff) == 0) {
 			if (getms() >= timelimit) {
 				timeup = true;
-				return 0;
+				ret = 0;
+				goto out;
 			}
 		}
 	}
 
-	if (isDraw(g) || reps(g) >= 2)
-		return 0;
+	if (isDraw(g) || reps(g) >= 2) {
+		ret = 0;
+		goto out;
+	}
 
 	stats.nopen_q++;
 
@@ -182,8 +186,10 @@ static inline score quiesce(game g, score alpha, score beta, int curDepth) {
 	t = boardEval();
 	G = bak;
 
-	if (t >= beta)
-		return beta;
+	if (t >= beta) {
+		ret = beta;
+		goto out;
+	}
 
 	if (copts.delta_prune) {
 		score delta = QUEEN_SCORE - PAWN_SCORE;
@@ -191,15 +197,19 @@ static inline score quiesce(game g, score alpha, score beta, int curDepth) {
 		if (g->lastmove.promote != EMPTY)
 			delta += QUEEN_SCORE;
 
-		if (t + delta < alpha)
-			return alpha;
+		if (t + delta < alpha) {
+			ret = alpha;
+			goto out;
+		}
 	}
 
 	if (t > alpha)
 		alpha = t;
 
-	if (ply >= MAX_PLY-1)
-		return t;
+	if (ply >= MAX_PLY-1) {
+		ret = t;
+		goto out;
+	}
 
 	ng = copyGame(g);
 	genCaps_wrap(g, curDepth);
@@ -228,12 +238,14 @@ static inline score quiesce(game g, score alpha, score beta, int curDepth) {
 		if (t > alpha) {
 			if (t >= beta) {
 				ret = beta;
+				freeGame(ng);
 				goto out;
 			}
 
 			alpha = t;
 		}
 	}
+	freeGame(ng);
 
 	if (nvalid == 0)
 		ret = t;
@@ -241,7 +253,6 @@ static inline score quiesce(game g, score alpha, score beta, int curDepth) {
 		ret = alpha;
 
 out:
-	freeGame(ng);
 
 	assert(timeup || ret > minScore);
 	assert(timeup || ret < maxScore);
@@ -276,14 +287,16 @@ score _negamax(game g, int maxDepth, int curDepth, move *mm, score alpha,
 	stats.nall++;
 
 	if (timeup) {
-		return 0;
+		ret = 0;
+		goto out;
 	} else if (timelimited) {
 		ticks++;
 
 		if ((ticks & 0xfff) == 0) {
 			if (getms() >= timelimit) {
 				timeup = true;
-				return 0;
+				ret = 0;
+				goto out;
 			}
 		}
 	}
@@ -293,12 +306,13 @@ score _negamax(game g, int maxDepth, int curDepth, move *mm, score alpha,
 	 * 1, so use it as a bound. This causes the search to run a lot more
 	 * quickly in the final endgame.
 	 */
-	if (alpha >= CHECKMATE_SCORE - curDepth - 1)
-		return alpha;
+	if (alpha >= CHECKMATE_SCORE - curDepth - 1) {
+		ret = alpha;
+		goto out;
+	}
 
 	if (isDraw(g)) {
 		ret = 0;
-		assert(!mm);
 		goto out;
 	}
 
@@ -348,7 +362,8 @@ score _negamax(game g, int maxDepth, int curDepth, move *mm, score alpha,
 		t = null_move_score(g, curDepth, maxDepth, alpha, beta);
 		if (t >= beta) {
 			stats.null_cuts++;
-			return beta;
+			ret = beta;
+			goto out;
 		}
 	}
 
