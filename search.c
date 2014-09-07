@@ -10,16 +10,6 @@
 score negamax(const game g, int curDepth, int maxDepth, move *mm, score alpha, score beta);
 score _negamax(const game g, int curDepth, int maxDepth, move *mm, score alpha, score beta);
 
-static inline void genCaps_wrap(game g, int depth) {
-	game bak = G;
-	genCaps(g);
-	stats.ngen += first_succ[ply+1] - first_succ[ply];
-
-	G = g;
-	addon_score_succs(depth);
-	G = bak;
-}
-
 static inline void shuffle_succs() {
 	struct MS swap;
 	const int lo = first_succ[ply];
@@ -43,18 +33,30 @@ static inline void shuffle_succs() {
 
 static inline void genSuccs_wrap(game g, int depth) {
 	game bak = G;
+	G = g;
 
 	/* Generar sucesores */
 	genSuccs(g);
 	stats.ngen += first_succ[ply+1] - first_succ[ply];
 
-	G = g;
 	addon_score_succs(depth);
-	G = bak;
 
 	/* Mezclarlos si es necesario */
 	shuffle_succs();
+	G = bak;
 }
+
+static inline void genCaps_wrap(game g, int depth) {
+	game bak = G;
+	G = g;
+
+	genCaps(g);
+	stats.ngen += first_succ[ply+1] - first_succ[ply];
+
+	addon_score_succs(depth);
+	G = bak;
+}
+
 
 /*
  * Ordena el arreglo de sucesores de manera lazy.
@@ -107,7 +109,9 @@ static inline score null_move_score(game g, int curDepth, int maxDepth,
 	static bool doing_null_move = false;
 	score t;
 	game ng;
+	game bak;
 	move m = { .move_type = MOVE_NULL, .who = g->turn };
+	__unused bool check;
 
 	if (!copts.null)
 		goto dont;
@@ -127,27 +131,34 @@ static inline score null_move_score(game g, int curDepth, int maxDepth,
 	if (maxDepth - curDepth <= NMH_REDUCTION)
 		goto dont;
 
+	bak = G;
 	ng = copyGame(g);
-	if (doMove(ng, m)) {
-		stats.null_tries++;
+	G = ng;
+	check = doMove(ng, m);
 
-		mark(ng);
-		doing_null_move = true;
-		t = -negamax(ng, maxDepth - NMH_REDUCTION, curDepth+1, NULL,
-				-beta, -alpha);
-		doing_null_move = false;
-		unmark(ng);
-	} else {
-		/*
-		 * doMoveNull's only restriction is not being in check
-		 * and we already provided a case for that so this
-		 * should never be reached
-		 */
-		assert(0);
-		t = minScore;
-	}
+	/*
+	 * doMoveNull's only restriction is not being in check and we already
+	 * provided a case for that so this should never fail
+	 */
+	assert(check);
+
+	stats.null_tries++;
+
+	mark(ng);
+	first_succ[ply+1] = first_succ[ply];
+	ply++;
+	doing_null_move = true;
+
+	t = -negamax(ng, maxDepth - NMH_REDUCTION, curDepth+1, NULL,
+			-beta, -alpha);
+
+	doing_null_move = false;
+
+	ply--;
+	unmark(ng);
 
 	freeGame(ng);
+	G = bak;
 	return t;
 
 dont:
@@ -159,6 +170,8 @@ static inline score quiesce(game g, score alpha, score beta, int curDepth) {
 	game ng;
 	game bak = G;
 	score ret, t;
+
+	assert(ply == curDepth);
 
 	if (timeup) {
 		ret = 0;
@@ -254,6 +267,7 @@ static inline score quiesce(game g, score alpha, score beta, int curDepth) {
 
 out:
 
+	assert(G == bak);
 	assert(timeup || ret > minScore);
 	assert(timeup || ret < maxScore);
 
@@ -262,8 +276,8 @@ out:
 
 score negamax(game g, int maxDepth, int curDepth, move *mm, score alpha,
 		score beta) {
-	game bak = G;
-	u64 h = G->zobrist;
+	__unused game bak = G;
+	__unused u64 h = G->zobrist;
 	score ret;
 
 	ret = _negamax(g, maxDepth, curDepth, mm, alpha, beta);
@@ -285,6 +299,11 @@ score _negamax(game g, int maxDepth, int curDepth, move *mm, score alpha,
 	int bestmove = -1;
 
 	stats.nall++;
+
+	assert(ply == curDepth);
+
+	ng = copyGame(g);
+	G = ng;
 
 	if (timeup) {
 		ret = 0;
@@ -344,12 +363,10 @@ score _negamax(game g, int maxDepth, int curDepth, move *mm, score alpha,
 		 */
 		assert(!inCheck(g, g->turn));
 
-		if (copts.quiesce) {
+		if (copts.quiesce)
 			ret = quiesce(g, alpha, beta, curDepth);
-		} else {
-			G = g;
+		else
 			ret = boardEval();
-		}
 
 		goto out;
 	}
@@ -367,10 +384,8 @@ score _negamax(game g, int maxDepth, int curDepth, move *mm, score alpha,
 		}
 	}
 
-	if (!mm) {
-		G = g;
+	if (!mm)
 		addon_notify_entry(maxDepth - curDepth, &alpha, &beta);
-	}
 
 	if (alpha >= beta && copts.ab) {
 		/* Deshabilitado por ahora */
@@ -388,17 +403,18 @@ score _negamax(game g, int maxDepth, int curDepth, move *mm, score alpha,
 
 	alpha_orig = alpha;
 	best = minScore;
-	ng = copyGame(g);
 
 	stats.nopen_s++;
 	stats.depthsn[curDepth]++;
 
+	assert(ng->zobrist == g->zobrist);
 	genSuccs_wrap(g, curDepth);
 
 	for (i = first_succ[ply]; i < first_succ[ply+1]; i++) {
 		sort_succ(g, i);
 		const move m = gsuccs[i].m;
 
+		assert(ng->zobrist == g->zobrist);
 		if (!doMove_unchecked(ng, m))
 			continue;
 
@@ -443,7 +459,7 @@ score _negamax(game g, int maxDepth, int curDepth, move *mm, score alpha,
 		unmark(ng);
 
 		/* Ya no necesitamos a ng */
-		*ng = *g;
+		*ng = *bak;
 
 		if (t > best) {
 			best = t;
@@ -454,7 +470,6 @@ score _negamax(game g, int maxDepth, int curDepth, move *mm, score alpha,
 			alpha = t;
 
 		if (alpha >= beta && copts.ab) {
-			G = g;
 			addon_notify_cut(m, curDepth);
 			break;
 		}
@@ -529,9 +544,8 @@ score _negamax(game g, int maxDepth, int curDepth, move *mm, score alpha,
 		}
 	}
 
-	freeGame(ng);
-
 out:
+	freeGame(ng);
 	G = bak;
 
 	if (mm)
@@ -546,5 +560,6 @@ out:
 score search(game g, int maxDepth, move *mm, score alpha, score beta) {
 	alpha = clamp(alpha, 1-CHECKMATE_SCORE, CHECKMATE_SCORE-1);
 	beta  = clamp(beta , 1-CHECKMATE_SCORE, CHECKMATE_SCORE-1);
+	assert(ply == 0);
 	return negamax(g, maxDepth, 0, mm, alpha, beta);
 }
