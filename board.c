@@ -540,6 +540,7 @@ static bool doMoveNull(game g, move m, bool check);
  */
 static bool __doMove(game g, move m, bool check) {
 	game old_g = copyGame(g);
+	game bak = G;
 
 	G = g;
 	assert(m.who == g->turn);
@@ -594,12 +595,14 @@ static bool __doMove(game g, move m, bool check) {
 
 	g->turn = flipTurn(g->turn);
 	g->zobrist ^= ZOBR_BLACK();
+	G = bak;
 
 	return true;
 
 fail:
 	memcpy(g, old_g, sizeof *g);
 	freeGame(old_g);
+	G = bak;
 
 	return false;
 }

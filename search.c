@@ -7,14 +7,17 @@
 #include "eval.h"
 #include <stdbool.h>
 
-score negamax(game g, int curDepth, int maxDepth, move *mm, score alpha, score beta);
+score negamax(const game g, int curDepth, int maxDepth, move *mm, score alpha, score beta);
+score _negamax(const game g, int curDepth, int maxDepth, move *mm, score alpha, score beta);
 
 static inline void genCaps_wrap(game g, int depth) {
+	game bak = G;
 	genCaps(g);
 	stats.ngen += first_succ[ply+1] - first_succ[ply];
 
 	G = g;
 	addon_score_succs(depth);
+	G = bak;
 }
 
 static inline void shuffle_succs() {
@@ -39,12 +42,15 @@ static inline void shuffle_succs() {
 }
 
 static inline void genSuccs_wrap(game g, int depth) {
+	game bak = G;
+
 	/* Generar sucesores */
 	genSuccs(g);
 	stats.ngen += first_succ[ply+1] - first_succ[ply];
 
 	G = g;
 	addon_score_succs(depth);
+	G = bak;
 
 	/* Mezclarlos si es necesario */
 	shuffle_succs();
@@ -151,6 +157,7 @@ dont:
 static inline score quiesce(game g, score alpha, score beta, int curDepth) {
 	int nvalid, i;
 	game ng;
+	game bak = G;
 	score ret, t;
 
 	if (timeup) {
@@ -173,6 +180,7 @@ static inline score quiesce(game g, score alpha, score beta, int curDepth) {
 
 	G = g;
 	t = boardEval();
+	G = bak;
 
 	if (t >= beta)
 		return beta;
@@ -243,12 +251,26 @@ out:
 
 score negamax(game g, int maxDepth, int curDepth, move *mm, score alpha,
 		score beta) {
+	game bak = G;
+	u64 h = G->zobrist;
+	score ret;
+
+	ret = _negamax(g, maxDepth, curDepth, mm, alpha, beta);
+
+	assert(G == bak);
+	assert(G->zobrist == h);
+	return ret;
+}
+
+score _negamax(game g, int maxDepth, int curDepth, move *mm, score alpha,
+		score beta) {
 	static bool doing_lmr = false;
 	score t, ret, best, alpha_orig;
 	int i;
 	int ext;
 	int nvalid = 0;
 	game ng;
+	game bak = G;
 	int bestmove = -1;
 
 	stats.nall++;
@@ -345,7 +367,8 @@ score negamax(game g, int maxDepth, int curDepth, move *mm, score alpha,
 
 	if (ply >= MAX_PLY-1) {
 		G = g;
-		return boardEval();
+		ret = boardEval();
+		goto out;
 	}
 
 	alpha_orig = alpha;
@@ -494,6 +517,8 @@ score negamax(game g, int maxDepth, int curDepth, move *mm, score alpha,
 	freeGame(ng);
 
 out:
+	G = bak;
+
 	if (mm)
 		assert(mm->move_type != MOVE_INVAL);
 

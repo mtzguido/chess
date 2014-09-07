@@ -15,33 +15,46 @@ bool bishopMove(int r, int c, int R, int C);
 
 static inline bool canMove(game g, int r, int c, int R, int C) {
 	const int piece = g->board[r][c];
+	bool ret;
+	const game bak = G;
+
 	G = g;
 	switch(piece) {
 	case EMPTY:
-		return false;
+		ret = false;
+		break;
 	case WPAWN:
 	case BPAWN:
-		return pawnMove(r, c, R, C);
+		ret = pawnMove(r, c, R, C);
+		break;
 	case WKNIGHT:
 	case BKNIGHT:
-		return knightMove(r, c, R, C);
+		ret = knightMove(r, c, R, C);
+		break;
 	case WBISHOP:
 	case BBISHOP:
-		return bishopMove(r, c, R, C);
+		ret = bishopMove(r, c, R, C);
+		break;
 	case WROOK:
 	case BROOK:
-		return rookMove(r, c, R, C);
+		ret = rookMove(r, c, R, C);
+		break;
 	case WQUEEN:
 	case BQUEEN:
-		return rookMove(r, c, R, C)
-		    || bishopMove(r, c, R, C);
+		ret = rookMove(r, c, R, C)
+		   || bishopMove(r, c, R, C);
+		break;
 	case WKING:
 	case BKING:
-		return kingMove(r, c, R, C);
+		ret = kingMove(r, c, R, C);
+		break;
 	default:
 		fprintf(stderr, "!!!!!!!! (%i)\n", G->board[r][c]);
 		abort();
 	}
+
+	G = bak;
+	return ret;
 }
 
 #endif

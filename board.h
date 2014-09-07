@@ -129,14 +129,18 @@ static inline bool any_piece(i8 r, i8 c) {
 }
 
 static inline bool isCapture(game g, move m) {
+	game bak = G;
+	bool ret;
 	if (m.move_type != MOVE_REGULAR)
 		return false;
 
 	G = g;
-	return enemy_piece(m.R, m.C)
+	ret = enemy_piece(m.R, m.C)
 		|| (m.R == g->en_passant_x
 			&& m.C == g->en_passant_y
 			&& isPawn(g->board[m.r][m.c]));
+	G = bak;
+	return ret;
 }
 
 static inline bool isPromotion(game g, move m) {
