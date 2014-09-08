@@ -1,7 +1,6 @@
 #include "ai.h"
 #include "board.h"
 #include "pgn.h"
-#include "mem.h"
 #include "ztable.h"
 #include "succs.h"
 #include "user_input.h"
@@ -34,7 +33,6 @@ static int nmoves() {
 	int i;
 	move m;
 
-	init_mem();
 	startingGame2();
 	mark();
 
@@ -358,7 +356,6 @@ int main(int argc, char **argv) {
 
 	dbg("random seed: %u\n", copts.seed);
 	srand(copts.seed);
-	init_mem();
 
 	switch (copts.mode) {
 	case xboard:

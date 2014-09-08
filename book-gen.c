@@ -3,7 +3,6 @@
 #include <ctype.h>
 #include "board.h"
 #include "common.h"
-#include "mem.h"
 
 struct bookmove {
 	u64 hash;
@@ -179,8 +178,6 @@ int main () {
 	int line = 0;
 	char buf[2000];
 	int i, c=0;
-
-	init_mem();
 
 	while (c != EOF) {
 		line++;

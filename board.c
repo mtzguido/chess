@@ -7,7 +7,6 @@
 #include "move.h"
 #include "masks.h"
 #include "piece-square.h"
-#include "mem.h"
 #include "board.h"
 #include "zobrist.h"
 #include "ztable.h"
