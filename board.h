@@ -107,7 +107,7 @@ void freeGame(game g);
 
 bool inCheck(game g, int who);
 int isFinished(game g);
-bool isDraw();
+bool isDraw(void);
 
 void printBoard(game b);
 

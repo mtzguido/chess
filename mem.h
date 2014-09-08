@@ -3,8 +3,8 @@
 
 #include "board.h"
 
-void init_mem();
-game galloc();
+void init_mem(void);
+game galloc(void);
 void gfree(game g);
 
 #endif

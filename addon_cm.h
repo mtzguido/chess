@@ -3,7 +3,7 @@
 
 #include "addon.h"
 
-void cm_reset();
+void cm_reset(void);
 void cm_score_succs(int depth);
 void cm_notify_cut(move m, int depth);
 void cm_suggest(move *arr, int *n, int depth);

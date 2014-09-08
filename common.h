@@ -34,7 +34,7 @@ typedef int32_t		i32;
 typedef int16_t		i16;
 typedef int8_t		i8;
 
-unsigned long getms();
+unsigned long getms(void);
 
 char pieceOf(char c);
 
