@@ -17,11 +17,19 @@ struct game_struct _G;
 game G = &_G;
 
 static int d = 0;
-game stack[200] = {0};
+static int maxd;
+game stack[2000] = {0};
 
 static void pushGame() {
+	assert(d + 1 < (int)(sizeof stack / sizeof stack[0]));
+
 	stack[d++] = G;
 	G = copyGame(G);
+
+	if (d > maxd) {
+		maxd = d;
+		dbg("maxd = %i\n", maxd);
+	}
 }
 
 static void popGame() {
@@ -40,6 +48,7 @@ static void peekGame() {
 }
 
 game prevGame() {
+	assert(d > 0);
 	return stack[d-1];
 }
 
