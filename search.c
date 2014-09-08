@@ -164,7 +164,7 @@ dont:
 	return alpha;
 }
 
-static inline score quiesce(game g, score alpha, score beta, int curDepth) {
+static inline score quiesce(score alpha, score beta, int curDepth) {
 	int nvalid, i;
 	game ng;
 	game bak = G;
@@ -187,17 +187,14 @@ static inline score quiesce(game g, score alpha, score beta, int curDepth) {
 		}
 	}
 
-	if (isDraw(g) || reps(g) >= 2) {
+	if (isDraw(G) || reps(G) >= 2) {
 		ret = 0;
 		goto out;
 	}
 
 	stats.nopen_q++;
 
-	G = g;
 	t = boardEval();
-	G = bak;
-
 	if (t >= beta) {
 		ret = beta;
 		goto out;
@@ -206,7 +203,7 @@ static inline score quiesce(game g, score alpha, score beta, int curDepth) {
 	if (copts.delta_prune) {
 		score delta = QUEEN_SCORE - PAWN_SCORE;
 
-		if (g->lastmove.promote != EMPTY)
+		if (G->lastmove.promote != EMPTY)
 			delta += QUEEN_SCORE;
 
 		if (t + delta < alpha) {
@@ -223,17 +220,18 @@ static inline score quiesce(game g, score alpha, score beta, int curDepth) {
 		goto out;
 	}
 
-	ng = copyGame(g);
-	genCaps_wrap(g, curDepth);
+	ng = copyGame(G);
+	G = ng;
+	genCaps_wrap(G, curDepth);
 	nvalid = 0;
 	for (i = first_succ[ply]; i < first_succ[ply+1]; i++) {
-		sort_succ(g, i);
+		sort_succ(G, i);
 		const move m = gsuccs[i].m;
 
 		assert(m.move_type == MOVE_REGULAR);
 
 		/* We only consider captures and promotions */
-		assert(isCapture(g, m) || isPromotion(g, m));
+		assert(isCapture(G, m) || isPromotion(G, m));
 
 		if (!doMove_unchecked(ng, m))
 			continue;
@@ -242,10 +240,10 @@ static inline score quiesce(game g, score alpha, score beta, int curDepth) {
 
 		mark(ng);
 		ply++;
-		t = -quiesce(ng, -beta, -alpha, curDepth+1);
+		t = -quiesce(-beta, -alpha, curDepth+1);
 		ply--;
 		unmark(ng);
-		*ng = *g;
+		*ng = *bak;
 
 		if (t > alpha) {
 			if (t >= beta) {
@@ -265,6 +263,7 @@ static inline score quiesce(game g, score alpha, score beta, int curDepth) {
 		ret = alpha;
 
 out:
+	G = bak;
 
 	assert(G == bak);
 	assert(timeup || ret > minScore);
@@ -363,7 +362,7 @@ score _negamax(int maxDepth, int curDepth, move *mm, score alpha,
 		assert(!inCheck(G, G->turn));
 
 		if (copts.quiesce)
-			ret = quiesce(G, alpha, beta, curDepth);
+			ret = quiesce(alpha, beta, curDepth);
 		else
 			ret = boardEval();
 
