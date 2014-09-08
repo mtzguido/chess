@@ -228,7 +228,7 @@ static inline score _quiesce(score alpha, score beta, int curDepth) {
 		assert(m.move_type == MOVE_REGULAR);
 
 		/* We only consider captures and promotions */
-		assert(isCapture(G, m) || isPromotion(G, m));
+		assert(isCapture(m) || isPromotion(m));
 
 		if (!doMove_unchecked(m))
 			continue;

@@ -87,7 +87,7 @@ static int checkMove(move m) {
 	 * promotions. Fairymax doesn't even care about
 	 * knights so we're being extra kind here.
 	 */
-	if (isPromotion(G, m) && m.promote != WKNIGHT)
+	if (isPromotion(m) && m.promote != WKNIGHT)
 		m.promote = WQUEEN;
 
 	int rc = doMove(m);
@@ -97,7 +97,7 @@ static int checkMove(move m) {
 
 	undoMove();
 
-	if (isCapture(G, m) || isPromotion(G, m))
+	if (isCapture(m) || isPromotion(m))
 		genCaps();
 	else
 		genSuccs();
