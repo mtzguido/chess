@@ -1031,10 +1031,6 @@ int scoreOf(int piece) {
 	return scoreTab[piece & 7];
 }
 
-bool equalGame(game a, game b) {
-	return a->zobrist == b->zobrist;
-}
-
 void tostr(char *s) {
 	int i, j;
 	char buf[10];

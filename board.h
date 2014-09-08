@@ -29,7 +29,6 @@ struct move {
 };
 
 typedef struct move move;
-
 typedef u8 piece_t;
 
 struct game_struct {
@@ -61,8 +60,6 @@ typedef struct game_struct *game;
 
 /* Global game */
 extern game G;
-
-game prevGame(void);
 
 /* Players */
 #define BLACK	0
@@ -101,8 +98,8 @@ game prevGame(void);
 
 void startingGame(void);
 
-bool doMove(move m); /* Actua sobre g */
-bool doMove_unchecked(move m); /* Actua sobre g */
+bool doMove(move m);
+bool doMove_unchecked(move m);
 void undoMove(void);
 
 bool inCheck(int who);
@@ -113,8 +110,6 @@ void printBoard(void);
 
 void tostr(char *s);
 void fromstr(const char *s);
-
-bool equalGame(game a, game b);
 
 char charOf(int piece);
 
@@ -175,8 +170,8 @@ static inline bool equalMove(move a, move b) {
 				 2 * BISHOP_SCORE + 2 * KNIGHT_SCORE + \
 				 8 * PAWN_SCORE)
 
-static inline int interpolate(game g, int start, int finish) {
-	int t = g->pieceScore[WHITE] + g->pieceScore[BLACK];
+static inline int interpolate(int start, int finish) {
+	int t = G->pieceScore[WHITE] + G->pieceScore[BLACK];
 	return (t*(start - finish)/(2*SIDE_SCORE)) + finish;
 }
 

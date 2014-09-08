@@ -2,7 +2,7 @@
 #include "eval.h"
 
 static inline int pieceScore() {
-	const int pps = interpolate(G, G->pps_O, G->pps_E);
+	const int pps = interpolate(G->pps_O, G->pps_E);
 	const int w = G->pieceScore[WHITE];
 	const int b = G->pieceScore[BLACK];
 	int bonus;
@@ -165,7 +165,7 @@ static inline score eval_with_ranks(const u8 col) {
 
 		/* Penalize knight at end game */
 		case WKNIGHT:
-			score += interpolate(G, 0, KNIGHT_ENDGAME);
+			score += interpolate(0, KNIGHT_ENDGAME);
 			break;
 
 		/* Count bishops */
