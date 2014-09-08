@@ -13,12 +13,10 @@ bool kingMove(int r, int c, int R, int C);
 bool knightMove(int r, int c, int R, int C);
 bool bishopMove(int r, int c, int R, int C);
 
-static inline bool canMove(game g, int r, int c, int R, int C) {
-	const int piece = g->board[r][c];
+static inline bool canMove(int r, int c, int R, int C) {
+	const int piece = G->board[r][c];
 	bool ret;
-	const game bak = G;
 
-	G = g;
 	switch(piece) {
 	case EMPTY:
 		ret = false;
@@ -53,7 +51,6 @@ static inline bool canMove(game g, int r, int c, int R, int C) {
 		abort();
 	}
 
-	G = bak;
 	return ret;
 }
 

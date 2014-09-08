@@ -509,28 +509,28 @@ static bool danger(u8 r, u8 c, u8 kr, u8 kc) {
  * no existen sus inversas ya que nunca se
  * habilita
  */
-static void disable_castle_k(game g, int who) {
-	if (g->castle_king[who])
-		g->zobrist ^= ZOBR_CASTLE_K(who);
+static void disable_castle_k(int who) {
+	if (G->castle_king[who])
+		G->zobrist ^= ZOBR_CASTLE_K(who);
 
-	g->castle_king[who] = 0;
+	G->castle_king[who] = 0;
 }
 
-static void disable_castle_q(game g, int who) {
-	if (g->castle_queen[who])
-		g->zobrist ^= ZOBR_CASTLE_Q(who);
+static void disable_castle_q(int who) {
+	if (G->castle_queen[who])
+		G->zobrist ^= ZOBR_CASTLE_Q(who);
 
-	g->castle_queen[who] = 0;
+	G->castle_queen[who] = 0;
 }
 
 /* Auxiliares de en_passant */
-static void set_ep(game g, u8 r, u8 c) {
-	g->zobrist ^= ZOBR_EP(g->en_passant_x);
+static void set_ep(u8 r, u8 c) {
+	G->zobrist ^= ZOBR_EP(G->en_passant_x);
 
-	g->en_passant_x = r;
-	g->en_passant_y = c;
+	G->en_passant_x = r;
+	G->en_passant_y = c;
 
-	g->zobrist ^= ZOBR_EP(g->en_passant_x);
+	G->zobrist ^= ZOBR_EP(G->en_passant_x);
 }
 
 static bool doMoveRegular(move m, bool check);
@@ -557,7 +557,7 @@ static bool __doMove(move m, bool check) {
 		if (!doMoveKCastle(m, check))
 			goto fail;
 
-		set_ep(G, -1, -1);
+		set_ep(-1, -1);
 		G->lastmove = m;
 		G->castled[m.who] = 1;
 
@@ -567,7 +567,7 @@ static bool __doMove(move m, bool check) {
 		if (!doMoveQCastle(m, check))
 			goto fail;
 
-		set_ep(G, -1, -1);
+		set_ep(-1, -1);
 		G->lastmove = m;
 		G->castled[m.who] = 1;
 
@@ -578,7 +578,7 @@ static bool __doMove(move m, bool check) {
 		if (!doMoveNull(m, check))
 			goto fail;
 
-		set_ep(G, -1, -1);
+		set_ep(-1, -1);
 		G->lastmove = m;
 
 		break;
@@ -617,61 +617,61 @@ void undoMove() {
 }
 
 /* Auxiliares de doMoveRegular */
-static inline void setPiece(game g, i8 r, i8 c, piece_t piece);
-static bool isValid(game g, move m);
-static inline void updKing(game g, move m);
-static inline void updCastling(game g, move m);
-static inline void epCapture(game g, move m);
-static inline void epCalc(game g, move m);
-static inline void calcPromotion(game g, move m);
+static inline void setPiece(i8 r, i8 c, piece_t piece);
+static bool isValid(move m);
+static inline void updKing(move m);
+static inline void updCastling(move m);
+static inline void epCapture(move m);
+static inline void epCalc(move m);
+static inline void calcPromotion(move m);
 
-static void recalcPawnRank(game g, int col, int c) {
+static void recalcPawnRank(int col, int c) {
 	int i;
 
 	if (col == WHITE) {
 		for (i = 6; i > 0; i--)
-			if (g->board[i][c] == WPAWN)
+			if (G->board[i][c] == WPAWN)
 				break;
 
-		g->pawn_rank[WHITE][c+1] = i;
+		G->pawn_rank[WHITE][c+1] = i;
 	} else {
 		for (i = 1; i < 7; i++)
-			if (g->board[i][c] == BPAWN)
+			if (G->board[i][c] == BPAWN)
 				break;
 
-		g->pawn_rank[BLACK][c+1] = i;
+		G->pawn_rank[BLACK][c+1] = i;
 	}
 
 }
 
-static void setPiece(game g, i8 r, i8 c, piece_t piece) {
-	piece_t old_piece = g->board[r][c];
+static void setPiece(i8 r, i8 c, piece_t piece) {
+	piece_t old_piece = G->board[r][c];
 	u8 old_who = colorOf(old_piece);
 	u8 who = colorOf(piece);
 
 	if (old_piece) {
 		assert(old_piece != WKING && old_piece != BKING);
-		g->pieceScore[old_who]	-= scoreOf(old_piece);
-		g->pps_O		-= piece_square_val_O(old_piece, r, c);
-		g->pps_E		-= piece_square_val_E(old_piece, r, c);
-		g->zobrist		^= ZOBR_PIECE(old_piece, r, c);
-		g->piecemask[old_who]	^= ((u64)1) << (r*8 + c);
+		G->pieceScore[old_who]	-= scoreOf(old_piece);
+		G->pps_O		-= piece_square_val_O(old_piece, r, c);
+		G->pps_E		-= piece_square_val_E(old_piece, r, c);
+		G->zobrist		^= ZOBR_PIECE(old_piece, r, c);
+		G->piecemask[old_who]	^= ((u64)1) << (r*8 + c);
 	}
 
-	g->board[r][c] = piece;
+	G->board[r][c] = piece;
 
 	if (isPawn(piece))
-		recalcPawnRank(g, who, c);
+		recalcPawnRank(who, c);
 
 	if (isPawn(old_piece))
-		recalcPawnRank(g, old_who, c);
+		recalcPawnRank(old_who, c);
 
 	if (piece) {
-		g->piecemask[who]	^= ((u64)1) << (r*8 + c);
-		g->zobrist		^= ZOBR_PIECE(piece, r, c);
-		g->pps_E		+= piece_square_val_E(piece, r, c);
-		g->pps_O		+= piece_square_val_O(piece, r, c);
-		g->pieceScore[who]	+= scoreOf(piece);
+		G->piecemask[who]	^= ((u64)1) << (r*8 + c);
+		G->zobrist		^= ZOBR_PIECE(piece, r, c);
+		G->pps_E		+= piece_square_val_E(piece, r, c);
+		G->pps_O		+= piece_square_val_O(piece, r, c);
+		G->pieceScore[who]	+= scoreOf(piece);
 	}
 }
 
@@ -683,47 +683,47 @@ static void setPiece(game g, i8 r, i8 c, piece_t piece) {
  * pero ahorra llamadas innecesarias a scoreOf y 
  * anda mas rápido
  */
-static void movePiece(game g, i8 r, i8 c, i8 R, i8 C) {
-	const piece_t from = g->board[r][c];
-	const piece_t to   = g->board[R][C];
-	const u8 who = g->turn;
+static void movePiece(i8 r, i8 c, i8 R, i8 C) {
+	const piece_t from = G->board[r][c];
+	const piece_t to   = G->board[R][C];
+	const u8 who = G->turn;
 	const u8 enemy = flipTurn(who);
 
 	assert(from != EMPTY);
 
-	g->pps_O +=
+	G->pps_O +=
 		piece_square_val_O(from, R, C) - piece_square_val_O(from, r, c);
-	g->pps_E +=
+	G->pps_E +=
 		piece_square_val_E(from, R, C) - piece_square_val_E(from, r, c);
-	g->zobrist ^=
+	G->zobrist ^=
 		ZOBR_PIECE(from, r, c) ^ ZOBR_PIECE(from, R, C);
-	g->piecemask[who] ^=
+	G->piecemask[who] ^=
 		(((u64)1) << (r*8 + c)) ^ (((u64)1) << (R*8 + C));
 
-	g->board[r][c] = EMPTY;
-	g->board[R][C] = from;
+	G->board[r][c] = EMPTY;
+	G->board[R][C] = from;
 
 	/* Si hubo captura */
 	if (to) {
 		assert(to != WKING && to != BKING);
-		g->pieceScore[enemy]	-= scoreOf(to);
-		g->pps_O		-= piece_square_val_O(to, R, C);
-		g->pps_E		-= piece_square_val_E(to, R, C);
-		g->zobrist		^= ZOBR_PIECE(to, R, C);
-		g->piecemask[enemy]	^= ((u64)1) << (R*8 + C);
+		G->pieceScore[enemy]	-= scoreOf(to);
+		G->pps_O		-= piece_square_val_O(to, R, C);
+		G->pps_E		-= piece_square_val_E(to, R, C);
+		G->zobrist		^= ZOBR_PIECE(to, R, C);
+		G->piecemask[enemy]	^= ((u64)1) << (R*8 + C);
 	}
 
 	if (isPawn(from)) {
 		if (c == C) {
-			recalcPawnRank(g, who, c);
+			recalcPawnRank(who, c);
 		} else {
-			recalcPawnRank(g, who, c);
-			recalcPawnRank(g, who, C);
+			recalcPawnRank(who, c);
+			recalcPawnRank(who, C);
 		}
 	}
 
 	if (isPawn(to))
-		recalcPawnRank(g, enemy, C);
+		recalcPawnRank(enemy, C);
 }
 
 static bool doMoveRegular(move m, bool check) {
@@ -731,14 +731,14 @@ static bool doMoveRegular(move m, bool check) {
 	const u8 other = flipTurn(G->turn);
 
 	if (check) {
-		if (!isValid(G, m))
+		if (!isValid(m))
 			return false;
 
 		/* No pisar piezas propias */
 		if (own_piece(m.R, m.C))
 			return false;
 	} else {
-		assert(isValid(G, m));
+		assert(isValid(m));
 		assert(!own_piece(m.R, m.C));
 	}
 
@@ -752,27 +752,27 @@ static bool doMoveRegular(move m, bool check) {
 		G->idlecount = 0;
 
 		/* Actuar si es una captura al paso */
-		epCapture(G, m);
+		epCapture(m);
 
 		/* Recalcular en passant */
-		epCalc(G, m);
+		epCalc(m);
 
 		/* Es un peón que promueve? */
-		calcPromotion(G, m);
+		calcPromotion(m);
 	} else {
 		if (isKing(piece))
-			updKing(G, m);
+			updKing(m);
 		else if (isRook(piece))
-			updCastling(G, m);
+			updCastling(m);
 
-		set_ep(G, -1, -1);
+		set_ep(-1, -1);
 	}
 
 	if (enemy_piece(m.R, m.C))
 		G->idlecount = 0;
 
 	/* Movemos */
-	movePiece(G, m.r, m.c, m.R, m.C);
+	movePiece(m.r, m.c, m.R, m.C);
 
 	/* Si es algún movimiento relevante al rey contrario
 	 * dropeamos la cache */
@@ -804,13 +804,13 @@ static bool doMoveNull(move m, bool check) {
 	return true;
 }
 
-static bool isValid(game g, move m) {
-	piece_t piece = g->board[m.r][m.c];
+static bool isValid(move m) {
+	piece_t piece = G->board[m.r][m.c];
 
 	/* Siempre se mueve una pieza propia */
-	if (m.who != g->turn ||
+	if (m.who != G->turn ||
 	    piece == EMPTY ||
-	    colorOf(piece) != g->turn)
+	    colorOf(piece) != G->turn)
 		return false;
 
 	/* La pieza debe poder moverse al destino */
@@ -819,7 +819,7 @@ static bool isValid(game g, move m) {
 	 || m.r > 7 || m.c > 7
 	 || m.R > 7 || m.C > 7
 	 || (m.r == m.R && m.c == m.C)
-	 || !canMove(g, m.r, m.c, m.R, m.C))
+	 || !canMove(m.r, m.c, m.R, m.C))
 		return false;
 
 	/* Es un peón que promueve? */
@@ -832,15 +832,15 @@ static bool isValid(game g, move m) {
 	return true;
 }
 
-static void updKing(game g, move m) {
-	g->kingx[m.who] = m.R;
-	g->kingy[m.who] = m.C;
+static void updKing(move m) {
+	G->kingx[m.who] = m.R;
+	G->kingy[m.who] = m.C;
 
-	disable_castle_k(g, m.who);
-	disable_castle_q(g, m.who);
+	disable_castle_k(m.who);
+	disable_castle_q(m.who);
 }
 
-static void updCastling(game g, move m) {
+static void updCastling(move m) {
 	/* En vez de ver si se movió la torre
 	 * correspondiente, nos fijamos en la
 	 * casilla donde empieza la torre.
@@ -850,33 +850,33 @@ static void updCastling(game g, move m) {
 		return;
 
 	if (m.c == 7)
-		disable_castle_k(g, m.who);
+		disable_castle_k(m.who);
 	else if (m.c == 0)
-		disable_castle_q(g, m.who);
+		disable_castle_q(m.who);
 }
 
-static void epCapture(game g, move m) {
-	if (m.R == g->en_passant_x && m.C == g->en_passant_y) {
-		setPiece(g, m.r, m.C, 0);
-		g->inCheck[WHITE] = -1;
-		g->inCheck[BLACK] = -1;
+static void epCapture(move m) {
+	if (m.R == G->en_passant_x && m.C == G->en_passant_y) {
+		setPiece(m.r, m.C, 0);
+		G->inCheck[WHITE] = -1;
+		G->inCheck[BLACK] = -1;
 	}
 }
 
-static void epCalc(game g, move m) {
+static void epCalc(move m) {
 	if (abs(m.r - m.R) == 2) {
 		assert (m.c == m.C);
-		set_ep(g, (m.r+m.R)/2, m.c);
+		set_ep((m.r+m.R)/2, m.c);
 	} else {
-		set_ep(g, -1, -1);
+		set_ep(-1, -1);
 	}
 }
 
-static void calcPromotion(game g, move m) {
+static void calcPromotion(move m) {
 	if (m.R == (m.who == WHITE ? 0 : 7)) {
 		piece_t new_piece = m.who == WHITE ? m.promote : (8 | m.promote);
 
-		setPiece(g, m.r, m.c, new_piece);
+		setPiece(m.r, m.c, new_piece);
 	}
 }
 
@@ -922,17 +922,17 @@ static bool doMoveKCastle(move m, bool check) {
 		popGame();
 	}
 
-	disable_castle_k(G, m.who);
-	disable_castle_q(G, m.who);
+	disable_castle_k(m.who);
+	disable_castle_q(m.who);
 
 	/* Dropeamos la cache de jaque */
 	G->inCheck[0] = -1;
 	G->inCheck[1] = -1;
 
 	/* Mover rey */
-	movePiece(G, rank, 4, rank, 6);
+	movePiece(rank, 4, rank, 6);
 	/* Mover torre */
-	movePiece(G, rank, 7, rank, 5);
+	movePiece(rank, 7, rank, 5);
 
 	G->kingx[m.who] = rank;
 	G->kingy[m.who] = 6;
@@ -984,17 +984,17 @@ static bool doMoveQCastle(move m, bool check) {
 		popGame();
 	}
 
-	disable_castle_k(G, m.who);
-	disable_castle_q(G, m.who);
+	disable_castle_k(m.who);
+	disable_castle_q(m.who);
 
 	/* Dropeamos la cache de jaque */
 	G->inCheck[0] = -1;
 	G->inCheck[1] = -1;
 
 	/* Mover rey */
-	movePiece(G, rank, 4, rank, 2);
+	movePiece(rank, 4, rank, 2);
 	/* Mover torre */
-	movePiece(G, rank, 0, rank, 3);
+	movePiece(rank, 0, rank, 3);
 
 	G->kingx[m.who] = rank;
 	G->kingy[m.who] = 2;

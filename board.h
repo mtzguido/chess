@@ -102,9 +102,6 @@ bool doMove(move m); /* Actua sobre g */
 bool doMove_unchecked(move m); /* Actua sobre g */
 void undoMove(void);
 
-game copyGame(game g);
-void freeGame(game g);
-
 bool inCheck(int who);
 int isFinished(void);
 bool isDraw(void);

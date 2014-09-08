@@ -45,7 +45,7 @@ move fromPGN(struct pgn p) {
 	for (i=0; i<8; i++) {
 		for (j=0; j<8; j++) {
 			if (G->board[i][j] == piece
-					&& canMove(G, i, j, '8' - p.dest_rank, p.dest_file - 'a')
+					&& canMove(i, j, '8' - p.dest_rank, p.dest_file - 'a')
 					&& (p.orig_file == '\0' || p.orig_file - 'a' == j)
 					&& (p.orig_rank == '\0' || '8' - p.orig_rank == i))
 			{
@@ -115,7 +115,7 @@ struct pgn toPGN(move m) {
 	for (i=0; i<8; i++) {
 		for (j=0; j<8; j++) {
 			if (G->board[i][j] == G->board[m.r][m.c]
-					&& canMove(G, i, j, m.R, m.C)
+					&& canMove(i, j, m.R, m.C)
 					&& (i != m.r || j != m.c))
 				ambiguous =1;
 		}
@@ -126,7 +126,7 @@ struct pgn toPGN(move m) {
 
 		for (i=0; i<8; i++) {
 			if (G->board[i][m.c] == G->board[m.r][m.c]
-					&& canMove(G, i, m.c, m.R, m.C)
+					&& canMove(i, m.c, m.R, m.C)
 					&& i != m.r)
 				ambiguous = 1;
 		}
