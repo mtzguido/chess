@@ -13,37 +13,30 @@
 #include "ztable.h"
 #include "succs.h"
 
-struct game_struct _G;
-game G = &_G;
-
 static int d = 0;
-static game stack[2000] = {0};
+static struct game_struct stack[2000];
+game G = &stack[0];
 
 static void pushGame() {
 	assert(d + 1 < (int)(sizeof stack / sizeof stack[0]));
 
-	stack[d++] = G;
-	G = copyGame(G);
+	stack[d+1] = *G;
+	G = &stack[d+1];
+	d++;
 }
 
 static void popGame() {
-	if (G != &_G)
-		freeGame(G);
-
-	G = stack[--d];
+	d--;
+	G = &stack[d];
 }
 
 __unused
 static void peekGame() {
-	if (G != &_G)
-		freeGame(G);
-
-	G = copyGame(stack[d-1]);
+	*G = stack[d-1];
 }
 
 game prevGame() {
-	assert(d > 0);
-	return stack[d-1];
+	return &stack[d-1];
 }
 
 static const char *init =
@@ -57,83 +50,69 @@ static const char *init =
 	"RNBQKBNR"
 	"W0011110000";
 
-static void fix(game g) {
+static void fix() {
 	int i, j;
 
-	g->idlecount = 0;
-	g->pieceScore[BLACK] = 0;
-	g->pieceScore[WHITE] = 0;
-	g->zobrist = 0;
-	g->piecemask[BLACK] = 0;
-	g->piecemask[WHITE] = 0;
+	G->idlecount = 0;
+	G->pieceScore[BLACK] = 0;
+	G->pieceScore[WHITE] = 0;
+	G->zobrist = 0;
+	G->piecemask[BLACK] = 0;
+	G->piecemask[WHITE] = 0;
 
 	for (i=0; i<10; i++) {
-		g->pawn_rank[WHITE][i] = 0;
-		g->pawn_rank[BLACK][i] = 7;
+		G->pawn_rank[WHITE][i] = 0;
+		G->pawn_rank[BLACK][i] = 7;
 	}
 
 	for (i = 0; i < 8; i++) {
 		for (j = 0; j < 8; j++) {
-			int piece = g->board[i][j];
+			int piece = G->board[i][j];
 
 			if (isKing(piece)) {
-				g->kingx[colorOf(piece)] = i;
-				g->kingy[colorOf(piece)] = j;
+				G->kingx[colorOf(piece)] = i;
+				G->kingy[colorOf(piece)] = j;
 			}
 
 			if (piece != EMPTY) {
 				if (piece != WKING && piece != BKING)
-					g->pieceScore[colorOf(piece)] += scoreOf(piece);
-				g->zobrist ^= ZOBR_PIECE(piece, i, j);
-				g->piecemask[colorOf(piece)] |=
+					G->pieceScore[colorOf(piece)] += scoreOf(piece);
+				G->zobrist ^= ZOBR_PIECE(piece, i, j);
+				G->piecemask[colorOf(piece)] |=
 					((u64)1) <<(i*8 + j);
 			}
 
 			if (piece == WPAWN) {
-				if (i > g->pawn_rank[WHITE][j+1])
-					g->pawn_rank[WHITE][j+1] = i;
+				if (i > G->pawn_rank[WHITE][j+1])
+					G->pawn_rank[WHITE][j+1] = i;
 			} else if (piece == BPAWN) {
-				if (i < g->pawn_rank[BLACK][j+1])
-					g->pawn_rank[BLACK][j+1] = i;
+				if (i < G->pawn_rank[BLACK][j+1])
+					G->pawn_rank[BLACK][j+1] = i;
 			}
 		}
 	}
 
-	if (g->turn == BLACK) g->zobrist ^= ZOBR_BLACK();
+	if (G->turn == BLACK) G->zobrist ^= ZOBR_BLACK();
 
-	if (g->castle_king[WHITE])  g->zobrist ^= ZOBR_CASTLE_K(WHITE);
-	if (g->castle_king[BLACK])  g->zobrist ^= ZOBR_CASTLE_K(BLACK);
-	if (g->castle_queen[WHITE]) g->zobrist ^= ZOBR_CASTLE_Q(WHITE);
-	if (g->castle_queen[BLACK]) g->zobrist ^= ZOBR_CASTLE_Q(BLACK);
+	if (G->castle_king[WHITE])  G->zobrist ^= ZOBR_CASTLE_K(WHITE);
+	if (G->castle_king[BLACK])  G->zobrist ^= ZOBR_CASTLE_K(BLACK);
+	if (G->castle_queen[WHITE]) G->zobrist ^= ZOBR_CASTLE_Q(WHITE);
+	if (G->castle_queen[BLACK]) G->zobrist ^= ZOBR_CASTLE_Q(BLACK);
 
-	g->inCheck[BLACK] = -1;
-	g->inCheck[WHITE] = -1;
-	g->en_passant_x = -1;
-	g->en_passant_y = -1;
+	G->inCheck[BLACK] = -1;
+	G->inCheck[WHITE] = -1;
+	G->en_passant_x = -1;
+	G->en_passant_y = -1;
 
-	g->castled[WHITE] = 0;
-	g->castled[BLACK] = 0;
+	G->castled[WHITE] = 0;
+	G->castled[BLACK] = 0;
 
-	G = g;
 	piecePosFullRecalc();
 }
 
 void startingGame() {
-	while (d)
-		popGame();
-
-	G = fromstr(init);
-}
-
-game copyGame(game g) {
-	game ret = galloc();
-	memcpy(ret, g, sizeof *ret);
-
-	return ret;
-}
-
-void freeGame(game g) {
-	gfree(g);
+	d = 0;
+	fromstr(init);
 }
 
 void printBoard() {
@@ -170,7 +149,7 @@ void printBoard() {
 	dbg("[ idlecount = %i\n", G->idlecount);
 	dbg("[ piecemask[W] = 0x%.16" PRIx64 "\n", G->piecemask[WHITE]);
 	dbg("[ piecemask[B] = 0x%.16" PRIx64 "\n", G->piecemask[BLACK]);
-	tostr(G, bbuf);
+	tostr(bbuf);
 	dbg("[ tostr = <%s>\n", bbuf);
 	dbg("[ reps = %i\n", reps());
 
@@ -1043,61 +1022,59 @@ bool equalGame(game a, game b) {
 	return a->zobrist == b->zobrist;
 }
 
-void tostr(game g, char *s) {
+void tostr(char *s) {
 	int i, j;
 	char buf[10];
 
-	for (i=0; i<8; i++) {
-		for (j=0; j<8; j++)
-			*s++ = charOf(g->board[i][j]);
+	for (i = 0; i < 8; i++) {
+		for (j = 0; j < 8; j++)
+			*s++ = charOf(G->board[i][j]);
 	}
 
-	*s++ = g->turn == WHITE ? 'W' : 'B';
+	*s++ = G->turn == WHITE ? 'W' : 'B';
 
-	sprintf(buf, "%02d", g->idlecount);
+	sprintf(buf, "%02d", G->idlecount);
 	assert(strlen(buf) == 2);
 	strcpy(s, buf);
 	s += 2;
 
-	*s++ = g->castle_king[WHITE] ? '1' : '0';
-	*s++ = g->castle_king[BLACK] ? '1' : '0';
-	*s++ = g->castle_queen[WHITE] ? '1' : '0';
-	*s++ = g->castle_queen[BLACK] ? '1' : '0';
-	*s++ = g->castled[WHITE] ? '1' : '0';
-	*s++ = g->castled[BLACK] ? '1' : '0';
-	*s++ = g->en_passant_x + '1';
-	*s++ = g->en_passant_y + '1';
+	*s++ = G->castle_king[WHITE] ? '1' : '0';
+	*s++ = G->castle_king[BLACK] ? '1' : '0';
+	*s++ = G->castle_queen[WHITE] ? '1' : '0';
+	*s++ = G->castle_queen[BLACK] ? '1' : '0';
+	*s++ = G->castled[WHITE] ? '1' : '0';
+	*s++ = G->castled[BLACK] ? '1' : '0';
+	*s++ = G->en_passant_x + '1';
+	*s++ = G->en_passant_y + '1';
 
 	*s = 0;
 }
 
-game fromstr(const char *s) {
+void fromstr(const char *s) {
 	int i, j;
-	game ret = galloc();
 	char buf[3];
 
-	for (i=0; i<8; i++) {
-		for (j=0; j<8; j++)
-			ret->board[i][j] = pieceOf(*s++);
+	for (i = 0; i < 8; i++) {
+		for (j = 0; j < 8; j++)
+			G->board[i][j] = pieceOf(*s++);
 	}
 
-	ret->turn = *s++ == 'W' ? WHITE : BLACK;
+	G->turn = *s++ == 'W' ? WHITE : BLACK;
 
 	buf[0] = *s++;
 	buf[1] = *s++;
 	buf[2] = 0;
 
-	ret->idlecount = atoi(buf);
+	G->idlecount = atoi(buf);
 
-	ret->castle_king[WHITE]  = *s++ == '1';
-	ret->castle_king[BLACK]  = *s++ == '1';
-	ret->castle_queen[WHITE] = *s++ == '1';
-	ret->castle_queen[BLACK] = *s++ == '1';
-	ret->castled[WHITE]      = *s++ == '1';
-	ret->castled[BLACK]      = *s++ == '1';
-	ret->en_passant_x        = *s++ - '1';
-	ret->en_passant_y        = *s++ - '1';
+	G->castle_king[WHITE]  = *s++ == '1';
+	G->castle_king[BLACK]  = *s++ == '1';
+	G->castle_queen[WHITE] = *s++ == '1';
+	G->castle_queen[BLACK] = *s++ == '1';
+	G->castled[WHITE]      = *s++ == '1';
+	G->castled[BLACK]      = *s++ == '1';
+	G->en_passant_x        = *s++ - '1';
+	G->en_passant_y        = *s++ - '1';
 
-	fix(ret);
-	return ret;
+	fix();
 }

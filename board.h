@@ -111,8 +111,8 @@ bool isDraw(void);
 
 void printBoard(void);
 
-void tostr(game g, char *s);
-game fromstr(const char *s);
+void tostr(char *s);
+void fromstr(const char *s);
 
 bool equalGame(game a, game b);
 

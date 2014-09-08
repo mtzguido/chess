@@ -23,7 +23,7 @@ static char arg_string[1024] = "";
 
 static void startingGame2() {
 	if (copts.custom_start) {
-		G = fromstr(copts.custom_start_str);
+		fromstr(copts.custom_start_str);
 		printBoard();
 	} else {
 		startingGame();
