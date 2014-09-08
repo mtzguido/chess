@@ -7,8 +7,8 @@
 #include "eval.h"
 #include <stdbool.h>
 
-score negamax(const game g, int curDepth, int maxDepth, move *mm, score alpha, score beta);
-score _negamax(const game g, int curDepth, int maxDepth, move *mm, score alpha, score beta);
+score negamax(int curDepth, int maxDepth, move *mm, score alpha, score beta);
+score _negamax(int curDepth, int maxDepth, move *mm, score alpha, score beta);
 
 static inline void shuffle_succs() {
 	struct MS swap;
@@ -95,10 +95,10 @@ static inline void sort_succ(game g, int i) {
 	assert(gsuccs[i].s >= 0);
 }
 
-static inline int calcExtension(const game g, int maxDepth, int curDepth) {
+static inline int calcExtension(int maxDepth, int curDepth) {
 	int ret = 0;
 
-	if (inCheck(g, g->turn) || g->lastmove.promote != EMPTY)
+	if (inCheck(G, G->turn) || G->lastmove.promote != EMPTY)
 		ret++;
 
 	return ret;
@@ -149,8 +149,7 @@ static inline score null_move_score(game g, int curDepth, int maxDepth,
 	ply++;
 	doing_null_move = true;
 
-	t = -negamax(ng, maxDepth - NMH_REDUCTION, curDepth+1, NULL,
-			-beta, -alpha);
+	t = -negamax(maxDepth - NMH_REDUCTION, curDepth+1, NULL, -beta, -alpha);
 
 	doing_null_move = false;
 
@@ -274,20 +273,20 @@ out:
 	return ret;
 }
 
-score negamax(game g, int maxDepth, int curDepth, move *mm, score alpha,
+score negamax(int maxDepth, int curDepth, move *mm, score alpha,
 		score beta) {
 	__unused game bak = G;
 	__unused u64 h = G->zobrist;
 	score ret;
 
-	ret = _negamax(g, maxDepth, curDepth, mm, alpha, beta);
+	ret = _negamax(maxDepth, curDepth, mm, alpha, beta);
 
 	assert(G == bak);
 	assert(G->zobrist == h);
 	return ret;
 }
 
-score _negamax(game g, int maxDepth, int curDepth, move *mm, score alpha,
+score _negamax(int maxDepth, int curDepth, move *mm, score alpha,
 		score beta) {
 	static bool doing_lmr = false;
 	score t, ret, best, alpha_orig;
@@ -302,7 +301,7 @@ score _negamax(game g, int maxDepth, int curDepth, move *mm, score alpha,
 
 	assert(ply == curDepth);
 
-	ng = copyGame(g);
+	ng = copyGame(G);
 	G = ng;
 
 	if (timeup) {
@@ -330,7 +329,7 @@ score _negamax(game g, int maxDepth, int curDepth, move *mm, score alpha,
 		goto out;
 	}
 
-	if (isDraw(g)) {
+	if (isDraw(G)) {
 		ret = 0;
 		goto out;
 	}
@@ -340,12 +339,12 @@ score _negamax(game g, int maxDepth, int curDepth, move *mm, score alpha,
 	 * que vamos a reaccionar igual y vamos a llevar a un empate
 	 * por repetición.
 	 */
-	if (reps(g) >= 2 && !mm) {
+	if (reps(G) >= 2 && !mm) {
 		ret = 0;
 		goto out;
 	}
 
-	ext = calcExtension(g, maxDepth, curDepth);
+	ext = calcExtension(maxDepth, curDepth);
 	maxDepth += ext;
 
 	/*
@@ -361,10 +360,10 @@ score _negamax(game g, int maxDepth, int curDepth, move *mm, score alpha,
 		 * infinita con quiesce. No debería ocurrir nunca,
 		 * pero dejamos el assert por las dudas.
 		 */
-		assert(!inCheck(g, g->turn));
+		assert(!inCheck(G, G->turn));
 
 		if (copts.quiesce)
-			ret = quiesce(g, alpha, beta, curDepth);
+			ret = quiesce(G, alpha, beta, curDepth);
 		else
 			ret = boardEval();
 
@@ -376,7 +375,7 @@ score _negamax(game g, int maxDepth, int curDepth, move *mm, score alpha,
 	 * Otherwise we will never suceed in the test.
 	 */
 	if (!mm && beta < maxScore) {
-		t = null_move_score(g, curDepth, maxDepth, alpha, beta);
+		t = null_move_score(G, curDepth, maxDepth, alpha, beta);
 		if (t >= beta) {
 			stats.null_cuts++;
 			ret = beta;
@@ -396,7 +395,6 @@ score _negamax(game g, int maxDepth, int curDepth, move *mm, score alpha,
 	}
 
 	if (ply >= MAX_PLY-1) {
-		G = g;
 		ret = boardEval();
 		goto out;
 	}
@@ -407,14 +405,14 @@ score _negamax(game g, int maxDepth, int curDepth, move *mm, score alpha,
 	stats.nopen_s++;
 	stats.depthsn[curDepth]++;
 
-	assert(ng->zobrist == g->zobrist);
-	genSuccs_wrap(g, curDepth);
+	assert(ng->zobrist == G->zobrist);
+	genSuccs_wrap(G, curDepth);
 
 	for (i = first_succ[ply]; i < first_succ[ply+1]; i++) {
-		sort_succ(g, i);
+		sort_succ(G, i);
 		const move m = gsuccs[i].m;
 
-		assert(ng->zobrist == g->zobrist);
+		assert(ng->zobrist == G->zobrist);
 		if (!doMove_unchecked(ng, m))
 			continue;
 
@@ -431,20 +429,20 @@ score _negamax(game g, int maxDepth, int curDepth, move *mm, score alpha,
 			&& gsuccs[i].s*10 < gsuccs[first_succ[ply]].s /* 2x crap */
 			&& ext == 0
 			&& !inCheck(ng, ng->turn)
-			&& !isCapture(g, m)
-			&& !isPromotion(g, m)) {
+			&& !isCapture(bak, m)
+			&& !isPromotion(bak, m)) {
 			stats.lmrs++;
 
 			doing_lmr = true;
 			ply++;
-			t = -negamax(ng, maxDepth-1, curDepth+1, NULL, -beta, -alpha);
+			t = -negamax(maxDepth-1, curDepth+1, NULL, -beta, -alpha);
 			ply--;
 			doing_lmr = false;
 
 			/* Do a full search if it didn't fail low */
 			if (t > alpha) {
 				ply++;
-				t = -negamax(ng, maxDepth, curDepth+1, NULL,
+				t = -negamax(maxDepth, curDepth+1, NULL,
 					     -beta, -alpha);
 				ply--;
 			} else {
@@ -452,7 +450,7 @@ score _negamax(game g, int maxDepth, int curDepth, move *mm, score alpha,
 			}
 		} else {
 			ply++;
-			t = -negamax(ng, maxDepth, curDepth+1, NULL, -beta, -alpha);
+			t = -negamax(maxDepth, curDepth+1, NULL, -beta, -alpha);
 			ply--;
 		}
 
@@ -485,7 +483,7 @@ score _negamax(game g, int maxDepth, int curDepth, move *mm, score alpha,
 		move dummy = {0};
 		assert(!mm);
 
-		if (inCheck(g, g->turn))
+		if (inCheck(G, G->turn))
 			ret = -CHECKMATE_SCORE + curDepth;
 		else
 			ret = 0; /* Stalemate */
@@ -494,7 +492,6 @@ score _negamax(game g, int maxDepth, int curDepth, move *mm, score alpha,
 		 * Lo guardamos en la TT, podría ahorrar unos
 		 * pocos ciclos
 		 */
-		G = g;
 		addon_notify_return(dummy, 999, ret, FLAG_EXACT);
 	} else if (nvalid == 1 && alpha < beta && copts.forced_extend) {
 		__unused bool check;
@@ -504,7 +501,7 @@ score _negamax(game g, int maxDepth, int curDepth, move *mm, score alpha,
 		alpha = alpha_orig;
 		mark(ng);
 		ply++;
-		t = -negamax(ng, maxDepth+1, curDepth+1, NULL, -beta, -alpha);
+		t = -negamax(maxDepth+1, curDepth+1, NULL, -beta, -alpha);
 		ply--;
 		unmark(ng);
 
@@ -538,7 +535,6 @@ score _negamax(game g, int maxDepth, int curDepth, move *mm, score alpha,
 			flag = FLAG_EXACT;
 
 		if (maxDepth - curDepth > 1) {
-			G = g;
 			addon_notify_return(gsuccs[bestmove].m,
 					    maxDepth - curDepth, ret, flag);
 		}
@@ -561,5 +557,5 @@ score search(int maxDepth, move *mm, score alpha, score beta) {
 	alpha = clamp(alpha, 1-CHECKMATE_SCORE, CHECKMATE_SCORE-1);
 	beta  = clamp(beta , 1-CHECKMATE_SCORE, CHECKMATE_SCORE-1);
 	assert(ply == 0);
-	return negamax(G, maxDepth, 0, mm, alpha, beta);
+	return negamax(maxDepth, 0, mm, alpha, beta);
 }
