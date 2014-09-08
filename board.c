@@ -923,30 +923,28 @@ static bool doMoveKCastle(move m, bool check) {
 		return false;
 
 	{
-		game tg;
+		pushGame();
+		G->board[rank][4] = 0;
+		G->board[rank][5] = kpiece;
+		G->kingy[m.who] = 5;
+		G->inCheck[m.who] = -1;
 
-		tg = copyGame(G);
-		tg->board[rank][4] = 0;
-		tg->board[rank][5] = kpiece;
-		tg->kingy[m.who] = 5;
-		tg->inCheck[m.who] = -1;
-
-		if (inCheck(tg, m.who)) {
-			freeGame(tg);
+		if (inCheck(G, m.who)) {
+			popGame();
 			return false;
 		}
 
-		tg->board[rank][5] = 0;
-		tg->board[rank][6] = kpiece;
-		tg->kingy[m.who] = 6;
-		tg->inCheck[m.who] = -1;
+		G->board[rank][5] = 0;
+		G->board[rank][6] = kpiece;
+		G->kingy[m.who] = 6;
+		G->inCheck[m.who] = -1;
 
-		if (inCheck(tg, m.who)) {
-			freeGame(tg);
+		if (inCheck(G, m.who)) {
+			popGame();
 			return false;
 		}
 
-		freeGame(tg);
+		popGame();
 	}
 
 	disable_castle_k(G, m.who);
@@ -986,30 +984,29 @@ static bool doMoveQCastle(move m, bool check) {
 		return false;
 
 	{
-		game tg;
+		pushGame();
 
-		tg = copyGame(G);
-		tg->board[rank][4] = 0;
-		tg->board[rank][3] = kpiece;
-		tg->kingy[m.who] = 3;
-		tg->inCheck[m.who] = -1;
+		G->board[rank][4] = 0;
+		G->board[rank][3] = kpiece;
+		G->kingy[m.who] = 3;
+		G->inCheck[m.who] = -1;
 
-		if (inCheck(tg, m.who)) {
-			freeGame(tg);
+		if (inCheck(G, m.who)) {
+			popGame();
 			return false;
 		}
 
-		tg->board[rank][3] = 0;
-		tg->board[rank][2] = kpiece;
-		tg->kingy[m.who] = 2;
-		tg->inCheck[m.who] = -1;
+		G->board[rank][3] = 0;
+		G->board[rank][2] = kpiece;
+		G->kingy[m.who] = 2;
+		G->inCheck[m.who] = -1;
 
-		if (inCheck(tg, m.who)) {
-			freeGame(tg);
+		if (inCheck(G, m.who)) {
+			popGame();
 			return false;
 		}
 
-		freeGame(tg);
+		popGame();
 	}
 
 	disable_castle_k(G, m.who);
