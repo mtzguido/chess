@@ -601,6 +601,8 @@ static bool __doMove(move m, bool check) {
 
 	G->turn = flipTurn(G->turn);
 	G->zobrist ^= ZOBR_BLACK();
+	mark();
+	ply++;
 
 	return true;
 
@@ -619,6 +621,8 @@ bool doMove_unchecked(move m) {
 }
 
 void undoMove() {
+	ply--;
+	unmark();
 	popGame();
 }
 

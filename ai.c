@@ -109,6 +109,7 @@ move machineMove(unsigned long long maxms) {
 	reset_stats();
 
 	assert(isFinished() == -1);
+	assert(ply == 0);
 
 	t1 = clock();
 	if (copts.book && bookMove(&ret)) {

@@ -132,16 +132,12 @@ static inline score null_move_score(int curDepth, int maxDepth, score alpha,
 	 */
 	assert(check);
 
-	mark();
-	first_succ[ply+1] = first_succ[ply];
-	ply++;
+	first_succ[ply] = first_succ[ply - 1];
 	doing_null_move = true;
 
 	t = -negamax(maxDepth - NMH_REDUCTION, curDepth+1, NULL, -beta, -alpha);
 
 	doing_null_move = false;
-	ply--;
-	unmark();
 
 	undoMove();
 	return t;
@@ -235,11 +231,8 @@ static inline score _quiesce(score alpha, score beta, int curDepth) {
 
 		nvalid++;
 
-		mark();
-		ply++;
 		t = -quiesce(-beta, -alpha, curDepth+1);
-		ply--;
-		unmark();
+
 		undoMove();
 
 		if (t > alpha) {
@@ -394,7 +387,7 @@ score _negamax(int maxDepth, int curDepth, move *mm, score alpha, score beta) {
 
 	genSuccs_wrap(curDepth);
 
-	for (i = first_succ[ply]; i < first_succ[ply+1]; i++) {
+	for (i = first_succ[ply]; i < first_succ[ply + 1]; i++) {
 		sort_succ(i);
 		const move m = gsuccs[i].m;
 
@@ -403,15 +396,13 @@ score _negamax(int maxDepth, int curDepth, move *mm, score alpha, score beta) {
 
 		nvalid++;
 
-		mark();
-
 		/* LMR */
 		if (copts.lmr
 			&& !doing_lmr
-			&& i >= first_succ[ply] + LMR_FULL
+			&& i >= first_succ[ply - 1] + LMR_FULL
 			&& curDepth >= LMR_MINDEPTH
 			&& maxDepth - curDepth >= 2
-			&& gsuccs[i].s*10 < gsuccs[first_succ[ply]].s /* 2x crap */
+			&& gsuccs[i].s*10 < gsuccs[first_succ[ply - 1]].s /* 2x crap */
 			&& ext == 0
 			&& !inCheck(G->turn)
 			&& !G->was_capture
@@ -419,27 +410,19 @@ score _negamax(int maxDepth, int curDepth, move *mm, score alpha, score beta) {
 			stats.lmrs++;
 
 			doing_lmr = true;
-			ply++;
 			t = -negamax(maxDepth-1, curDepth+1, NULL, -beta, -alpha);
-			ply--;
 			doing_lmr = false;
 
 			/* Do a full search if it didn't fail low */
 			if (t > alpha) {
-				ply++;
 				t = -negamax(maxDepth, curDepth+1, NULL,
 					     -beta, -alpha);
-				ply--;
 			} else {
 				stats.lmrs_ok++;
 			}
 		} else {
-			ply++;
 			t = -negamax(maxDepth, curDepth+1, NULL, -beta, -alpha);
-			ply--;
 		}
-
-		unmark();
 
 		/* Ya no necesitamos a ng */
 		undoMove();
@@ -484,11 +467,7 @@ score _negamax(int maxDepth, int curDepth, move *mm, score alpha, score beta) {
 		assert(check);
 
 		alpha = alpha_orig;
-		mark();
-		ply++;
 		t = -negamax(maxDepth+1, curDepth+1, NULL, -beta, -alpha);
-		ply--;
-		unmark();
 
 		undoMove();
 
