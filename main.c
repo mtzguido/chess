@@ -40,8 +40,8 @@ static int nmoves() {
 
 	for (i=0; i<copts.nmoves; i++) {
 
-		if (isFinished(G) != -1) {
-			dbg("Game finished: %i\n", isFinished(G));
+		if (isFinished() != -1) {
+			dbg("Game finished: %i\n", isFinished());
 			break;
 		}
 
@@ -174,7 +174,7 @@ static void xboard_main() {
 	mark(G);
 
 	for (;;) {
-		if (isFinished(G) == -1 && curPlayer == ourPlayer) {
+		if (isFinished() == -1 && curPlayer == ourPlayer) {
 			__unused bool check;
 			unsigned long t1, t2;
 			int maxms;

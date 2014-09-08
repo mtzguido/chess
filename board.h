@@ -106,7 +106,7 @@ game copyGame(game g);
 void freeGame(game g);
 
 bool inCheck(game g, int who);
-int isFinished(game g);
+int isFinished(void);
 bool isDraw(void);
 
 void printBoard(game b);

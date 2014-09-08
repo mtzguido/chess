@@ -206,15 +206,15 @@ bool isDraw() {
 	return r >= 3 || G->idlecount >= 100;
 }
 
-int isFinished(game g) {
-	int i, r = reps(g);
+int isFinished() {
+	int i, r = reps(G);
 
 	assert(r > 0);
 	assert(r <= 3);
 
 	if (r == 3)
 		return DRAW_3FOLD;
-	else if (g->idlecount >= 100)
+	else if (G->idlecount >= 100)
 		return DRAW_50MOVE;
 
 	assert(ply == 0);
@@ -231,8 +231,8 @@ int isFinished(game g) {
 		}
 	}
 
-	if (inCheck(g, g->turn))
-		return WIN(flipTurn(g->turn));
+	if (inCheck(G, G->turn))
+		return WIN(flipTurn(G->turn));
 	else
 		return DRAW_STALE;
 
