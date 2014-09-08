@@ -132,7 +132,7 @@ static inline score null_move_score(int curDepth, int maxDepth, score alpha,
 	 */
 	assert(check);
 
-	mark(G);
+	mark();
 	first_succ[ply+1] = first_succ[ply];
 	ply++;
 	doing_null_move = true;
@@ -141,7 +141,7 @@ static inline score null_move_score(int curDepth, int maxDepth, score alpha,
 
 	doing_null_move = false;
 	ply--;
-	unmark(G);
+	unmark();
 
 	undoMove();
 	return t;
@@ -186,7 +186,7 @@ static inline score _quiesce(score alpha, score beta, int curDepth) {
 		}
 	}
 
-	if (isDraw() || reps(G) >= 2) {
+	if (isDraw() || reps() >= 2) {
 		ret = 0;
 		goto out;
 	}
@@ -235,11 +235,11 @@ static inline score _quiesce(score alpha, score beta, int curDepth) {
 
 		nvalid++;
 
-		mark(G);
+		mark();
 		ply++;
 		t = -quiesce(-beta, -alpha, curDepth+1);
 		ply--;
-		unmark(G);
+		unmark();
 		undoMove();
 
 		if (t > alpha) {
@@ -326,7 +326,7 @@ score _negamax(int maxDepth, int curDepth, move *mm, score alpha, score beta) {
 	 * que vamos a reaccionar igual y vamos a llevar a un empate
 	 * por repetición.
 	 */
-	if (reps(G) >= 2 && !mm) {
+	if (reps() >= 2 && !mm) {
 		ret = 0;
 		goto out;
 	}
@@ -403,7 +403,7 @@ score _negamax(int maxDepth, int curDepth, move *mm, score alpha, score beta) {
 
 		nvalid++;
 
-		mark(G);
+		mark();
 
 		/* LMR */
 		if (copts.lmr
@@ -439,7 +439,7 @@ score _negamax(int maxDepth, int curDepth, move *mm, score alpha, score beta) {
 			ply--;
 		}
 
-		unmark(G);
+		unmark();
 
 		/* Ya no necesitamos a ng */
 		undoMove();
@@ -484,11 +484,11 @@ score _negamax(int maxDepth, int curDepth, move *mm, score alpha, score beta) {
 		assert(check);
 
 		alpha = alpha_orig;
-		mark(G);
+		mark();
 		ply++;
 		t = -negamax(maxDepth+1, curDepth+1, NULL, -beta, -alpha);
 		ply--;
-		unmark(G);
+		unmark();
 
 		undoMove();
 

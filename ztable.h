@@ -5,8 +5,8 @@
 
 extern int n_collision;
 
-void mark(game g);
-void unmark(game g);
-int reps(game g);
+void mark(void);
+void unmark(void);
+int reps(void);
 
 #endif

@@ -172,7 +172,7 @@ void printBoard() {
 	dbg("[ piecemask[B] = 0x%.16" PRIx64 "\n", G->piecemask[BLACK]);
 	tostr(G, bbuf);
 	dbg("[ tostr = <%s>\n", bbuf);
-	dbg("[ reps = %i\n", reps(G));
+	dbg("[ reps = %i\n", reps());
 
 	fflush(stdout);
 }
@@ -200,14 +200,14 @@ char charOf(int piece) {
 
 /* No usa info de sucesores */
 bool isDraw() {
-	int r = reps(G);
+	int r = reps();
 
 	assert(r > 0);
 	return r >= 3 || G->idlecount >= 100;
 }
 
 int isFinished() {
-	int i, r = reps(G);
+	int i, r = reps();
 
 	assert(r > 0);
 	assert(r <= 3);

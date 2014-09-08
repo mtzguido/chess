@@ -13,8 +13,8 @@ struct bucket {
 
 struct bucket * ztable[CFG_ZTABLE_SIZE] __attribute__((aligned(0x1000)));
 
-void mark(game g) {
-	u64 key = g->zobrist;
+void mark() {
+	u64 key = G->zobrist;
 	u64 idx = key % CFG_ZTABLE_SIZE;
 
 	struct bucket *p = ztable[idx];
@@ -28,15 +28,15 @@ void mark(game g) {
 		p->n++;
 	} else {
 		p = (struct bucket *) malloc(sizeof *p);
-		p->key = g->zobrist;
+		p->key = G->zobrist;
 		p->n = 1;
 		p->next = ztable[idx];
 		ztable[idx] = p;
 	}
 }
 
-void unmark(game g) {
-	u64 key = g->zobrist;
+void unmark() {
+	u64 key = G->zobrist;
 	u64 idx = key % CFG_ZTABLE_SIZE;
 
 	struct bucket *p = ztable[idx];
@@ -65,8 +65,8 @@ void unmark(game g) {
 	}
 }
 
-int reps(game g) {
-	u64 key = g->zobrist;
+int reps() {
+	u64 key = G->zobrist;
 	u64 idx = key % CFG_ZTABLE_SIZE;
 
 	struct bucket *p = ztable[idx];

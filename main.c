@@ -36,7 +36,7 @@ static int nmoves() {
 
 	init_mem();
 	startingGame2();
-	mark(G);
+	mark();
 
 	for (i=0; i<copts.nmoves; i++) {
 
@@ -49,7 +49,7 @@ static int nmoves() {
 		m = machineMove(copts.timelimit);
 		assert(ply == 0);
 		doMove(m);
-		mark(G);
+		mark();
 		printBoard();
 		printMove(stdout, m);
 
@@ -171,7 +171,7 @@ static void xboard_main() {
 	printf("tellics say Written by Guido Martínez, 2014\n");
 
 	startingGame();
-	mark(G);
+	mark();
 
 	for (;;) {
 		if (isFinished() == -1 && curPlayer == ourPlayer) {
@@ -190,7 +190,7 @@ static void xboard_main() {
 
 			check = doMove(m);
 			assert(check);
-			mark(G);
+			mark();
 
 			xboard_printmove(m);
 
@@ -299,7 +299,7 @@ static void xboard_main() {
 			timeleft *= 10; /* cs to ms */
 			continue;
 		} else if (!strcmp("undo", cmd)) {
-			unmark(G);
+			unmark();
 			undoMove();
 			continue;
 		} else if (!strcmp("white", cmd)) {
@@ -328,7 +328,7 @@ static void xboard_main() {
 
 			check = doMove(m);
 			assert(check);
-			mark(G);
+			mark();
 			curPlayer = flipTurn(curPlayer);
 			continue;
 		}
