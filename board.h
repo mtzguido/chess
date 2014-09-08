@@ -102,8 +102,8 @@ game prevGame(void);
 
 game startingGame(void);
 
-bool doMove(game g, move m); /* Actua sobre g */
-bool doMove_unchecked(game g, move m); /* Actua sobre g */
+bool doMove(move m); /* Actua sobre g */
+bool doMove_unchecked(move m); /* Actua sobre g */
 
 game copyGame(game g);
 void freeGame(game g);

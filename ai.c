@@ -74,7 +74,7 @@ static inline bool forced(const game g, move *m) {
 	pushGame();
 	genSuccs(g);
 	for (i=first_succ[ply]; i<first_succ[ply+1]; i++) {
-		if (doMove_unchecked(G, gsuccs[i].m)) {
+		if (doMove_unchecked(gsuccs[i].m)) {
 			if (c != -1) {
 				popGame();
 				return false;

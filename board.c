@@ -219,7 +219,7 @@ int isFinished(game g) {
 		 * Si hay un sucesor válido,
 		 * el juego no terminó
 		 */
-		if (doMove_unchecked(G, gsuccs[i].m))
+		if (doMove_unchecked(gsuccs[i].m))
 			goto not_finished;
 	}
 	popGame();
@@ -552,55 +552,53 @@ static void set_ep(game g, u8 r, u8 c) {
 	g->zobrist ^= ZOBR_EP(g->en_passant_x);
 }
 
-static bool doMoveRegular(game g, move m, bool check);
-static bool doMoveKCastle(game g, move m, bool check);
-static bool doMoveQCastle(game g, move m, bool check);
-static bool doMoveNull(game g, move m, bool check);
+static bool doMoveRegular(move m, bool check);
+static bool doMoveKCastle(move m, bool check);
+static bool doMoveQCastle(move m, bool check);
+static bool doMoveNull(move m, bool check);
 
 /*
  * 1 : Ok
  * 0 : Movida no válida, deja a g intacto
  */
-static bool __doMove(game g, move m, bool check) {
-	game old_g = copyGame(g);
-	game bak = G;
+static bool __doMove(move m, bool check) {
+	game old_g = copyGame(G);
 
-	G = g;
-	assert(m.who == g->turn);
+	assert(m.who == G->turn);
 
 	switch (m.move_type) {
 	case MOVE_REGULAR:
-		if (!doMoveRegular(g, m, check))
+		if (!doMoveRegular(m, check))
 			goto fail;
 
 		break;
 	case MOVE_KINGSIDE_CASTLE:
-		if (!doMoveKCastle(g, m, check))
+		if (!doMoveKCastle(m, check))
 			goto fail;
 
-		set_ep(g, -1, -1);
-		g->lastmove = m;
-		g->castled[m.who] = 1;
+		set_ep(G, -1, -1);
+		G->lastmove = m;
+		G->castled[m.who] = 1;
 
 		break;
 
 	case MOVE_QUEENSIDE_CASTLE:
-		if (!doMoveQCastle(g, m, check))
+		if (!doMoveQCastle(m, check))
 			goto fail;
 
-		set_ep(g, -1, -1);
-		g->lastmove = m;
-		g->castled[m.who] = 1;
+		set_ep(G, -1, -1);
+		G->lastmove = m;
+		G->castled[m.who] = 1;
 
 		break;
 
 	case MOVE_NULL:
 		assert(copts.null);
-		if (!doMoveNull(g, m, check))
+		if (!doMoveNull(m, check))
 			goto fail;
 
-		set_ep(g, -1, -1);
-		g->lastmove = m;
+		set_ep(G, -1, -1);
+		G->lastmove = m;
 
 		break;
 
@@ -610,32 +608,30 @@ static bool __doMove(game g, move m, bool check) {
 	}
 
 	/* Nunca podemos quedar en jaque */
-	if (g->inCheck[g->turn] == 1  ||
-		(g->inCheck[g->turn] == -1 && inCheck(g, g->turn)))
+	if (G->inCheck[G->turn] == 1  ||
+		(G->inCheck[G->turn] == -1 && inCheck(G, G->turn)))
 		goto fail;
 
 	freeGame(old_g);
 
-	g->turn = flipTurn(g->turn);
-	g->zobrist ^= ZOBR_BLACK();
-	G = bak;
+	G->turn = flipTurn(G->turn);
+	G->zobrist ^= ZOBR_BLACK();
 
 	return true;
 
 fail:
-	memcpy(g, old_g, sizeof *g);
+	memcpy(G, old_g, sizeof *G);
 	freeGame(old_g);
-	G = bak;
 
 	return false;
 }
 
-bool doMove(game g, move m) {
-	return __doMove(g, m, true);
+bool doMove(move m) {
+	return __doMove(m, true);
 }
 
-bool doMove_unchecked(game g, move m) {
-	return __doMove(g, m, false);
+bool doMove_unchecked(move m) {
+	return __doMove(m, false);
 }
 
 /* Auxiliares de doMoveRegular */
@@ -748,79 +744,79 @@ static void movePiece(game g, i8 r, i8 c, i8 R, i8 C) {
 		recalcPawnRank(g, enemy, C);
 }
 
-static bool doMoveRegular(game g, move m, bool check) {
-	const piece_t piece = g->board[m.r][m.c];
-	const u8 other = flipTurn(g->turn);
+static bool doMoveRegular(move m, bool check) {
+	const piece_t piece = G->board[m.r][m.c];
+	const u8 other = flipTurn(G->turn);
 
 	if (check) {
-		if (!isValid(g, m))
+		if (!isValid(G, m))
 			return false;
 
 		/* No pisar piezas propias */
 		if (own_piece(m.R, m.C))
 			return false;
 	} else {
-		assert(isValid(g, m));
+		assert(isValid(G, m));
 		assert(!own_piece(m.R, m.C));
 	}
 
 
 	/* Es válida */
-	g->lastmove = m;
-	g->idlecount++;
+	G->lastmove = m;
+	G->idlecount++;
 
 	if (isPawn(piece)) {
 		/* Los peones no son reversibles */
-		g->idlecount = 0;
+		G->idlecount = 0;
 
 		/* Actuar si es una captura al paso */
-		epCapture(g, m);
+		epCapture(G, m);
 
 		/* Recalcular en passant */
-		epCalc(g, m);
+		epCalc(G, m);
 
 		/* Es un peón que promueve? */
-		calcPromotion(g, m);
+		calcPromotion(G, m);
 	} else {
 		if (isKing(piece))
-			updKing(g, m);
+			updKing(G, m);
 		else if (isRook(piece))
-			updCastling(g, m);
+			updCastling(G, m);
 
-		set_ep(g, -1, -1);
+		set_ep(G, -1, -1);
 	}
 
 	if (enemy_piece(m.R, m.C))
-		g->idlecount = 0;
+		G->idlecount = 0;
 
 	/* Movemos */
-	movePiece(g, m.r, m.c, m.R, m.C);
+	movePiece(G, m.r, m.c, m.R, m.C);
 
 	/* Si es algún movimiento relevante al rey contrario
 	 * dropeamos la cache */
-	assert(g->inCheck[other] != 1);
-	if (g->inCheck[other] == 0) {
-		if (danger(m.r, m.c, g->kingx[other], g->kingy[other]) ||
-		    danger(m.R, m.C, g->kingx[other], g->kingy[other]))
-			g->inCheck[other] = -1;
+	assert(G->inCheck[other] != 1);
+	if (G->inCheck[other] == 0) {
+		if (danger(m.r, m.c, G->kingx[other], G->kingy[other]) ||
+		    danger(m.R, m.C, G->kingx[other], G->kingy[other]))
+			G->inCheck[other] = -1;
 	}
 
 	/* Necesitamos también (posiblemente) dropear la nuestra */
-	if (g->inCheck[m.who] == 1) {
+	if (G->inCheck[m.who] == 1) {
 		if (isKing(piece) ||
-		    danger(m.R, m.C, g->kingx[m.who], g->kingy[m.who]))
-			g->inCheck[m.who] = -1;
-	} else if (g->inCheck[m.who] == 0) {
+		    danger(m.R, m.C, G->kingx[m.who], G->kingy[m.who]))
+			G->inCheck[m.who] = -1;
+	} else if (G->inCheck[m.who] == 0) {
 		if (isKing(piece) ||
-		    danger(m.r, m.c, g->kingx[m.who], g->kingy[m.who]))
-			g->inCheck[m.who] = -1;
+		    danger(m.r, m.c, G->kingx[m.who], G->kingy[m.who]))
+			G->inCheck[m.who] = -1;
 	}
 
 	return true;
 }
 
-static bool doMoveNull(game g, move m, bool check) {
-	if (inCheck(g, g->turn))
+static bool doMoveNull(move m, bool check) {
+	if (inCheck(G, G->turn))
 		return false;
 
 	return true;
@@ -902,27 +898,27 @@ static void calcPromotion(game g, move m) {
 	}
 }
 
-static bool doMoveKCastle(game g, move m, bool check) {
+static bool doMoveKCastle(move m, bool check) {
 	const u8 rank = m.who == WHITE ? 7 : 0;
 	const piece_t kpiece = m.who == WHITE ? WKING : BKING;
 	const piece_t rpiece = m.who == WHITE ? WROOK : BROOK;
 
 	if (check) {
-		if (!(g->castle_king[m.who]
-			&& g->board[rank][7] == rpiece && g->board[rank][6] == EMPTY
-			&& g->board[rank][5] == EMPTY  && g->board[rank][4] == kpiece)) {
+		if (!(G->castle_king[m.who]
+			&& G->board[rank][7] == rpiece && G->board[rank][6] == EMPTY
+			&& G->board[rank][5] == EMPTY  && G->board[rank][4] == kpiece)) {
 
 			return false;
 		}
 	}
 
-	if (inCheck(g, m.who))
+	if (inCheck(G, m.who))
 		return false;
 
 	{
 		game tg;
 
-		tg = copyGame(g);
+		tg = copyGame(G);
 		tg->board[rank][4] = 0;
 		tg->board[rank][5] = kpiece;
 		tg->kingy[m.who] = 5;
@@ -946,46 +942,46 @@ static bool doMoveKCastle(game g, move m, bool check) {
 		freeGame(tg);
 	}
 
-	disable_castle_k(g, m.who);
-	disable_castle_q(g, m.who);
+	disable_castle_k(G, m.who);
+	disable_castle_q(G, m.who);
 
 	/* Dropeamos la cache de jaque */
-	g->inCheck[0] = -1;
-	g->inCheck[1] = -1;
+	G->inCheck[0] = -1;
+	G->inCheck[1] = -1;
 
 	/* Mover rey */
-	movePiece(g, rank, 4, rank, 6);
+	movePiece(G, rank, 4, rank, 6);
 	/* Mover torre */
-	movePiece(g, rank, 7, rank, 5);
+	movePiece(G, rank, 7, rank, 5);
 
-	g->kingx[m.who] = rank;
-	g->kingy[m.who] = 6;
+	G->kingx[m.who] = rank;
+	G->kingy[m.who] = 6;
 
 	return true;
 }
 
-static bool doMoveQCastle(game g, move m, bool check) {
+static bool doMoveQCastle(move m, bool check) {
 	const u8 rank = m.who == WHITE ? 7 : 0;
 	const piece_t kpiece = m.who == WHITE ? WKING : BKING;
 	const piece_t rpiece = m.who == WHITE ? WROOK : BROOK;
 
 	if (check) {
-		if (!(g->castle_queen[m.who]
-			&& g->board[rank][0] == rpiece && g->board[rank][1] == EMPTY
-			&& g->board[rank][2] == EMPTY  && g->board[rank][3] == EMPTY
-			&& g->board[rank][4] == kpiece)) {
+		if (!(G->castle_queen[m.who]
+			&& G->board[rank][0] == rpiece && G->board[rank][1] == EMPTY
+			&& G->board[rank][2] == EMPTY  && G->board[rank][3] == EMPTY
+			&& G->board[rank][4] == kpiece)) {
 
 			return false;
 		}
 	}
 
-	if (inCheck(g, m.who))
+	if (inCheck(G, m.who))
 		return false;
 
 	{
 		game tg;
 
-		tg = copyGame(g);
+		tg = copyGame(G);
 		tg->board[rank][4] = 0;
 		tg->board[rank][3] = kpiece;
 		tg->kingy[m.who] = 3;
@@ -1009,20 +1005,20 @@ static bool doMoveQCastle(game g, move m, bool check) {
 		freeGame(tg);
 	}
 
-	disable_castle_k(g, m.who);
-	disable_castle_q(g, m.who);
+	disable_castle_k(G, m.who);
+	disable_castle_q(G, m.who);
 
 	/* Dropeamos la cache de jaque */
-	g->inCheck[0] = -1;
-	g->inCheck[1] = -1;
+	G->inCheck[0] = -1;
+	G->inCheck[1] = -1;
 
 	/* Mover rey */
-	movePiece(g, rank, 4, rank, 2);
+	movePiece(G, rank, 4, rank, 2);
 	/* Mover torre */
-	movePiece(g, rank, 0, rank, 3);
+	movePiece(G, rank, 0, rank, 3);
 
-	g->kingx[m.who] = rank;
-	g->kingy[m.who] = 2;
+	G->kingx[m.who] = rank;
+	G->kingy[m.who] = 2;
 
 	return true;
 }

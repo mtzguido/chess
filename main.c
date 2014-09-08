@@ -52,7 +52,7 @@ static int nmoves() {
 		assert(ply == 0);
 		m = machineMove(G, copts.timelimit);
 		assert(ply == 0);
-		doMove(G, m);
+		doMove(m);
 		mark(G);
 		printBoard(G);
 		printMove(stdout, m);
@@ -99,7 +99,7 @@ static int checkMove(move m) {
 		m.promote = WQUEEN;
 
 	pushGame();
-	int rc = doMove(G, m);
+	int rc = doMove(m);
 	popGame();
 
 	if (rc != true)
@@ -195,7 +195,7 @@ static void xboard_main() {
 			move m = machineMove(G, maxms);
 
 			pushGame();
-			check = doMove(G, m);
+			check = doMove(m);
 			assert(check);
 			mark(G);
 
@@ -334,7 +334,7 @@ static void xboard_main() {
 			}
 
 			pushGame();
-			check = doMove(G, m);
+			check = doMove(m);
 			assert(check);
 			mark(G);
 			curPlayer = flipTurn(curPlayer);

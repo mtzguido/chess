@@ -125,7 +125,7 @@ static inline score null_move_score(int curDepth, int maxDepth, score alpha,
 	stats.null_tries++;
 
 	pushGame();
-	check = doMove(G, m);
+	check = doMove(m);
 
 	/*
 	 * doMoveNull's only restriction is not being in check and we already
@@ -218,7 +218,7 @@ static inline score quiesce(score alpha, score beta, int curDepth) {
 		/* We only consider captures and promotions */
 		assert(isCapture(G, m) || isPromotion(G, m));
 
-		if (!doMove_unchecked(G, m))
+		if (!doMove_unchecked(m))
 			continue;
 
 		nvalid++;
@@ -389,7 +389,7 @@ score _negamax(int maxDepth, int curDepth, move *mm, score alpha,
 		sort_succ(i);
 		const move m = gsuccs[i].m;
 
-		if (!doMove_unchecked(G, m))
+		if (!doMove_unchecked(m))
 			continue;
 
 		nvalid++;
@@ -473,7 +473,7 @@ score _negamax(int maxDepth, int curDepth, move *mm, score alpha,
 	} else if (nvalid == 1 && alpha < beta && copts.forced_extend) {
 		__unused bool check;
 		pushGame();
-		check = doMove(G, gsuccs[bestmove].m);
+		check = doMove(gsuccs[bestmove].m);
 		assert(check);
 
 		alpha = alpha_orig;

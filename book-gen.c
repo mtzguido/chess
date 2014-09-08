@@ -138,6 +138,7 @@ void add_rule(char *sequence) {
 	u64 hash = 0;
 	__unused int ok = 0;
 
+	G = g;
 	while (sequence &&
 		4 == sscanf(sequence, " %c%i%c%i ", &c, &r, &C, &R)) {
 		m.move_type = MOVE_REGULAR;
@@ -163,7 +164,7 @@ void add_rule(char *sequence) {
 		}
 
 		hash = g->zobrist;
-		__unused bool rc = doMove(g, m);
+		__unused bool rc = doMove(m);
 		assert(rc);
 		ok = 1;
 
