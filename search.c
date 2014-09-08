@@ -96,13 +96,13 @@ static inline int calcExtension(int maxDepth, int curDepth) {
 	return ret;
 }
 
-static inline score null_move_score(game g, int curDepth, int maxDepth,
+static inline score null_move_score(int curDepth, int maxDepth,
 				    score alpha, score beta) {
 	static bool doing_null_move = false;
 	score t;
 	game ng;
 	game bak;
-	move m = { .move_type = MOVE_NULL, .who = g->turn };
+	move m = { .move_type = MOVE_NULL, .who = G->turn };
 	__unused bool check;
 
 	if (!copts.null)
@@ -116,7 +116,7 @@ static inline score null_move_score(game g, int curDepth, int maxDepth,
 	 * Dont null-move when in check or when low in material since
 	 * we're likely to be in Zugzwang
 	 */
-	if (inCheck(g, g->turn) || g->pieceScore[g->turn] <= NMH_THRESHOLD)
+	if (inCheck(G, G->turn) || G->pieceScore[G->turn] <= NMH_THRESHOLD)
 		goto dont;
 
 	/* Not even worth it */
@@ -124,9 +124,9 @@ static inline score null_move_score(game g, int curDepth, int maxDepth,
 		goto dont;
 
 	bak = G;
-	ng = copyGame(g);
+	ng = copyGame(G);
 	G = ng;
-	check = doMove(ng, m);
+	check = doMove(G, m);
 
 	/*
 	 * doMoveNull's only restriction is not being in check and we already
@@ -179,7 +179,7 @@ static inline score quiesce(score alpha, score beta, int curDepth) {
 		}
 	}
 
-	if (isDraw(G) || reps(G) >= 2) {
+	if (isDraw() || reps(G) >= 2) {
 		ret = 0;
 		goto out;
 	}
@@ -320,7 +320,7 @@ score _negamax(int maxDepth, int curDepth, move *mm, score alpha,
 		goto out;
 	}
 
-	if (isDraw(G)) {
+	if (isDraw()) {
 		ret = 0;
 		goto out;
 	}
@@ -366,7 +366,7 @@ score _negamax(int maxDepth, int curDepth, move *mm, score alpha,
 	 * Otherwise we will never suceed in the test.
 	 */
 	if (!mm && beta < maxScore) {
-		t = null_move_score(G, curDepth, maxDepth, alpha, beta);
+		t = null_move_score(curDepth, maxDepth, alpha, beta);
 		if (t >= beta) {
 			stats.null_cuts++;
 			ret = beta;

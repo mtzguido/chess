@@ -166,12 +166,11 @@ char charOf(int piece) {
 }
 
 /* No usa info de sucesores */
-bool isDraw(game g) {
-	int r = reps(g);
+bool isDraw() {
+	int r = reps(G);
 
 	assert(r > 0);
-
-	return r >= 3 || g->idlecount >= 100;
+	return r >= 3 || G->idlecount >= 100;
 }
 
 int isFinished(game g) {
