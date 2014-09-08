@@ -36,26 +36,25 @@ static game startingGame2() {
 
 static int nmoves() {
 	int i;
-	game g;
 	move m;
 
 	init_mem();
-	g = startingGame2();
-	mark(g);
+	G = startingGame2();
+	mark(G);
 
 	for (i=0; i<copts.nmoves; i++) {
 
-		if (isFinished(g) != -1) {
-			dbg("Game finished: %i\n", isFinished(g));
+		if (isFinished(G) != -1) {
+			dbg("Game finished: %i\n", isFinished(G));
 			break;
 		}
 
 		assert(ply == 0);
-		m = machineMove(g, copts.timelimit);
+		m = machineMove(G, copts.timelimit);
 		assert(ply == 0);
-		doMove(g, m);
-		mark(g);
-		printBoard(g);
+		doMove(G, m);
+		mark(G);
+		printBoard(G);
 		printMove(stdout, m);
 
 		dbg("Moves %i/%i\n", i+1, copts.nmoves);
@@ -87,8 +86,7 @@ static int bench_eval_mode() {
 	return 0;
 }
 
-static int checkMove(game g, move m) {
-	game ng;
+static int checkMove(move m) {
 	int i;
 
 	/*
@@ -97,20 +95,20 @@ static int checkMove(game g, move m) {
 	 * promotions. Fairymax doesn't even care about
 	 * knights so we're being extra kind here.
 	 */
-	if (isPromotion(g, m) && m.promote != WKNIGHT)
+	if (isPromotion(G, m) && m.promote != WKNIGHT)
 		m.promote = WQUEEN;
 
-	ng = copyGame(g);
-	int rc = doMove(ng, m);
-	freeGame(ng);
+	pushGame();
+	int rc = doMove(G, m);
+	popGame();
 
 	if (rc != true)
 		return 1;
 
-	if (isCapture(g, m) || isPromotion(g, m))
-		genCaps(g);
+	if (isCapture(G, m) || isPromotion(G, m))
+		genCaps(G);
 	else
-		genSuccs(g);
+		genSuccs(G);
 
 	for (i=first_succ[ply]; i<first_succ[ply+1]; i++) {
 		if (equalMove(m, gsuccs[i].m))
@@ -157,17 +155,11 @@ static void sigterm(__unused int n) {
 	dbg("Received SIGTERM!\n");
 }
 
-typedef struct state {
-	game g;
-	struct state *prev;
-} state;
-
 static void xboard_main() {
 	int curPlayer = WHITE;
 	int ourPlayer = BLACK;
 	char line[500];
 	char cmd[500];
-	state *State;
 
 	/* Timing info */
 	int movesmax = 40, movesleft = 40;
@@ -184,16 +176,13 @@ static void xboard_main() {
 	printf("tellics say dogui's chess engine\n");
 	printf("tellics say Written by Guido Martínez, 2014\n");
 
-	State = (state*) malloc(sizeof *State);
-	State->g = startingGame();
-	State->prev = NULL;
-	mark(State->g);
+	G = startingGame();
+	mark(G);
 
 	for (;;) {
-		if (isFinished(State->g) == -1 && curPlayer == ourPlayer) {
+		if (isFinished(G) == -1 && curPlayer == ourPlayer) {
 			__unused bool check;
 			unsigned long t1, t2;
-			state *newst;
 			int maxms;
 
 			t1 = getms();
@@ -203,15 +192,12 @@ static void xboard_main() {
 			else
 				maxms = (timeleft - 500) / movesleft;
 
-			move m = machineMove(State->g, maxms);
+			move m = machineMove(G, maxms);
 
-			newst = (state*) malloc(sizeof *newst);
-			newst->g = copyGame(State->g);
-			check = doMove(newst->g, m);
+			pushGame();
+			check = doMove(G, m);
 			assert(check);
-			mark(newst->g);
-			newst->prev = State;
-			State = newst;
+			mark(G);
 
 			xboard_printmove(m);
 
@@ -233,7 +219,7 @@ static void xboard_main() {
 			continue;
 		}
 
-		printBoard(State->g);
+		printBoard(G);
 		dbg("expecting input...\n");
 
 		if (!fgets(line, sizeof line, stdin)) {
@@ -252,17 +238,8 @@ static void xboard_main() {
 		dbg("received: <%s>, cmd = %s\n", line, cmd);
 
 		if (!strcmp("new", cmd)) {
-			while (State) {
-				state *t;
-				t = State->prev;
-				freeGame(State->g);
-				free(State);
-				State = t;
-			}
-
-			State = (state*) malloc(sizeof *State);
-			State->prev = NULL;
-			State->g = startingGame();
+			/* Fix this */
+			G = startingGame();
 			continue;
 		} else if (!strcmp("go", cmd)) {
 			ourPlayer = curPlayer;
@@ -329,13 +306,8 @@ static void xboard_main() {
 			timeleft *= 10; /* cs to ms */
 			continue;
 		} else if (!strcmp("undo", cmd)) {
-			if (State->prev) {
-				state *t = State->prev;
-				unmark(State->g);
-				freeGame(State->g);
-				free(State);
-				State = t;
-			}
+			unmark(G);
+			popGame();
 			continue;
 		} else if (!strcmp("white", cmd)) {
 			/* Ignore */
@@ -346,10 +318,8 @@ static void xboard_main() {
 		} else if (!strcmp("?", cmd)) {
 		} else {
 			__unused bool check;
-			state *newst;
 			/* It's likely a move, try to parse it */
 			dbg("is it a move?\n");
-			G = State->g;
 			move m = parseMove(line);
 
 			/* Couldn't parse it */
@@ -358,18 +328,15 @@ static void xboard_main() {
 				continue;
 			}
 
-			if (checkMove(State->g, m)) {
+			if (checkMove(m)) {
 				printf("Error (illegal move): %s\n", line);
 				continue;
 			}
 
-			newst = (state*) malloc(sizeof *newst);
-			newst->g = copyGame(State->g);
-			check = doMove(newst->g, m);
+			pushGame();
+			check = doMove(G, m);
 			assert(check);
-			mark(newst->g);
-			newst->prev = State;
-			State = newst;
+			mark(G);
 			curPlayer = flipTurn(curPlayer);
 			continue;
 		}
