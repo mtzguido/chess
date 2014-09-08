@@ -4,6 +4,6 @@
 #include "board.h"
 #include "ai.h"
 
-score search(game g, int maxDepth, move *mm, score alpha, score beta);
+score search(int maxDepth, move *mm, score alpha, score beta);
 
 #endif

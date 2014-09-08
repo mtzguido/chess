@@ -129,6 +129,8 @@ move machineMove(const game start, unsigned long long maxms) {
 		score alpha, beta;
 		bool stop = false;
 
+		G = start;
+
 		alpha = minScore;
 		beta = maxScore;
 		expected = minScore;
@@ -142,15 +144,15 @@ move machineMove(const game start, unsigned long long maxms) {
 		for (d = 1; !stop && !timeup; d++) {
 			assert(ply == 0);
 			iterstart = getms();
-			t = search(start, d, &temp, alpha, beta);
+			t = search(d, &temp, alpha, beta);
 
 			if (t >= beta) {
 				beta = maxScore;
-				t = search(start, d, &temp, alpha, beta);
+				t = search(d, &temp, alpha, beta);
 				dbg("ASP_HIGH: %i %i %i\n", t, alpha, maxScore);
 			} else if (t <= alpha) {
 				alpha = minScore;
-				t = search(start, d, &temp, alpha, beta);
+				t = search(d, &temp, alpha, beta);
 				dbg("ASP_LOW: %i %i %i\n", t, minScore, beta);
 			}
 
@@ -158,7 +160,7 @@ move machineMove(const game start, unsigned long long maxms) {
 				dbg("%i %i\n", t<=alpha, t>=beta);
 				alpha = minScore;
 				beta = maxScore;
-				t = search(start, d, &temp, alpha, beta);
+				t = search(d, &temp, alpha, beta);
 				dbg("ASP_DUB: %i %i %i\n", t, minScore, maxScore);
 			}
 

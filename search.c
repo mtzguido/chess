@@ -557,9 +557,9 @@ out:
 	return ret;
 }
 
-score search(game g, int maxDepth, move *mm, score alpha, score beta) {
+score search(int maxDepth, move *mm, score alpha, score beta) {
 	alpha = clamp(alpha, 1-CHECKMATE_SCORE, CHECKMATE_SCORE-1);
 	beta  = clamp(beta , 1-CHECKMATE_SCORE, CHECKMATE_SCORE-1);
 	assert(ply == 0);
-	return negamax(g, maxDepth, 0, mm, alpha, beta);
+	return negamax(G, maxDepth, 0, mm, alpha, beta);
 }
