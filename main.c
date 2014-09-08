@@ -118,7 +118,7 @@ static int checkMove(move m) {
 }
 
 __unused
-static void logToBook(game g, move m) {
+static void logToBook(move m) {
 	static FILE *game_log = NULL;
 	static int movenum = 1;
 	struct pgn pp;
@@ -130,7 +130,7 @@ static void logToBook(game g, move m) {
 	if (game_log == NULL)
 		game_log = fopen("gamelog", "w");
 
-	pp = toPGN(g, m);
+	pp = toPGN(m);
 	stringPGN(mbuf, pp);
 
 	fprintf(game_log, "%i. %s ", movenum, mbuf);

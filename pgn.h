@@ -29,8 +29,8 @@ struct pgn {
 	char check_or_checkmate;
 };
 
-move fromPGN(game g, struct pgn p);
-struct pgn toPGN(game g, move m);
+move fromPGN(struct pgn p);
+struct pgn toPGN(move m);
 
 void stringPGN(char *buf, struct pgn p);
 

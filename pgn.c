@@ -6,7 +6,7 @@
 #include <string.h>
 #include <ctype.h>
 
-move fromPGN(game g, struct pgn p) {
+move fromPGN(struct pgn p) {
 	move ret = {0};
 	int piece;
 	int i, j;
@@ -36,7 +36,7 @@ move fromPGN(game g, struct pgn p) {
 		default:		abort();
 	}
 
-	if (g->turn == BLACK)
+	if (G->turn == BLACK)
 		piece = -piece;
 
 
@@ -44,8 +44,8 @@ move fromPGN(game g, struct pgn p) {
 
 	for (i=0; i<8; i++) {
 		for (j=0; j<8; j++) {
-			if (g->board[i][j] == piece
-					&& canMove(g, i, j, '8' - p.dest_rank, p.dest_file - 'a')
+			if (G->board[i][j] == piece
+					&& canMove(G, i, j, '8' - p.dest_rank, p.dest_file - 'a')
 					&& (p.orig_file == '\0' || p.orig_file - 'a' == j)
 					&& (p.orig_rank == '\0' || '8' - p.orig_rank == i))
 			{
@@ -54,12 +54,12 @@ move fromPGN(game g, struct pgn p) {
 				ret.R = '8' - p.dest_rank;
 				ret.C = p.orig_file - 'a';
 
-				if (g->board[ret.R][ret.C] != 0) {
+				if (G->board[ret.R][ret.C] != 0) {
 					assert(p.capture);
 					//ret.was_capture = 1;
 				}
 
-				if (isPawn(piece) && ret.R == (g->turn == WHITE ? 0 : 7)) {
+				if (isPawn(piece) && ret.R == (G->turn == WHITE ? 0 : 7)) {
 					assert(p.promote_to != '\0');
 
 					switch (p.promote_to) {
@@ -72,7 +72,7 @@ move fromPGN(game g, struct pgn p) {
 						default:		assert(0);
 					}
 
-					if (g->turn == BLACK)
+					if (G->turn == BLACK)
 						ret.promote = - ret.promote;
 
 					//ret.was_promotion = 1;
@@ -86,7 +86,7 @@ move fromPGN(game g, struct pgn p) {
 	abort();
 }
 
-struct pgn toPGN(game g, move m) {
+struct pgn toPGN(move m) {
 	struct pgn ret = {0};
 	int i, j;
 	int ambiguous;
@@ -101,12 +101,12 @@ struct pgn toPGN(game g, move m) {
 		return ret;
 	} 
 
-	if (isPawn(g->board[m.r][m.c]))
+	if (isPawn(G->board[m.r][m.c]))
 		ret.pieceChar = '\0';
 	else
-		ret.pieceChar = toupper(charOf(g->board[m.r][m.c]));
+		ret.pieceChar = toupper(charOf(G->board[m.r][m.c]));
 
-	ret.capture = g->board[m.R][m.C] != 0;
+	ret.capture = G->board[m.R][m.C] != 0;
 
 	ret.dest_file = m.C + 'a';
 	ret.dest_rank = '8' - m.R;
@@ -114,8 +114,8 @@ struct pgn toPGN(game g, move m) {
 	ambiguous = 0;
 	for (i=0; i<8; i++) {
 		for (j=0; j<8; j++) {
-			if (g->board[i][j] == g->board[m.r][m.c]
-					&& canMove(g, i, j, m.R, m.C)
+			if (G->board[i][j] == G->board[m.r][m.c]
+					&& canMove(G, i, j, m.R, m.C)
 					&& (i != m.r || j != m.c))
 				ambiguous =1;
 		}
@@ -125,8 +125,8 @@ struct pgn toPGN(game g, move m) {
 		ret.orig_file = m.c + 'a';
 
 		for (i=0; i<8; i++) {
-			if (g->board[i][m.c] == g->board[m.r][m.c]
-					&& canMove(g, i, m.c, m.R, m.C)
+			if (G->board[i][m.c] == G->board[m.r][m.c]
+					&& canMove(G, i, m.c, m.R, m.C)
 					&& i != m.r)
 				ambiguous = 1;
 		}
