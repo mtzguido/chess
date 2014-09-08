@@ -201,7 +201,6 @@ bool isDraw() {
 
 int isFinished(game g) {
 	int i, r = reps(g);
-	game ng;
 
 	assert(r > 0);
 	assert(r <= 3);
@@ -213,18 +212,17 @@ int isFinished(game g) {
 
 	assert(ply == 0);
 	genSuccs(g);
-	ng = copyGame(g);
+	pushGame();
 
 	for (i=first_succ[ply]; i<first_succ[ply+1]; i++) {
 		/*
 		 * Si hay un sucesor válido,
 		 * el juego no terminó
 		 */
-		if (doMove_unchecked(ng, gsuccs[i].m))
+		if (doMove_unchecked(G, gsuccs[i].m))
 			goto not_finished;
 	}
-
-	freeGame(ng);
+	popGame();
 
 	if (inCheck(g, g->turn))
 		return WIN(flipTurn(g->turn));
@@ -232,7 +230,7 @@ int isFinished(game g) {
 		return DRAW_STALE;
 
 not_finished:
-	freeGame(ng);
+	popGame();
 	return -1;
 }
 
