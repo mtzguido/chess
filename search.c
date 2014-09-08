@@ -7,8 +7,8 @@
 #include "eval.h"
 #include <stdbool.h>
 
-score negamax(int curDepth, int maxDepth, move *mm, score alpha, score beta);
-score _negamax(int curDepth, int maxDepth, move *mm, score alpha, score beta);
+static score negamax(int curDepth, int maxDepth, move *mm, score alpha, score beta);
+static score _negamax(int curDepth, int maxDepth, move *mm, score alpha, score beta);
 
 static inline void shuffle_succs() {
 	struct MS swap;
@@ -19,7 +19,7 @@ static inline void shuffle_succs() {
 	if (!copts.shuffle)
 		return;
 
-	for (i=lo; i<hi-1; i++) {
+	for (i = lo; i < hi-1; i++) {
 		j = i + rand() % (hi-i);
 
 		if (i == j)
@@ -150,7 +150,21 @@ dont:
 	return alpha;
 }
 
-static inline score quiesce(score alpha, score beta, int curDepth) {
+static inline score _quiesce(score alpha, score beta, int curDepth);
+
+static score quiesce(int curDepth, score alpha, score beta) {
+	__unused game bak = G;
+	__unused u64 h = G->zobrist;
+	score ret;
+
+	ret = _quiesce(curDepth, alpha, beta);
+
+	assert(G == bak);
+	assert(G->zobrist == h);
+	return ret;
+}
+
+static inline score _quiesce(score alpha, score beta, int curDepth) {
 	int nvalid, i;
 	score ret, ev;
 	score t;
@@ -251,8 +265,8 @@ out:
 	return ret;
 }
 
-score negamax(int maxDepth, int curDepth, move *mm, score alpha,
-		score beta) {
+static
+score negamax(int maxDepth, int curDepth, move *mm, score alpha, score beta) {
 	__unused game bak = G;
 	__unused u64 h = G->zobrist;
 	score ret;
@@ -264,8 +278,8 @@ score negamax(int maxDepth, int curDepth, move *mm, score alpha,
 	return ret;
 }
 
-score _negamax(int maxDepth, int curDepth, move *mm, score alpha,
-		score beta) {
+static
+score _negamax(int maxDepth, int curDepth, move *mm, score alpha, score beta) {
 	static bool doing_lmr = false;
 	score t, ret, best, alpha_orig;
 	int i;

@@ -66,13 +66,13 @@ static inline void print_time(clock_t t1, clock_t t2) {
 			1.0*(t2-t1)/CLOCKS_PER_SEC);
 }
 
-static inline bool forced(const game g, move *m) {
+static inline bool forced(move *m) {
 	int i;
 	int c = -1;
 
 	assert(ply == 0);
 
-	genSuccs(g);
+	genSuccs(G);
 	for (i = first_succ[ply]; i < first_succ[ply+1]; i++) {
 		if (doMove_unchecked(gsuccs[i].m)) {
 			undoMove();
@@ -96,7 +96,7 @@ unsigned long timelimit;
 unsigned long timestart;
 int ticks;
 
-move machineMove(const game start, unsigned long long maxms) {
+move machineMove(unsigned long long maxms) {
 	move ret = {0};
 	clock_t t1, t2;
 	score expected = 0;
@@ -109,14 +109,13 @@ move machineMove(const game start, unsigned long long maxms) {
 	addon_reset();
 	reset_stats();
 
-	assert(isFinished(start) == -1);
+	assert(isFinished(G) == -1);
 
 	t1 = clock();
-	G = start;
 	if (copts.book && bookMove(&ret)) {
 		dbg("stats: book move.\n");
 		expect_ok = false;
-	} else if (forced(start, &ret)) {
+	} else if (forced(&ret)) {
 		dbg("stats: forced move.\n");
 		expect_ok = false;
 	} else {
@@ -125,8 +124,6 @@ move machineMove(const game start, unsigned long long maxms) {
 		score t;
 		score alpha, beta;
 		bool stop = false;
-
-		G = start;
 
 		alpha = minScore;
 		beta = maxScore;
@@ -215,7 +212,7 @@ move machineMove(const game start, unsigned long long maxms) {
 
 	print_stats(expected, expect_ok);
 	assert(ret.move_type != MOVE_INVAL);
-	assert(ret.who == start->turn);
+	assert(ret.who == G->turn);
 	dbg("move was %i %i %i %i %i\n",
 			ret.move_type, ret.r, ret.c, ret.R, ret.C);
 

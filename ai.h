@@ -27,7 +27,7 @@ extern unsigned long timelimit;
 extern unsigned long timestart;
 extern int ticks;
 
-move machineMove(game start, unsigned long long maxms);
+move machineMove(unsigned long long maxms);
 
 /* Board evaluation scores */
 #define ROOK_OPEN_FILE		15

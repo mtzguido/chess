@@ -50,7 +50,7 @@ static int nmoves() {
 		}
 
 		assert(ply == 0);
-		m = machineMove(G, copts.timelimit);
+		m = machineMove(copts.timelimit);
 		assert(ply == 0);
 		doMove(m);
 		mark(G);
@@ -192,7 +192,7 @@ static void xboard_main() {
 			else
 				maxms = (timeleft - 500) / movesleft;
 
-			move m = machineMove(G, maxms);
+			move m = machineMove(maxms);
 
 			check = doMove(m);
 			assert(check);
