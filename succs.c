@@ -801,7 +801,7 @@ static void queenCaps(i8 r, i8 c) {
 	bishopCaps(r, c);
 }
 
-static void castleSuccs(const game g) {
+static void castleSuccs() {
 	const piece_t kr = G->turn == WHITE ? 7 : 0;
 	const piece_t rpiece = G->turn == WHITE ? WROOK : BROOK;
 	move m = {0};
@@ -900,12 +900,10 @@ static void pieceCaps(i8 i, i8 j) {
 
 typedef void (*movegen_t)(i8 i, i8 j);
 
-static void  __genSuccs(const game g, movegen_t fun) {
+static void  __genSuccs(movegen_t fun) {
 	u64 temp;
 	int i;
-	game bak = G;
 
-	G = g;
 	first_succ[ply+1] = first_succ[ply];
 
 	mask_for_each(G->piecemask[G->turn], temp, i) {
@@ -914,22 +912,20 @@ static void  __genSuccs(const game g, movegen_t fun) {
 
 		fun(r, c);
 	}
-
-	G = bak;
 }
 
-void genSuccs(const game g) {
-	__genSuccs(g, pieceSuccs);
+void genSuccs() {
+	__genSuccs(pieceSuccs);
 	assert(first_succ[ply+1] > first_succ[ply]);
-	castleSuccs(g);
+	castleSuccs();
 }
 
-void genCaps(const game g) {
+void genCaps() {
 #ifndef NDEBUG
-	dbg_caps = g;
+	dbg_caps = G;
 #endif
 
-	__genSuccs(g, pieceCaps);
+	__genSuccs(pieceCaps);
 
 #ifndef NDEBUG
 	dbg_caps = NULL;

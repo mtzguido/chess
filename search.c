@@ -31,30 +31,22 @@ static inline void shuffle_succs() {
 	}
 }
 
-static inline void genSuccs_wrap(game g, int depth) {
-	game bak = G;
-	G = g;
-
+static inline void genSuccs_wrap(int depth) {
 	/* Generar sucesores */
-	genSuccs(g);
+	genSuccs();
 	stats.ngen += first_succ[ply+1] - first_succ[ply];
 
 	addon_score_succs(depth);
 
 	/* Mezclarlos si es necesario */
 	shuffle_succs();
-	G = bak;
 }
 
-static inline void genCaps_wrap(game g, int depth) {
-	game bak = G;
-	G = g;
-
-	genCaps(g);
+static inline void genCaps_wrap(int depth) {
+	genCaps();
 	stats.ngen += first_succ[ply+1] - first_succ[ply];
 
 	addon_score_succs(depth);
-	G = bak;
 }
 
 
@@ -63,11 +55,11 @@ static inline void genCaps_wrap(game g, int depth) {
  * Deja en arr[i] el sucesor correcto, asume que arr[0..i-1] ya
  * está ordenado.
  */
-static inline void sort_succ(game g, int i) {
+static inline void sort_succ(int i) {
 	int j;
 	int best;
 
-	assert(gsuccs[i].m.who == g->turn);
+	assert(gsuccs[i].m.who == G->turn);
 	assert(i >= first_succ[ply]);
 	assert(i < first_succ[ply+1]);
 
@@ -75,7 +67,7 @@ static inline void sort_succ(game g, int i) {
 	best = i;
 
 	for (j=i+1; j<first_succ[ply+1]; j++) {
-		assert(gsuccs[j].m.who == g->turn);
+		assert(gsuccs[j].m.who == G->turn);
 		if (gsuccs[j].s > s) {
 			best = j;
 			s = gsuccs[j].s;
@@ -90,7 +82,7 @@ static inline void sort_succ(game g, int i) {
 		gsuccs[i] = swap;
 	}
 
-	assert(gsuccs[i].m.who == g->turn);
+	assert(gsuccs[i].m.who == G->turn);
 	assert(gsuccs[i].m.move_type != MOVE_INVAL);
 	assert(gsuccs[i].s >= 0);
 }
@@ -222,10 +214,10 @@ static inline score quiesce(score alpha, score beta, int curDepth) {
 
 	ng = copyGame(G);
 	G = ng;
-	genCaps_wrap(G, curDepth);
+	genCaps_wrap(curDepth);
 	nvalid = 0;
 	for (i = first_succ[ply]; i < first_succ[ply+1]; i++) {
-		sort_succ(G, i);
+		sort_succ(i);
 		const move m = gsuccs[i].m;
 
 		assert(m.move_type == MOVE_REGULAR);
@@ -405,10 +397,10 @@ score _negamax(int maxDepth, int curDepth, move *mm, score alpha,
 	stats.depthsn[curDepth]++;
 
 	assert(ng->zobrist == G->zobrist);
-	genSuccs_wrap(G, curDepth);
+	genSuccs_wrap(curDepth);
 
 	for (i = first_succ[ply]; i < first_succ[ply+1]; i++) {
-		sort_succ(G, i);
+		sort_succ(i);
 		const move m = gsuccs[i].m;
 
 		assert(ng->zobrist == G->zobrist);

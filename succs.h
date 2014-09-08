@@ -9,7 +9,7 @@ extern struct MS gsuccs[];
 extern int first_succ[MAX_PLY];
 extern int ply;
 
-void genSuccs(game g);
-void genCaps(game g);
+void genSuccs();
+void genCaps();
 
 #endif
