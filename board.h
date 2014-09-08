@@ -62,6 +62,8 @@ extern game G;
 void pushGame(void);
 void popGame(void);
 void peekGame(void);
+game prevGame(void);
+
 
 /* Players */
 #define BLACK	0

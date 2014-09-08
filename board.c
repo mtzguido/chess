@@ -38,6 +38,10 @@ void peekGame() {
 	G = copyGame(stack[d-1]);
 }
 
+game prevGame() {
+	return stack[d-1];
+}
+
 static const char *init =
 	"rnbqkbnr"
 	"pppppppp"

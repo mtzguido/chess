@@ -279,16 +279,13 @@ score _negamax(int maxDepth, int curDepth, move *mm, score alpha,
 	int i;
 	int ext;
 	int nvalid = 0;
-	game ng;
-	game bak = G;
 	int bestmove = -1;
 
 	stats.nall++;
 
 	assert(ply == curDepth);
 
-	ng = copyGame(G);
-	G = ng;
+	pushGame();
 
 	if (timeup) {
 		ret = 0;
@@ -391,20 +388,18 @@ score _negamax(int maxDepth, int curDepth, move *mm, score alpha,
 	stats.nopen_s++;
 	stats.depthsn[curDepth]++;
 
-	assert(ng->zobrist == G->zobrist);
 	genSuccs_wrap(curDepth);
 
 	for (i = first_succ[ply]; i < first_succ[ply+1]; i++) {
 		sort_succ(i);
 		const move m = gsuccs[i].m;
 
-		assert(ng->zobrist == G->zobrist);
-		if (!doMove_unchecked(ng, m))
+		if (!doMove_unchecked(G, m))
 			continue;
 
 		nvalid++;
 
-		mark(ng);
+		mark(G);
 
 		/* LMR */
 		if (copts.lmr
@@ -414,9 +409,9 @@ score _negamax(int maxDepth, int curDepth, move *mm, score alpha,
 			&& maxDepth - curDepth >= 2
 			&& gsuccs[i].s*10 < gsuccs[first_succ[ply]].s /* 2x crap */
 			&& ext == 0
-			&& !inCheck(ng, ng->turn)
-			&& !isCapture(bak, m)
-			&& !isPromotion(bak, m)) {
+			&& !inCheck(G, G->turn)
+			&& !isCapture(prevGame(), m)
+			&& !isPromotion(prevGame(), m)) {
 			stats.lmrs++;
 
 			doing_lmr = true;
@@ -440,10 +435,10 @@ score _negamax(int maxDepth, int curDepth, move *mm, score alpha,
 			ply--;
 		}
 
-		unmark(ng);
+		unmark(G);
 
 		/* Ya no necesitamos a ng */
-		*ng = *bak;
+		peekGame();
 
 		if (t > best) {
 			best = t;
@@ -481,15 +476,17 @@ score _negamax(int maxDepth, int curDepth, move *mm, score alpha,
 		addon_notify_return(dummy, 999, ret, FLAG_EXACT);
 	} else if (nvalid == 1 && alpha < beta && copts.forced_extend) {
 		__unused bool check;
-		check = doMove(ng, gsuccs[bestmove].m);
+		check = doMove(G, gsuccs[bestmove].m);
 		assert(check);
 
 		alpha = alpha_orig;
-		mark(ng);
+		mark(G);
 		ply++;
 		t = -negamax(maxDepth+1, curDepth+1, NULL, -beta, -alpha);
 		ply--;
-		unmark(ng);
+		unmark(G);
+
+		peekGame();
 
 		if (t > alpha)
 			alpha = t;
@@ -527,8 +524,7 @@ score _negamax(int maxDepth, int curDepth, move *mm, score alpha,
 	}
 
 out:
-	freeGame(ng);
-	G = bak;
+	popGame();
 
 	if (mm)
 		assert(mm->move_type != MOVE_INVAL);
