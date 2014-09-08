@@ -106,9 +106,9 @@ static int checkMove(move m) {
 	undoMove();
 
 	if (isCapture(G, m) || isPromotion(G, m))
-		genCaps(G);
+		genCaps();
 	else
-		genSuccs(G);
+		genSuccs();
 
 	for (i = first_succ[ply]; i < first_succ[ply+1]; i++) {
 		if (equalMove(m, gsuccs[i].m))

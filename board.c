@@ -212,7 +212,7 @@ int isFinished(game g) {
 		return DRAW_50MOVE;
 
 	assert(ply == 0);
-	genSuccs(g);
+	genSuccs();
 
 	for (i = first_succ[ply]; i < first_succ[ply+1]; i++) {
 		/*

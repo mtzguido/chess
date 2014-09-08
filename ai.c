@@ -72,7 +72,7 @@ static inline bool forced(move *m) {
 
 	assert(ply == 0);
 
-	genSuccs(G);
+	genSuccs();
 	for (i = first_succ[ply]; i < first_succ[ply+1]; i++) {
 		if (doMove_unchecked(gsuccs[i].m)) {
 			undoMove();
