@@ -414,8 +414,8 @@ score _negamax(int maxDepth, int curDepth, move *mm, score alpha, score beta) {
 			&& gsuccs[i].s*10 < gsuccs[first_succ[ply]].s /* 2x crap */
 			&& ext == 0
 			&& !inCheck(G->turn)
-			&& !isCapture(prevGame(), m)
-			&& !isPromotion(prevGame(), m)) {
+			&& !G->was_capture
+			&& !G->was_promote) {
 			stats.lmrs++;
 
 			doing_lmr = true;

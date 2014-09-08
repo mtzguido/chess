@@ -106,6 +106,9 @@ static void fix() {
 	G->castled[WHITE] = 0;
 	G->castled[BLACK] = 0;
 
+	G->was_capture = false;
+	G->was_promote = false;
+
 	piecePosFullRecalc();
 }
 
@@ -560,6 +563,7 @@ static bool __doMove(move m, bool check) {
 		set_ep(-1, -1);
 		G->lastmove = m;
 		G->castled[m.who] = 1;
+		G->was_capture = G->was_promote = false;
 
 		break;
 
@@ -570,6 +574,7 @@ static bool __doMove(move m, bool check) {
 		set_ep(-1, -1);
 		G->lastmove = m;
 		G->castled[m.who] = 1;
+		G->was_capture = G->was_promote = false;
 
 		break;
 
@@ -580,6 +585,7 @@ static bool __doMove(move m, bool check) {
 
 		set_ep(-1, -1);
 		G->lastmove = m;
+		G->was_capture = G->was_promote = false;
 
 		break;
 
@@ -746,6 +752,7 @@ static bool doMoveRegular(move m, bool check) {
 	/* Es válida */
 	G->lastmove = m;
 	G->idlecount++;
+	G->was_capture = false;
 
 	if (isPawn(piece)) {
 		/* Los peones no son reversibles */
@@ -766,10 +773,13 @@ static bool doMoveRegular(move m, bool check) {
 			updCastling(m);
 
 		set_ep(-1, -1);
+		G->was_promote = false;
 	}
 
-	if (enemy_piece(m.R, m.C))
+	if (enemy_piece(m.R, m.C)) {
 		G->idlecount = 0;
+		G->was_capture = true;
+	}
 
 	/* Movemos */
 	movePiece(m.r, m.c, m.R, m.C);
@@ -860,6 +870,7 @@ static void epCapture(move m) {
 		setPiece(m.r, m.C, 0);
 		G->inCheck[WHITE] = -1;
 		G->inCheck[BLACK] = -1;
+		G->was_capture = true;
 	}
 }
 
@@ -877,6 +888,9 @@ static void calcPromotion(move m) {
 		piece_t new_piece = m.who == WHITE ? m.promote : (8 | m.promote);
 
 		setPiece(m.r, m.c, new_piece);
+		G->was_promote = true;
+	} else {
+		G->was_promote = false;
 	}
 }
 

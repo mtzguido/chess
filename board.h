@@ -52,6 +52,9 @@ struct game_struct {
 	u8 kingy[2];
 	i8 inCheck[2];
 	u8 turn:1;
+
+	bool was_capture;
+	bool was_promote;
 };
 
 typedef struct game_struct *game;
