@@ -59,6 +59,10 @@ typedef struct game_struct *game;
 /* Global game */
 extern game G;
 
+void pushGame(void);
+void popGame(void);
+void peekGame(void);
+
 /* Players */
 #define BLACK	0
 #define WHITE	1

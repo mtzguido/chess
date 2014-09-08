@@ -16,6 +16,28 @@
 struct game_struct _G;
 game G = &_G;
 
+static int d = 0;
+game stack[200] = {0};
+
+void pushGame() {
+	stack[d++] = G;
+	G = copyGame(G);
+}
+
+void popGame() {
+	if (G != &_G)
+		freeGame(G);
+
+	G = stack[--d];
+}
+
+void peekGame() {
+	if (G != &_G)
+		freeGame(G);
+
+	G = copyGame(stack[d-1]);
+}
+
 static const char *init =
 	"rnbqkbnr"
 	"pppppppp"

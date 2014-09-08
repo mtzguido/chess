@@ -96,12 +96,11 @@ static inline int calcExtension(int maxDepth, int curDepth) {
 	return ret;
 }
 
-static inline score null_move_score(int curDepth, int maxDepth,
-				    score alpha, score beta) {
+static inline score null_move_score(int curDepth, int maxDepth, score alpha,
+				    score beta)
+{
 	static bool doing_null_move = false;
 	score t;
-	game ng;
-	game bak;
 	move m = { .move_type = MOVE_NULL, .who = G->turn };
 	__unused bool check;
 
@@ -123,9 +122,9 @@ static inline score null_move_score(int curDepth, int maxDepth,
 	if (maxDepth - curDepth <= NMH_REDUCTION)
 		goto dont;
 
-	bak = G;
-	ng = copyGame(G);
-	G = ng;
+	stats.null_tries++;
+
+	pushGame();
 	check = doMove(G, m);
 
 	/*
@@ -134,9 +133,7 @@ static inline score null_move_score(int curDepth, int maxDepth,
 	 */
 	assert(check);
 
-	stats.null_tries++;
-
-	mark(ng);
+	mark(G);
 	first_succ[ply+1] = first_succ[ply];
 	ply++;
 	doing_null_move = true;
@@ -144,12 +141,10 @@ static inline score null_move_score(int curDepth, int maxDepth,
 	t = -negamax(maxDepth - NMH_REDUCTION, curDepth+1, NULL, -beta, -alpha);
 
 	doing_null_move = false;
-
 	ply--;
-	unmark(ng);
+	unmark(G);
 
-	freeGame(ng);
-	G = bak;
+	popGame();
 	return t;
 
 dont:
