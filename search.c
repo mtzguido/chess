@@ -153,9 +153,8 @@ dont:
 
 static inline score quiesce(score alpha, score beta, int curDepth) {
 	int nvalid, i;
-	game ng;
-	game bak = G;
-	score ret, t;
+	score ret, ev;
+	score t;
 
 	assert(ply == curDepth);
 
@@ -181,8 +180,8 @@ static inline score quiesce(score alpha, score beta, int curDepth) {
 
 	stats.nopen_q++;
 
-	t = boardEval();
-	if (t >= beta) {
+	ev = boardEval();
+	if (ev >= beta) {
 		ret = beta;
 		goto out;
 	}
@@ -193,22 +192,21 @@ static inline score quiesce(score alpha, score beta, int curDepth) {
 		if (G->lastmove.promote != EMPTY)
 			delta += QUEEN_SCORE;
 
-		if (t + delta < alpha) {
+		if (ev + delta < alpha) {
 			ret = alpha;
 			goto out;
 		}
 	}
 
-	if (t > alpha)
-		alpha = t;
+	if (ev > alpha)
+		alpha = ev;
 
 	if (ply >= MAX_PLY-1) {
-		ret = t;
+		ret = ev;
 		goto out;
 	}
 
-	ng = copyGame(G);
-	G = ng;
+	pushGame();
 	genCaps_wrap(curDepth);
 	nvalid = 0;
 	for (i = first_succ[ply]; i < first_succ[ply+1]; i++) {
@@ -220,39 +218,37 @@ static inline score quiesce(score alpha, score beta, int curDepth) {
 		/* We only consider captures and promotions */
 		assert(isCapture(G, m) || isPromotion(G, m));
 
-		if (!doMove_unchecked(ng, m))
+		if (!doMove_unchecked(G, m))
 			continue;
 
 		nvalid++;
 
-		mark(ng);
+		mark(G);
 		ply++;
 		t = -quiesce(-beta, -alpha, curDepth+1);
 		ply--;
-		unmark(ng);
-		*ng = *bak;
+		unmark(G);
+		peekGame();
 
 		if (t > alpha) {
 			if (t >= beta) {
 				ret = beta;
-				freeGame(ng);
+				popGame();
 				goto out;
 			}
 
 			alpha = t;
 		}
 	}
-	freeGame(ng);
+	popGame();
 
 	if (nvalid == 0)
-		ret = t;
+		ret = ev;
 	else
 		ret = alpha;
 
 out:
-	G = bak;
 
-	assert(G == bak);
 	assert(timeup || ret > minScore);
 	assert(timeup || ret < maxScore);
 
@@ -284,8 +280,6 @@ score _negamax(int maxDepth, int curDepth, move *mm, score alpha,
 	stats.nall++;
 
 	assert(ply == curDepth);
-
-	pushGame();
 
 	if (timeup) {
 		ret = 0;
@@ -388,6 +382,7 @@ score _negamax(int maxDepth, int curDepth, move *mm, score alpha,
 	stats.nopen_s++;
 	stats.depthsn[curDepth]++;
 
+	pushGame();
 	genSuccs_wrap(curDepth);
 
 	for (i = first_succ[ply]; i < first_succ[ply+1]; i++) {
@@ -453,6 +448,7 @@ score _negamax(int maxDepth, int curDepth, move *mm, score alpha,
 			break;
 		}
 	}
+	popGame();
 
 	if (bestmove != -1)
 		stats.picked[bestmove - first_succ[ply]]++;
@@ -476,6 +472,7 @@ score _negamax(int maxDepth, int curDepth, move *mm, score alpha,
 		addon_notify_return(dummy, 999, ret, FLAG_EXACT);
 	} else if (nvalid == 1 && alpha < beta && copts.forced_extend) {
 		__unused bool check;
+		pushGame();
 		check = doMove(G, gsuccs[bestmove].m);
 		assert(check);
 
@@ -486,7 +483,7 @@ score _negamax(int maxDepth, int curDepth, move *mm, score alpha,
 		ply--;
 		unmark(G);
 
-		peekGame();
+		popGame();
 
 		if (t > alpha)
 			alpha = t;
@@ -524,8 +521,6 @@ score _negamax(int maxDepth, int curDepth, move *mm, score alpha,
 	}
 
 out:
-	popGame();
-
 	if (mm)
 		assert(mm->move_type != MOVE_INVAL);
 
