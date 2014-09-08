@@ -71,23 +71,21 @@ static inline bool forced(const game g, move *m) {
 	int c = -1;
 
 	assert(ply == 0);
-	pushGame();
+
 	genSuccs(g);
-	for (i=first_succ[ply]; i<first_succ[ply+1]; i++) {
+	for (i = first_succ[ply]; i < first_succ[ply+1]; i++) {
 		if (doMove_unchecked(gsuccs[i].m)) {
-			if (c != -1) {
-				popGame();
+			undoMove();
+
+			if (c != -1)
 				return false;
-			}
 
 			c = i;
-			peekGame();
 		}
 	}
 
 	assert(c != -1);
 	*m = gsuccs[c].m;
-	popGame();
 	return true;
 }
 

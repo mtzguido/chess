@@ -19,19 +19,20 @@ game G = &_G;
 static int d = 0;
 game stack[200] = {0};
 
-void pushGame() {
+static void pushGame() {
 	stack[d++] = G;
 	G = copyGame(G);
 }
 
-void popGame() {
+static void popGame() {
 	if (G != &_G)
 		freeGame(G);
 
 	G = stack[--d];
 }
 
-void peekGame() {
+__unused
+static void peekGame() {
 	if (G != &_G)
 		freeGame(G);
 
@@ -212,17 +213,17 @@ int isFinished(game g) {
 
 	assert(ply == 0);
 	genSuccs(g);
-	pushGame();
 
-	for (i=first_succ[ply]; i<first_succ[ply+1]; i++) {
+	for (i = first_succ[ply]; i < first_succ[ply+1]; i++) {
 		/*
 		 * Si hay un sucesor válido,
 		 * el juego no terminó
 		 */
-		if (doMove_unchecked(gsuccs[i].m))
+		if (doMove_unchecked(gsuccs[i].m)) {
+			undoMove();
 			goto not_finished;
+		}
 	}
-	popGame();
 
 	if (inCheck(g, g->turn))
 		return WIN(flipTurn(g->turn));
@@ -230,7 +231,6 @@ int isFinished(game g) {
 		return DRAW_STALE;
 
 not_finished:
-	popGame();
 	return -1;
 }
 
@@ -562,7 +562,7 @@ static bool doMoveNull(move m, bool check);
  * 0 : Movida no válida, deja a g intacto
  */
 static bool __doMove(move m, bool check) {
-	game old_g = copyGame(G);
+	pushGame();
 
 	assert(m.who == G->turn);
 
@@ -612,16 +612,13 @@ static bool __doMove(move m, bool check) {
 		(G->inCheck[G->turn] == -1 && inCheck(G, G->turn)))
 		goto fail;
 
-	freeGame(old_g);
-
 	G->turn = flipTurn(G->turn);
 	G->zobrist ^= ZOBR_BLACK();
 
 	return true;
 
 fail:
-	memcpy(G, old_g, sizeof *G);
-	freeGame(old_g);
+	popGame();
 
 	return false;
 }
@@ -632,6 +629,10 @@ bool doMove(move m) {
 
 bool doMove_unchecked(move m) {
 	return __doMove(m, false);
+}
+
+void undoMove() {
+	popGame();
 }
 
 /* Auxiliares de doMoveRegular */

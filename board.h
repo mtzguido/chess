@@ -59,11 +59,7 @@ typedef struct game_struct *game;
 /* Global game */
 extern game G;
 
-void pushGame(void);
-void popGame(void);
-void peekGame(void);
 game prevGame(void);
-
 
 /* Players */
 #define BLACK	0
@@ -104,6 +100,7 @@ game startingGame(void);
 
 bool doMove(move m); /* Actua sobre g */
 bool doMove_unchecked(move m); /* Actua sobre g */
+void undoMove(void);
 
 game copyGame(game g);
 void freeGame(game g);

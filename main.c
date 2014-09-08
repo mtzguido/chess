@@ -98,19 +98,19 @@ static int checkMove(move m) {
 	if (isPromotion(G, m) && m.promote != WKNIGHT)
 		m.promote = WQUEEN;
 
-	pushGame();
 	int rc = doMove(m);
-	popGame();
 
 	if (rc != true)
 		return 1;
+
+	undoMove();
 
 	if (isCapture(G, m) || isPromotion(G, m))
 		genCaps(G);
 	else
 		genSuccs(G);
 
-	for (i=first_succ[ply]; i<first_succ[ply+1]; i++) {
+	for (i = first_succ[ply]; i < first_succ[ply+1]; i++) {
 		if (equalMove(m, gsuccs[i].m))
 			return 0;
 	}
@@ -194,7 +194,6 @@ static void xboard_main() {
 
 			move m = machineMove(G, maxms);
 
-			pushGame();
 			check = doMove(m);
 			assert(check);
 			mark(G);
@@ -307,7 +306,7 @@ static void xboard_main() {
 			continue;
 		} else if (!strcmp("undo", cmd)) {
 			unmark(G);
-			popGame();
+			undoMove();
 			continue;
 		} else if (!strcmp("white", cmd)) {
 			/* Ignore */
@@ -333,7 +332,6 @@ static void xboard_main() {
 				continue;
 			}
 
-			pushGame();
 			check = doMove(m);
 			assert(check);
 			mark(G);
