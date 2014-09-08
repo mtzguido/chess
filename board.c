@@ -231,7 +231,7 @@ int isFinished() {
 		}
 	}
 
-	if (inCheck(G, G->turn))
+	if (inCheck(G->turn))
 		return WIN(flipTurn(G->turn));
 	else
 		return DRAW_STALE;
@@ -244,63 +244,60 @@ not_finished:
  * Rompemos la simetría en el caso de los reyes,
  * para optimizar un poco.
  */
-static bool inCheck_diag_sw(game g, int kr, int kc, int who);
-static bool inCheck_diag_se(game g, int kr, int kc, int who);
-static bool inCheck_diag_nw(game g, int kr, int kc, int who);
-static bool inCheck_diag_ne(game g, int kr, int kc, int who);
-static bool inCheck_row_w(game g, int kr, int kc, int who);
-static bool inCheck_row_e(game g, int kr, int kc, int who);
-static bool inCheck_col_n(game g, int kr, int kc, int who);
-static bool inCheck_col_s(game g, int kr, int kc, int who);
-static bool inCheck_knig(game g, int kr, int kc, int who);
-static bool inCheck_pawn(game g, int kr, int kc, int who);
-static bool inCheck_king(game g);
+static bool inCheck_diag_sw(int kr, int kc, int who);
+static bool inCheck_diag_se(int kr, int kc, int who);
+static bool inCheck_diag_nw(int kr, int kc, int who);
+static bool inCheck_diag_ne(int kr, int kc, int who);
+static bool inCheck_row_w(int kr, int kc, int who);
+static bool inCheck_row_e(int kr, int kc, int who);
+static bool inCheck_col_n(int kr, int kc, int who);
+static bool inCheck_col_s(int kr, int kc, int who);
+static bool inCheck_knig(int kr, int kc, int who);
+static bool inCheck_pawn(int kr, int kc, int who);
+static bool inCheck_king();
 
-bool inCheck(game g, int who) {
+bool inCheck(int who) {
 	u8 kr, kc;
-	game bak = G;
 
-	if (g->inCheck[who] != -1)
-		return g->inCheck[who];
+	if (G->inCheck[who] != -1)
+		return G->inCheck[who];
 
-	if (!(g->piecemask[flipTurn(who)] & all_mask[8*g->kingx[who] + g->kingy[who]])) {
-		g->inCheck[who] = 0;
+	if (!(G->piecemask[flipTurn(who)] & all_mask[8*G->kingx[who] + G->kingy[who]])) {
+		G->inCheck[who] = 0;
 		return 0;
 	}
 
-	kr = g->kingx[who];
-	kc = g->kingy[who];
+	kr = G->kingx[who];
+	kc = G->kingy[who];
 
-	G = g;
-	g->inCheck[who] =  inCheck_diag_sw(g, kr, kc, who)
-			|| inCheck_diag_se(g, kr, kc, who)
-			|| inCheck_diag_nw(g, kr, kc, who)
-			|| inCheck_diag_ne(g, kr, kc, who)
-			|| inCheck_row_w(g, kr, kc, who)
-			|| inCheck_row_e(g, kr, kc, who)
-			|| inCheck_col_n(g, kr, kc, who)
-			|| inCheck_col_s(g, kr, kc, who)
-			|| inCheck_knig(g, kr, kc, who)
-			|| inCheck_pawn(g, kr, kc, who)
-			|| inCheck_king(g);
+	G->inCheck[who] =  inCheck_diag_sw(kr, kc, who)
+			|| inCheck_diag_se(kr, kc, who)
+			|| inCheck_diag_nw(kr, kc, who)
+			|| inCheck_diag_ne(kr, kc, who)
+			|| inCheck_row_w(kr, kc, who)
+			|| inCheck_row_e(kr, kc, who)
+			|| inCheck_col_n(kr, kc, who)
+			|| inCheck_col_s(kr, kc, who)
+			|| inCheck_knig(kr, kc, who)
+			|| inCheck_pawn(kr, kc, who)
+			|| inCheck_king();
 
-	G = bak;
-	return g->inCheck[who];
+	return G->inCheck[who];
 }
 
-static bool inCheck_row_e(game g, int kr, int kc, int who) {
+static bool inCheck_row_e(int kr, int kc, int who) {
 	int i, j;
 	const piece_t enemy_q = who == WHITE ? BQUEEN : WQUEEN;
 	const piece_t enemy_r = who == WHITE ? BROOK : WROOK;
 
-	if (!(g->piecemask[flipTurn(who)] & row_e_mask[kr*8+kc]))
+	if (!(G->piecemask[flipTurn(who)] & row_e_mask[kr*8+kc]))
 		return false;
 
 	i = kr;
 	for (j=kc+1; j<8; j++) {
 		if (any_piece(i, j)) {
-			if (g->board[i][j] == enemy_q
-					|| g->board[i][j] == enemy_r)
+			if (G->board[i][j] == enemy_q
+					|| G->board[i][j] == enemy_r)
 				return true;
 
 			break;
@@ -310,19 +307,19 @@ static bool inCheck_row_e(game g, int kr, int kc, int who) {
 	return false;
 }
 
-static bool inCheck_row_w(game g, int kr, int kc, int who) {
+static bool inCheck_row_w(int kr, int kc, int who) {
 	int i, j;
 	const piece_t enemy_q = who == WHITE ? BQUEEN : WQUEEN;
 	const piece_t enemy_r = who == WHITE ? BROOK : WROOK;
 
-	if (!(g->piecemask[flipTurn(who)] & row_w_mask[kr*8+kc]))
+	if (!(G->piecemask[flipTurn(who)] & row_w_mask[kr*8+kc]))
 		return false;
 
 	i = kr;
 	for (j=kc-1; j>=0; j--) {
 		if (any_piece(i, j)) {
-			if (g->board[i][j] == enemy_q
-					|| g->board[i][j] == enemy_r)
+			if (G->board[i][j] == enemy_q
+					|| G->board[i][j] == enemy_r)
 				return true;
 
 			break;
@@ -332,19 +329,19 @@ static bool inCheck_row_w(game g, int kr, int kc, int who) {
 	return false;
 }
 
-static bool inCheck_col_s(game g, int kr, int kc, int who) {
+static bool inCheck_col_s(int kr, int kc, int who) {
 	int i, j;
 	const piece_t enemy_q = who == WHITE ? BQUEEN : WQUEEN;
 	const piece_t enemy_r = who == WHITE ? BROOK : WROOK;
 
-	if (!(g->piecemask[flipTurn(who)] & col_s_mask[kr*8+kc]))
+	if (!(G->piecemask[flipTurn(who)] & col_s_mask[kr*8+kc]))
 		return 0;
 
 	j = kc;
 	for (i=kr+1; i<8; i++) {
 		if (any_piece(i, j)) {
-			if (g->board[i][j] == enemy_q
-					|| g->board[i][j] == enemy_r)
+			if (G->board[i][j] == enemy_q
+					|| G->board[i][j] == enemy_r)
 				return true;
 
 			break;
@@ -354,19 +351,19 @@ static bool inCheck_col_s(game g, int kr, int kc, int who) {
 	return false;
 }
 
-static bool inCheck_col_n(game g, int kr, int kc, int who) {
+static bool inCheck_col_n(int kr, int kc, int who) {
 	int i, j;
 	const piece_t enemy_q = who == WHITE ? BQUEEN : WQUEEN;
 	const piece_t enemy_r = who == WHITE ? BROOK : WROOK;
 
-	if (!(g->piecemask[flipTurn(who)] & col_n_mask[kr*8+kc]))
+	if (!(G->piecemask[flipTurn(who)] & col_n_mask[kr*8+kc]))
 		return 0;
 
 	j = kc;
 	for (i=kr-1; i>=0; i--) {
 		if (any_piece(i, j)) {
-			if (g->board[i][j] == enemy_q
-					|| g->board[i][j] == enemy_r)
+			if (G->board[i][j] == enemy_q
+					|| G->board[i][j] == enemy_r)
 				return true;
 
 			break;
@@ -376,19 +373,19 @@ static bool inCheck_col_n(game g, int kr, int kc, int who) {
 	return false;
 }
 
-static bool inCheck_diag_sw(game g, int kr, int kc, int who) {
+static bool inCheck_diag_sw(int kr, int kc, int who) {
 	int i, j;
 	const piece_t enemy_q = who == WHITE ? BQUEEN : WQUEEN;
 	const piece_t enemy_b = who == WHITE ? BBISHOP : WBISHOP;
 
-	if (!(g->piecemask[flipTurn(who)] & diag_sw_mask[kr*8+kc]))
+	if (!(G->piecemask[flipTurn(who)] & diag_sw_mask[kr*8+kc]))
 		return false;
 
 	j = kc;
 	for (i=kr+1, j=kc-1; i<8 && j>=0; i++, j--) {
 		if (any_piece(i, j)) {
-			if (g->board[i][j] == enemy_q
-					|| g->board[i][j] == enemy_b)
+			if (G->board[i][j] == enemy_q
+					|| G->board[i][j] == enemy_b)
 				return true;
 
 			break;
@@ -398,18 +395,18 @@ static bool inCheck_diag_sw(game g, int kr, int kc, int who) {
 	return false;
 }
 
-static bool inCheck_diag_nw(game g, int kr, int kc, int who) {
+static bool inCheck_diag_nw(int kr, int kc, int who) {
 	int i, j;
 	const piece_t enemy_q = who == WHITE ? BQUEEN : WQUEEN;
 	const piece_t enemy_b = who == WHITE ? BBISHOP : WBISHOP;
 
-	if (!(g->piecemask[flipTurn(who)] & diag_nw_mask[kr*8+kc]))
+	if (!(G->piecemask[flipTurn(who)] & diag_nw_mask[kr*8+kc]))
 		return false;
 
 	for (i=kr-1, j=kc-1; i>=0 && j>=0; i--, j--) {
 		if (any_piece(i, j)) {
-			if (g->board[i][j] == enemy_q
-					|| g->board[i][j] == enemy_b)
+			if (G->board[i][j] == enemy_q
+					|| G->board[i][j] == enemy_b)
 				return true;
 
 			break;
@@ -419,18 +416,18 @@ static bool inCheck_diag_nw(game g, int kr, int kc, int who) {
 	return false;
 }
 
-static bool inCheck_diag_se(game g, int kr, int kc, int who) {
+static bool inCheck_diag_se(int kr, int kc, int who) {
 	int i, j;
 	const piece_t enemy_q = who == WHITE ? BQUEEN : WQUEEN;
 	const piece_t enemy_b = who == WHITE ? BBISHOP : WBISHOP;
 
-	if (!(g->piecemask[flipTurn(who)] & diag_se_mask[kr*8+kc]))
+	if (!(G->piecemask[flipTurn(who)] & diag_se_mask[kr*8+kc]))
 		return false;
 
 	for (i=kr+1, j=kc+1; i<8 && j<8; i++, j++) {
 		if (any_piece(i, j)) {
-			if (g->board[i][j] == enemy_q
-					|| g->board[i][j] == enemy_b)
+			if (G->board[i][j] == enemy_q
+					|| G->board[i][j] == enemy_b)
 				return true;
 
 			break;
@@ -440,18 +437,18 @@ static bool inCheck_diag_se(game g, int kr, int kc, int who) {
 	return false;
 }
 
-static bool inCheck_diag_ne(game g, int kr, int kc, int who) {
+static bool inCheck_diag_ne(int kr, int kc, int who) {
 	int i, j;
 	const piece_t enemy_q = who == WHITE ? BQUEEN : WQUEEN;
 	const piece_t enemy_b = who == WHITE ? BBISHOP : WBISHOP;
 
-	if (!(g->piecemask[flipTurn(who)] & diag_ne_mask[kr*8+kc]))
+	if (!(G->piecemask[flipTurn(who)] & diag_ne_mask[kr*8+kc]))
 		return false;
 
 	for (i=kr-1, j=kc+1; i>=0 && j<8; i--, j++) {
 		if (any_piece(i, j)) {
-			if (g->board[i][j] == enemy_q
-					|| g->board[i][j] == enemy_b)
+			if (G->board[i][j] == enemy_q
+					|| G->board[i][j] == enemy_b)
 				return true;
 
 			break;
@@ -461,40 +458,40 @@ static bool inCheck_diag_ne(game g, int kr, int kc, int who) {
 	return false;
 }
 
-static bool inCheck_knig(game g, int kr, int kc, int who) {
+static bool inCheck_knig(int kr, int kc, int who) {
 	const piece_t enemy_kn = who == WHITE ? BKNIGHT : WKNIGHT;
 
-	if (!(g->piecemask[flipTurn(who)] & knight_mask[kr*8+kc]))
+	if (!(G->piecemask[flipTurn(who)] & knight_mask[kr*8+kc]))
 		return false;
 
 	/* Caballos */
-	if (kr >= 2 && kc >= 1 && g->board[kr-2][kc-1] == enemy_kn) return true; 
-	if (kr <= 5 && kc >= 1 && g->board[kr+2][kc-1] == enemy_kn) return true; 
-	if (kr >= 2 && kc <= 6 && g->board[kr-2][kc+1] == enemy_kn) return true; 
-	if (kr <= 5 && kc <= 6 && g->board[kr+2][kc+1] == enemy_kn) return true; 
-	if (kr >= 1 && kc >= 2 && g->board[kr-1][kc-2] == enemy_kn) return true; 
-	if (kr <= 6 && kc >= 2 && g->board[kr+1][kc-2] == enemy_kn) return true; 
-	if (kr >= 1 && kc <= 5 && g->board[kr-1][kc+2] == enemy_kn) return true; 
-	if (kr <= 6 && kc <= 5 && g->board[kr+1][kc+2] == enemy_kn) return true; 
+	if (kr >= 2 && kc >= 1 && G->board[kr-2][kc-1] == enemy_kn) return true;
+	if (kr <= 5 && kc >= 1 && G->board[kr+2][kc-1] == enemy_kn) return true;
+	if (kr >= 2 && kc <= 6 && G->board[kr-2][kc+1] == enemy_kn) return true;
+	if (kr <= 5 && kc <= 6 && G->board[kr+2][kc+1] == enemy_kn) return true;
+	if (kr >= 1 && kc >= 2 && G->board[kr-1][kc-2] == enemy_kn) return true;
+	if (kr <= 6 && kc >= 2 && G->board[kr+1][kc-2] == enemy_kn) return true;
+	if (kr >= 1 && kc <= 5 && G->board[kr-1][kc+2] == enemy_kn) return true;
+	if (kr <= 6 && kc <= 5 && G->board[kr+1][kc+2] == enemy_kn) return true;
 
 	return false;
 }
 
-static bool inCheck_pawn(game g, int kr, int kc, int who) {
+static bool inCheck_pawn(int kr, int kc, int who) {
 	if (who == WHITE) {
 		if (kr > 0) {
-			if (kc > 0 && g->board[kr-1][kc-1] == BPAWN)
+			if (kc > 0 && G->board[kr-1][kc-1] == BPAWN)
 				return true;
-			if (kc < 7 && g->board[kr-1][kc+1] == BPAWN)
+			if (kc < 7 && G->board[kr-1][kc+1] == BPAWN)
 				return true;
 		}
 
 		return 0;
 	} else {
 		if (kr < 7) {
-			if (kc > 0 && g->board[kr+1][kc-1] == WPAWN)
+			if (kc > 0 && G->board[kr+1][kc-1] == WPAWN)
 				return true;
-			if (kc < 7 && g->board[kr+1][kc+1] == WPAWN)
+			if (kc < 7 && G->board[kr+1][kc+1] == WPAWN)
 				return true;
 		}
 
@@ -505,8 +502,8 @@ static bool inCheck_pawn(game g, int kr, int kc, int who) {
 static bool inCheck_king(game g) {
 	/* Simplemente viendo la distancia */
 
-	return     abs(g->kingx[0] - g->kingx[1]) <= 1
-		&& abs(g->kingy[0] - g->kingy[1]) <= 1;
+	return     abs(G->kingx[0] - G->kingx[1]) <= 1
+		&& abs(G->kingy[0] - G->kingy[1]) <= 1;
 }
 
 /*
@@ -615,7 +612,7 @@ static bool __doMove(move m, bool check) {
 
 	/* Nunca podemos quedar en jaque */
 	if (G->inCheck[G->turn] == 1  ||
-		(G->inCheck[G->turn] == -1 && inCheck(G, G->turn)))
+		(G->inCheck[G->turn] == -1 && inCheck(G->turn)))
 		goto fail;
 
 	G->turn = flipTurn(G->turn);
@@ -823,7 +820,7 @@ static bool doMoveRegular(move m, bool check) {
 }
 
 static bool doMoveNull(move m, bool check) {
-	if (inCheck(G, G->turn))
+	if (inCheck(G->turn))
 		return false;
 
 	return true;
@@ -919,7 +916,7 @@ static bool doMoveKCastle(move m, bool check) {
 		}
 	}
 
-	if (inCheck(G, m.who))
+	if (inCheck(m.who))
 		return false;
 
 	{
@@ -929,7 +926,7 @@ static bool doMoveKCastle(move m, bool check) {
 		G->kingy[m.who] = 5;
 		G->inCheck[m.who] = -1;
 
-		if (inCheck(G, m.who)) {
+		if (inCheck(m.who)) {
 			popGame();
 			return false;
 		}
@@ -939,7 +936,7 @@ static bool doMoveKCastle(move m, bool check) {
 		G->kingy[m.who] = 6;
 		G->inCheck[m.who] = -1;
 
-		if (inCheck(G, m.who)) {
+		if (inCheck(m.who)) {
 			popGame();
 			return false;
 		}
@@ -980,7 +977,7 @@ static bool doMoveQCastle(move m, bool check) {
 		}
 	}
 
-	if (inCheck(G, m.who))
+	if (inCheck(m.who))
 		return false;
 
 	{
@@ -991,7 +988,7 @@ static bool doMoveQCastle(move m, bool check) {
 		G->kingy[m.who] = 3;
 		G->inCheck[m.who] = -1;
 
-		if (inCheck(G, m.who)) {
+		if (inCheck(m.who)) {
 			popGame();
 			return false;
 		}
@@ -1001,7 +998,7 @@ static bool doMoveQCastle(move m, bool check) {
 		G->kingy[m.who] = 2;
 		G->inCheck[m.who] = -1;
 
-		if (inCheck(G, m.who)) {
+		if (inCheck(m.who)) {
 			popGame();
 			return false;
 		}

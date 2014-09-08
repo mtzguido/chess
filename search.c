@@ -90,7 +90,7 @@ static inline void sort_succ(int i) {
 static inline int calcExtension(int maxDepth, int curDepth) {
 	int ret = 0;
 
-	if (inCheck(G, G->turn) || G->lastmove.promote != EMPTY)
+	if (inCheck(G->turn) || G->lastmove.promote != EMPTY)
 		ret++;
 
 	return ret;
@@ -115,7 +115,7 @@ static inline score null_move_score(int curDepth, int maxDepth, score alpha,
 	 * Dont null-move when in check or when low in material since
 	 * we're likely to be in Zugzwang
 	 */
-	if (inCheck(G, G->turn) || G->pieceScore[G->turn] <= NMH_THRESHOLD)
+	if (inCheck(G->turn) || G->pieceScore[G->turn] <= NMH_THRESHOLD)
 		goto dont;
 
 	/* Not even worth it */
@@ -347,7 +347,7 @@ score _negamax(int maxDepth, int curDepth, move *mm, score alpha, score beta) {
 		 * infinita con quiesce. No debería ocurrir nunca,
 		 * pero dejamos el assert por las dudas.
 		 */
-		assert(!inCheck(G, G->turn));
+		assert(!inCheck(G->turn));
 
 		if (copts.quiesce)
 			ret = quiesce(alpha, beta, curDepth);
@@ -413,7 +413,7 @@ score _negamax(int maxDepth, int curDepth, move *mm, score alpha, score beta) {
 			&& maxDepth - curDepth >= 2
 			&& gsuccs[i].s*10 < gsuccs[first_succ[ply]].s /* 2x crap */
 			&& ext == 0
-			&& !inCheck(G, G->turn)
+			&& !inCheck(G->turn)
 			&& !isCapture(prevGame(), m)
 			&& !isPromotion(prevGame(), m)) {
 			stats.lmrs++;
@@ -468,7 +468,7 @@ score _negamax(int maxDepth, int curDepth, move *mm, score alpha, score beta) {
 		move dummy = {0};
 		assert(!mm);
 
-		if (inCheck(G, G->turn))
+		if (inCheck(G->turn))
 			ret = -CHECKMATE_SCORE + curDepth;
 		else
 			ret = 0; /* Stalemate */

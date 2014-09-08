@@ -222,8 +222,8 @@ score boardEval() {
 	score += castle_score(WHITE);
 	score -= castle_score(BLACK);
 
-	if (inCheck(G, WHITE)) score += INCHECK;
-	if (inCheck(G, BLACK)) score -= INCHECK;
+	if (inCheck(WHITE)) score += INCHECK;
+	if (inCheck(BLACK)) score -= INCHECK;
 
 	/*
 	 * Acercamos a 0 los tableros que tengan

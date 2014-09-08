@@ -105,7 +105,7 @@ void undoMove(void);
 game copyGame(game g);
 void freeGame(game g);
 
-bool inCheck(game g, int who);
+bool inCheck(int who);
 int isFinished(void);
 bool isDraw(void);
 
