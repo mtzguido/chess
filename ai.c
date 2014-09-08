@@ -69,26 +69,25 @@ static inline void print_time(clock_t t1, clock_t t2) {
 static inline bool forced(const game g, move *m) {
 	int i;
 	int c = -1;
-	game ng;
 
 	assert(ply == 0);
+	pushGame();
 	genSuccs(g);
-	ng = copyGame(g);
 	for (i=first_succ[ply]; i<first_succ[ply+1]; i++) {
-		if (doMove_unchecked(ng, gsuccs[i].m)) {
+		if (doMove_unchecked(G, gsuccs[i].m)) {
 			if (c != -1) {
-				freeGame(ng);
+				popGame();
 				return false;
 			}
 
 			c = i;
-			*ng = *g;
+			peekGame();
 		}
 	}
 
 	assert(c != -1);
 	*m = gsuccs[c].m;
-	freeGame(ng);
+	popGame();
 	return true;
 }
 
