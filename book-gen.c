@@ -129,7 +129,6 @@ void print_book() {
 
 
 void add_rule(char *sequence) {
-	game g = startingGame();
 	int turn = WHITE;
 	char *seq_orig = sequence;
 	char c, C;
@@ -138,7 +137,7 @@ void add_rule(char *sequence) {
 	u64 hash = 0;
 	__unused int ok = 0;
 
-	G = g;
+	startingGame();
 	while (sequence &&
 		4 == sscanf(sequence, " %c%i%c%i ", &c, &r, &C, &R)) {
 		m.move_type = MOVE_REGULAR;
@@ -150,20 +149,20 @@ void add_rule(char *sequence) {
 		m.who = turn;
 
 		if (m.r == 7 && m.c == 4 && m.R == 7 && m.C == 6
-				&& g->turn == WHITE && g->castle_king[WHITE]) {
+				&& G->turn == WHITE && G->castle_king[WHITE]) {
 			m.move_type = MOVE_KINGSIDE_CASTLE;
 		} else if (m.r == 7 && m.c == 4 && m.R == 7 && m.C == 2
-				&& g->turn == WHITE && g->castle_queen[WHITE]) {
+				&& G->turn == WHITE && G->castle_queen[WHITE]) {
 			m.move_type = MOVE_QUEENSIDE_CASTLE;
 		} else if (m.r == 0 && m.c == 4 && m.R == 0 && m.C == 6
-				&& g->turn == BLACK && g->castle_king[BLACK]) {
+				&& G->turn == BLACK && G->castle_king[BLACK]) {
 			m.move_type = MOVE_KINGSIDE_CASTLE;
 		} else if (m.r == 0 && m.c == 4 && m.R == 0 && m.C == 2
-				&& g->turn == BLACK && g->castle_queen[BLACK]) {
+				&& G->turn == BLACK && G->castle_queen[BLACK]) {
 			m.move_type = MOVE_QUEENSIDE_CASTLE;
 		}
 
-		hash = g->zobrist;
+		hash = G->zobrist;
 		__unused bool rc = doMove(m);
 		assert(rc);
 		ok = 1;
@@ -174,8 +173,6 @@ void add_rule(char *sequence) {
 
 	assert(ok);
 	add_one(hash, m, seq_orig);
-
-	freeGame(g);
 }
 
 int main () {

@@ -17,7 +17,7 @@ struct game_struct _G;
 game G = &_G;
 
 static int d = 0;
-game stack[2000] = {0};
+static game stack[2000] = {0};
 
 static void pushGame() {
 	assert(d + 1 < (int)(sizeof stack / sizeof stack[0]));
@@ -118,8 +118,11 @@ static void fix(game g) {
 	piecePosFullRecalc();
 }
 
-game startingGame() {
-	return fromstr(init);
+void startingGame() {
+	while (d)
+		popGame();
+
+	G = fromstr(init);
 }
 
 game copyGame(game g) {

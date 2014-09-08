@@ -96,7 +96,7 @@ game prevGame(void);
 #define isKing(c)	((c&7) == WKING)
 #define colorOf(c)	(!((c)&8))
 
-game startingGame(void);
+void startingGame(void);
 
 bool doMove(move m); /* Actua sobre g */
 bool doMove_unchecked(move m); /* Actua sobre g */

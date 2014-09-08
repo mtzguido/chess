@@ -21,17 +21,13 @@
 
 static char arg_string[1024] = "";
 
-static game startingGame2() {
-	game g;
-
+static void startingGame2() {
 	if (copts.custom_start) {
-		g = fromstr(copts.custom_start_str);
-		printBoard(g);
+		G = fromstr(copts.custom_start_str);
+		printBoard(G);
 	} else {
-		g = startingGame();
+		startingGame();
 	}
-
-	return g;
 }
 
 static int nmoves() {
@@ -39,7 +35,7 @@ static int nmoves() {
 	move m;
 
 	init_mem();
-	G = startingGame2();
+	startingGame2();
 	mark(G);
 
 	for (i=0; i<copts.nmoves; i++) {
@@ -64,8 +60,7 @@ static int nmoves() {
 };
 
 static int board_eval_mode() {
-	game g = startingGame2();
-	G = g;
+	startingGame2();
 	dbg("Board evaluation: %i\n", boardEval());
 	return 0;
 }
@@ -74,10 +69,9 @@ static int bench_eval_mode() {
 	const int N = 1e6;
 	int i;
 	unsigned long long t1, t2;
-	game g = startingGame2();
+	startingGame2();
 
 	t1 = getms();
-	G = g;
 	for (i = 0; i < N; i++)
 		boardEval();
 	t2 = getms();
@@ -176,7 +170,7 @@ static void xboard_main() {
 	printf("tellics say dogui's chess engine\n");
 	printf("tellics say Written by Guido Martínez, 2014\n");
 
-	G = startingGame();
+	startingGame();
 	mark(G);
 
 	for (;;) {
@@ -238,7 +232,7 @@ static void xboard_main() {
 
 		if (!strcmp("new", cmd)) {
 			/* Fix this */
-			G = startingGame();
+			startingGame();
 			continue;
 		} else if (!strcmp("go", cmd)) {
 			ourPlayer = curPlayer;
