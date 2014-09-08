@@ -109,7 +109,7 @@ bool inCheck(int who);
 int isFinished(void);
 bool isDraw(void);
 
-void printBoard(game b);
+void printBoard(void);
 
 void tostr(game g, char *s);
 game fromstr(const char *s);

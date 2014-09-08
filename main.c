@@ -24,7 +24,7 @@ static char arg_string[1024] = "";
 static void startingGame2() {
 	if (copts.custom_start) {
 		G = fromstr(copts.custom_start_str);
-		printBoard(G);
+		printBoard();
 	} else {
 		startingGame();
 	}
@@ -50,7 +50,7 @@ static int nmoves() {
 		assert(ply == 0);
 		doMove(m);
 		mark(G);
-		printBoard(G);
+		printBoard();
 		printMove(stdout, m);
 
 		dbg("Moves %i/%i\n", i+1, copts.nmoves);
@@ -212,7 +212,7 @@ static void xboard_main() {
 			continue;
 		}
 
-		printBoard(G);
+		printBoard();
 		dbg("expecting input...\n");
 
 		if (!fgets(line, sizeof line, stdin)) {

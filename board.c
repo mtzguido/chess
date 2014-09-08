@@ -136,19 +136,19 @@ void freeGame(game g) {
 	gfree(g);
 }
 
-void printBoard(game g) {
+void printBoard() {
 	int i, j;
 	char bbuf[200];
 	int l = 0;
 
-	dbg("(turn: %s)\n", g->turn == WHITE ? "WHITE" : "BLACK");
+	dbg("(turn: %s)\n", G->turn == WHITE ? "WHITE" : "BLACK");
 	for (i=0; i<8; i++) {
 		l += sprintf(bbuf+l, "%i  ", 8-i);
 		for (j=0; j<8; j++) {
-			if (g->en_passant_x == i && g->en_passant_y == j)
+			if (G->en_passant_x == i && G->en_passant_y == j)
 				l += sprintf(bbuf+l, "!");
 			else
-				l += sprintf(bbuf+l, "%c", charOf(g->board[i][j]));
+				l += sprintf(bbuf+l, "%c", charOf(G->board[i][j]));
 
 			l += sprintf(bbuf+l, " ");
 		}
@@ -158,21 +158,21 @@ void printBoard(game g) {
 	dbg("\n");
 	dbg("   a b c d e f g h\n");
 
-	dbg("[ castle_king = %i %i \n", g->castle_king[WHITE], g->castle_king[BLACK]);
-	dbg("[ castle_queen = %i %i \n", g->castle_queen[WHITE], g->castle_queen[BLACK]);
-	dbg("[ kingx = %i %i \n", g->kingx[WHITE], g->kingx[BLACK]);
-	dbg("[ kingy = %i %i \n", g->kingy[WHITE], g->kingy[BLACK]);
-	dbg("[ en_passant = %i %i \n", g->en_passant_x, g->en_passant_y);
-	dbg("[ inCheck = %i %i \n", g->inCheck[WHITE], g->inCheck[BLACK]);
-	dbg("[ scores = %i %i\n", g->pieceScore[WHITE], g->pieceScore[BLACK]);
-	dbg("[ pps o e = %i %i\n", g->pps_O, g->pps_E);
-	dbg("[ zobrist = 0x%" PRIx64 "\n", g->zobrist);
-	dbg("[ idlecount = %i\n", g->idlecount);
-	dbg("[ piecemask[W] = 0x%.16" PRIx64 "\n", g->piecemask[WHITE]);
-	dbg("[ piecemask[B] = 0x%.16" PRIx64 "\n", g->piecemask[BLACK]);
-	tostr(g, bbuf);
+	dbg("[ castle_king = %i %i \n", G->castle_king[WHITE], G->castle_king[BLACK]);
+	dbg("[ castle_queen = %i %i \n", G->castle_queen[WHITE], G->castle_queen[BLACK]);
+	dbg("[ kingx = %i %i \n", G->kingx[WHITE], G->kingx[BLACK]);
+	dbg("[ kingy = %i %i \n", G->kingy[WHITE], G->kingy[BLACK]);
+	dbg("[ en_passant = %i %i \n", G->en_passant_x, G->en_passant_y);
+	dbg("[ inCheck = %i %i \n", G->inCheck[WHITE], G->inCheck[BLACK]);
+	dbg("[ scores = %i %i\n", G->pieceScore[WHITE], G->pieceScore[BLACK]);
+	dbg("[ pps o e = %i %i\n", G->pps_O, G->pps_E);
+	dbg("[ zobrist = 0x%" PRIx64 "\n", G->zobrist);
+	dbg("[ idlecount = %i\n", G->idlecount);
+	dbg("[ piecemask[W] = 0x%.16" PRIx64 "\n", G->piecemask[WHITE]);
+	dbg("[ piecemask[B] = 0x%.16" PRIx64 "\n", G->piecemask[BLACK]);
+	tostr(G, bbuf);
 	dbg("[ tostr = <%s>\n", bbuf);
-	dbg("[ reps = %i\n", reps(g));
+	dbg("[ reps = %i\n", reps(G));
 
 	fflush(stdout);
 }
