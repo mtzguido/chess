@@ -170,7 +170,7 @@ static void xboard_main() {
 	printf("tellics say dogui's chess engine\n");
 	printf("tellics say Written by Guido Martínez, 2014\n");
 
-	startingGame();
+	startingGame2();
 
 	for (;;) {
 		if (isFinished() == -1 && curPlayer == ourPlayer) {
@@ -231,7 +231,7 @@ static void xboard_main() {
 
 		if (!strcmp("new", cmd)) {
 			/* Fix this */
-			startingGame();
+			startingGame2();
 			continue;
 		} else if (!strcmp("go", cmd)) {
 			ourPlayer = curPlayer;

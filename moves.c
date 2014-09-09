@@ -51,23 +51,18 @@ static bool danger(u8 r, u8 c, u8 kr, u8 kc) {
 	return all_mask[8*kr + kc] & ((u64)1 << (r*8 + c));
 }
 
-/*
- * Auxiliares que deshabilitan el enroque,
- * no existen sus inversas ya que nunca se
- * habilita
- */
-static void disable_castle_k(int who) {
-	if (G->castle_king[who])
+static void set_castle_k(int who, bool val) {
+	if (G->castle_king[who] != val)
 		G->zobrist ^= ZOBR_CASTLE_K(who);
 
-	G->castle_king[who] = 0;
+	G->castle_king[who] = val;
 }
 
-static void disable_castle_q(int who) {
-	if (G->castle_queen[who])
+static void set_castle_q(int who, bool val) {
+	if (G->castle_queen[who] != val)
 		G->zobrist ^= ZOBR_CASTLE_Q(who);
 
-	G->castle_queen[who] = 0;
+	G->castle_queen[who] = val;
 }
 
 /* Auxiliares de en_passant */
@@ -112,8 +107,8 @@ static void updKing(move m) {
 	G->kingx[m.who] = m.R;
 	G->kingy[m.who] = m.C;
 
-	disable_castle_k(m.who);
-	disable_castle_q(m.who);
+	set_castle_k(m.who, false);
+	set_castle_q(m.who, false);
 }
 
 static void updCastling(move m) {
@@ -126,9 +121,9 @@ static void updCastling(move m) {
 		return;
 
 	if (m.c == 7)
-		disable_castle_k(m.who);
+		set_castle_k(m.who, false);
 	else if (m.c == 0)
-		disable_castle_q(m.who);
+		set_castle_q(m.who, false);
 }
 
 static void recalcPawnRank(int col, int c) {
@@ -281,6 +276,7 @@ static bool doMoveRegular(move m, bool check) {
 	G->lastmove = m;
 	G->idlecount++;
 	G->was_capture = false;
+	G->was_promote = false;
 
 	if (isPawn(piece)) {
 		/* Los peones no son reversibles */
@@ -360,14 +356,15 @@ static bool doMoveKCastle(move m, bool check) {
 		return false;
 
 	{
-		pushGame();
+		struct game_struct bak = *G;
+
 		G->board[rank][4] = 0;
 		G->board[rank][5] = kpiece;
 		G->kingy[m.who] = 5;
 		G->inCheck[m.who] = -1;
 
 		if (inCheck(m.who)) {
-			popGame();
+			*G = bak;
 			return false;
 		}
 
@@ -377,15 +374,15 @@ static bool doMoveKCastle(move m, bool check) {
 		G->inCheck[m.who] = -1;
 
 		if (inCheck(m.who)) {
-			popGame();
+			*G = bak;
 			return false;
 		}
 
-		popGame();
+		*G = bak;
 	}
 
-	disable_castle_k(m.who);
-	disable_castle_q(m.who);
+	set_castle_k(m.who, false);
+	set_castle_q(m.who, false);
 
 	/* Dropeamos la cache de jaque */
 	G->inCheck[0] = -1;
@@ -421,7 +418,7 @@ static bool doMoveQCastle(move m, bool check) {
 		return false;
 
 	{
-		pushGame();
+		struct game_struct bak = *G;
 
 		G->board[rank][4] = 0;
 		G->board[rank][3] = kpiece;
@@ -429,7 +426,7 @@ static bool doMoveQCastle(move m, bool check) {
 		G->inCheck[m.who] = -1;
 
 		if (inCheck(m.who)) {
-			popGame();
+			*G = bak;
 			return false;
 		}
 
@@ -439,15 +436,15 @@ static bool doMoveQCastle(move m, bool check) {
 		G->inCheck[m.who] = -1;
 
 		if (inCheck(m.who)) {
-			popGame();
+			*G = bak;
 			return false;
 		}
 
-		popGame();
+		*G = bak;
 	}
 
-	disable_castle_k(m.who);
-	disable_castle_q(m.who);
+	set_castle_k(m.who, false);
+	set_castle_q(m.who, false);
 
 	/* Dropeamos la cache de jaque */
 	G->inCheck[0] = -1;
@@ -522,6 +519,8 @@ static bool __doMove(move m, bool check) {
 	G->zobrist ^= ZOBR_BLACK();
 	mark();
 	ply++;
+
+	first_succ[ply+1] = first_succ[ply];
 
 	return true;
 
