@@ -55,6 +55,7 @@ CFLAGS += -DCHESS_BUILD_HOST='"$(shell hostname)"'
 mods=	ai	\
 	search	\
 	board	\
+	check	\
 	eval	\
 	legal	\
 	moves	\
@@ -97,7 +98,7 @@ book.gen: book.txt book-gen
 	$(Q)./book-gen < book.txt > book.gen || (rm -f book.gen && false)
 
 book-gen: book-gen.o board.o masks.o common.o piece-square.o succs.o \
-	  zobrist.o ztable.o moves.o legal.o
+	  zobrist.o ztable.o moves.o legal.o check.o
 	$(Q)$(SAY) "  LD	$@"
 	$(Q)$(CC) $(LFLAGS_UTILS) $^	-o $@
 
