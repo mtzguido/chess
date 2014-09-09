@@ -8,6 +8,8 @@
 #include "opts.h"
 #include "autoversion.h"
 #include "eval.h"
+#include "moves.h"
+#include "check.h"
 
 #include <syslog.h>
 #include <assert.h>

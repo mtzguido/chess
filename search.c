@@ -5,6 +5,8 @@
 #include "common.h"
 #include "ai.h"
 #include "eval.h"
+#include "moves.h"
+#include "check.h"
 #include <stdbool.h>
 
 static score negamax(int curDepth, int maxDepth, move *mm, score alpha, score beta);

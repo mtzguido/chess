@@ -11,6 +11,8 @@
 #include "zobrist.h"
 #include "ztable.h"
 #include "succs.h"
+#include "moves.h"
+#include "check.h"
 
 static const char *init =
 	"rnbqkbnr"

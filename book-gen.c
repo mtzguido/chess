@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include "board.h"
+#include "moves.h"
 #include "common.h"
 
 struct bookmove {

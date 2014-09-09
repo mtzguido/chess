@@ -1,4 +1,5 @@
 #include "ai.h"
+#include "check.h"
 #include "eval.h"
 
 static inline int pieceScore() {

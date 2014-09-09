@@ -6,6 +6,7 @@
 #include "addon.h"
 #include "succs.h"
 #include "book.h"
+#include "moves.h"
 
 #include <stdint.h>
 #include <stdio.h>

@@ -98,11 +98,6 @@ extern game G;
 
 void startingGame(void);
 
-bool doMove(move m);
-bool doMove_unchecked(move m);
-void undoMove(void);
-
-bool inCheck(int who);
 int isFinished(void);
 bool isDraw(void);
 

@@ -6,6 +6,7 @@
 #include "piece-square.h"
 #include "legal.h"
 #include "succs.h"
+#include "check.h"
 #include "common.h"
 
 static int d = 0;
@@ -28,10 +29,6 @@ static void popGame() {
 __unused
 static void peekGame() {
 	*G = stack[d-1];
-}
-
-game prevGame() {
-	return &stack[d-1];
 }
 
 /*
