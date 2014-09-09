@@ -97,7 +97,7 @@ void trans_score_succs(int depth) {
 	if (tt[idx].key != key)
 		return;
 
-	for (i=first_succ[ply]; i<first_succ[ply+1]; i++) {
+	for (i = first_succ[ply]; i < first_succ[ply+1]; i++) {
 		if (equalMove(gsuccs[i].m, tt[idx].m)) {
 			gsuccs[i].s += TRANS_SCORE;
 			stats.tt_hits++;

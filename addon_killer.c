@@ -8,8 +8,8 @@ static move killerTable[KTABLE_SIZE][KILLER_WIDTH];
 
 void killer_reset() {
 	int i, j;
-	for (i=0; i<KTABLE_SIZE; i++)
-		for (j=0; j<KILLER_WIDTH; j++)
+	for (i = 0; i < KTABLE_SIZE; i++)
+		for (j = 0; j < KILLER_WIDTH; j++)
 			killerTable[i][j].move_type = MOVE_INVAL;
 }
 
@@ -23,8 +23,8 @@ void killer_score_succs(int depth) {
 	 * Usamos también las killers de 2
 	 * plies atrás.
 	 * */
-	for (k=0; k<KILLER_WIDTH; k++) {
-		for (i=first_succ[ply]; i<first_succ[ply+1]; i++) {
+	for (k = 0; k < KILLER_WIDTH; k++) {
+		for (i = first_succ[ply]; i < first_succ[ply+1]; i++) {
 			if (equalMove(gsuccs[i].m, killerTable[depth][k])) {
 				gsuccs[i].s += KILLER_SCORE;
 				break;
@@ -55,7 +55,7 @@ void killer_suggest(move *arr, int *n, int depth) {
 	if (depth > KTABLE_SIZE)
 		return;
 
-	for (i=0; i<KILLER_WIDTH; i++) {
+	for (i = 0; i < KILLER_WIDTH; i++) {
 		if (killerTable[depth][i].move_type == MOVE_INVAL)
 			continue;
 

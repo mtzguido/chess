@@ -11,7 +11,7 @@ static inline int mvv_lva(piece_t a, piece_t v) {
 void trivial_score_succs(int depth) {
 	int i;
 
-	for (i=first_succ[ply]; i<first_succ[ply+1]; i++) {
+	for (i = first_succ[ply]; i < first_succ[ply+1]; i++) {
 		move m = gsuccs[i].m;
 
 		if (m.move_type != MOVE_REGULAR)
