@@ -1,6 +1,6 @@
 #include "pgn.h"
 #include "board.h"
-#include "move.h"
+#include "legal.h"
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>

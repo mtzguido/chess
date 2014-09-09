@@ -56,7 +56,8 @@ mods=	ai	\
 	search	\
 	board	\
 	eval	\
-	move	\
+	legal	\
+	moves	\
 	succs	\
 	pgn	\
 	ztable	\
@@ -96,7 +97,7 @@ book.gen: book.txt book-gen
 	$(Q)./book-gen < book.txt > book.gen || (rm -f book.gen && false)
 
 book-gen: book-gen.o board.o masks.o common.o piece-square.o succs.o \
-	  move.o zobrist.o ztable.o
+	  zobrist.o ztable.o moves.o legal.o
 	$(Q)$(SAY) "  LD	$@"
 	$(Q)$(CC) $(LFLAGS_UTILS) $^	-o $@
 
