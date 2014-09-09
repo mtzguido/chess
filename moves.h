@@ -5,5 +5,4 @@ bool doMove(move m);
 bool doMove_unchecked(move m);
 void undoMove(void);
 
-
 #endif

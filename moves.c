@@ -11,19 +11,20 @@
 
 static int d = 0;
 static struct game_struct stack[2000];
-game G = &stack[0];
+static struct game_struct _G;
+game const G = &_G;
 
 static void pushGame() {
 	assert(d + 1 < (int)(sizeof stack / sizeof stack[0]));
 
-	stack[d+1] = *G;
-	G = &stack[d+1];
+	stack[d] = *G;
 	d++;
 }
 
 static void popGame() {
+	assert(d > 0);
 	d--;
-	G = &stack[d];
+	*G = stack[d];
 }
 
 __unused

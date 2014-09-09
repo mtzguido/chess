@@ -59,7 +59,7 @@ struct game_struct {
 typedef struct game_struct *game;
 
 /* Global game */
-extern game G;
+extern game const G;
 
 /* Players */
 #define BLACK	0
