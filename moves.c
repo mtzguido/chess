@@ -9,28 +9,13 @@
 #include "check.h"
 #include "common.h"
 
-static int d = 0;
-static struct game_struct stack[2000];
+struct undo_info {
+	struct game_struct gg;
+} hstack[MAX_HPLY];
+
+int hply = 0;
 static struct game_struct _G;
 game const G = &_G;
-
-static void pushGame() {
-	assert(d + 1 < (int)(sizeof stack / sizeof stack[0]));
-
-	stack[d] = *G;
-	d++;
-}
-
-static void popGame() {
-	assert(d > 0);
-	d--;
-	*G = stack[d];
-}
-
-__unused
-static void peekGame() {
-	*G = stack[d-1];
-}
 
 /*
  * Devuelve verdadero si un cambio en (r,c)
@@ -463,7 +448,7 @@ static bool doMoveQCastle(move m, bool check) {
 }
 
 static bool __doMove(move m, bool check) {
-	pushGame();
+	hstack[hply].gg = *G;
 
 	assert(m.who == G->turn);
 
@@ -520,14 +505,14 @@ static bool __doMove(move m, bool check) {
 	G->zobrist ^= ZOBR_BLACK();
 	mark();
 	ply++;
+	hply++;
 
 	first_succ[ply+1] = first_succ[ply];
 
 	return true;
 
 fail:
-	popGame();
-
+	*G = hstack[hply].gg;
 	return false;
 }
 
@@ -540,7 +525,8 @@ bool doMove_unchecked(move m) {
 }
 
 void undoMove() {
+	hply--;
 	ply--;
 	unmark();
-	popGame();
+	*G = hstack[hply].gg;
 }
