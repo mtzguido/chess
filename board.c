@@ -23,7 +23,7 @@ static const char *init =
 	"........"
 	"PPPPPPPP"
 	"RNBQKBNR"
-	"W0011110000";
+	"W00011110000";
 
 static void fix() {
 	int i, j;
@@ -223,10 +223,10 @@ void tostr(char *s) {
 
 	*s++ = G->turn == WHITE ? 'W' : 'B';
 
-	sprintf(buf, "%02d", G->idlecount);
-	assert(strlen(buf) == 2);
+	sprintf(buf, "%03d", G->idlecount);
+	assert(strlen(buf) == 3);
 	strcpy(s, buf);
-	s += 2;
+	s += 3;
 
 	*s++ = G->castle_king[WHITE] ? '1' : '0';
 	*s++ = G->castle_king[BLACK] ? '1' : '0';
@@ -253,7 +253,8 @@ void fromstr(const char *s) {
 
 	buf[0] = *s++;
 	buf[1] = *s++;
-	buf[2] = 0;
+	buf[2] = *s++;
+	buf[3] = 0;
 
 	G->idlecount = atoi(buf);
 
