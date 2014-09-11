@@ -1,6 +1,7 @@
 #include "addon.h"
 #include "addon_cm.h"
 #include "board.h"
+#include "moves.h"
 
 static move counterTable[2][8][8][8][8];
 

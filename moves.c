@@ -89,14 +89,6 @@ static bool isValid(move m) {
 	return true;
 }
 
-static void updKing(move m) {
-	G->kingx[m.who] = m.R;
-	G->kingy[m.who] = m.C;
-
-	set_castle_k(m.who, false);
-	set_castle_q(m.who, false);
-}
-
 static void updCastling(move m) {
 	/* En vez de ver si se movió la torre
 	 * correspondiente, nos fijamos en la
@@ -146,8 +138,12 @@ static void setPiece(i8 r, i8 c, piece_t piece) {
 
 	G->board[r][c] = piece;
 
-	if (isPawn(piece))
+	if (isPawn(piece)) {
 		recalcPawnRank(who, c);
+	} else if (isKing(piece)) {
+		G->kingx[who] = r;
+		G->kingy[who] = c;
+	}
 
 	if (isPawn(old_piece))
 		recalcPawnRank(old_who, c);
@@ -176,6 +172,8 @@ static void movePiece(i8 r, i8 c, i8 R, i8 C) {
 	const u8 enemy = flipTurn(who);
 
 	assert(from != EMPTY);
+	assert(to != WKING);
+	assert(to != BKING);
 
 	G->pps_O +=
 		piece_square_val_O(from, R, C) - piece_square_val_O(from, r, c);
@@ -188,6 +186,11 @@ static void movePiece(i8 r, i8 c, i8 R, i8 C) {
 
 	G->board[r][c] = EMPTY;
 	G->board[R][C] = from;
+
+	if (isKing(from)) {
+		G->kingx[who] = R;
+		G->kingy[who] = C;
+	}
 
 	/* Si hubo captura */
 	if (to) {
@@ -277,10 +280,12 @@ static bool doMoveRegular(move m, bool check) {
 		/* Es un peón que promueve? */
 		calcPromotion(m);
 	} else {
-		if (isKing(piece))
-			updKing(m);
-		else if (isRook(piece))
+		if (isKing(piece)) {
+			set_castle_k(m.who, false);
+			set_castle_q(m.who, false);
+		} else if (isRook(piece)) {
 			updCastling(m);
+		}
 
 		set_ep(-1, -1);
 		G->was_promote = false;
@@ -379,9 +384,6 @@ static bool doMoveKCastle(move m, bool check) {
 	/* Mover torre */
 	movePiece(rank, 7, rank, 5);
 
-	G->kingx[m.who] = rank;
-	G->kingy[m.who] = 6;
-
 	return true;
 }
 
@@ -440,9 +442,6 @@ static bool doMoveQCastle(move m, bool check) {
 	movePiece(rank, 4, rank, 2);
 	/* Mover torre */
 	movePiece(rank, 0, rank, 3);
-
-	G->kingx[m.who] = rank;
-	G->kingy[m.who] = 2;
 
 	return true;
 }
