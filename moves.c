@@ -9,9 +9,9 @@
 #include "check.h"
 #include "common.h"
 
-struct undo_info {
-	struct game_struct gg;
-} hstack[MAX_HPLY];
+/* Leave a sentinel at the beginning */
+static struct undo_info _hstack[MAX_HPLY+1] = {};
+struct undo_info * const hstack = &_hstack[1];
 
 int hply = 0;
 static struct game_struct _G;
@@ -221,7 +221,7 @@ static void epCapture(move m) {
 		setPiece(m.r, m.C, 0);
 		G->inCheck[WHITE] = -1;
 		G->inCheck[BLACK] = -1;
-		G->was_capture = true;
+		hstack[hply].was_ep = true;
 	}
 }
 
@@ -239,9 +239,7 @@ static void calcPromotion(move m) {
 		piece_t new_piece = m.who == WHITE ? m.promote : (8 | m.promote);
 
 		setPiece(m.r, m.c, new_piece);
-		G->was_promote = true;
-	} else {
-		G->was_promote = false;
+		hstack[hply].was_promote = true;
 	}
 }
 
@@ -262,10 +260,7 @@ static bool doMoveRegular(move m, bool check) {
 	}
 
 	/* Es válida */
-	G->lastmove = m;
 	G->idlecount++;
-	G->was_capture = false;
-	G->was_promote = false;
 
 	if (isPawn(piece)) {
 		/* Los peones no son reversibles */
@@ -288,12 +283,11 @@ static bool doMoveRegular(move m, bool check) {
 		}
 
 		set_ep(-1, -1);
-		G->was_promote = false;
 	}
 
 	if (enemy_piece(m.R, m.C)) {
 		G->idlecount = 0;
-		G->was_capture = true;
+		hstack[hply].capt = G->board[m.R][m.C];
 	}
 
 	/* Movemos */
@@ -446,8 +440,26 @@ static bool doMoveQCastle(move m, bool check) {
 	return true;
 }
 
+static void _undoMove();
+
 static bool __doMove(move m, bool check) {
-	hstack[hply].gg = *G;
+	hstack[hply].m = m;
+	hstack[hply].idlecount = G->idlecount;
+	hstack[hply].capt = EMPTY;
+	hstack[hply].was_promote = false;
+	hstack[hply].was_ep = false;
+	hstack[hply].castle_king[WHITE] = G->castle_king[WHITE];
+	hstack[hply].castle_king[BLACK] = G->castle_king[BLACK];
+	hstack[hply].castle_queen[WHITE] = G->castle_queen[WHITE];
+	hstack[hply].castle_queen[BLACK] = G->castle_queen[BLACK];
+	hstack[hply].castled[WHITE] = G->castled[WHITE];
+	hstack[hply].castled[BLACK] = G->castled[BLACK];
+	hstack[hply].en_passant_x = G->en_passant_x;
+	hstack[hply].en_passant_y = G->en_passant_y;
+	hstack[hply].inCheck[WHITE] = G->inCheck[WHITE];
+	hstack[hply].inCheck[BLACK] = G->inCheck[BLACK];
+
+	hstack[hply].hash = G->zobrist;
 
 	assert(m.who == G->turn);
 
@@ -462,9 +474,7 @@ static bool __doMove(move m, bool check) {
 			goto fail;
 
 		set_ep(-1, -1);
-		G->lastmove = m;
 		G->castled[m.who] = 1;
-		G->was_capture = G->was_promote = false;
 
 		break;
 
@@ -473,9 +483,7 @@ static bool __doMove(move m, bool check) {
 			goto fail;
 
 		set_ep(-1, -1);
-		G->lastmove = m;
 		G->castled[m.who] = 1;
-		G->was_capture = G->was_promote = false;
 
 		break;
 
@@ -485,8 +493,6 @@ static bool __doMove(move m, bool check) {
 			goto fail;
 
 		set_ep(-1, -1);
-		G->lastmove = m;
-		G->was_capture = G->was_promote = false;
 
 		break;
 
@@ -498,7 +504,7 @@ static bool __doMove(move m, bool check) {
 	/* Nunca podemos quedar en jaque */
 	if (G->inCheck[G->turn] == 1  ||
 		(G->inCheck[G->turn] == -1 && inCheck(G->turn)))
-		goto fail;
+		goto fail_undo;
 
 	G->turn = flipTurn(G->turn);
 	G->zobrist ^= ZOBR_BLACK();
@@ -510,8 +516,9 @@ static bool __doMove(move m, bool check) {
 
 	return true;
 
+fail_undo:
+	_undoMove();
 fail:
-	*G = hstack[hply].gg;
 	return false;
 }
 
@@ -523,9 +530,88 @@ bool doMove_unchecked(move m) {
 	return __doMove(m, false);
 }
 
+void undoMoveRegular(move m) {
+	const piece_t pawn     = m.who == WHITE ? WPAWN : BPAWN;
+	const piece_t opp_pawn = m.who == WHITE ? BPAWN : WPAWN;
+
+	movePiece(m.R, m.C, m.r, m.c);
+
+	if (hstack[hply].was_promote)
+		setPiece(m.r, m.c, pawn);
+
+	if (hstack[hply].capt != EMPTY)
+		setPiece(m.R, m.C, hstack[hply].capt);
+	else if (hstack[hply].was_ep)
+		setPiece(m.r, m.C, opp_pawn);
+}
+
+void undoMoveKCastle() {
+	const int who = G->turn;
+	const u8 rank = who == WHITE ? 7 : 0;
+
+	assert(G->kingx[who] == rank);
+	assert(G->kingy[who] == 6);
+
+	movePiece(rank, 6, rank, 4);
+	movePiece(rank, 5, rank, 7);
+}
+
+void undoMoveQCastle() {
+	const int who = G->turn;
+	const u8 rank = who == WHITE ? 7 : 0;
+
+	assert(G->kingx[who] == rank);
+	assert(G->kingy[who] == 2);
+
+	movePiece(rank, 2, rank, 4);
+	movePiece(rank, 3, rank, 0);
+}
+
+void _undoMove() {
+	const move m = hstack[hply].m;
+
+	assert(hply >= 0);
+
+	assert(G->board[G->kingx[WHITE]][G->kingy[WHITE]] == WKING);
+	assert(G->board[G->kingx[BLACK]][G->kingy[BLACK]] == BKING);
+
+	switch (m.move_type) {
+	case MOVE_REGULAR:
+		undoMoveRegular(m);
+		break;
+	case MOVE_KINGSIDE_CASTLE:
+		undoMoveKCastle();
+		break;
+	case MOVE_QUEENSIDE_CASTLE:
+		undoMoveQCastle();
+		break;
+	case MOVE_NULL:
+		break;
+	}
+
+	G->idlecount = hstack[hply].idlecount;
+	set_castle_k(WHITE, hstack[hply].castle_king[WHITE]);
+	set_castle_k(BLACK, hstack[hply].castle_king[BLACK]);
+	set_castle_q(WHITE, hstack[hply].castle_queen[WHITE]);
+	set_castle_q(BLACK, hstack[hply].castle_queen[BLACK]);
+	G->castled[WHITE] = hstack[hply].castled[WHITE];
+	G->castled[BLACK] = hstack[hply].castled[BLACK];
+	set_ep(hstack[hply].en_passant_x, hstack[hply].en_passant_y);
+	G->inCheck[WHITE] = hstack[hply].inCheck[WHITE];
+	G->inCheck[BLACK] = hstack[hply].inCheck[BLACK];
+
+	assert(G->zobrist == hstack[hply].hash);
+	assert(G->board[G->kingx[WHITE]][G->kingy[WHITE]] == WKING);
+	assert(G->board[G->kingx[BLACK]][G->kingy[BLACK]] == BKING);
+}
+
 void undoMove() {
 	hply--;
 	ply--;
 	unmark();
-	*G = hstack[hply].gg;
+
+	G->turn = flipTurn(G->turn);
+	G->zobrist ^= ZOBR_BLACK();
+
+	_undoMove();
 }

@@ -82,9 +82,6 @@ static void fix() {
 	G->castled[WHITE] = 0;
 	G->castled[BLACK] = 0;
 
-	G->was_capture = false;
-	G->was_promote = false;
-
 	piecePosFullRecalc();
 }
 

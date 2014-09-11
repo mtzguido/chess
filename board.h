@@ -40,7 +40,6 @@ struct game_struct {
 	int pieceScore[2];
 	int pawn_rank[2][10];
 
-	move lastmove;
 	u8 idlecount;
 	bool castle_king[2];
 	bool castle_queen[2];
@@ -51,9 +50,6 @@ struct game_struct {
 	u8 kingy[2];
 	i8 inCheck[2];
 	u8 turn:1;
-
-	bool was_capture;
-	bool was_promote;
 };
 
 typedef struct game_struct *game;

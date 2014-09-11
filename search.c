@@ -92,7 +92,7 @@ static inline void sort_succ(int i) {
 static inline int calcExtension(int maxDepth, int curDepth) {
 	int ret = 0;
 
-	if (inCheck(G->turn) || G->lastmove.promote != EMPTY)
+	if (inCheck(G->turn) || hstack[hply - 1].was_promote)
 		ret++;
 
 	return ret;
@@ -200,7 +200,7 @@ static inline score _quiesce(score alpha, score beta, int curDepth) {
 	if (copts.delta_prune) {
 		score delta = QUEEN_SCORE - PAWN_SCORE;
 
-		if (G->lastmove.promote != EMPTY)
+		if (hstack[hply - 1].was_promote)
 			delta += QUEEN_SCORE;
 
 		if (ev + delta < alpha) {
@@ -407,8 +407,8 @@ score _negamax(int maxDepth, int curDepth, move *mm, score alpha, score beta) {
 			&& gsuccs[i].s*10 < gsuccs[first_succ[ply - 1]].s /* 2x crap */
 			&& ext == 0
 			&& !inCheck(G->turn)
-			&& !G->was_capture
-			&& !G->was_promote) {
+			&& !(hstack[hply - 1].capt != EMPTY || hstack[hply-1].was_ep)
+			&& !hstack[hply - 1].was_promote) {
 			stats.lmrs++;
 
 			doing_lmr = true;
