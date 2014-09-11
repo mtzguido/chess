@@ -143,53 +143,68 @@ static inline score eval_king(const u8 col, const int r, const int c) {
 	return ret;
 }
 
-static inline score eval_with_ranks(const u8 col) {
-	int bishop_count = 0;
-	score score = 0;
-	u64 temp;
-	int i;
+static int bishop_count;
 
+static inline score eval_one_piece(const u8 col, const u8 r, const u8 c,
+				   piece_t piece) {
 	const int top = col == WHITE ? 0 : 7;
 	const int bot = col == WHITE ? 7 : 0;
 	const int opp = flipTurn(col);
 
+	assert(piece != EMPTY);
+	assert(colorOf(piece) == col);
+
+	switch (piece) {
+	/* Evaluate pawns individually */
+	case WPAWN:
+	case BPAWN:
+		return eval_pawn(col, r, c);
+
+	/* Penalize knight at end game */
+	case WKNIGHT:
+	case BKNIGHT:
+		return interpolate(0, KNIGHT_ENDGAME);
+
+	/* Count bishops */
+	case WBISHOP:
+	case BBISHOP:
+		bishop_count++;
+		return 0;
+
+	/* Bonus for rook on (semi)open files */
+	case WROOK:
+	case BROOK:
+		if (G->pawn_rank[col][c+1] == top) {
+			if (G->pawn_rank[opp][c+1] == bot)
+				return ROOK_OPEN_FILE;
+			else
+				return ROOK_SEMI_OPEN_FILE;
+		} else {
+			return 0;
+		}
+
+	/* Evaluate king safety */
+	case WKING:
+	case BKING:
+		return eval_king(col, r, c) * G->pieceScore[opp] / SIDE_SCORE;
+	}
+
+	return 0;
+}
+
+__attribute__((hot))
+static inline score eval_with_ranks(const u8 col) {
+	score score = 0;
+	u64 temp;
+	int i;
+
+	bishop_count = 0;
 	mask_for_each(G->piecemask[col], temp, i) {
 		const int r = i >> 3;
 		const int c = i & 7;
 		const piece_t piece = G->board[0][i];
 
-		switch (piece&7) {
-		/* Evaluate pawns individually */
-		case WPAWN:
-			score += eval_pawn(col, r, c);
-			break;
-
-		/* Penalize knight at end game */
-		case WKNIGHT:
-			score += interpolate(0, KNIGHT_ENDGAME);
-			break;
-
-		/* Count bishops */
-		case WBISHOP:
-			bishop_count++;
-			break;
-
-		/* Bonus for rook on (semi)open files */
-		case WROOK:
-			if (G->pawn_rank[col][c+1] == top) {
-				if (G->pawn_rank[opp][c+1] == bot)
-					score += ROOK_OPEN_FILE;
-				else
-					score += ROOK_SEMI_OPEN_FILE;
-			}
-			break;
-
-		/* Evaluate king safety */
-		case WKING:
-			score += eval_king(col, r, c)
-				* G->pieceScore[opp] / SIDE_SCORE ;
-			break;
-		}
+		score += eval_one_piece(col, r, c, piece);
 	}
 
 	if (bishop_count > 1) score += DOUBLE_BISHOP;

@@ -14,6 +14,7 @@ static struct undo_info _hstack[MAX_HPLY+1] = {};
 struct undo_info * const hstack = &_hstack[1];
 
 int hply = 0;
+
 static struct game_struct _G;
 game const G = &_G;
 
