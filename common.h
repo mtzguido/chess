@@ -122,9 +122,9 @@ extern struct opts copts;
 
 void dbg(char *s, ...);
 
-#define mask_for_each(mask, temp, i)				\
-	for ((temp) = (mask);					\
-	     (temp) != 0 && ((i) = __builtin_ffsll(temp), 1);	\
-	     (temp) = (temp) & ~((u64)1 << ((i)-1)))
+#define mask_for_each(mask, temp, i)					\
+	for ((temp) = (mask);						\
+	     (temp) != 0 && ((i) = __builtin_ffsll(temp) - 1, 1);	\
+	     (temp) = (temp) & ~((u64)1 << (i)))
 
 #endif

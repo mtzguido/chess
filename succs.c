@@ -907,8 +907,8 @@ static void  __genSuccs(movegen_t fun) {
 	first_succ[ply+1] = first_succ[ply];
 
 	mask_for_each(G->piecemask[G->turn], temp, i) {
-		const u8 r = (i-1) / 8;
-		const u8 c = (i-1) % 8;
+		const u8 r = i / 8;
+		const u8 c = i % 8;
 
 		fun(r, c);
 	}

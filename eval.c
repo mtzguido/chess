@@ -154,9 +154,9 @@ static inline score eval_with_ranks(const u8 col) {
 	const int opp = flipTurn(col);
 
 	mask_for_each(G->piecemask[col], temp, i) {
-		const int r = (i-1) / 8;
-		const int c = (i-1) % 8;
-		const piece_t piece = G->board[r][c];
+		const int r = i >> 3;
+		const int c = i & 7;
+		const piece_t piece = G->board[0][i];
 
 		switch (piece&7) {
 		/* Evaluate pawns individually */
