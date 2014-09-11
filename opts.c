@@ -60,7 +60,6 @@ static const struct option long_opts[] = {
 	BOOL_OPT2(delta, delta_prune),
 	BOOL_OPT2(smart-stop, smart_stop),
 	BOOL_OPT(null),
-	BOOL_OPT2(tt, heur_trans),
 	BOOL_OPT2(11n, h11n),
 	BOOL_OPT(lmr),
 	{ 0 }

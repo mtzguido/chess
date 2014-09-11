@@ -365,15 +365,14 @@ score _negamax(int maxDepth, int curDepth, move *mm, score alpha, score beta) {
 		}
 	}
 
-	if (!mm)
+	if (!mm) {
 		addon_notify_entry(maxDepth - curDepth, &alpha, &beta);
 
-	if (alpha >= beta && copts.ab) {
-		/* Deshabilitado por ahora */
-		assert(0);
-		ret = alpha;
-		assert(!mm);
-		goto out;
+		if (alpha >= beta && copts.ab) {
+			/* Revisit this */
+			ret = alpha;
+			goto out;
+		}
 	}
 
 	if (ply >= MAX_PLY-1) {
@@ -494,10 +493,12 @@ score _negamax(int maxDepth, int curDepth, move *mm, score alpha, score beta) {
 				(best < alpha_orig && alpha == alpha_orig));
 
 		ret = best;
+		assert(best != minScore);
+		assert(best != maxScore);
 
-		if (best <= alpha_orig)
+		if (ret <= alpha_orig)
 			flag = FLAG_UPPER_BOUND;
-		else if (best > beta)
+		else if (ret >= beta)
 			flag = FLAG_LOWER_BOUND;
 		else
 			flag = FLAG_EXACT;

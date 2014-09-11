@@ -75,12 +75,6 @@ struct opts {
 	int forced_extend;		/* Forced move extension */
 	int delta_prune;		/* Quiescence delta pruning */
 
-	/* Heuristics (mostly move ordering) */
-	int heur_trans;			/* Transposition table */
-	int heur_killer;		/* Killer Heuristic */
-	int heur_cm;			/* Countermove Heuristic */
-	int heur_trivial;		/* Trivial and cheap move ordering */
-
 	/* Board evaluation */
 	int h11n;			/* 1-1-n heuristic */
 };
@@ -105,11 +99,6 @@ static const struct opts defopts = {
 	.lmr =			1,
 	.forced_extend =	1,
 	.delta_prune =		1,
-
-	.heur_trans =		1,
-	.heur_killer =		1,
-	.heur_cm =		1,
-	.heur_trivial =		1,
 
 	.h11n =			1,
 };
