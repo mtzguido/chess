@@ -230,7 +230,11 @@ static void xboard_main() {
 		dbg("received: <%s>, cmd = %s\n", line, cmd);
 
 		if (!strcmp("new", cmd)) {
-			/* Fix this */
+			while (hply)
+				undoMove();
+
+			unmark();
+
 			startingGame2();
 			continue;
 		} else if (!strcmp("go", cmd)) {
@@ -298,8 +302,11 @@ static void xboard_main() {
 			timeleft *= 10; /* cs to ms */
 			continue;
 		} else if (!strcmp("undo", cmd)) {
-			ply = 1;
-			undoMove();
+			if (hply) {
+				ply = 1;
+				undoMove();
+			}
+
 			continue;
 		} else if (!strcmp("white", cmd)) {
 			/* Ignore */
