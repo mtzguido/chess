@@ -24,10 +24,6 @@ ifeq (${CONFIG_PROFOPT},y)
 	LFLAGS += -fprofile-generate
 endif
 
-ifeq (${CONFIG_OWNMEM},y)
-	CFLAGS += -DCFG_OWNMEM
-endif
-
 ifeq (${CONFIG_FIXOPTS},y)
 	CFLAGS += -DFIXOPTS
 endif
@@ -45,7 +41,6 @@ else
 	LFLAGS += -pg
 endif
 
-CFLAGS += -DCFG_MEMSZ=${CONFIG_MEMSZ}
 CFLAGS += -DCFG_ZTABLE_SIZE=${CONFIG_ZTABLE_SIZE}
 CFLAGS += -DCFG_TTABLE_SIZE=${CONFIG_TTABLE_SIZE}
 CFLAGS += -DCHESS_VERSION='"$(shell git describe --dirty --tags)"'
