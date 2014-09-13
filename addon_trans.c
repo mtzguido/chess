@@ -24,7 +24,7 @@ void trans_notify_return(move move, int depth, score score, flag_t flag) {
 	u64 key = G->zobrist;
 	u64 idx = key % CFG_TTABLE_SIZE;
 
-	if (tt[idx].key && tt[idx].key != key)
+	if (tt[idx].key && tt[idx].key != key && tt[idx].seq == trans_seq)
 		stats.tt_collision++;
 
 	tt[idx].key = key;
@@ -42,9 +42,6 @@ void trans_notify_entry(int depth, score *alpha, score *beta) {
 	u64 key = G->zobrist;
 	u64 idx = key % CFG_TTABLE_SIZE;
 	const struct tt_entry entry = tt[idx];
-
-	if (entry.seq != trans_seq)
-		return;
 
 	if (entry.flag == FLAG_NONE)
 		return;
