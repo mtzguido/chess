@@ -53,12 +53,12 @@ static void set_castle_q(int who, bool val) {
 
 /* Auxiliares de en_passant */
 static void set_ep(u8 r, u8 c) {
-	G->zobrist ^= ZOBR_EP(G->en_passant_x);
+	G->zobrist ^= ZOBR_EP(G->en_passant_y);
 
 	G->en_passant_x = r;
 	G->en_passant_y = c;
 
-	G->zobrist ^= ZOBR_EP(G->en_passant_x);
+	G->zobrist ^= ZOBR_EP(G->en_passant_y);
 }
 
 static bool isValid(move m) {
