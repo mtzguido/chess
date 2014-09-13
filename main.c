@@ -209,6 +209,26 @@ static void xboard_main() {
 
 			curPlayer = flipTurn(curPlayer);
 			continue;
+		} else if (isFinished() != -1) {
+			switch (isFinished()) {
+			case DRAW_50MOVE:
+				printf("1/2-1/2 {Draw by fifty move rule}\n");
+				break;
+			case DRAW_3FOLD:
+				printf("1/2-1/2 {Draw by repetition}\n");
+				break;
+			case DRAW_STALE:
+				printf("1/2-1/2 {Stalemate}\n");
+				break;
+			case WIN(WHITE):
+				printf("1-0 {Checkmate}\n");
+				break;
+			case WIN(BLACK):
+				printf("0-1 {Checkmate}\n");
+				break;
+			}
+
+			ourPlayer = 2;
 		}
 
 		printBoard();
