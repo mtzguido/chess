@@ -35,8 +35,20 @@ cantidad exagerada de tiempo, y se implementa el protocol \emph{xboard}
 Lo que mayormente define al motor son la representación del tablero,
 las heurísticas de ordenamiento de movidas, las reducciones y
 extensiones de búsqueda, y la evaluación de tablero.
+\\
 
-Pasamos a detallar esas categorías para nuestro motor
+Para acelerar al motor, normalmente se usan una gran cantidad
+de heurísticas. Algunas de estas son teóricamente correctas
+(\emph{theoretically sound}) y otras no. Una heurística se llama
+teóricamente correcta si no afecta el resultado de la búsqueda,
+excepto tal vez por tomar otra variacion principal en el caso de que
+haya mas de una con el mismo puntaje. Si pensamos a las funciones $S$ y
+$S'$ ($S'$ emplea alguna heurística $H$) como búsquedas que devuelven
+el \emph{conjunto} de variaciones principales de mayor puntaje, entonces
+$H$ es teorícamente correcta si $S(g, d) = S'(g, d)$ para todo tablero
+$g$ y profundidad $d$.
+
+Pasamos a detallar detalles de nuestro motor
 \\
 
 \subsection{Representación de tablero}
@@ -62,20 +74,15 @@ con cada movida y da muy buenos resultados (\emph{Zobrist hashing}
 \cite{zobrist}).
 
 \subsection{Heurísticas de ordenamiento de movidas}
-En orden de importancia (puntaje que aportan al ordenamiento):
+
+Las heurísticas usadas son (en orden del puntaje que aportan al
+ordenamiento):
 \begin{itemize}
 \item Tablas de transposición
 \item Killer Move Heuristic
 \item Countermove Heuristic
 \item MVV-LVA
 \end{itemize}
-
-Si bien MVV-LVA es la última en esta lista, es de vital importancia
-debido a que puntúa \emph{todas} las movidas, y nos da un orden
-suficientemente bueno al empezar la búsqueda (cuando no hay ninguna
-información guardada en las heurísticas) y también luego, al puntuar
-las movidas que no encajan dentro de las otras heurísticas (que son la
-mayoría).
 
 \subsection{Reducciones}
 
@@ -233,7 +240,23 @@ movidas de cada jugador se analizan primero. Para lograr esto se emplean
 muchas heurísticas de ordenamiento de movidas.
 \\
 
-[ Explicar quiescence ]
+En las hojas de la búsqueda Alpha-Beta, no se aplica la evaluación
+de tablero directamente, si no que se realiza otro tipo de búsqueda
+conocida como Búsqueda de quietud (\emph{Quiescence search}). Esta
+búsqueda es un Alpha-Beta similar al anterior, pero solo considera
+como movimientos válidos a los movidas que producen una captura
+o promoción. El objetivo es no aplicar la evaluación de tablero
+ciegamente en tableros con piezas atacadas, y forzar a que se sigan
+todas las líneas de capturas. Esto hace que se disminuya el Efecto
+Horizonte y el motor juegue mucho mejor (en el mismo tiempo).
+\\
+
+La búsqueda de quietud no está limitada por profundidad. En contraste,
+solo termina por cortes Alpha-Beta, con la diferencia que al iniciar
+la búsqueda usamos el valor actual del tablero como cota inferior de
+$\alpha$ (similarmente a la Null move heuristic). Esto tiene algún
+fundamento teórico, porque por lo general siempre podemos elegir una
+movida que no sea una captura y terminar con la secuencia de capturas.
 \\
 
 En rasgos generales, la búsqueda es como se describió anteriormente,
@@ -241,8 +264,11 @@ pero aumentando la profundidad iterativamente hasta llegar a un límite
 de tiempo (más una pequeña heurística que yo llamo Smart-Stop).
 Cuando el tiempo se termina, se devuelve el resultado de la última
 búsqueda que se completó íntegramente.
+\\
 
 \section{Heurísticas de ordenamiento}
+
+Una heurística de ordenamiento es siempre teóricamente correcta.
 
 \subsection{Killer move heuristic}
 Una de las heurísticas de ordenamiento de movidas mas simple y
@@ -295,10 +321,19 @@ usada para puntuar es $10*v - a$ en donde $v$ es el puntaje de la pieza
 víctima y $a$ el puntaje de la pieza atacante.
 \\
 
+Si bien MVV-LVA es la última en esta lista, es de vital importancia
+debido a que puntúa \emph{todas} las movidas, y nos da un orden
+suficientemente bueno al empezar la búsqueda (cuando no hay ninguna
+información guardada en las heurísticas) y también luego, al puntuar
+las movidas que no encajan dentro de las otras heurísticas (que son la
+mayoría).
+\\
+
 Funciona bastante bien para ser algo tan simple de implementar. En
 especial para la búsqueda de quietud, en donde sólo consideramos las
-capturas. Hace una diferencia muy importante en ese caso debido a que no
-tenemos un límite de profundidad como en la búsqueda principal.
+capturas. Hace una diferencia muy importante en ese caso debido a que
+no tenemos un límite de profundidad como en la búsqueda principal y
+dependemos casi exclusivamente de los cortes.
 \\
 
 \section{Evaluación de Tablero}
@@ -368,9 +403,25 @@ es penalizado, y también preferimos tener a nuestros peones cerca y a
 los del oponente lejos.
 \\
 
+El valor de King-safety se escala según las piezas del oponente. La
+premisa es que nuestro rey sólo puede estar descubierto si el oponente
+tiene material para poder atacarlo.
+\\
+
 Esto está fuertemente inspirado en el motor TSCP de Tom Kerrigan.
 
 \section{Extensiones/Reducciones}
+
+Las heurísticas de Null Move y Late Move Reductions no son
+teóricamente correctas, pero dan muy buenos resultados al
+implementarse. Es notable que al recortar nodos no necesariamente
+perdemos fuerza del motor. De hecho, como hacemos profundización
+iterativa, una buena estimación es que el motor siempre recorrerá
+la misma cantidad de nodos en un tiempo dado, por lo que lo que hacen
+las heurísticas es simplemente dirigir la búsqueda por los caminos
+mas interesante (al hacer un corte en una rama, exploraremos más por
+todas las otras). Es vital tener en cuenta eso para pensar sobre las
+heurísticas siguientes.
 
 \subsection{Extension por Jaque o promoción}
 Simplemente si el tablero actual está en Jaque, o la última movida fue
@@ -409,9 +460,19 @@ del final de la lista fallen bajo (resulten $< \alpha$).
 A las movidas del final de la lista se les reduce su profundidad máxima
 en 1. Si resulta que no fallan bajo (o sea, devuelven un valor mayor o
 igual a $\alpha$), la búsqueda se rehace con la profundidad normal.
+\\
 
 \section{Resultados}
-Proximamente
+Durante el desarrollo se usó de oponente a Fairymax, un motor de
+ajedrez basado de $\mu$-Max (Micro-Max) que juega a un nivel intermedio
+(?? ELO). En la versión 0.4 de ICE, ICE parece ser claramente superior.
+Se corrieron 30 partidas en formato 40/4 (40 movidas en 4 minutos) y el
+resultado fue 21-2-7 (21 victorias, 2 empates, 7 derrotas) a favor de
+ICE.
+
+El registro de partidas se puede encontrar
+\href{http://labdcc.fceia.unr.edu.ar/~gmartinez/ice\_fairy\_40\_4.pgn}
+{aquí}:
 
 \section{Reflexiones}
 Sin duda algo a mejorar es la evaluación de tablero. Escribir una buena
