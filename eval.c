@@ -3,7 +3,6 @@
 #include "eval.h"
 
 static inline int pieceScore() {
-	const int pps = interpolate(G->pps_O, G->pps_E);
 	const int w = G->pieceScore[WHITE];
 	const int b = G->pieceScore[BLACK];
 	int bonus;
@@ -13,11 +12,15 @@ static inline int pieceScore() {
 	else
 		bonus = 0;
 
-	const int ret = (w - b) + bonus + pps;
+	const int ret = (w - b) + bonus;
 
 	assert(ret <  99000);
 	assert(ret > -99000);
 	return ret;
+}
+
+static inline score ppsScore() {
+	return interpolate(G->pps_O, G->pps_E);
 }
 
 static inline score eval_wpawn(const int i, const int j) {
@@ -225,7 +228,10 @@ static inline score castle_score(const u8 col) {
 }
 
 score boardEval() {
-	score score = pieceScore(G);
+	score score = 0;
+
+	score += pieceScore(G);
+	score += ppsScore(G);
 
 	/*
 	 * Con la información de los peones
