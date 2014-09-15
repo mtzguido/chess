@@ -77,6 +77,7 @@ struct opts {
 
 	/* Board evaluation */
 	int h11n;			/* 1-1-n heuristic */
+	int pps;			/* pps divider */
 };
 
 static const struct opts defopts = {
@@ -101,6 +102,7 @@ static const struct opts defopts = {
 	.delta_prune =		1,
 
 	.h11n =			1,
+	.pps =			1,
 };
 
 #ifdef FIXOPTS

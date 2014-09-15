@@ -2,7 +2,7 @@
 #include "check.h"
 #include "eval.h"
 
-static inline int pieceScore() {
+static inline score pieceScore() {
 	const int w = G->pieceScore[WHITE];
 	const int b = G->pieceScore[BLACK];
 	int bonus;
@@ -12,7 +12,7 @@ static inline int pieceScore() {
 	else
 		bonus = 0;
 
-	const int ret = (w - b) + bonus;
+	const int ret = w - b + bonus;
 
 	assert(ret <  99000);
 	assert(ret > -99000);
@@ -231,7 +231,7 @@ score boardEval() {
 	score score = 0;
 
 	score += pieceScore(G);
-	score += ppsScore(G);
+	score += ppsScore(G) / copts.pps;
 
 	/*
 	 * Con la información de los peones
@@ -251,7 +251,7 @@ score boardEval() {
 	 * Acercamos a 0 los tableros que tengan
 	 * muchos movimientos idle
 	 */
-	if (unlikely(G->idlecount > 100-FIFTYMOVE_THRESHOLD))
+	if (unlikely(G->idlecount > 100 - FIFTYMOVE_THRESHOLD))
 		score = (score * (100 - G->idlecount))/FIFTYMOVE_THRESHOLD;
 
 	assert(score < maxScore);

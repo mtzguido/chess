@@ -30,6 +30,7 @@ enum {
 	OPT_limit,
 	OPT_lbound,
 	OPT_verbose,
+	OPT_pps,
 };
 
 static const struct option long_opts[] = {
@@ -50,6 +51,7 @@ static const struct option long_opts[] = {
 	INT_OPT(limit),
 	INT_OPT(lbound),
 	MAYBE_INT_OPT(verbose),
+	INT_OPT(pps),
 
 	BOOL_OPT(shuffle),
 	BOOL_OPT(ab),
@@ -105,6 +107,9 @@ int parse_opt(int argc, char **argv) {
 				copts.verbosity = atoi(optarg);
 			else
 				copts.verbosity = 1;
+			break;
+		case OPT_pps:
+			copts.pps = atoi(optarg);
 			break;
 		case 0x1:
 			copts.mode = moves;
