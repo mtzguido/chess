@@ -2,9 +2,7 @@
 
 set -ue
 
-N=${1:-10}
-
-./ice --moves $N --seed 0 --limit 0 --verbose=2 --depth 6
+./ice --seed 0 --limit 0 --verbose=2 --depth 6 --moves "$@"
 
 gprof ice gmon.out > profile
 
