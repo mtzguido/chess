@@ -10,28 +10,47 @@ extern const u64 zobrist_keys[794];
 
 static inline u64 ZOBR_PIECE(piece_t piece, int r, int c) {
 	const int p = piece > 6 ? piece - 2 : piece;
+	const unsigned idx = r * 8 * 12 + c * 12 + p;
 	assert(piece != 0);
 
-	return zobrist_keys[r*8*12 + c*12 + p];
+	assert(idx < ARRSIZE(zobrist_keys));
+
+	return zobrist_keys[idx];
 }
 
 static inline u64 ZOBR_BLACK() {
-	return zobrist_keys[781];
+	const unsigned idx = 781;
+
+	assert(idx < ARRSIZE(zobrist_keys));
+
+	return zobrist_keys[idx];
 }
 
 static inline u64 ZOBR_CASTLE_K(int who) {
-	return zobrist_keys[782 + who];
+	const unsigned idx = 782 + who;
+
+	assert(idx < ARRSIZE(zobrist_keys));
+
+	return zobrist_keys[idx];
 }
 
 static inline u64 ZOBR_CASTLE_Q(int who) {
-	return zobrist_keys[784 + who];
+	const unsigned idx = 784 + who;
+
+	assert(idx < ARRSIZE(zobrist_keys));
+
+	return zobrist_keys[idx];
 }
 
 static inline u64 ZOBR_EP(int c) {
+	const unsigned idx = 786 + c;
+
 	if (c == -1)
 		return 0;
 
-	return zobrist_keys[786 + c];
+	assert(idx < ARRSIZE(zobrist_keys));
+
+	return zobrist_keys[idx];
 }
 
 #endif
