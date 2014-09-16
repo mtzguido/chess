@@ -425,7 +425,6 @@ score _negamax(int maxDepth, int curDepth, move *mm, score alpha, score beta) {
 			t = -negamax(maxDepth, curDepth+1, NULL, -beta, -alpha);
 		}
 
-		/* Ya no necesitamos a ng */
 		undoMove();
 
 		if (t > best) {
