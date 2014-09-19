@@ -4,31 +4,24 @@
 static inline score max(score a, score b) { return a > b ? a : b; }
 static inline score min(score a, score b) { return a < b ? a : b; }
 
-static int trans_seq = 0;
-
 struct tt_entry {
 	u64 key;
 	score val;
 	flag_t flag;
 	move m;
-	u8 depth, seq;
+	u8 depth;
 };
 
 struct tt_entry tt[CFG_TTABLE_SIZE] __attribute__((aligned(4096)));
 
 void trans_reset() {
-	trans_seq++;
 }
 
 void trans_notify_return(move move, int depth, score score, flag_t flag) {
 	u64 key = G->zobrist;
 	u64 idx = key % CFG_TTABLE_SIZE;
 
-	if (tt[idx].key && tt[idx].key != key && tt[idx].seq == trans_seq)
-		stats.tt_collision++;
-
 	tt[idx].key = key;
-	tt[idx].seq = trans_seq;
 	tt[idx].m = move;
 	tt[idx].val = score;
 	tt[idx].flag = flag;
