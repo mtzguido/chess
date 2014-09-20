@@ -17,7 +17,6 @@ void addon_notify_return(move m, int depth, score s, flag_t flag);
 void addon_notify_entry(int depth, score *alpha, score *beta);
 void addon_notify_cut(move m, int depth);
 void addon_score_succs(int depth);
-void addon_suggest(move *arr, int *n, int depth);
 
 #endif
 

@@ -28,9 +28,6 @@ void trans_notify_return(move move, int depth, score score, flag_t flag) {
 	tt[idx].depth = depth;
 }
 
-#define trans_notify_cut(...)	do { } while (0)
-#define trans_suggest(...)	do { } while (0)
-
 void trans_notify_entry(int depth, score *alpha, score *beta) {
 	u64 key = G->zobrist;
 	u64 idx = key % CFG_TTABLE_SIZE;
@@ -59,28 +56,6 @@ void trans_notify_entry(int depth, score *alpha, score *beta) {
 		assert(0);
 	}
 }
-
-#if 0
-int trans_suggest(move *arr, int depth) {
-	u64 key = G->zobrist;
-	u64 idx = key % CFG_TTABLE_SIZE;
-
-	if (tt[idx].key != key)
-		return 0;
-
-	if (tt[idx].r < 0)
-		return 0;
-
-	arr[0].move_type = MOVE_REGULAR;
-	arr[0].who = G->turn;
-	arr[0].r = tt[idx].r;
-	arr[0].R = tt[idx].R;
-	arr[0].c = tt[idx].c;
-	arr[0].C = tt[idx].C;
-
-	return 1;
-}
-#endif
 
 void trans_score_succs(int depth) {
 	u64 key = G->zobrist;

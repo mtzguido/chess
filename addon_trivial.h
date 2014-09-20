@@ -5,10 +5,21 @@
 
 void trivial_score_succs(int depth);
 
-#define trivial_reset(...)		do { } while (0)
-#define trivial_notify_cut(...)		do { } while (0)
-#define trivial_suggest(...)		do { } while (0)
-#define trivial_notify_return(...)	do { } while (0)
-#define trivial_notify_entry(...)	do { } while (0)
+static inline void trivial_reset()
+{
+}
+
+static inline void trivial_notify_cut(move m, int depth)
+{
+}
+
+static inline void trivial_notify_return(move m, int depth, score score,
+					 flag_t flag)
+{
+}
+
+static inline void trivial_notify_entry(int depth, score *alpha, score *beta)
+{
+}
 
 #endif

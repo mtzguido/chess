@@ -38,16 +38,3 @@ void cm_notify_cut(move m, int depth) {
 	move om = hstack[hply - 1].m;
 	counterTable[G->turn][om.r][om.c][om.R][om.C] = m;
 }
-
-void cm_suggest(move *arr, int *n, int depth) {
-	move m = hstack[hply - 1].m;
-	move cm = counterTable[G->turn][m.r][m.c][m.R][m.C];
-
-	if (cm.move_type == MOVE_INVAL)
-		return;
-
-	if (cm.who != G->turn)
-		return;
-
-	arr[*n++] = cm;
-}

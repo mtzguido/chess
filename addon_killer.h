@@ -6,9 +6,14 @@
 void killer_reset(void);
 void killer_score_succs(int depth);
 void killer_notify_cut(move m, int depth);
-void killer_suggest(move *arr, int *n, int depth);
 
-#define killer_notify_entry(...)	do { } while (0)
-#define killer_notify_return(...)	do { } while (0)
+static inline void killer_notify_return(move m, int depth, score score,
+					flag_t flag)
+{
+}
+
+static inline void killer_notify_entry(int depth, score *alpha, score *beta)
+{
+}
 
 #endif

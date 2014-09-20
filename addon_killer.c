@@ -48,20 +48,3 @@ void killer_notify_cut(move m, int depth) {
 
 	killerTable[depth][0] = m;
 }
-
-void killer_suggest(move *arr, int *n, int depth) {
-	int i;
-
-	if (depth > KTABLE_SIZE)
-		return;
-
-	for (i = 0; i < KILLER_WIDTH; i++) {
-		if (killerTable[depth][i].move_type == MOVE_INVAL)
-			continue;
-
-		if (killerTable[depth][i].who != G->turn)
-			continue;
-
-		arr[*n++] = killerTable[depth][i];
-	}
-}

@@ -38,7 +38,3 @@ void addon_notify_cut(move m, int depth) {
 void addon_score_succs(int depth) {
 	addon_for_each(score_succs, depth);
 }
-
-void addon_suggest(move *arr, int *n, int depth) {
-	addon_for_each(suggest, arr, n, depth);
-}
