@@ -7,7 +7,7 @@ void print_version() {
 			CHESS_BUILD_HOST);
 }
 
-static const char *shortv = "ICE 2014 " CHESS_VERSION;
+static const char *shortv = "ICE " CHESS_VERSION;
 const char *short_version() {
 	return shortv;
 }

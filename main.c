@@ -145,10 +145,6 @@ static void xboard_printmove(move m) {
 	printMove(stdout, m);
 }
 
-static void sigterm(__unused int n) {
-	dbg("Received SIGTERM!\n");
-}
-
 static void xboard_main() {
 	int curPlayer = WHITE;
 	int ourPlayer = BLACK;
@@ -161,13 +157,14 @@ static void xboard_main() {
 
 	/* Ignore SIGINT, because xboard is a crappy protocol */
 	signal(SIGINT, SIG_IGN);
-	signal(SIGTERM, sigterm);
-	printf("feature sigint=0 sigterm=0 myname=\"%s%s\"\n", short_version(),
+	signal(SIGTERM, SIG_IGN);
+	printf("feature myname=\"%s%s\"\n", short_version(),
 			arg_string);
-	printf("feature colors=0 setboard=0 playother=0 reuse=0\n");
+	printf("feature colors=0 setboard=0 playother=0\n");
+	printf("feature ping=1 analyze=0 memory=0\n");
 	printf("feature done=1\n");
 
-	printf("tellics say dogui's chess engine\n");
+	printf("tellics say ICE Chess Engine\n");
 	printf("tellics say Written by Guido Martínez, 2014\n");
 
 	startingGame2();
