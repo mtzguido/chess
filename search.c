@@ -9,6 +9,9 @@
 #include "check.h"
 #include <stdbool.h>
 
+move pv[MAX_PLY][MAX_PLY];
+int pv_len[MAX_PLY];
+
 static score negamax(int curDepth, int maxDepth, move *mm, score alpha, score beta);
 static score _negamax(int curDepth, int maxDepth, move *mm, score alpha, score beta);
 
@@ -284,6 +287,8 @@ score _negamax(int maxDepth, int curDepth, move *mm, score alpha, score beta) {
 
 	stats.nall++;
 
+	pv_len[ply] = 0;
+
 	assert(ply == curDepth);
 
 	if (timeup) {
@@ -430,6 +435,10 @@ score _negamax(int maxDepth, int curDepth, move *mm, score alpha, score beta) {
 		if (t > best) {
 			best = t;
 			bestmove = i;
+			pv[ply][0] = m;
+			pv_len[ply] = pv_len[ply + 1] + 1;
+			memcpy(&pv[ply][1], &pv[ply+1][0],
+			       sizeof(move) * pv_len[ply+1]);
 		}
 
 		if (t > alpha)

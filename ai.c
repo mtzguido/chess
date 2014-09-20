@@ -7,6 +7,7 @@
 #include "succs.h"
 #include "book.h"
 #include "moves.h"
+#include "user_input.h"
 
 #include <stdint.h>
 #include <stdio.h>
@@ -96,6 +97,18 @@ unsigned long timelimit;
 unsigned long timestart;
 int ticks;
 
+static void print_pv(char *buf) {
+	int i;
+
+	buf[0] = 0;
+	for (i = 0; i < pv_len[0]; i++) {
+		move_text(pv[0][i], buf);
+		strcat(buf, " ");
+		buf += strlen(buf);
+	}
+	buf[0] = 0;
+}
+
 move machineMove(unsigned long long maxms) {
 	move ret = {0};
 	clock_t t1, t2;
@@ -125,6 +138,7 @@ move machineMove(unsigned long long maxms) {
 		score t;
 		score alpha, beta;
 		bool stop = false;
+		char pv_text[200];
 
 		alpha = minScore;
 		beta = maxScore;
@@ -170,9 +184,12 @@ move machineMove(unsigned long long maxms) {
 
 			now = getms();
 
+			print_pv(pv_text);
+
 			/* Time should be in centiseconds. No, really. */
-			printf("%2d %6i %8llu %10llu e1f1\n", d, t,
-					(now-iterstart)/10, stats.nopen_s);
+			printf("%2d %6i %8llu %10llu %s\n", d, t,
+					(now-iterstart)/10, stats.nopen_s,
+					pv_text);
 			fflush(stdout);
 
 			expected = t;
