@@ -6,8 +6,6 @@
 #include <stdbool.h>
 #include <assert.h>
 
-#define MAX_DEPTH 120
-
 #define ARRSIZE(a) ((sizeof (a))/(sizeof ((a)[0])))
 #define __unused  __attribute__((unused))
 

@@ -73,12 +73,6 @@ static int sanity_check() {
 		return 0;
 	}
 
-	if (copts.depth > MAX_DEPTH) {
-		fprintf(stderr, "error: depth too big. maximum is %i\n",
-				MAX_DEPTH);
-		return 0;
-	}
-
 	return 1;
 }
 

@@ -2,7 +2,7 @@
 #include "addon.h"
 
 #define KILLER_WIDTH 2
-#define KTABLE_SIZE (MAX_DEPTH + 10)
+#define KTABLE_SIZE MAX_PLY
 
 static move killerTable[KTABLE_SIZE][KILLER_WIDTH];
 
@@ -16,7 +16,7 @@ void killer_reset() {
 void killer_score_succs(int depth) {
 	int i, k;
 
-	if (depth > MAX_DEPTH)
+	if (depth > KTABLE_SIZE)
 		return;
 
 	/*
