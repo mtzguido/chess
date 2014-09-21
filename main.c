@@ -158,12 +158,7 @@ static void xboard_main() {
 	/* Ignore SIGINT, because xboard is a crappy protocol */
 	signal(SIGINT, SIG_IGN);
 	signal(SIGTERM, SIG_IGN);
-	printf("feature myname=\"%s%s\"\n", short_version(),
-			arg_string);
-	printf("feature colors=0 setboard=0 playother=0\n");
-	printf("feature ping=1 analyze=0 memory=0\n");
-	printf("feature done=1\n");
-
+	printf("feature myname=\"%s%s\"\n", short_version(), arg_string);
 	printf("tellics say ICE Chess Engine\n");
 	printf("tellics say Written by Guido Martínez, 2014\n");
 
@@ -299,6 +294,9 @@ static void xboard_main() {
 			/* Ignore */
 			continue;
 		} else if (!strcmp("protver", cmd)) {
+			printf("feature colors=0 setboard=0 playother=0\n");
+			printf("feature ping=1 analyze=0 memory=0\n");
+			printf("feature done=1\n");
 		} else if (!strcmp("st", cmd)) {
 			sscanf(line, "st %d", &timemax);
 			timemax *= 1000;
