@@ -457,19 +457,12 @@ score _negamax(int maxDepth, int curDepth, move *mm, score alpha, score beta) {
 
 	/* Era un tablero terminal? */
 	if (nvalid == 0) {
-		move dummy = {0};
 		assert(!mm);
 
 		if (inCheck(G->turn))
 			ret = -CHECKMATE_SCORE + curDepth;
 		else
 			ret = 0; /* Stalemate */
-
-		/*
-		 * Lo guardamos en la TT, podría ahorrar unos
-		 * pocos ciclos
-		 */
-		addon_notify_return(dummy, 999, ret, FLAG_EXACT);
 	} else if (nvalid == 1 && alpha < beta && copts.forced_extend) {
 		__unused bool check;
 		check = doMove(gsuccs[bestmove].m);
