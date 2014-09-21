@@ -227,11 +227,23 @@ static inline score castle_score(const u8 col) {
 	return 0;
 }
 
-score boardEval() {
+static score boardEval_material() {
 	score score = 0;
 
 	score += pieceScore(G);
 	score += ppsScore(G) / copts.pps;
+
+	if (unlikely(G->idlecount > 100 - FIFTYMOVE_THRESHOLD))
+		score = (score * (100 - G->idlecount))/FIFTYMOVE_THRESHOLD;
+
+	assert(score < maxScore);
+	assert(score > minScore);
+
+	return G->turn == WHITE ? score : -score;
+}
+
+static score boardEval_structure() {
+	score score = 0;
 
 	/*
 	 * Con la información de los peones
@@ -240,22 +252,79 @@ score boardEval() {
 	score += eval_with_ranks(WHITE);
 	score -= eval_with_ranks(BLACK);
 
+	assert(score < maxScore);
+	assert(score > minScore);
+
+	if (unlikely(G->idlecount > 100 - FIFTYMOVE_THRESHOLD))
+		score = (score * (100 - G->idlecount))/FIFTYMOVE_THRESHOLD;
+
+	return G->turn == WHITE ? score : -score;
+}
+
+static score boardEval_castling() {
+	score score = 0;
+
 	/* Penalizamos según posibilidades de enroque */
 	score += castle_score(WHITE);
 	score -= castle_score(BLACK);
 
-	if (inCheck(WHITE)) score += INCHECK;
-	if (inCheck(BLACK)) score -= INCHECK;
+	assert(score < maxScore);
+	assert(score > minScore);
 
-	/*
-	 * Acercamos a 0 los tableros que tengan
-	 * muchos movimientos idle
-	 */
 	if (unlikely(G->idlecount > 100 - FIFTYMOVE_THRESHOLD))
 		score = (score * (100 - G->idlecount))/FIFTYMOVE_THRESHOLD;
+
+	return G->turn == WHITE ? score : -score;
+}
+
+static score boardEval_check() {
+	score score = 0;
+
+	if (inCheck(WHITE)) score += INCHECK;
+	if (inCheck(BLACK)) score -= INCHECK;
 
 	assert(score < maxScore);
 	assert(score > minScore);
 
+	if (unlikely(G->idlecount > 100 - FIFTYMOVE_THRESHOLD))
+		score = (score * (100 - G->idlecount))/FIFTYMOVE_THRESHOLD;
+
 	return G->turn == WHITE ? score : -score;
+}
+
+const evalFun_t evalFuns[] = {
+	boardEval_material,
+	boardEval_castling,
+	boardEval_check,
+	boardEval_structure,
+};
+
+const int nEval = ARRSIZE(evalFuns);
+
+#define EVAL_MATERIAL_BOUND	4100
+#define EVAL_CASTLING_BOUND	15
+#define EVAL_CHECK_BOUND	200
+#define EVAL_STRUCTURE_BOUND	200
+
+const score evalBound[] = {
+	EVAL_MATERIAL_BOUND,
+	EVAL_CASTLING_BOUND,
+	EVAL_CHECK_BOUND,
+	EVAL_STRUCTURE_BOUND,
+};
+
+const score fullBound =
+	EVAL_MATERIAL_BOUND +
+	EVAL_CASTLING_BOUND +
+	EVAL_CHECK_BOUND +
+	EVAL_STRUCTURE_BOUND;
+
+score boardEval() {
+	int i;
+	score score = 0;
+
+	for (i = 0; i < nEval; i++)
+		score += evalFuns[i]();
+
+	return score;
 }

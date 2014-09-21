@@ -194,10 +194,26 @@ static inline score _quiesce(score alpha, score beta, int curDepth) {
 
 	stats.nopen_q++;
 
-	ev = boardEval();
-	if (ev >= beta) {
-		ret = beta;
-		goto out;
+	if (copts.lazy) {
+		score bound = fullBound;
+		ev = 0;
+
+		for (i = 0; i < nEval; i++) {
+			ev += evalFuns[i]();
+			bound -= evalBound[i];
+
+			if (ev - bound >= beta) {
+				ret = beta;
+				goto out;
+			}
+		}
+		assert(bound == 0);
+	} else {
+		ev = boardEval();
+		if (ev >= beta) {
+			ret = beta;
+			goto out;
+		}
 	}
 
 	if (copts.delta_prune) {

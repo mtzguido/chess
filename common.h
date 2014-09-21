@@ -6,7 +6,7 @@
 #include <stdbool.h>
 #include <assert.h>
 
-#define ARRSIZE(a) ((sizeof (a))/(sizeof ((a)[0])))
+#define ARRSIZE(a) ((int)((sizeof (a))/(sizeof ((a)[0]))))
 #define __unused  __attribute__((unused))
 
 #define unlikely(c) __builtin_expect(c, 0)
@@ -74,6 +74,7 @@ struct opts {
 	int delta_prune;		/* Quiescence delta pruning */
 
 	/* Board evaluation */
+	int lazy;			/* Lazy evaluation */
 	int h11n;			/* 1-1-n heuristic */
 	int pps;			/* pps divider */
 };
@@ -99,6 +100,7 @@ static const struct opts defopts = {
 	.forced_extend =	1,
 	.delta_prune =		1,
 
+	.lazy =			1,
 	.h11n =			1,
 	.pps =			1,
 };

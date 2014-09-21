@@ -53,6 +53,7 @@ static const struct option long_opts[] = {
 	MAYBE_INT_OPT(verbose),
 	INT_OPT(pps),
 
+	BOOL_OPT(lazy),
 	BOOL_OPT(shuffle),
 	BOOL_OPT(ab),
 	BOOL_OPT(quiesce),
