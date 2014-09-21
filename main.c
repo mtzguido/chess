@@ -367,14 +367,13 @@ int main(int argc, char **argv) {
 	if (argc > 1) {
 		int i;
 
-		strcat(arg_string, " args = [");
+		strcat(arg_string, " ");
 
 		for (i = 1; i < argc-1; i++) {
 			strcat(arg_string, argv[i]);
-			strcat(arg_string, ", ");
+			strcat(arg_string, " ");
 		}
 		strcat(arg_string, argv[argc-1]);
-		strcat(arg_string, "]");
 	}
 
 	dbg("random seed: %u\n", copts.seed);
