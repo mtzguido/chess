@@ -504,10 +504,8 @@ score _negamax(int maxDepth, int curDepth, move *mm, score alpha, score beta) {
 		else
 			flag = FLAG_EXACT;
 
-		if (maxDepth - curDepth > 1) {
-			addon_notify_return(gsuccs[bestmove].m,
-					    maxDepth - curDepth, ret, flag);
-		}
+		addon_notify_return(gsuccs[bestmove].m, maxDepth - curDepth,
+				    ret, flag);
 	}
 
 out:
