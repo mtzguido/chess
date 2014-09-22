@@ -7,9 +7,9 @@ static inline score min(score a, score b) { return a < b ? a : b; }
 struct tt_entry {
 	u64 key;
 	score val;
-	flag_t flag;
 	move m;
-	u8 depth;
+	u8 depth:5;
+	flag_t flag:3;
 };
 
 struct tt_entry tt[CFG_TTABLE_SIZE] __attribute__((aligned(4096)));
