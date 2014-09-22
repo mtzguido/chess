@@ -60,7 +60,7 @@ move machineMove(unsigned long long maxms);
 #define NMH_THRESHOLD		1500
 #define NMH_REDUCTION		2
 #define ASPIRATION_WINDOW	25
-#define LMR_FULL		4
+#define LMR_FULL		3
 #define LMR_MINDEPTH		2
 
 /* Misc tunables */
