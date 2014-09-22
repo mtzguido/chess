@@ -228,9 +228,6 @@ static score boardEval_material() {
 	score += pieceScore(G);
 	score += ppsScore(G) / copts.pps;
 
-	if (unlikely(G->idlecount > 100 - FIFTYMOVE_THRESHOLD))
-		score = (score * (100 - G->idlecount))/FIFTYMOVE_THRESHOLD;
-
 	assert(score < maxScore);
 	assert(score > minScore);
 
@@ -250,9 +247,6 @@ static score boardEval_structure() {
 	assert(score < maxScore);
 	assert(score > minScore);
 
-	if (unlikely(G->idlecount > 100 - FIFTYMOVE_THRESHOLD))
-		score = (score * (100 - G->idlecount))/FIFTYMOVE_THRESHOLD;
-
 	return G->turn == WHITE ? score : -score;
 }
 
@@ -265,9 +259,6 @@ static score boardEval_castling() {
 
 	assert(score < maxScore);
 	assert(score > minScore);
-
-	if (unlikely(G->idlecount > 100 - FIFTYMOVE_THRESHOLD))
-		score = (score * (100 - G->idlecount))/FIFTYMOVE_THRESHOLD;
 
 	return G->turn == WHITE ? score : -score;
 }
@@ -286,9 +277,6 @@ static score boardEval_king() {
 	score += boardEval_king_col(WHITE);
 	score -= boardEval_king_col(BLACK);
 
-	if (unlikely(G->idlecount > 100 - FIFTYMOVE_THRESHOLD))
-		score = (score * (100 - G->idlecount))/FIFTYMOVE_THRESHOLD;
-
 	return G->turn == WHITE ? score : -score;
 }
 
@@ -300,9 +288,6 @@ static score boardEval_check() {
 
 	assert(score < maxScore);
 	assert(score > minScore);
-
-	if (unlikely(G->idlecount > 100 - FIFTYMOVE_THRESHOLD))
-		score = (score * (100 - G->idlecount))/FIFTYMOVE_THRESHOLD;
 
 	return G->turn == WHITE ? score : -score;
 }
