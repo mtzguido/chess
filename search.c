@@ -424,10 +424,11 @@ score _negamax(int maxDepth, int curDepth, move *mm, score alpha, score beta) {
 			&& i >= first_succ[ply - 1] + LMR_FULL
 			&& curDepth >= LMR_MINDEPTH
 			&& maxDepth - curDepth >= 2
-			&& gsuccs[i].s*10 < gsuccs[first_succ[ply - 1]].s /* 2x crap */
-			&& ext == 0
+			&& gsuccs[i].s*10 < gsuccs[first_succ[ply - 1]].s
 			&& !inCheck(G->turn)
-			&& !(hstack[hply - 1].capt != EMPTY || hstack[hply-1].was_ep)
+			&&  hstack[hply - 1].capt == EMPTY
+			&& ext == 0
+			&& !hstack[hply-1].was_ep
 			&& !hstack[hply - 1].was_promote) {
 			stats.lmrs++;
 
