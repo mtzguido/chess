@@ -185,11 +185,6 @@ static inline score eval_one_piece(const u8 col, const u8 r, const u8 c,
 		} else {
 			return 0;
 		}
-
-	/* Evaluate king safety */
-	case WKING:
-	case BKING:
-		return eval_king(col, r, c) * G->pieceScore[opp] / SIDE_SCORE;
 	}
 
 	return 0;
@@ -277,6 +272,26 @@ static score boardEval_castling() {
 	return G->turn == WHITE ? score : -score;
 }
 
+static score boardEval_king_col(const u8 col) {
+	const u8 opp = flipTurn(col);
+	const u8 r = G->kingx[col];
+	const u8 c = G->kingy[col];
+
+	/* Evaluate king safety */
+	return eval_king(col, r, c) * G->pieceScore[opp] / SIDE_SCORE;
+}
+static score boardEval_king() {
+	score score = 0;
+
+	score += boardEval_king_col(WHITE);
+	score -= boardEval_king_col(BLACK);
+
+	if (unlikely(G->idlecount > 100 - FIFTYMOVE_THRESHOLD))
+		score = (score * (100 - G->idlecount))/FIFTYMOVE_THRESHOLD;
+
+	return G->turn == WHITE ? score : -score;
+}
+
 static score boardEval_check() {
 	score score = 0;
 
@@ -296,6 +311,7 @@ const evalFun_t evalFuns[] = {
 	boardEval_material,
 	boardEval_castling,
 	boardEval_check,
+	boardEval_king,
 	boardEval_structure,
 };
 
@@ -304,12 +320,14 @@ const int nEval = ARRSIZE(evalFuns);
 #define EVAL_MATERIAL_BOUND	4100
 #define EVAL_CASTLING_BOUND	15
 #define EVAL_CHECK_BOUND	200
-#define EVAL_STRUCTURE_BOUND	200
+#define EVAL_KING_BOUND		100
+#define EVAL_STRUCTURE_BOUND	150
 
 const score evalBound[] = {
 	EVAL_MATERIAL_BOUND,
 	EVAL_CASTLING_BOUND,
 	EVAL_CHECK_BOUND,
+	EVAL_KING_BOUND,
 	EVAL_STRUCTURE_BOUND,
 };
 
@@ -317,6 +335,7 @@ const score fullBound =
 	EVAL_MATERIAL_BOUND +
 	EVAL_CASTLING_BOUND +
 	EVAL_CHECK_BOUND +
+	EVAL_KING_BOUND +
 	EVAL_STRUCTURE_BOUND;
 
 score boardEval() {
