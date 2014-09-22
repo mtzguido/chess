@@ -57,14 +57,13 @@ move machineMove(unsigned long long maxms);
 #define TRANS_SCORE		10000
 
 /* Heuristics config */
-#define NMH_THRESHOLD		1500
+#define NMH_THRESHOLD		700
 #define NMH_REDUCTION		2
-#define ASPIRATION_WINDOW	25
+#define ASPIRATION_WINDOW	20
 #define LMR_FULL		3
 #define LMR_MINDEPTH		2
 
 /* Misc tunables */
-#define SORT_DEPTH_THRESHOLD	0
 #define CHECKMATE_SCORE		100000
 
 #endif
