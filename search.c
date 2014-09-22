@@ -123,7 +123,6 @@ static inline score null_move_score(int curDepth, int maxDepth, score alpha,
 	if (inCheck(G->turn) || G->pieceScore[G->turn] <= NMH_THRESHOLD)
 		goto dont;
 
-	/* Not even worth it */
 	if (maxDepth - curDepth <= NMH_REDUCTION)
 		goto dont;
 
