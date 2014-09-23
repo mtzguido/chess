@@ -103,16 +103,11 @@ static inline int calcExtension(int depth) {
 
 static inline score null_move_score(int depth, score alpha, score beta)
 {
-	static bool doing_null_move = false;
 	score t;
 	move m = { .move_type = MOVE_NULL, .who = G->turn };
 	__unused bool check;
 
 	if (!copts.null)
-		goto dont;
-
-	/* Dont do two null moves in the same variation */
-	if (doing_null_move)
 		goto dont;
 
 	/*
@@ -125,6 +120,10 @@ static inline score null_move_score(int depth, score alpha, score beta)
 	if (depth <= NMH_REDUCTION)
 		goto dont;
 
+	/* Don't null move twice in a row */
+	if (hstack[hply - 1].m.move_type == MOVE_NULL)
+		goto dont;
+
 	stats.null_tries++;
 
 	check = doMove(&m);
@@ -135,11 +134,9 @@ static inline score null_move_score(int depth, score alpha, score beta)
 	assert(check);
 
 	first_succ[ply] = first_succ[ply - 1];
-	doing_null_move = true;
 
 	t = -negamax(depth - NMH_REDUCTION - 1, NULL, -beta, -alpha);
 
-	doing_null_move = false;
 
 	undoMove();
 	return t;
