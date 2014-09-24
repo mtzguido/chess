@@ -271,8 +271,8 @@ static inline score _quiesce(score alpha, score beta, int curDepth) {
 
 out:
 
-	assert(timeup || ret > minScore);
-	assert(timeup || ret < maxScore);
+	assert(ret > minScore);
+	assert(ret < maxScore);
 
 	return ret;
 }
@@ -505,8 +505,8 @@ out:
 	if (mm)
 		assert(mm->move_type != MOVE_INVAL);
 
-	assert(timeup || ret > minScore);
-	assert(timeup || ret < maxScore);
+	assert(ret > minScore);
+	assert(ret < maxScore);
 
 	return ret;
 }
