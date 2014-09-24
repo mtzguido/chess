@@ -129,7 +129,6 @@ static inline score null_move_score(int curDepth, int maxDepth, score alpha,
 	stats.null_tries++;
 
 	check = doMove(m);
-
 	/*
 	 * doMoveNull's only restriction is not being in check and we already
 	 * provided a case for that so this should never fail

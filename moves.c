@@ -460,8 +460,6 @@ static bool __doMove(move m, bool check) {
 	hstack[hply].inCheck[WHITE] = G->inCheck[WHITE];
 	hstack[hply].inCheck[BLACK] = G->inCheck[BLACK];
 
-	hstack[hply].hash = G->zobrist;
-
 	assert(m.who == G->turn);
 
 	switch (m.move_type) {
@@ -601,7 +599,6 @@ void _undoMove() {
 	G->inCheck[WHITE] = hstack[hply].inCheck[WHITE];
 	G->inCheck[BLACK] = hstack[hply].inCheck[BLACK];
 
-	assert(G->zobrist == hstack[hply].hash);
 	assert(G->board[G->kingx[WHITE]][G->kingy[WHITE]] == WKING);
 	assert(G->board[G->kingx[BLACK]][G->kingy[BLACK]] == BKING);
 }

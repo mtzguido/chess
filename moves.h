@@ -21,8 +21,6 @@ struct undo_info {
 	i8 en_passant_y:4;
 	bool castled[2];
 	i8 inCheck[2];
-
-	u64 hash;
 };
 
 extern struct undo_info * const hstack;
