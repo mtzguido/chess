@@ -292,7 +292,6 @@ score negamax(int maxDepth, int curDepth, move *mm, score alpha, score beta) {
 
 static
 score _negamax(int maxDepth, int curDepth, move *mm, score alpha, score beta) {
-	static bool doing_lmr = false;
 	score t, ret, best, alpha_orig;
 	int i;
 	int ext;
@@ -418,7 +417,6 @@ score _negamax(int maxDepth, int curDepth, move *mm, score alpha, score beta) {
 
 		/* LMR */
 		if (copts.lmr
-			&& !doing_lmr
 			&& i >= first_succ[ply - 1] + LMR_FULL
 			&& curDepth >= LMR_MINDEPTH
 			&& gsuccs[i].s * 3 < gsuccs[first_succ[ply - 1]].s
