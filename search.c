@@ -37,13 +37,14 @@ static inline void shuffle_succs() {
 }
 
 static inline void genSuccs_wrap(int depth) {
-	/* Generar sucesores */
+	/* Generate succesors */
 	genSuccs();
 	stats.ngen += first_succ[ply+1] - first_succ[ply];
 
+	/* Score them, they will be lazily sorted during the search */
 	addon_score_succs(depth);
 
-	/* Mezclarlos si es necesario */
+	/* Shuffle them to add randomness */
 	shuffle_succs();
 }
 
@@ -56,9 +57,8 @@ static inline void genCaps_wrap(int depth) {
 
 
 /*
- * Ordena el arreglo de sucesores de manera lazy.
- * Deja en arr[i] el sucesor correcto, asume que arr[0..i-1] ya
- * está ordenado.
+ * Lazily sorts the succesor array. Leaves the next succesor to try in
+ * gsuccs[i].
  */
 static inline void sort_succ(int i) {
 	int j;
@@ -335,9 +335,9 @@ score _negamax(int maxDepth, int curDepth, move *mm, score alpha, score beta) {
 	}
 
 	/*
-	 * Si ya pasamos por este tablero, podemos asumir
-	 * que vamos a reaccionar igual y vamos a llevar a un empate
-	 * por repetición.
+	 * If we visited this board in the same variation, we can assume we'll
+	 * react the same way and lead to a draw by reptition. We can only do
+	 * this if we're not at the top level (we don't have to return a move)
 	 */
 	if (reps() >= 2 && !mm) {
 		ret = 0;
@@ -348,19 +348,11 @@ score _negamax(int maxDepth, int curDepth, move *mm, score alpha, score beta) {
 	maxDepth += ext;
 
 	/*
-	 * Corte por profundidad, hacemos búsqueda por quietud, para
-	 * mejorar nuestra evaluación de tablero.
+	 * Depth cut. Descend into Quiescence search
 	 */
 	if (curDepth >= maxDepth) {
 		assert(!mm);
 		assert(curDepth == maxDepth);
-
-		/*
-		 * Si esto ocurre, tenemos una recursion mutua
-		 * infinita con quiesce. No debería ocurrir nunca,
-		 * pero dejamos el assert por las dudas.
-		 */
-		assert(!inCheck(G->turn));
 
 		if (copts.quiesce)
 			ret = quiesce(alpha, beta, curDepth);
@@ -387,7 +379,6 @@ score _negamax(int maxDepth, int curDepth, move *mm, score alpha, score beta) {
 		addon_notify_entry(maxDepth - curDepth, &alpha, &beta);
 
 		if (alpha >= beta && copts.ab) {
-			/* Revisit this */
 			ret = alpha;
 			goto out;
 		}
@@ -464,7 +455,7 @@ score _negamax(int maxDepth, int curDepth, move *mm, score alpha, score beta) {
 	else
 		assert(timeup || nvalid == 0);
 
-	/* Era un tablero terminal? */
+	/* Was it a terminal board? */
 	if (nvalid == 0) {
 		assert(!mm);
 
@@ -494,18 +485,11 @@ score _negamax(int maxDepth, int curDepth, move *mm, score alpha, score beta) {
 		if (mm)
 			*mm = gsuccs[bestmove].m;
 
-		/*
-		 * Devolver alpha o best es lo mismo (o son ambos menores o
-		 * iguales a alpha_orig o son iguales) pero en la TT debemos
-		 * guardar ${WHAT} porque ${REASON}
-		 */
-		assert(best == alpha ||
-				(best < alpha_orig && alpha == alpha_orig));
-
 		ret = best;
 		assert(best != minScore);
 		assert(best != maxScore);
 
+		/* Which node type was this? */
 		if (ret <= alpha_orig)
 			flag = FLAG_UPPER_BOUND;
 		else if (ret >= beta)
