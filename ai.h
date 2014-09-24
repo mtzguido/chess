@@ -40,9 +40,6 @@ move machineMove(unsigned long long maxms);
 #define DOUBLE_BISHOP		15
 #define KNIGHT_ENDGAME		(-10)
 
-/* Define a fuzzy threshold for boards near 50 idle moves */
-#define FIFTYMOVE_THRESHOLD	32
-
 /* Castling penalties */
 #define CASTLE_NN		(-15)
 #define CASTLE_NY		(-12)
@@ -51,8 +48,8 @@ move machineMove(unsigned long long maxms);
 
 /* Move ordering scores */
 #define CAPT_SCORE		200
-#define PROMOTE_SCORE		300
 #define CM_SCORE		500
+#define PROMOTE_SCORE		800
 #define KILLER_SCORE		1000
 #define TRANS_SCORE		10000
 
