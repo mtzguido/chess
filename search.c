@@ -12,8 +12,8 @@
 move pv[MAX_PLY][MAX_PLY];
 int pv_len[MAX_PLY];
 
-static score negamax(int curDepth, int maxDepth, move *mm, score alpha, score beta);
-static score _negamax(int curDepth, int maxDepth, move *mm, score alpha, score beta);
+static score negamax(int depth, move *mm, score alpha, score beta);
+static score _negamax(int depth, move *mm, score alpha, score beta);
 
 static inline void shuffle_succs() {
 	struct MS swap;
@@ -92,7 +92,7 @@ static inline void sort_succ(int i) {
 	assert(gsuccs[i].s >= 0);
 }
 
-static inline int calcExtension(int maxDepth, int curDepth) {
+static inline int calcExtension(int depth) {
 	int ret = 0;
 
 	if (inCheck(G->turn) || hstack[hply - 1].was_promote)
@@ -101,8 +101,7 @@ static inline int calcExtension(int maxDepth, int curDepth) {
 	return ret;
 }
 
-static inline score null_move_score(int curDepth, int maxDepth, score alpha,
-				    score beta)
+static inline score null_move_score(int depth, score alpha, score beta)
 {
 	static bool doing_null_move = false;
 	score t;
@@ -123,7 +122,7 @@ static inline score null_move_score(int curDepth, int maxDepth, score alpha,
 	if (inCheck(G->turn) || G->pieceScore[G->turn] <= NMH_THRESHOLD)
 		goto dont;
 
-	if (maxDepth - curDepth <= NMH_REDUCTION)
+	if (depth <= NMH_REDUCTION)
 		goto dont;
 
 	stats.null_tries++;
@@ -138,7 +137,7 @@ static inline score null_move_score(int curDepth, int maxDepth, score alpha,
 	first_succ[ply] = first_succ[ply - 1];
 	doing_null_move = true;
 
-	t = -negamax(maxDepth - NMH_REDUCTION, curDepth+1, NULL, -beta, -alpha);
+	t = -negamax(depth - NMH_REDUCTION - 1, NULL, -beta, -alpha);
 
 	doing_null_move = false;
 
@@ -149,26 +148,24 @@ dont:
 	return alpha;
 }
 
-static inline score _quiesce(score alpha, score beta, int curDepth);
+static inline score _quiesce(score alpha, score beta);
 
-static score quiesce(int curDepth, score alpha, score beta) {
+static score quiesce(score alpha, score beta) {
 	__unused game bak = G;
 	__unused u64 h = G->zobrist;
 	score ret;
 
-	ret = _quiesce(curDepth, alpha, beta);
+	ret = _quiesce(alpha, beta);
 
 	assert(G == bak);
 	assert(G->zobrist == h);
 	return ret;
 }
 
-static inline score _quiesce(score alpha, score beta, int curDepth) {
+static inline score _quiesce(score alpha, score beta) {
 	int nvalid, i;
 	score ret, ev;
 	score t;
-
-	assert(ply == curDepth);
 
 	if (timeup) {
 		ret = 0;
@@ -234,7 +231,7 @@ static inline score _quiesce(score alpha, score beta, int curDepth) {
 		goto out;
 	}
 
-	genCaps_wrap(curDepth);
+	genCaps_wrap(ply);
 	nvalid = 0;
 	for (i = first_succ[ply]; i < first_succ[ply+1]; i++) {
 		sort_succ(i);
@@ -250,7 +247,7 @@ static inline score _quiesce(score alpha, score beta, int curDepth) {
 
 		nvalid++;
 
-		t = -quiesce(-beta, -alpha, curDepth+1);
+		t = -quiesce(-beta, -alpha);
 
 		undoMove();
 
@@ -278,12 +275,12 @@ out:
 }
 
 static
-score negamax(int maxDepth, int curDepth, move *mm, score alpha, score beta) {
+score negamax(int depth, move *mm, score alpha, score beta) {
 	__unused game bak = G;
 	__unused u64 h = G->zobrist;
 	score ret;
 
-	ret = _negamax(maxDepth, curDepth, mm, alpha, beta);
+	ret = _negamax(depth, mm, alpha, beta);
 
 	assert(G == bak);
 	assert(G->zobrist == h);
@@ -291,7 +288,7 @@ score negamax(int maxDepth, int curDepth, move *mm, score alpha, score beta) {
 }
 
 static
-score _negamax(int maxDepth, int curDepth, move *mm, score alpha, score beta) {
+score _negamax(int depth, move *mm, score alpha, score beta) {
 	score t, ret, best, alpha_orig;
 	int i;
 	int ext;
@@ -301,8 +298,6 @@ score _negamax(int maxDepth, int curDepth, move *mm, score alpha, score beta) {
 	stats.nall++;
 
 	pv_len[ply] = 0;
-
-	assert(ply == curDepth);
 
 	if (timeup) {
 		ret = 0;
@@ -320,11 +315,11 @@ score _negamax(int maxDepth, int curDepth, move *mm, score alpha, score beta) {
 	}
 
 	/*
-	 * The absolute best we can ever do is CHECKMATE_SCORE - curDepth -
+	 * The absolute best we can ever do is CHECKMATE_SCORE - ply -
 	 * 1, so use it as a bound. This causes the search to run a lot more
 	 * quickly in the final endgame.
 	 */
-	if (alpha >= CHECKMATE_SCORE - curDepth - 1) {
+	if (alpha >= CHECKMATE_SCORE - ply - 1) {
 		ret = alpha;
 		goto out;
 	}
@@ -344,18 +339,18 @@ score _negamax(int maxDepth, int curDepth, move *mm, score alpha, score beta) {
 		goto out;
 	}
 
-	ext = calcExtension(maxDepth, curDepth);
-	maxDepth += ext;
+	ext = calcExtension(depth);
+	depth += ext;
 
 	/*
 	 * Depth cut. Descend into Quiescence search
 	 */
-	if (curDepth >= maxDepth) {
+	if (depth <= 0) {
 		assert(!mm);
-		assert(curDepth == maxDepth);
+		assert(depth == 0);
 
 		if (copts.quiesce)
-			ret = quiesce(alpha, beta, curDepth);
+			ret = quiesce(alpha, beta);
 		else
 			ret = boardEval();
 
@@ -367,7 +362,7 @@ score _negamax(int maxDepth, int curDepth, move *mm, score alpha, score beta) {
 	 * Otherwise we will never suceed in the test.
 	 */
 	if (!mm && beta < maxScore) {
-		t = null_move_score(curDepth, maxDepth, alpha, beta);
+		t = null_move_score(depth, alpha, beta);
 		if (t >= beta) {
 			stats.null_cuts++;
 			ret = beta;
@@ -376,7 +371,7 @@ score _negamax(int maxDepth, int curDepth, move *mm, score alpha, score beta) {
 	}
 
 	if (!mm) {
-		addon_notify_entry(maxDepth - curDepth, &alpha, &beta);
+		addon_notify_entry(depth, &alpha, &beta);
 
 		if (alpha >= beta && copts.ab) {
 			ret = alpha;
@@ -393,9 +388,9 @@ score _negamax(int maxDepth, int curDepth, move *mm, score alpha, score beta) {
 	best = minScore;
 
 	stats.nopen_s++;
-	stats.depthsn[curDepth]++;
+	stats.depthsn[ply]++;
 
-	genSuccs_wrap(curDepth);
+	genSuccs_wrap(ply);
 
 	for (i = first_succ[ply]; i < first_succ[ply + 1]; i++) {
 		sort_succ(i);
@@ -407,28 +402,29 @@ score _negamax(int maxDepth, int curDepth, move *mm, score alpha, score beta) {
 		nvalid++;
 
 		/* LMR */
+		t = alpha + 1;
 		if (copts.lmr
 			&& i >= first_succ[ply - 1] + LMR_FULL
-			&& curDepth >= LMR_MINDEPTH
+			&& ply - 1 >= LMR_MINDEPTH
 			&& gsuccs[i].s * 3 < gsuccs[first_succ[ply - 1]].s
 			&& !inCheck(G->turn)
-			&& maxDepth - curDepth >= 2
+			&& depth >= 2
 			&&  hstack[hply - 1].capt == EMPTY
 			&& !hstack[hply - 1].was_promote) {
 			stats.lmrs++;
 
-			t = -negamax(maxDepth-1, curDepth+1, NULL, -beta, -alpha);
+			t = -negamax(depth - 2, NULL, -beta, -alpha);
 
-			/* Do a full search if it didn't fail low */
-			if (t > alpha) {
-				t = -negamax(maxDepth, curDepth+1, NULL,
-					     -beta, -alpha);
-			} else {
+			if (t <= alpha)
 				stats.lmrs_ok++;
-			}
-		} else {
-			t = -negamax(maxDepth, curDepth+1, NULL, -beta, -alpha);
 		}
+
+		/*
+		 * Research if the LMR didn't fail low (or if we
+		 * didn't attemp one)
+		 */
+		if (t > alpha)
+			t = -negamax(depth - 1, NULL, -beta, -alpha);
 
 		undoMove();
 
@@ -445,7 +441,7 @@ score _negamax(int maxDepth, int curDepth, move *mm, score alpha, score beta) {
 			alpha = t;
 
 		if (alpha >= beta && copts.ab) {
-			addon_notify_cut(m, curDepth);
+			addon_notify_cut(m, ply);
 			break;
 		}
 	}
@@ -460,7 +456,7 @@ score _negamax(int maxDepth, int curDepth, move *mm, score alpha, score beta) {
 		assert(!mm);
 
 		if (inCheck(G->turn))
-			ret = -CHECKMATE_SCORE + curDepth;
+			ret = -CHECKMATE_SCORE + ply;
 		else
 			ret = 0; /* Stalemate */
 	} else if (nvalid == 1 && alpha < beta && copts.forced_extend) {
@@ -469,7 +465,7 @@ score _negamax(int maxDepth, int curDepth, move *mm, score alpha, score beta) {
 		assert(check);
 
 		alpha = alpha_orig;
-		t = -negamax(maxDepth+1, curDepth+1, NULL, -beta, -alpha);
+		t = -negamax(depth, NULL, -beta, -alpha);
 
 		undoMove();
 
@@ -497,8 +493,7 @@ score _negamax(int maxDepth, int curDepth, move *mm, score alpha, score beta) {
 		else
 			flag = FLAG_EXACT;
 
-		addon_notify_return(gsuccs[bestmove].m, maxDepth - curDepth,
-				    ret, flag);
+		addon_notify_return(gsuccs[bestmove].m, depth, ret, flag);
 	}
 
 out:
@@ -515,5 +510,5 @@ score search(int maxDepth, move *mm, score alpha, score beta) {
 	alpha = clamp(alpha, 1-CHECKMATE_SCORE, CHECKMATE_SCORE-1);
 	beta  = clamp(beta , 1-CHECKMATE_SCORE, CHECKMATE_SCORE-1);
 	assert(ply == 0);
-	return negamax(maxDepth, 0, mm, alpha, beta);
+	return negamax(maxDepth, mm, alpha, beta);
 }
