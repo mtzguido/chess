@@ -1,8 +1,8 @@
 #ifndef __MOVES_H
 #define __MOVES_H
 
-bool doMove(move m);
-bool doMove_unchecked(move m);
+bool doMove(const move * const m);
+bool doMove_unchecked(const move * const m);
 void undoMove(void);
 
 #define MAX_HPLY 2000

@@ -163,7 +163,7 @@ void add_rule(char *sequence) {
 		}
 
 		hash = G->zobrist;
-		__unused bool rc = doMove(m);
+		__unused bool rc = doMove(&m);
 		assert(rc);
 		ok = 1;
 

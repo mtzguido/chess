@@ -136,18 +136,18 @@ static inline bool isPromotion(move m) {
 	return m.promote != EMPTY;
 }
 
-static inline bool equalMove(move a, move b) {
-	if (a.who != b.who || a.move_type != b.move_type)
+static inline bool equalMove(const move * const a, const move *b) {
+	if (a->who != b->who || a->move_type != b->move_type)
 		return false;
 
-	if (a.move_type != MOVE_REGULAR)
-		return a.move_type == b.move_type;
+	if (a->move_type != MOVE_REGULAR)
+		return a->move_type == b->move_type;
 
-	return a.r == b.r
-	    && a.R == b.R
-	    && a.c == b.c
-	    && a.C == b.C
-	    && a.promote == b.promote;
+	return a->r == b->r
+	    && a->R == b->R
+	    && a->c == b->c
+	    && a->C == b->C
+	    && a->promote == b->promote;
 }
 
 /* Piece scores */

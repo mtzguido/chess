@@ -17,12 +17,12 @@ struct tt_entry tt[CFG_TTABLE_SIZE] __attribute__((aligned(4096)));
 void trans_reset() {
 }
 
-void trans_notify_return(move move, int depth, score score, flag_t flag) {
+void trans_notify_return(const move * const m, int depth, score score, flag_t flag) {
 	u64 key = G->zobrist;
 	u64 idx = key % CFG_TTABLE_SIZE;
 
 	tt[idx].key = key;
-	tt[idx].m = move;
+	tt[idx].m = *m;
 	tt[idx].val = score;
 	tt[idx].flag = flag;
 	tt[idx].depth = depth;
@@ -66,7 +66,7 @@ void trans_score_succs(int depth) {
 		return;
 
 	for (i = first_succ[ply]; i < first_succ[ply+1]; i++) {
-		if (equalMove(gsuccs[i].m, tt[idx].m)) {
+		if (equalMove(&gsuccs[i].m, &tt[idx].m)) {
 			gsuccs[i].s += TRANS_SCORE;
 			stats.tt_hits++;
 			break;

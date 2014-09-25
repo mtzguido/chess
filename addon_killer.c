@@ -25,7 +25,7 @@ void killer_score_succs(int depth) {
 	 * */
 	for (k = 0; k < KILLER_WIDTH; k++) {
 		for (i = first_succ[ply]; i < first_succ[ply+1]; i++) {
-			if (equalMove(gsuccs[i].m, killerTable[depth][k])) {
+			if (equalMove(&gsuccs[i].m, &killerTable[depth][k])) {
 				gsuccs[i].s += KILLER_SCORE;
 				break;
 			}
@@ -33,18 +33,18 @@ void killer_score_succs(int depth) {
 	}
 }
 
-void killer_notify_cut(move m, int depth) {
+void killer_notify_cut(const move * const m, int depth) {
 	int i;
 
 	if (depth > KTABLE_SIZE)
 		return;
 
-	for (i=0; i<KILLER_WIDTH; i++)
-		if (equalMove(killerTable[depth][i], m))
+	for (i = 0; i < KILLER_WIDTH; i++)
+		if (equalMove(&killerTable[depth][i], m))
 			return;
 
-	for (i=KILLER_WIDTH-1; i >= 1; i--)
+	for (i = KILLER_WIDTH - 1; i >= 1; i--)
 		killerTable[depth][i] = killerTable[depth][i-1];
 
-	killerTable[depth][0] = m;
+	killerTable[depth][0] = *m;
 }

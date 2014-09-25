@@ -48,7 +48,7 @@ static int nmoves() {
 		assert(ply == 0);
 		m = machineMove(copts.timelimit);
 		assert(ply == 0);
-		doMove(m);
+		doMove(&m);
 		ply = 0;
 		printBoard();
 		printMove(stdout, m);
@@ -92,7 +92,7 @@ static int checkMove(move m) {
 	if (isPromotion(m) && m.promote != WKNIGHT)
 		m.promote = WQUEEN;
 
-	int rc = doMove(m);
+	int rc = doMove(&m);
 
 	if (rc != true)
 		return 1;
@@ -105,7 +105,7 @@ static int checkMove(move m) {
 		genSuccs();
 
 	for (i = first_succ[ply]; i < first_succ[ply+1]; i++) {
-		if (equalMove(m, gsuccs[i].m))
+		if (equalMove(&m, &gsuccs[i].m))
 			return 0;
 	}
 
@@ -179,7 +179,7 @@ static void xboard_main() {
 
 			move m = machineMove(maxms);
 
-			check = doMove(m);
+			check = doMove(&m);
 			assert(check);
 			ply = 0;
 
@@ -347,7 +347,7 @@ static void xboard_main() {
 				continue;
 			}
 
-			check = doMove(m);
+			check = doMove(&m);
 			ply = 0;
 			assert(check);
 			curPlayer = flipTurn(curPlayer);

@@ -179,7 +179,7 @@ int isFinished() {
 		 * Si hay un sucesor válido,
 		 * el juego no terminó
 		 */
-		if (doMove_unchecked(gsuccs[i].m)) {
+		if (doMove_unchecked(&gsuccs[i].m)) {
 			undoMove();
 			goto not_finished;
 		}

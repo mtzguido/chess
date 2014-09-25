@@ -5,9 +5,9 @@
 
 void cm_reset(void);
 void cm_score_succs(int depth);
-void cm_notify_cut(move m, int depth);
+void cm_notify_cut(const move * const m, int depth);
 
-static inline void cm_notify_return(move m, int depth, score score,
+static inline void cm_notify_return(const move * const m, int depth, score score,
 				    flag_t flag)
 {
 }

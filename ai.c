@@ -33,10 +33,8 @@ static inline void reset_stats() {
 	stats.lmrs		= 0;
 	stats.lmrs_ok		= 0;
 
-	for (i = 0; i < 100; i++) {
+	for (i = 0; i < 100; i++)
 		stats.depthsn[i] = 0;
-		stats.picked[i] = 0;
-	}
 }
 
 void print_stats(score exp, bool expect_ok) {
@@ -75,7 +73,7 @@ static inline bool forced(move *m) {
 
 	genSuccs();
 	for (i = first_succ[ply]; i < first_succ[ply+1]; i++) {
-		if (doMove_unchecked(gsuccs[i].m)) {
+		if (doMove_unchecked(&gsuccs[i].m)) {
 			undoMove();
 
 			if (c != -1)
