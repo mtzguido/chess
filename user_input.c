@@ -20,7 +20,7 @@ void move_text(move m, char *buf)
 					 m.C + 'a', 8 - m.R);
 
 		if (m.promote)
-			sprintf(buf+4, "%c", tolower(charOf(m.promote)));
+			sprintf(buf+4, "=%c", tolower(charOf(m.promote)));
 	} else {
 		assert(0);
 	}

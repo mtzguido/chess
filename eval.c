@@ -325,10 +325,14 @@ const score fullBound =
 
 score boardEval() {
 	int i;
+	score t;
 	score score = 0;
 
-	for (i = 0; i < nEval; i++)
-		score += evalFuns[i]();
+	for (i = 0; i < nEval; i++) {
+		t = evalFuns[i]();
+		dbg("eval %i returned %i\n", i, t);
+		score += t;
+	}
 
 	return score;
 }
