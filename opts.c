@@ -41,6 +41,7 @@ static const struct option long_opts[] = {
 	MODE_OPT(help, help),
 	MODE_OPT(version, version),
 	MODE_OPT(bench-eval, bench_eval),
+	MODE_OPT(bench-search, bench_search),
 
 	/* Game parameters */
 	{ "init",	required_argument,	0, 0x2 },

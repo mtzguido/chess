@@ -41,6 +41,7 @@ enum play_mode {
 	moves,
 	board_eval,
 	bench_eval,
+	bench_search,
 	version,
 	help,
 };

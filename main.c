@@ -32,6 +32,18 @@ static void startingGame2() {
 	mark();
 }
 
+static int bench_search_mode() {
+	startingGame2();
+
+	copts.depth = 8;
+	copts.timelimit = 0;
+
+	machineMove(0);
+
+	printf("%llu %llu\n", stats.nopen_s, stats.nopen_q);
+	return 0;
+}
+
 static int nmoves() {
 	int i;
 	move m;
@@ -394,6 +406,10 @@ int main(int argc, char **argv) {
 
 	case bench_eval:
 		bench_eval_mode();
+		break;
+
+	case bench_search:
+		bench_search_mode();
 		break;
 
 	case version:
