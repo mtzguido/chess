@@ -55,7 +55,7 @@ move machineMove(unsigned long long maxms);
 /* Heuristics config */
 #define NMH_THRESHOLD		700
 #define NMH_REDUCTION		2
-#define ASPIRATION_WINDOW	20
+#define ASPIRATION_WINDOW	13
 #define LMR_FULL		3
 #define LMR_MINDEPTH		2
 
