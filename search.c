@@ -234,7 +234,7 @@ static inline score _quiesce(score alpha, score beta) {
 		sort_succ(i);
 		const move * const m = &gsuccs[i].m;
 
-		assert(m.move_type == MOVE_REGULAR);
+		assert(m->move_type == MOVE_REGULAR);
 
 		/* We only consider captures and promotions */
 		assert(isCapture(m) || isPromotion(m));
