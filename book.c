@@ -21,7 +21,7 @@ bool bookMove(move *m) {
 	if (booklen == 0)
 		return false;
 
-	for (i=0; i<booklen; i++) {
+	for (i = 0; i < booklen; i++) {
 		if (book[i].hash == G->zobrist) {
 			if (!copts.shuffle) {
 				match = i;

@@ -3,10 +3,10 @@
 #include <assert.h>
 
 /*
- * Fuente:
+ * Source:
  * http://chessprogramming.wikispaces.com/Simplified+evaluation+function
  *
- * Modificadas levemente
+ * Slightly modified
  */
 
 static const char t_pawn[8][8] =

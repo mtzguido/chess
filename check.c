@@ -12,7 +12,7 @@ static bool inCheck_row_e(int kr, int kc, int who) {
 		return false;
 
 	i = kr;
-	for (j=kc+1; j<8; j++) {
+	for (j = kc+1; j < 8; j++) {
 		if (any_piece(i, j)) {
 			if (G->board[i][j] == enemy_q
 					|| G->board[i][j] == enemy_r)
@@ -34,7 +34,7 @@ static bool inCheck_row_w(int kr, int kc, int who) {
 		return false;
 
 	i = kr;
-	for (j=kc-1; j>=0; j--) {
+	for (j = kc-1; j >= 0; j--) {
 		if (any_piece(i, j)) {
 			if (G->board[i][j] == enemy_q
 					|| G->board[i][j] == enemy_r)
@@ -56,7 +56,7 @@ static bool inCheck_col_s(int kr, int kc, int who) {
 		return 0;
 
 	j = kc;
-	for (i=kr+1; i<8; i++) {
+	for (i = kr+1; i < 8; i++) {
 		if (any_piece(i, j)) {
 			if (G->board[i][j] == enemy_q
 					|| G->board[i][j] == enemy_r)
@@ -78,7 +78,7 @@ static bool inCheck_col_n(int kr, int kc, int who) {
 		return 0;
 
 	j = kc;
-	for (i=kr-1; i>=0; i--) {
+	for (i = kr-1; i >= 0; i--) {
 		if (any_piece(i, j)) {
 			if (G->board[i][j] == enemy_q
 					|| G->board[i][j] == enemy_r)
@@ -100,7 +100,7 @@ static bool inCheck_diag_sw(int kr, int kc, int who) {
 		return false;
 
 	j = kc;
-	for (i=kr+1, j=kc-1; i<8 && j>=0; i++, j--) {
+	for (i = kr + 1, j = kc - 1; i < 8 && j >= 0; i++, j--) {
 		if (any_piece(i, j)) {
 			if (G->board[i][j] == enemy_q
 					|| G->board[i][j] == enemy_b)
@@ -121,7 +121,7 @@ static bool inCheck_diag_nw(int kr, int kc, int who) {
 	if (!(G->piecemask[flipTurn(who)] & diag_nw_mask[kr*8+kc]))
 		return false;
 
-	for (i=kr-1, j=kc-1; i>=0 && j>=0; i--, j--) {
+	for (i = kr - 1, j = kc - 1; i >= 0 && j >= 0; i--, j--) {
 		if (any_piece(i, j)) {
 			if (G->board[i][j] == enemy_q
 					|| G->board[i][j] == enemy_b)
@@ -142,7 +142,7 @@ static bool inCheck_diag_se(int kr, int kc, int who) {
 	if (!(G->piecemask[flipTurn(who)] & diag_se_mask[kr*8+kc]))
 		return false;
 
-	for (i=kr+1, j=kc+1; i<8 && j<8; i++, j++) {
+	for (i = kr + 1, j = kc + 1; i < 8 && j < 8; i++, j++) {
 		if (any_piece(i, j)) {
 			if (G->board[i][j] == enemy_q
 					|| G->board[i][j] == enemy_b)
@@ -163,7 +163,7 @@ static bool inCheck_diag_ne(int kr, int kc, int who) {
 	if (!(G->piecemask[flipTurn(who)] & diag_ne_mask[kr*8+kc]))
 		return false;
 
-	for (i=kr-1, j=kc+1; i>=0 && j<8; i--, j++) {
+	for (i = kr - 1, j = kc + 1; i >= 0 && j < 8; i--, j++) {
 		if (any_piece(i, j)) {
 			if (G->board[i][j] == enemy_q
 					|| G->board[i][j] == enemy_b)
@@ -198,18 +198,18 @@ static bool inCheck_knig(int kr, int kc, int who) {
 static bool inCheck_pawn(int kr, int kc, int who) {
 	if (who == WHITE) {
 		if (kr > 0) {
-			if (kc > 0 && G->board[kr-1][kc-1] == BPAWN)
+			if (kc > 0 && G->board[kr - 1][kc - 1] == BPAWN)
 				return true;
-			if (kc < 7 && G->board[kr-1][kc+1] == BPAWN)
+			if (kc < 7 && G->board[kr - 1][kc + 1] == BPAWN)
 				return true;
 		}
 
 		return 0;
 	} else {
 		if (kr < 7) {
-			if (kc > 0 && G->board[kr+1][kc-1] == WPAWN)
+			if (kc > 0 && G->board[kr + 1][kc - 1] == WPAWN)
 				return true;
-			if (kc < 7 && G->board[kr+1][kc+1] == WPAWN)
+			if (kc < 7 && G->board[kr + 1][kc + 1] == WPAWN)
 				return true;
 		}
 

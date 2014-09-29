@@ -19,10 +19,6 @@ void killer_score_succs(int depth) {
 	if (depth > KTABLE_SIZE)
 		return;
 
-	/*
-	 * Usamos también las killers de 2
-	 * plies atrás.
-	 * */
 	for (k = 0; k < KILLER_WIDTH; k++) {
 		for (i = first_succ[ply]; i < first_succ[ply+1]; i++) {
 			if (equalMove(&gsuccs[i].m, &killerTable[depth][k])) {

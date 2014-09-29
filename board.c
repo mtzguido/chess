@@ -35,7 +35,7 @@ static void fix() {
 	G->piecemask[BLACK] = 0;
 	G->piecemask[WHITE] = 0;
 
-	for (i=0; i<10; i++) {
+	for (i = 0; i < 10; i++) {
 		G->pawn_rank[WHITE][i] = 0;
 		G->pawn_rank[BLACK][i] = 7;
 	}
@@ -96,15 +96,15 @@ void printBoard() {
 	int l = 0;
 
 	dbg("(turn: %s)\n", G->turn == WHITE ? "WHITE" : "BLACK");
-	for (i=0; i<8; i++) {
+	for (i = 0; i < 8; i++) {
 		l += sprintf(bbuf+l, "%i  ", 8-i);
-		for (j=0; j<8; j++) {
+		for (j = 0; j < 8; j++) {
 			if (G->en_passant_x == i && G->en_passant_y == j)
-				l += sprintf(bbuf+l, "!");
+				l += sprintf(bbuf + l, "!");
 			else
-				l += sprintf(bbuf+l, "%c", charOf(G->board[i][j]));
+				l += sprintf(bbuf + l, "%c", charOf(G->board[i][j]));
 
-			l += sprintf(bbuf+l, " ");
+			l += sprintf(bbuf + l, " ");
 		}
 		dbg("%s\n", bbuf);
 		l = 0;
@@ -152,7 +152,10 @@ char charOf(int piece) {
 	return 'x';
 }
 
-/* No usa info de sucesores */
+/*
+ * Doesn't use succesor info, so it's fast and
+ * suitable to use in the searches
+ */
 bool isDraw() {
 	int r = reps();
 

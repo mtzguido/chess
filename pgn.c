@@ -27,23 +27,21 @@ move fromPGN(struct pgn p) {
 	p.orig_file = tolower(p.orig_file);
 
 	switch (p.pieceChar) {
-		case '\0': piece = WPAWN;   break;
-		case 'Q':  piece = WQUEEN;  break;
-		case 'K':  piece = WKING;   break;
-		case 'N':  piece = WKNIGHT; break;
-		case 'R':  piece = WROOK;   break;
-		case 'B':  piece = WBISHOP; break;
-		default:		abort();
+		case '\0':	piece = WPAWN;   break;
+		case 'Q':	piece = WQUEEN;  break;
+		case 'K':	piece = WKING;   break;
+		case 'N':	piece = WKNIGHT; break;
+		case 'R':	piece = WROOK;   break;
+		case 'B':	piece = WBISHOP; break;
+		default:	abort();
 	}
 
 	if (G->turn == BLACK)
 		piece = -piece;
 
 
-	/* buscar una pieza que pueda moverse al destino */
-
-	for (i=0; i<8; i++) {
-		for (j=0; j<8; j++) {
+	for (i = 0; i < 8; i++) {
+		for (j = 0; j < 8; j++) {
 			if (G->board[i][j] == piece
 					&& canMove(i, j, '8' - p.dest_rank, p.dest_file - 'a')
 					&& (p.orig_file == '\0' || p.orig_file - 'a' == j)
@@ -54,10 +52,8 @@ move fromPGN(struct pgn p) {
 				ret.R = '8' - p.dest_rank;
 				ret.C = p.orig_file - 'a';
 
-				if (G->board[ret.R][ret.C] != 0) {
+				if (G->board[ret.R][ret.C] != 0)
 					assert(p.capture);
-					//ret.was_capture = 1;
-				}
 
 				if (isPawn(piece) && ret.R == (G->turn == WHITE ? 0 : 7)) {
 					assert(p.promote_to != '\0');
@@ -74,8 +70,6 @@ move fromPGN(struct pgn p) {
 
 					if (G->turn == BLACK)
 						ret.promote = - ret.promote;
-
-					//ret.was_promotion = 1;
 
 					return ret;
 				}

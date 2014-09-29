@@ -6,20 +6,17 @@
 static move counterTable[2][8][8][8][8];
 
 void cm_reset() {
-	/* ugh... */
-	int a, b, c, d, e;
-	for (a=0; a<2; a++)
-	for (b=0; b<8; b++)
-	for (c=0; c<8; c++)
-	for (d=0; d<8; d++)
-	for (e=0; e<8; e++)
-		counterTable[a][b][c][d][e].move_type = MOVE_INVAL;
+	move *arr = &counterTable[0][0][0][0][0];
+	unsigned i;
+
+	for (i = 0; i < sizeof counterTable / sizeof counterTable[0]; i++)
+		arr[i].move_type = MOVE_INVAL;
 }
 
 void cm_score_succs(int depth) {
 	int i;
 
-	/* Buscamos la counter move */
+	/* Find the counter move */
 	const move * const l = &hstack[hply - 1].m;
 	const move * const m = &counterTable[G->turn][l->r][l->c][l->R][l->C];
 

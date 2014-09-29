@@ -49,7 +49,7 @@ void sort_book() {
 	int i, j;
 	struct bookmove sw;
 
-	for (i=1; i<booklen; i++) {
+	for (i = 1; i < booklen; i++) {
 		j = i-1;
 		while (j >= 0 && entry_cmp(book[j], book[j+1]) > 0) {
 			sw = book[j];
@@ -63,7 +63,7 @@ void sort_book() {
 void copy_strs(int i1, int i2) {
 	int i;
 
-	for (i=0; i<book[i2].nstrs; i++) {
+	for (i = 0; i < book[i2].nstrs; i++) {
 		strcpy(book[i1].strs[book[i1].nstrs], book[i2].strs[i]);
 		book[i1].nstrs++;
 	}
@@ -103,15 +103,17 @@ void print_book() {
 	int i, j;
 
 	printf("static struct book_entry book[] = {\n");
-	for (i=0; i<booklen; i++) {
+	for (i = 0; i < booklen; i++) {
 		move m = book[i].next;
 		u64 hash = book[i].hash;
 
 		printf("	{\n");
 		printf("	/*\n");
 		printf("	 * Entry for sequences:\n");
-		for (j=0; j<book[i].nstrs; j++)
+
+		for (j = 0; j < book[i].nstrs; j++)
 			printf("	 * [%s]\n", book[i].strs[j]);
+
 		printf("	 */\n");
 		printf("		.hash = 0x%.16" PRIx64 ",\n", hash);
 		printf("		.move_type = %s,\n", movetype_str(m.move_type));
@@ -175,16 +177,16 @@ void add_rule(char *sequence) {
 	add_one(hash, m, seq_orig);
 }
 
-int main () {
+int main() {
 	int line = 0;
 	char buf[2000];
-	int i, c=0;
+	int i, c = 0;
 
 	while (c != EOF) {
 		line++;
 
 		i = 0;
-		while ((c=getchar()) != '\n' && c != EOF)
+		while ((c = getchar()) != '\n' && c != EOF)
 			buf[i++] = c;
 		buf[i] = 0;
 

@@ -19,20 +19,19 @@ static struct game_struct _G;
 game const G = &_G;
 
 /*
- * Devuelve verdadero si un cambio en (r,c)
- * nunca puede causar una amenaza a (kr, kc),
- * para el tablero dado en g.
+ * Return 'true' if a change in (r, c) can
+ * cause a threat to (kr, kc).
  *
- * No es útil tener el tipo de pieza movida, ya
- * que puede ocurrir algo como:
+ * It's not really useful to have the piece that
+ * changes, consider the following example
  *
  * B . . .
  * . N . .
  * . . k .
  * . . . .
  *
- * en donde mover el caballo causa un jaque aún
- * cuando no lo amenaza
+ * where moving the knight causes a check, it does
+ * not matter that the piece is in fact a knight.
  */
 static bool danger(u8 r, u8 c, u8 kr, u8 kc) {
 	return all_mask[8*kr + kc] & ((u64)1 << (r*8 + c));
@@ -52,7 +51,7 @@ static void set_castle_q(int who, bool val) {
 	G->castle_queen[who] = val;
 }
 
-/* Auxiliares de en_passant */
+/* Helper funcs for en_passant */
 static void set_ep(u8 r, u8 c) {
 	G->zobrist ^= ZOBR_EP(G->en_passant_y);
 
@@ -65,13 +64,13 @@ static void set_ep(u8 r, u8 c) {
 static bool isValid(const move * const m) {
 	piece_t piece = G->board[m->r][m->c];
 
-	/* Siempre se mueve una pieza propia */
+	/* Always move a piece of our own */
 	if (m->who != G->turn ||
 	    piece == EMPTY ||
 	    colorOf(piece) != G->turn)
 		return false;
 
-	/* La pieza debe poder moverse al destino */
+	/* Check legality */
 	if (m->r < 0 || m->c < 0
 	 || m->R < 0 || m->C < 0
 	 || m->r > 7 || m->c > 7
@@ -80,7 +79,7 @@ static bool isValid(const move * const m) {
 	 || !canMove(m->r, m->c, m->R, m->C))
 		return false;
 
-	/* Es un peón que promueve? */
+	/* Require a promotion piece for promoting pawns */
 	if (isPawn(piece)
 	 && m->R == (m->who == WHITE ? 0 : 7)
 	 && m->promote == 0) {
@@ -91,11 +90,7 @@ static bool isValid(const move * const m) {
 }
 
 static void updCastling(const move * const m) {
-	/* En vez de ver si se movió la torre
-	 * correspondiente, nos fijamos en la
-	 * casilla donde empieza la torre.
-	 * Apenas hay un movimiento el enroque
-	 * se invalida para siempre. */
+	/* Disable castling on rook moves */
 	if (m->r != (m->who == WHITE ? 7 : 0))
 		return;
 
@@ -128,7 +123,7 @@ static void setPiece(i8 r, i8 c, piece_t piece) {
 	u8 old_who = colorOf(old_piece);
 	u8 who = colorOf(piece);
 
-	if (old_piece) {
+	if (old_piece != EMPTY) {
 		assert(old_piece != WKING && old_piece != BKING);
 		G->pieceScore[old_who]	-= scoreOf(old_piece);
 		G->pps_O		-= piece_square_val_O(old_piece, r, c);
@@ -149,7 +144,7 @@ static void setPiece(i8 r, i8 c, piece_t piece) {
 	if (isPawn(old_piece))
 		recalcPawnRank(old_who, c);
 
-	if (piece) {
+	if (piece != EMPTY) {
 		G->piecemask[who]	^= ((u64)1) << (r*8 + c);
 		G->zobrist		^= ZOBR_PIECE(piece, r, c);
 		G->pps_E		+= piece_square_val_E(piece, r, c);
@@ -159,12 +154,11 @@ static void setPiece(i8 r, i8 c, piece_t piece) {
 }
 
 /*
- * movePiece(g, r, c, R, C) es equivalente a :
+ * movePiece(g, r, c, R, C) is equivalent to :
  *   setPiece(g, R, C, g->board[r][c]);
- *   setPiece(g, r, c, 0);
+ *   setPiece(g, r, c, EMPTY);
  *
- * pero ahorra llamadas innecesarias a scoreOf y
- * anda mas rápido
+ * but faster since it saves come unnecessary calls
  */
 static void movePiece(i8 r, i8 c, i8 R, i8 C) {
 	const piece_t from = G->board[r][c];
@@ -193,8 +187,8 @@ static void movePiece(i8 r, i8 c, i8 R, i8 C) {
 		G->kingy[who] = C;
 	}
 
-	/* Si hubo captura */
-	if (to) {
+	/* Capture */
+	if (to != EMPTY) {
 		assert(to != WKING && to != BKING);
 		G->pieceScore[enemy]	-= scoreOf(to);
 		G->pps_O		-= piece_square_val_O(to, R, C);
@@ -251,7 +245,7 @@ static bool doMoveRegular(const move * const m, bool check) {
 		if (!isValid(m))
 			return false;
 
-		/* No pisar piezas propias */
+		/* Don't capture own pieces */
 		if (own_piece(m->R, m->C))
 			return false;
 	} else {
@@ -259,20 +253,20 @@ static bool doMoveRegular(const move * const m, bool check) {
 		assert(!own_piece(m->R, m->C));
 	}
 
-	/* Es válida */
+	/* We have a valid move */
+
 	G->idlecount++;
 
 	if (isPawn(piece)) {
-		/* Los peones no son reversibles */
 		G->idlecount = 0;
 
-		/* Actuar si es una captura al paso */
+		/* Check for e.p. capture */
 		epCapture(m);
 
-		/* Recalcular en passant */
+		/* Check for new e.p. move */
 		epCalc(m);
 
-		/* Es un peón que promueve? */
+		/* Check for a promotion */
 		calcPromotion(m);
 	} else {
 		if (isKing(piece)) {
@@ -290,11 +284,9 @@ static bool doMoveRegular(const move * const m, bool check) {
 		hstack[hply].capt = G->board[m->R][m->C];
 	}
 
-	/* Movemos */
 	movePiece(m->r, m->c, m->R, m->C);
 
-	/* Si es algún movimiento relevante al rey contrario
-	 * dropeamos la cache */
+	/* Drop opponent's check cache if necessary */
 	assert(G->inCheck[other] != 1);
 	if (G->inCheck[other] == 0) {
 		if (danger(m->r, m->c, G->kingx[other], G->kingy[other]) ||
@@ -302,7 +294,7 @@ static bool doMoveRegular(const move * const m, bool check) {
 			G->inCheck[other] = -1;
 	}
 
-	/* Necesitamos también (posiblemente) dropear la nuestra */
+	/* Possibly drop ours */
 	if (G->inCheck[m->who] == 1) {
 		if (isKing(piece) ||
 		    danger(m->R, m->C, G->kingx[m->who], G->kingy[m->who]))
@@ -369,13 +361,14 @@ static bool doMoveKCastle(const move * const m, bool check) {
 	set_castle_k(m->who, false);
 	set_castle_q(m->who, false);
 
-	/* Dropeamos la cache de jaque */
+	/*
+	 * Drop check cache, we don't care much about
+	 * castling's speed since it happens rarely
+	 */
 	G->inCheck[0] = -1;
 	G->inCheck[1] = -1;
 
-	/* Mover rey */
 	movePiece(rank, 4, rank, 6);
-	/* Mover torre */
 	movePiece(rank, 7, rank, 5);
 
 	return true;
@@ -428,13 +421,14 @@ static bool doMoveQCastle(const move * const m, bool check) {
 	set_castle_k(m->who, false);
 	set_castle_q(m->who, false);
 
-	/* Dropeamos la cache de jaque */
+	/*
+	 * Drop check cache, we don't care much about
+	 * castling's speed since it happens rarely
+	 */
 	G->inCheck[0] = -1;
 	G->inCheck[1] = -1;
 
-	/* Mover rey */
 	movePiece(rank, 4, rank, 2);
-	/* Mover torre */
 	movePiece(rank, 0, rank, 3);
 
 	return true;
@@ -499,7 +493,10 @@ static bool __doMove(const move * const m, bool check) {
 		goto fail;
 	}
 
-	/* Nunca podemos quedar en jaque */
+	/*
+	 * We can never leave ourselves in check,
+	 * undo the move if so
+	 */
 	if (G->inCheck[G->turn] == 1  ||
 		(G->inCheck[G->turn] == -1 && inCheck(G->turn)))
 		goto fail_undo;
