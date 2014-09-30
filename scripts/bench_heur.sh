@@ -3,7 +3,7 @@
 OPEN_S=0
 OPEN_Q=0
 N=0
-SEEDS=0
+SEEDS="0 1000 2000 3000"
 BOARDS=$(wc -l scripts/bench_heur.boards | cut -d' ' -f1)
 
 if [ "$1" == '--seeds' ]; then
