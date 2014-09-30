@@ -9,8 +9,9 @@ rm -f LOG_self
 
 i=0
 th=0
+maxth=$(cat /proc/cpuinfo | grep 'cpu cores' | head -n 1 | grep -Eo '[0-9]*')
 while [ $i -lt $N ]; do
-	if [ $th -ge 4 ]; then
+	if [ $th -ge $maxth ]; then
 		wait -n
 		th=$((th-1))
 	fi
