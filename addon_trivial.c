@@ -3,11 +3,6 @@
 
 #include <stdio.h>
 
-/* Most valuable victim / least valuable attacker */
-static inline int mvv_lva(piece_t a, piece_t v) {
-	return 10 * (v&7) - (a&7);
-}
-
 void trivial_score_succs(int depth) {
 	int i;
 
@@ -30,7 +25,7 @@ void trivial_score_succs(int depth) {
 			gsuccs[i].s += mvv_lva(our, enemy);
 		} else {
 			/* Rank more valuable pieces a bit higher */
-			gsuccs[i].s += (our&7);
+			gsuccs[i].s += toWhite(our);
 		}
 	}
 }

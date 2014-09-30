@@ -209,7 +209,7 @@ int scoreOf(int piece) {
 	assert(piece != WKING);
 	assert(piece != BKING);
 	assert(piece != EMPTY);
-	return scoreTab[piece & 7];
+	return scoreTab[toWhite(piece)];
 }
 
 void tostr(char *s) {

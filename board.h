@@ -91,6 +91,7 @@ extern game const G;
 #define isQueen(c)	((c&7) == WQUEEN)
 #define isKing(c)	((c&7) == WKING)
 #define colorOf(c)	(!((c)&8))
+#define toWhite(c)	((c)&7)
 
 void startingGame(void);
 

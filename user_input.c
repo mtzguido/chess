@@ -87,7 +87,7 @@ move parseMove(char *line) {
 		m.R = 8-R;
 		m.c = c-'a';
 		m.C = C-'a';
-		m.promote = pieceOf(newpiece) & 7;
+		m.promote = toWhite(pieceOf(newpiece));
 	}
 
 	return m;

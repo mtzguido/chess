@@ -62,4 +62,9 @@ move machineMove(unsigned long long maxms);
 /* Misc tunables */
 #define CHECKMATE_SCORE		100000
 
+/* Most valuable victim / least valuable attacker */
+static inline int mvv_lva(piece_t a, piece_t v) {
+	return 10 * toWhite(v) - toWhite(a);
+}
+
 #endif
