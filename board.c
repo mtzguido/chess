@@ -242,7 +242,7 @@ void tostr(char *s) {
 
 void fromstr(const char *s) {
 	int i, j;
-	char buf[3];
+	char buf[4];
 
 	for (i = 0; i < 8; i++) {
 		for (j = 0; j < 8; j++)
