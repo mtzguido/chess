@@ -30,5 +30,13 @@ static inline u64 posbit(int r, int c) {
 	return ((u64)1 << (r * 8 + c));
 }
 
+static inline int bitrow(int i) {
+	return i >> 3;
+}
+
+static inline int bitcol(int i) {
+	return i & 7;
+}
+
 extern struct undo_info * const hstack;
 #endif

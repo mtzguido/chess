@@ -1,5 +1,6 @@
 #include "ai.h"
 #include "check.h"
+#include "moves.h"
 #include "eval.h"
 
 static inline score pieceScore() {
@@ -198,9 +199,9 @@ static inline score eval_with_ranks(const u8 col) {
 
 	bishop_count = 0;
 	mask_for_each(G->piecemask[col], temp, i) {
-		const int r = i >> 3;
-		const int c = i & 7;
-		const piece_t piece = G->board[0][i];
+		const int r = bitrow(i);
+		const int c = bitcol(i);
+		const piece_t piece = G->board[r][c];
 
 		score += eval_one_piece(col, r, c, piece);
 	}
