@@ -102,7 +102,7 @@ char *movetype_str(int type) {
 void print_book() {
 	int i, j;
 
-	printf("static struct book_entry book[] = {\n");
+	printf("static struct book_entry book[%i] = {\n", booklen ? booklen : 1);
 	for (i = 0; i < booklen; i++) {
 		move m = book[i].next;
 		u64 hash = book[i].hash;
