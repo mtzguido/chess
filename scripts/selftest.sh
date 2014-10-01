@@ -4,7 +4,6 @@ N=$1
 ARG1=$2
 ARG2=$3
 
-make
 rm -f LOG_self
 
 i=0
