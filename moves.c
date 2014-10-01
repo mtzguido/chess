@@ -1,6 +1,5 @@
 #include "zobrist.h"
 #include "ztable.h"
-#include "moves.h"
 #include "board.h"
 #include "masks.h"
 #include "piece-square.h"
@@ -8,6 +7,7 @@
 #include "succs.h"
 #include "check.h"
 #include "common.h"
+#include "moves.h"
 
 /* Leave a sentinel at the beginning */
 static struct undo_info _hstack[MAX_HPLY+1] = {};
@@ -34,7 +34,7 @@ game const G = &_G;
  * not matter that the piece is in fact a knight.
  */
 static bool danger(u8 r, u8 c, u8 kr, u8 kc) {
-	return all_mask[8*kr + kc] & ((u64)1 << (r*8 + c));
+	return all_mask[8*kr + kc] & posbit(r, c);
 }
 
 static void set_castle_k(int who, bool val) {
@@ -129,7 +129,7 @@ static void setPiece(i8 r, i8 c, piece_t piece) {
 		G->pps_O		-= piece_square_val_O(old_piece, r, c);
 		G->pps_E		-= piece_square_val_E(old_piece, r, c);
 		G->zobrist		^= ZOBR_PIECE(old_piece, r, c);
-		G->piecemask[old_who]	^= ((u64)1) << (r*8 + c);
+		G->piecemask[old_who]	^= posbit(r, c);
 	}
 
 	G->board[r][c] = piece;
@@ -145,7 +145,7 @@ static void setPiece(i8 r, i8 c, piece_t piece) {
 		recalcPawnRank(old_who, c);
 
 	if (piece != EMPTY) {
-		G->piecemask[who]	^= ((u64)1) << (r*8 + c);
+		G->piecemask[who]	^= posbit(r, c);
 		G->zobrist		^= ZOBR_PIECE(piece, r, c);
 		G->pps_E		+= piece_square_val_E(piece, r, c);
 		G->pps_O		+= piece_square_val_O(piece, r, c);
@@ -176,8 +176,7 @@ static void movePiece(i8 r, i8 c, i8 R, i8 C) {
 		piece_square_val_E(from, R, C) - piece_square_val_E(from, r, c);
 	G->zobrist ^=
 		ZOBR_PIECE(from, r, c) ^ ZOBR_PIECE(from, R, C);
-	G->piecemask[who] ^=
-		(((u64)1) << (r*8 + c)) ^ (((u64)1) << (R*8 + C));
+	G->piecemask[who] ^= posbit(r, c) ^ posbit(R, C);
 
 	G->board[r][c] = EMPTY;
 	G->board[R][C] = from;
@@ -194,7 +193,7 @@ static void movePiece(i8 r, i8 c, i8 R, i8 C) {
 		G->pps_O		-= piece_square_val_O(to, R, C);
 		G->pps_E		-= piece_square_val_E(to, R, C);
 		G->zobrist		^= ZOBR_PIECE(to, R, C);
-		G->piecemask[enemy]	^= ((u64)1) << (R*8 + C);
+		G->piecemask[enemy]	^= posbit(R, C);
 	}
 
 	if (isPawn(from)) {

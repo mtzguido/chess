@@ -53,8 +53,7 @@ static void fix() {
 				if (piece != WKING && piece != BKING)
 					G->pieceScore[colorOf(piece)] += scoreOf(piece);
 				G->zobrist ^= ZOBR_PIECE(piece, i, j);
-				G->piecemask[colorOf(piece)] |=
-					((u64)1) <<(i*8 + j);
+				G->piecemask[colorOf(piece)] |= posbit(i, j);
 			}
 
 			if (piece == WPAWN) {

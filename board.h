@@ -105,17 +105,18 @@ void fromstr(const char *s);
 
 char charOf(int piece);
 
+#include "moves.h"
+
 static inline bool own_piece(i8 r, i8 c) {
-	return G->piecemask[G->turn] & ((u64)1 << (r*8 + c));
+	return G->piecemask[G->turn] & posbit(r, c);
 }
 
 static inline bool enemy_piece(i8 r, i8 c) {
-	return G->piecemask[flipTurn(G->turn)] & ((u64)1 << (r*8 + c));
+	return G->piecemask[flipTurn(G->turn)] & posbit(r, c);
 }
 
 static inline bool any_piece(i8 r, i8 c) {
-	return (G->piecemask[BLACK] | G->piecemask[WHITE])
-			& ((u64)1 << (r*8 + c));
+	return (G->piecemask[BLACK] | G->piecemask[WHITE]) & posbit(r, c);
 }
 
 static inline bool isCapture(const move *m) {

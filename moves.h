@@ -1,6 +1,9 @@
 #ifndef __MOVES_H
 #define __MOVES_H
 
+#include "board.h"
+#include "common.h"
+
 bool doMove(const move * const m);
 bool doMove_unchecked(const move * const m);
 void undoMove(void);
@@ -22,6 +25,10 @@ struct undo_info {
 	bool castled[2];
 	i8 inCheck[2];
 };
+
+static inline u64 posbit(int r, int c) {
+	return ((u64)1 << (r * 8 + c));
+}
 
 extern struct undo_info * const hstack;
 #endif
