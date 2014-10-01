@@ -1,9 +1,11 @@
 .PHONY:clean all re run doc
 CFLAGS=-Wc++-compat -Wall -Wextra -Wno-unused-parameter $(CFLAGS_EXTRA)
 LFLAGS=
-LFLAGS_UTILS=
+HOSTCFLAGS=-Wc++-compat -Wall -Wextra -Wno-unused-parameter $(CFLAGS_EXTRA)
+HOSTLFLAGS=-g
 SHELL=/bin/bash
 TARGET=ice
+HOSTCC?=gcc
 
 ifeq (${V},1)
 	Q=
@@ -42,6 +44,7 @@ else
 endif
 
 CFLAGS += -DCFG_ZTABLE_SIZE=${CONFIG_ZTABLE_SIZE}
+HOSTCFLAGS += -DCFG_ZTABLE_SIZE=${CONFIG_ZTABLE_SIZE}
 CFLAGS += -DCFG_TTABLE_SIZE=${CONFIG_TTABLE_SIZE}
 CFLAGS += -DCHESS_VERSION='"$(shell git describe --dirty --tags)"'
 CFLAGS += -DCHESS_BUILD_DATE='"$(shell date)"'
@@ -88,22 +91,36 @@ $(TARGET): $(objs) .config
 all: $(TARGET) doc
 
 book.o: book.gen
-book.gen: book.txt book-gen
+book.gen: book.txt tools/book-gen
 	$(Q)$(SAY) "BOOKGEN"
-	$(Q)./book-gen < book.txt > book.gen || (rm -f book.gen && false)
+	$(Q)./tools/book-gen < book.txt > book.gen || (rm -f book.gen && false)
 
-book-gen: book-gen.o board.o masks.o common.o piece-square.o succs.o \
-	  zobrist.o ztable.o moves.o legal.o check.o
-	$(Q)$(SAY) "  LD	$@"
-	$(Q)$(CC) $(LFLAGS_UTILS) $^	-o $@
+tools:
+	$(Q)mkdir tools
 
-masks.c: mask-gen
+ifeq (${CROSS_COMPILE},)
+tools/%.o: %.o | tools
+	$(Q)cp $< $@
+else
+tools/%.o: %.c | tools
+	$(Q)$(SAY) "HOSTCC	$@"
+	$(Q)$(HOSTCC) -c $(HOSTCFLAGS) $< -o $@
+endif
+
+tools/book-gen: $(patsubst %, tools/%, book-gen.o board.o masks.o common.o \
+				       piece-square.o succs.o zobrist.o \
+				       ztable.o moves.o legal.o check.o \
+				       masks.o)
+	$(Q)$(SAY) "HOSTLD	$@"
+	$(Q)$(HOSTCC) $(HOSTLFLAGS) $^	-o $@
+
+masks.c: tools/mask-gen
 	$(Q)$(SAY) "MASKGEN"
-	$(Q)./mask-gen > masks.c
+	$(Q)./tools/mask-gen > masks.c
 
-mask-gen: mask-gen.o
-	$(Q)$(SAY) "  LD	$@"
-	$(Q)$(CC) $(LFLAGS_UTILS) $<	-o $@
+tools/mask-gen: tools/mask-gen.o
+	$(Q)$(SAY) "HOSTLD	$@"
+	$(Q)$(HOSTCC) $(HOSTLFLAGS) $<	-o $@
 
 %.o: %.c .config
 	$(Q)$(SAY) "  CC	$@"
@@ -130,6 +147,7 @@ clean:
 	$(Q)rm -f $(patsubst %,%.o, $(utils))
 	$(Q)rm -f $(patsubst %,%.i, $(utils))
 	$(Q)rm -f $(patsubst %,%.s, $(utils))
+	$(Q)rm -rf tools/
 	$(Q)$(MAKE) -s -C doc clean
 	$(Q)rm -f .deps
 
