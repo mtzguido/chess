@@ -16,11 +16,19 @@ while [ $i -lt $N ]; do
 	fi
 
 	th=$((th+1))
-	i=$((i+2))
+	i=$((i+1))
 	(
 		ID=$BASHPID
-		xvfb-run -a xboard -noGUI -xexit -mg 2 -fcp "./ice $ARG1"	\
-		-scp "./ice $ARG2" -tc 4 -mps 40 -sgf .LOG_self_$ID
+		if [ "$((i%2))" == 0 ]; then
+			PLAYER1="$ARG1"
+			PLAYER2="$ARG2"
+		else
+			PLAYER1="$ARG2"
+			PLAYER2="$ARG1"
+		fi
+
+		xvfb-run -a xboard -noGUI -xexit -mg 1 -tc 4 -mps 40 \
+			-fcp "$PLAYER1" -scp "$PLAYER2" -sgf .LOG_self_$ID
 		cat .LOG_self_$ID >> LOG_self
 		rm .LOG_self_$ID
 	) &
