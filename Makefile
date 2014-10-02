@@ -30,6 +30,10 @@ ifeq (${CONFIG_FIXOPTS},y)
 	CFLAGS += -DFIXOPTS
 endif
 
+ifeq (${CONFIG_FLIPBIT},y)
+	CFLAGS += -DFLIPBIT
+endif
+
 ifeq (${CONFIG_DEBUG},y)
 else
 	CFLAGS += -DNDEBUG

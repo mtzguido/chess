@@ -31,7 +31,11 @@ void print_post() {
 }
 
 uint64_t bit(int i) {
+#ifdef FLIPBIT
+	return ((uint64_t)1) << (63 - i);
+#else
 	return ((uint64_t)1) << i;
+#endif
 }
 
 typedef bool (*genfun_t)(int r, int c, int R, int C);
