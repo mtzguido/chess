@@ -175,6 +175,9 @@ void add_rule(char *sequence) {
 
 	assert(ok);
 	add_one(hash, m, seq_orig);
+
+	while (hply)
+		undoMove();
 }
 
 int main() {
