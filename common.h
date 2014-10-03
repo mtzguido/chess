@@ -88,7 +88,7 @@ static const struct opts defopts = {
 	.timelimit =		0,
 	.lbound =		0,
 	.smart_stop =		1,
-	.shuffle =		1,
+	.shuffle =		0,
 	.book =			1,
 
 	.verbosity =		0,
