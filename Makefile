@@ -1,4 +1,4 @@
-.PHONY:clean all re run doc
+.PHONY:clean all doc autoversion.c
 CFLAGS=-Wc++-compat -Wall -Wextra -Wno-unused-parameter $(CFLAGS_EXTRA)
 LFLAGS=
 HOSTCFLAGS=-Wc++-compat -Wall -Wextra -Wno-unused-parameter $(CFLAGS_EXTRA)
@@ -155,13 +155,11 @@ clean:
 	$(Q)$(MAKE) -s -C doc clean
 	$(Q)rm -f .deps
 
-re: clean $(TARGET)
-
 doc:
 	$(Q)$(SAY) "  DOC"
 	$(Q)$(MAKE) -s -C doc
 
-.deps: $(patsubst %,%.c,$(mods))
+.deps:
 	$(Q)$(SAY) "DEPS"
 	$(Q)$(CC) -MM $(patsubst %,%.c,$(utils) $(mods)) > .deps
 
