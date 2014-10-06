@@ -14,8 +14,7 @@ doc/*.out
 *.swp
 tags
 .config
-games/
-*.log
+logs/
 *.pgn
 .deps
 profile

@@ -3,8 +3,19 @@
 N=$1
 ARG1=$2
 ARG2=$3
+shift 3
 
-rm -f LOG_self
+if ! [ -d logs ]; then
+	mkdir logs
+	echo 0 > logs/.seq
+	seq=0000
+else
+	seq=$(($(cat logs/.seq) + 1))
+	echo $seq > logs/.seq
+	seq=$(printf "%04d" $seq)
+fi
+
+FILE=logs/LOG_$seq
 
 i=0
 th=0
@@ -17,20 +28,16 @@ while [ $i -lt $N ]; do
 
 	th=$((th+1))
 	i=$((i+1))
-	(
-		ID=$BASHPID
-		if [ "$((i%2))" == 0 ]; then
-			PLAYER1="$ARG1"
-			PLAYER2="$ARG2"
-		else
-			PLAYER1="$ARG2"
-			PLAYER2="$ARG1"
-		fi
+	if [ "$((i%2))" == 0 ]; then
+		PLAYER1="$ARG1"
+		PLAYER2="$ARG2"
+	else
+		PLAYER1="$ARG2"
+		PLAYER2="$ARG1"
+	fi
 
-		xvfb-run -a xboard -noGUI -xexit -mg 1 -tc 4 -mps 40 \
-			-fcp "$PLAYER1" -scp "$PLAYER2" -sgf .LOG_self_$ID
-		cat .LOG_self_$ID >> LOG_self
-		rm .LOG_self_$ID
-	) &
+	xvfb-run -a xboard -noGUI -xexit -mg 1 -tc 4 -mps 40 \
+		-fcp "$PLAYER1" -scp "$PLAYER2" -sgf "$FILE" \
+		"$@" &
 done
 wait
