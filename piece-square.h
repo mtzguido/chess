@@ -9,8 +9,8 @@
  * http://chessprogramming.wikispaces.com/Simplified+evaluation+function
  */
 
-char piece_square_val_O(piece_t piece, i8 r, i8 c);
-char piece_square_val_E(piece_t piece, i8 r, i8 c);
+signed char piece_square_val_O(piece_t piece, i8 r, i8 c);
+signed char piece_square_val_E(piece_t piece, i8 r, i8 c);
 void piecePosFullRecalc(void);
 
 #endif

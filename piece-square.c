@@ -93,7 +93,7 @@ static const char t_kingE[8][8] =
 	{ -50,	-30,	-30,	-30,	-30,	-30,	-30,	-50	}
 };
 
-char piece_square_val_O(piece_t piece, i8 r, i8 c) {
+signed char piece_square_val_O(piece_t piece, i8 r, i8 c) {
 	switch (piece) {
 	case WPAWN:	return t_pawn[r][c];
 	case WBISHOP:	return t_bishop[r][c];
@@ -112,7 +112,7 @@ char piece_square_val_O(piece_t piece, i8 r, i8 c) {
 	__builtin_unreachable();
 }
 
-char piece_square_val_E(piece_t piece, i8 r, i8 c) {
+signed char piece_square_val_E(piece_t piece, i8 r, i8 c) {
 	switch (piece) {
 	case WPAWN:	return t_pawn[r][c];
 	case WBISHOP:	return t_bishop[r][c];
