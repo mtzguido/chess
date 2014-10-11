@@ -64,6 +64,7 @@ struct opts {
 	/* Misc options */
 	int verbosity;			/* Verbosity level */
 	int seed;			/* Random seed */
+	int syslog;			/* Log to syslog too */
 
 	/* Search */
 	int asp;			/* Use aspiration windows */
@@ -92,6 +93,7 @@ static const struct opts defopts = {
 	.book =			1,
 
 	.verbosity =		0,
+	.syslog =		0,
 
 	.asp =			1,
 	.ab =			1,

@@ -3,6 +3,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <sys/time.h>
+#include <syslog.h>
 
 #ifndef FIXOPTS
 struct opts copts;
@@ -31,6 +32,12 @@ void dbg(char *s, ...) {
 
 	if (copts.verbosity <= 0)
 		return;
+
+	if (copts.syslog) {
+		va_start(l, s);
+		vsyslog(LOG_DEBUG, s, l);
+		va_end(l);
+	}
 
 	va_start(l, s);
 	fprintf(stderr, ">> ");

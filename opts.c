@@ -66,6 +66,7 @@ static const struct option long_opts[] = {
 	BOOL_OPT(null),
 	BOOL_OPT2(11n, h11n),
 	BOOL_OPT(lmr),
+	BOOL_OPT(syslog),
 	{ 0 }
 };
 
