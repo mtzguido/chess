@@ -38,6 +38,8 @@ while [ $i -lt $N ]; do
 
 	xvfb-run -a xboard -noGUI -xexit -mg 1 -tc 4 -mps 40 \
 		-fcp "$PLAYER1" -scp "$PLAYER2" -sgf "$FILE" \
-		"$@" &
+		-discourageOwnBooks true -usePolyglotBook true \
+		-polyglotBook scripts/test_book.bin -fNoOwnBookUCI \
+		-sNoOwnBookUCI "$@" &
 done
 wait
