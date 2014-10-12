@@ -1,5 +1,12 @@
 #!/bin/bash
 
+if [ $1 == '--gui' ]; then
+	cmd=xboard
+	shift;
+else
+	cmd="xvfb-run -a xboard -noGUI"
+fi
+
 N=$1
 ARG1=$2
 ARG2=$3
@@ -36,7 +43,7 @@ while [ $i -lt $N ]; do
 		PLAYER2="$ARG1"
 	fi
 
-	xvfb-run -a xboard -noGUI -xexit -mg 1 -tc 4 -mps 40 \
+	$cmd -xexit -mg 1 -tc 4 -mps 40 \
 		-fcp "$PLAYER1" -scp "$PLAYER2" -sgf "$FILE" \
 		-discourageOwnBooks true -usePolyglotBook true \
 		-polyglotBook scripts/test_book.bin -fNoOwnBookUCI \
