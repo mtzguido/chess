@@ -120,6 +120,7 @@ move machineMove(unsigned long long maxms) {
 	score alpha, beta;
 	bool stop = false;
 	char pv_text[200];
+	bool really_timed;
 
 	ret.move_type = MOVE_INVAL;
 
@@ -144,6 +145,8 @@ move machineMove(unsigned long long maxms) {
 		goto out;
 	}
 
+	dbg("starting search with %llu ms time\n", maxms);
+
 	alpha = minScore;
 	beta = maxScore;
 	expected = minScore;
@@ -162,6 +165,12 @@ move machineMove(unsigned long long maxms) {
 	for (d = 1; !stop && !timeup; d++) {
 		assert(ply == 0);
 		iterstart = getms();
+
+		if (d == 1) {
+			really_timed = timelimited;
+			timelimited = false;
+		}
+
 		t = search(d, &temp, alpha, beta);
 
 		if (t >= beta) {
@@ -175,11 +184,15 @@ move machineMove(unsigned long long maxms) {
 		}
 
 		if (t <= alpha || t >= beta) {
-			dbg("%i %i\n", t<=alpha, t>=beta);
+			dbg("%i %i\n", t <= alpha, t >= beta);
 			alpha = minScore;
 			beta = maxScore;
 			t = search(d, &temp, alpha, beta);
 			dbg("ASP_DUB: %i %i %i\n", t, minScore, maxScore);
+		}
+
+		if (d == 1) {
+			timelimited = really_timed;
 		}
 
 		if (timeup) {

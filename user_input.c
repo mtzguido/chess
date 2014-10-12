@@ -16,6 +16,11 @@ void move_text(move m, char *buf)
 		else
 			sprintf(buf, "e1c1");
 	} else if (m.move_type == MOVE_REGULAR) {
+		assert(m.c >= 0 && m.c < 8);
+		assert(m.r >= 0 && m.r < 8);
+		assert(m.C >= 0 && m.C < 8);
+		assert(m.R >= 0 && m.R < 8);
+
 		sprintf(buf, "%c%i%c%i", m.c + 'a', 8 - m.r,
 					 m.C + 'a', 8 - m.R);
 
@@ -51,8 +56,6 @@ move parseMove(char *line) {
 
 	c = tolower(c);
 	C = tolower(C);
-
-	dbg("Your move: %c%i -> %c%i\n", c, r, C, R);
 
 	if (c < 'a' || c > 'h' || C < 'a' || C > 'h' ||
 	    r < 0   || r > 8   || R < 0   || R > 8  ) {

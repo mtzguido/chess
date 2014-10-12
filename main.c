@@ -180,16 +180,25 @@ static void xboard_main() {
 		if (isFinished() == -1 && curPlayer == ourPlayer) {
 			__unused bool check;
 			unsigned long t1, t2;
-			int maxms;
+			long long maxms;
 
 			t1 = getms();
 
+			/*
+			 * Try to leave at least 500ms as a margin
+			 * just in case, but always use at least 100ms
+			 * for the current move
+			 */
+			assert(timeleft >= 200);
 			if (movesmax == 0)
 				maxms = (timeleft - 500) / 50;
 			else
 				maxms = (timeleft - 500) / movesleft;
 
-			move m = machineMove(maxms);
+			dbg("timing info: %i %i %i %i = %lli\n", movesleft,
+					movesmax, timeleft, timemax, maxms);
+
+			move m = machineMove(max(maxms, 100));
 
 			check = doMove(&m);
 			assert(check);
@@ -263,6 +272,17 @@ static void xboard_main() {
 			continue;
 		} else if (!strcmp("go", cmd)) {
 			ourPlayer = curPlayer;
+
+			/*
+			 * Fix the moves left amount, since we may have
+			 * been force moving (for example when using an
+			 * external book). Just count all the moves that
+			 * ocurred on our side:
+			 */
+			movesleft = movesmax;
+			movesleft -= ((hply + (ourPlayer == WHITE)) / 2)
+					% movesmax;
+
 			continue;
 		} else if (!strcmp("black", cmd)) {
 			/* Ignore */
@@ -305,10 +325,14 @@ static void xboard_main() {
 		} else if (!strcmp("post", cmd)) {
 			/* Ignore */
 			continue;
-		} else if (!strcmp("protver", cmd)) {
+		} else if (!strcmp("protover", cmd)) {
 			printf("feature colors=0 setboard=0 playother=0\n");
 			printf("feature ping=1 analyze=0 memory=0\n");
 			printf("feature done=1\n");
+		} else if (!strcmp("accepted", cmd)) {
+			/* Ignore */
+		} else if (!strcmp("rejected", cmd)) {
+			/* Ignore */
 		} else if (!strcmp("st", cmd)) {
 			sscanf(line, "st %d", &timemax);
 			timemax *= 1000;
@@ -353,6 +377,9 @@ static void xboard_main() {
 				printf("Error (unknown command): %s\n", line);
 				continue;
 			}
+
+			dbg("Your move: %c%i -> %c%i\n", m.c + 'a', m.r,
+							 m.C + 'a', m.R);
 
 			if (checkMove(m)) {
 				printf("Error (illegal move): %s\n", line);
