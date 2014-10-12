@@ -1,9 +1,6 @@
 #include "addon.h"
 #include "addon_trans.h"
 
-static inline score max(score a, score b) { return a > b ? a : b; }
-static inline score min(score a, score b) { return a < b ? a : b; }
-
 struct tt_entry {
 	u64 key;
 	score val;

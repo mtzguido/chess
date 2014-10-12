@@ -12,6 +12,22 @@
 #define unlikely(c) __builtin_expect(c, 0)
 #define   likely(c) __builtin_expect(c, 1)
 
+#define min(a, b)			\
+({					\
+	typeof(a) __a = a;		\
+	typeof(a) __b = b;		\
+	(void) (&__a == &__b);		\
+	__a < __b ? __a : __b;		\
+})
+
+#define max(a, b)			\
+({					\
+	typeof(a) __a = a;		\
+	typeof(a) __b = b;		\
+	(void) (&__a == &__b);		\
+	__a > __b ? __a : __b;		\
+})
+
 #define clamp(v, l, h)			\
 ({					\
 	typeof(v) __v = v;		\
