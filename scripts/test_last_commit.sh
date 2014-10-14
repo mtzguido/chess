@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -uex
+
 N=$1
 shift
 
@@ -13,3 +15,5 @@ mv ice ice-old
 git co master
 
 ./scripts/selftest.sh $N ./ice-old ./ice-new "$@"
+./scripts/selftest.sh $N ./ice-new fairymax "$@"
+./scripts/selftest.sh $N ./ice-old fairymax "$@"
