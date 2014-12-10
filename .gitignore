@@ -11,6 +11,9 @@ doc/*.aux
 doc/*.log
 doc/*.pdf
 doc/*.out
+doc/*.bbl
+doc/*.blg
+doc/*.dvi
 *.swp
 tags
 .config

@@ -3,9 +3,13 @@
 \usepackage[spanish]{babel}
 \usepackage{fullpage}
 \usepackage{chessfss}
+\usepackage{multicol}
+\usepackage{natbib}
+\usepackage[hyphens]{url}
 \usepackage{hyperref}
+\usepackage[hyphenbreaks]{breakurl}
 
-\renewcommand{\refname}{\section{Referencias}}
+\newcommand{\ICE}[0]{{\bf ICE}}
 
 \begin{document}
 
@@ -15,192 +19,205 @@
 
 \maketitle
 
-\section{Objetivo}
-
-Crear una inteligencia artificial para jugar al ajedrez (un \emph {Motor
-de Ajedrez}), usando métodos tradicionales. Teniendo como primera
-prioridad a la fuerza del motor, y en un cercano segundo lugar a la
-claridad y modularidad del código.
-
-\section{Overview}
-
-Como es usual, el algoritmo de búsqueda elegido es Alpha-Beta con una
-búsqueda de quietud (\emph{Quiescence Search}) en los nodos terminales
-de la búsqueda.
-También se incluyen límites de tiempo para que una movida no tarde una
-cantidad exagerada de tiempo, y se implementa el protocol \emph{xboard}
-\cite{protocol} casi en su totalidad. Esto último significa que lo
-podemos comparar con otros motores existentes.
+\begin{abstract}
+En este documento se expone un motor de ajedrez
+XBoard\cite{protocol}-compatible llamado \ICE{} desarrollado para la
+materia ``Introducción a la Inteligencia Artificial'', realizado con el
+objetivo de investigar las técnicas clásicas y actuales del ajedrez
+por computadora. El motor se escribió desde cero en C, teniendo como
+prioridad la fuerza del motor (por lo tanto: la eficiencia) y, en un
+segundo lugar, la claridad y modularidad del código.
 \\
 
-Lo que mayormente define al motor son la representación del tablero,
-las heurísticas de ordenamiento de movidas, las reducciones y
-extensiones de búsqueda, y la evaluación de tablero.
+El motor emplea una búsqueda Alpha-Beta con búsqueda de Quietud en los
+nodos terminales. Se emplean, entre otras, las heurísticas Null-Move,
+Late move reduction y tablas de transposición.
+\end{abstract}
+
+\begin{multicols}{2}
+
+%% \section{Overview}
+%%
+%% Como es usual, el algoritmo de búsqueda elegido es Alpha-Beta con una
+%% búsqueda de quietud (\emph{Quiescence Search}) en los nodos terminales
+%% de la búsqueda.
+%% También se incluyen límites de tiempo para que una movida no tarde una
+%% cantidad exagerada de tiempo, y se implementa el protocol \emph{xboard}
+%% \cite{protocol} casi en su totalidad. Esto último significa que lo
+%% podemos comparar con otros motores existentes.
+%% \\
+%%
+%% Lo que mayormente define al motor son la representación del tablero,
+%% las heurísticas de ordenamiento de movidas, las reducciones y
+%% extensiones de búsqueda, y la evaluación de tablero.
+%% \\
+%%
+%% Para acelerar al motor, normalmente se usan una gran cantidad
+%% de heurísticas. Algunas de estas son teóricamente correctas
+%% (\emph{theoretically sound}) y otras no. Una heurística se llama
+%% teóricamente correcta si no afecta el resultado de la búsqueda,
+%% excepto tal vez por tomar otra variacion principal en el caso de que
+%% haya más de una con el mismo puntaje. Si pensamos a las funciones $S$ y
+%% $S'$ ($S'$ emplea alguna heurística $H$) como búsquedas que devuelven
+%% el \emph{conjunto} de variaciones principales de mayor puntaje, entonces
+%% $H$ es teorícamente correcta si $S(g, d) = S'(g, d)$ para todo tablero
+%% $g$ y profundidad $d$.
+%% \\
+%%
+%% Pasamos a detallar detalles de nuestro motor
+%% \\
+
+\section{Introducción}
+
+El problema se plantea como un juego suma-cero \footnotemark de dos
+jugadores de información perfecta. ``Información perfecta'' se refiere
+a que ambos jugadores están completamente al tanto del estado del
+juego, y no hay elementos ``escondidos''. Además, no tiene ningún
+elemento de azar. Esto hace que el problema pueda ser resuelto con el
+algoritmo Minimax\cite{norvig-russell}.
 \\
 
-Para acelerar al motor, normalmente se usan una gran cantidad
-de heurísticas. Algunas de estas son teóricamente correctas
-(\emph{theoretically sound}) y otras no. Una heurística se llama
-teóricamente correcta si no afecta el resultado de la búsqueda,
-excepto tal vez por tomar otra variacion principal en el caso de que
-haya mas de una con el mismo puntaje. Si pensamos a las funciones $S$ y
-$S'$ ($S'$ emplea alguna heurística $H$) como búsquedas que devuelven
-el \emph{conjunto} de variaciones principales de mayor puntaje, entonces
-$H$ es teorícamente correcta si $S(g, d) = S'(g, d)$ para todo tablero
-$g$ y profundidad $d$.
+\footnotetext{Brevemente, los juegos suma-cero son aquellos en los
+cuales una ganancia de un jugador es una pérdida directa del otro, y no
+existe la posibilidad de cooperación}
+
+Sin embargo, el espacio de búsqueda es gigantesco: estimado alrededor
+de $10^{40}$ tableros distintos, y $10^{120}$ juegos posibles. Para
+realizar la búsqueda de un módo factible se limita la profundidad de
+la misma, empleando una \emph{heurística de evaluación de tablero}
+en los nodos terminales. Esto, naturalmente, causa que no se obtengan
+soluciones certeras, si no aproximadas.
 \\
 
-Pasamos a detallar detalles de nuestro motor
+La evaluación de tablero debe reflejar que tan buena es una posición,
+y requiere de mucho conocimiento específico del dominio.
 \\
 
-\subsection{Representación de tablero}
-Se usa un array de 8x8 con las piezas. También se usan máscaras
-de 64 bits para acelerar algunos cálculos. En la estructura del
+Para optimizar el algoritmo Minimax se usa la poda Alpha-Beta y un
+conjunto de heurísticas, tanto \emph{teóricamente correctas}(\emph
+{sound}) como \emph{incorrectas}(\emph{unsound}). Una heurística se
+llama teóricamente correcta si no afecta el resultado de la búsqueda,
+excepto tal vez cuando hay un ``empate''.
+
+\section{Representación de tablero}
+
+A cada nodo de la búsqueda, el cual contiene toda la información del
+juego al momento (posición de las piezas, cantidad de movidas, etc.) se
+lo llama ``Tablero''.
+\\
+
+Se mantiene un sólo tablero en memoria en cada momento dado, haciendo
+y deshaciendo movidas a medida que la búsqueda progresa (enfoque
+Make-Unmake). Esto se ve facilitado por el hecho de que las búsquedas
+son en profundidad.
+\\
+
+Se usa un array de 8x8 con las piezas. También se usan bitmaps de
+64 bits (representando si una casilla está ocupada por una pieza
+blanca o negra) para acelerar varios cálculos. En la estructura del
 tablero, además de estar la información del juego en sí, se mantienen
-incrementalmente (se ajustan/recalculan luego de cada movida):
+incrementalmente:
 
 \begin{itemize}
+\setlength\itemsep{0em}
 \item Puntaje de piezas de cada lado
-\item Un hash del tablero para comparar rápidamente por igualdad
-\item Los puntajes pieza-posición
-\item Las máscaras de piezas
+\item Posiciones de los Reyes
+\item Hash de 64 bits del nodo
+\item Puntajes pieza-posición
+\item Bitmaps de piezas
 \item Rank de peones
 \item Estado de Jaque
-\item Posiciones de los Reyes
 \end{itemize}
 
-Se mantienen estos datos incrementalmente para no tener que recorrer
-todo el tablero al momento de la evaluación para calcularlos. El hash
-fue específicamente elegido debido a que su cálculo es incremental
-con cada movida y da muy buenos resultados (\emph{Zobrist hashing}
-\cite{zobrist}).
+Mantener estos datos incrementalmente acelera mucho al motor, debido
+a que muchos tienden a mantenerse contantes y/o ser fáciles de calcular
+a partir de un valor previos.
+\\
 
-\subsection{Heurísticas de ordenamiento de movidas}
-
-Las heurísticas usadas son (en orden del puntaje que aportan al
-ordenamiento):
-\begin{itemize}
-\item Tablas de transposición
-\item Killer Move Heuristic
-\item Countermove Heuristic
-\item MVV-LVA
-\end{itemize}
-
-\subsection{Heurísticas de corte o reducción}
-\begin{itemize}
-\item Null-move heuristic (para nodos \emph{fail-high})
-\item Late move reduction (para nodos \emph{fail-low})
-\end{itemize}
-
-\subsection{Extensiones}
-\begin{itemize}
-\item Extensión por jaque
-\item Extension por promoción
-\item Extensión por movida forzada
-\end{itemize}
-
-\subsection{Evaluación del tablero}
-Para la evaluación del tablero se tienen en cuenta:
-\begin{itemize}
-\item Puntaje de piezas
-\item Puntaje pieza-posición
-\item Estado de jaque
-\item Estado de filas
-\item Estado de enroque
-\item Bonus por par de alfiles
-\item King-safety
-\end{itemize}
-
-Las tablas pieza-posición fueron tomadas de \cite{piece-square-table} y
-ligeramente modificadas.\\
+El hash del nodo fue específicamente elegido debido a que su cálculo
+es perfectamente incremental con cada movida y da una distribución muy
+regular (\emph{Zobrist hashing} \cite{wiki:zobrist}).
 
 \section{Diseño general}
 
-Habiendo tantos motores de Ajedrez hechos, hay mucho material para
-investigar. La mayoría de los motores optan por tener un sólo tablero
-del juego en memoria (representado de diversas formas), y una \emph
-{Pila de Historia} (\emph {History Stack}) con información para
-deshacer las movidas hechas (Make-Unmake). Yo en un principio opté
-opté por copiar el tablero original, realizar la movida sobre la copia
-y luego descartar la copia al terminar de usarla (Copy-Make), pero luego
-porté el motor al paradigma Make-Unmake.
+El motor efectúa una búsqueda Alpha-Beta sobre un grafo \emph{implícito}
+del árbol del juego. Debido a que el algoritmo Alpha-Beta procede
+por profundidad, es inútil mantener el árbol del juego en memoria, y
+de hecho también sería muy costoso.
 \\
 
-El motor realiza una búsqueda sobre un grafo \emph{implícito},
-en donde el nodo actual es siempre el tablero en cuestión (el
-único en memoria). A este tablero se le generan las movidas
-\emph{pseudo-sucesoras}. Cada una de estas movidas es evaluada y
-puntuada para hacer un ordenamiento (dado que el algoritmo Alpha-Beta
-funciona mejor cuando las mejores movidas son evaludas primero). Una vez
-ordenadas por puntaje, la búsqueda prosige hasta alguna profundidad (o
-hasta que alguna heurística produzca un corte).
+Para realizar la búsqueda sobre un nodo primero se le generan las
+movidas \emph{pseudo-sucesoras}. Cada una de estas movidas es evaluada
+y puntuada para hacer un ordenamiento (dado que el algoritmo Alpha-Beta
+funciona mejor cuando las mejores movidas son exploradas primero).
+Una vez ordenadas por puntaje, la búsqueda continua iterando por los
+sucesores ordenados.
 \\
 
-Por pseudo-sucesoras nos referimos a que se consideran algunas movidas
-que pueden no ser realmente válidas, como por ejemplo alguna movida que
-deje al jugador en jaque. La razón de esto es que para verificar que
-una movida es realmente válida debemos hacer bastante trabajo, y por la
-naturaleza del Alpha-Beta es probable que aunque generemos 30 sucesores,
-encontremos un corte mucho antes de llegar al último, por lo cual
-ese trabajo fue inútil. Usar movidas pseudo-sucesoras acelera mucho
-al programa, sin cambiar en lo absoluto su funcionalidad (se visitan
-exactamente los mismos nodos en el mismo orden).
+Este proceso es afectado por algunas heurísticas (Null-move y Late Move
+Reduction). Estas diferencias se detallan más adelante.
+\\
+
+Por \emph{pseudo-sucesoras} nos referimos a que se consideran algunas
+movidas que pueden no ser realmente válidas, como por ejemplo
+alguna movida que deje al jugador en jaque. La razón de esto es que
+para verificar que una movida es realmente válida debemos hacer
+bastante trabajo, y por la naturaleza del Alpha-Beta es probable que
+aunque generemos 30 sucesores, encontremos un corte mucho antes de
+llegar al último, por lo cual ese trabajo fue inútil. Usar movidas
+pseudo-sucesoras acelera mucho al programa, sin cambiar en lo absoluto
+su funcionalidad (se visitan exactamente los mismos nodos en el mismo
+orden).
 \\
 
 \section{Búsqueda}
-Detallamos las técnicas usadas que son relevantes a la materia.
+Aquí se detalla cada componente de la búsqueda.
 
 \subsection{Algoritmo Alpha-Beta}
 
-El algoritmo Alpha-Beta es una mejora al algoritmo clásico Minimax, que
-resuelve juegos por turnos de \emph{suma-cero}\footnotemark . Minimax
-puede usarse para juegos en que las partes ``mueven'' al mismo tiempo,
-pero ignoraremos eso y nos concentraremos en su aplicación para este
-juego.
+El algoritmo Alpha-Beta es una mejora al algoritmo clásico Minimax, y
+ante un mismo árbol de búsqueda siempre da lo mismos resultados, con
+una complejidad temporal mucho menor en promedio.
 \\
 
-\footnotetext{Brevemente, son aquellos en los cuales una ganancia de un
-jugador es una pérdida directa del otro, y no existe la posibilidad de
-cooperación}
-
-El Minimax más básico funciona explorando el árbol de movidas del
-juego, de a un turno, considerando todas las movidas posibles de cada
-jugador, hasta llegar a un nodo terminal (juego finalizado). Dado un
-nodo, calcula recursivamente el valor de cada uno de los posibles
-sucesores, y devuelve el valor del ``mejor'', que es el mínimo o el
-máximo, dependiendo de quien sea el turno. Cada nodo terminal tiene
-un puntaje asociado según quien ganó. Para el Ajedrez, podría ser
-$1$ cuando ganan las blancas, $-1$ cuando ganan las negras y $0$ cuando
-empatan. Minimax nos devolverá el puntaje que podemos conseguir y la
-movida que debemos jugar.
+El Minimax más básico funciona explorando recursivamente el árbol
+de movidas del juego. El caso base son los nodos terminales (juego
+finalizado).Estos nodos terminales tienen como valor un número
+representando el ``puntaje'' del jugador 1 (por convención). De está
+manera el jugador 1 trata de maximizar ese resultado, y su oponente
+trata de minimizarlo.
 \\
 
-Hacer una búsqueda hasta los nodos terminales no funciona para juegos
-con un tamaño mayor al Ta-Te-Tí (y aún ahí se nota cierta lentitud)
-debido a la inmensa cantidad de nodos que se deben recorrer. Recordando
-el factor de ramificación promedio de 30 y las 80 media-movidas
-(movidas por jugador) por partido del Ajedrez esto resulta impracticable
-(además, si pudieramos hacerlo, resolveríamos por completo el Ajedrez
-y tendríamos fama mundial. No es probable...). Por está razón se
-agrega un límite de profundidad, y si llegamos a él devolvemos un
-\emph{valor heurístico} del tablero, que representa de alguna manera el
-puntaje de cada jugador. Con ésta modificación Minimax nos devolverá
-un ``valor esperado'' y la movida que debemos hacer.
+Para un nodo no-terminal, se calcula el valor de los sucesores y
+devuelve el valor máximo o mínimo, dependendiendo de si es el turno
+del jugador maximizante o minimizante. Se puede guardar la movida
+que causa el mejor puntaje y guardarla, haciendo que algoritmo
+devuelva no sólo el puntaje esperado, si no también la movida
+para conseguirlo.
 \\
 
-Está evaluación de tablero guiará la búsqueda casi en su
-totalidad, por lo cual es necesario que realmente se corresponda con
-la situación y dé puntajes adecuados según quién va en ventaja.
-También es necesaria cierta estabilidad de esta función. Citando a
-\href{http://chessprogramming.wikispaces.com/}{chessprogramming.wikispaces.com}:
+Para el Ajedrez, podemos tomar $1$ cuando ganan las blancas, $-1$ cuando
+ganan las negras y $0$ para los empates.
 \\
 
-\noindent
-\framebox{\parbox{\dimexpr\linewidth-2\fboxsep-2\fboxrule}{\itshape\center
-	``It is better to be wrong by 10 centipawns all the time than to be
-	completely correct 99.9\% of the time and wrong by 300 centipawns 0.1\% of
-	the time.''
-}}
+Debido a la imposibilidad de explorar el árbol entero, usamos una
+condición de corte y aplicamos una \emph{heurística de evaluación de
+tablero} en los cortes. Esto causa que el algoritmo no de resultados
+completamente correctos, y pone a la \emph{evaluación de tablero} en
+un lugar principal del motor.
+\\
+
+Está evaluación de tablero guiará la búsqueda casi en su totalidad,
+por lo cual es necesario que realmente se corresponda con la situación
+y dé puntajes adecuados según quién va en ventaja. También es
+necesaria cierta estabilidad de esta función. Citando a
+\href{http://chessprogramming.wikispaces.com/}
+{chessprogramming.wikispaces.com}:
+\\
+
+\emph{``It is better to be wrong by 10 centipawns all the time than to
+be completely correct 99.9\% of the time and wrong by 300 centipawns
+0.1\% of the time.''}
 \\
 
 \subsubsection{Poda Alpha-Beta}
@@ -208,9 +225,8 @@ También es necesaria cierta estabilidad de esta función. Citando a
 El algoritmo Minimax tiene una peculiaridad, si al analizar la primera
 movida que podemos hacer generamos un jaque mate (el mejor resultado
 posible), la búsqueda seguirá y calculará los valores esperados de
-todos los nodos del árbol. Este caso particular podría detectarse y
-mejorarse, pero hay una idea aún mejor que da resultados muchísimo
-mejores: la poda Alpha-Beta.
+todos los nodos del árbol. Esto introduce una mejora significante: la
+poda Alpha-Beta.
 \\
 
 El algoritmo Alpha-Beta extiende al Minimax llevando cuenta de una
@@ -230,7 +246,7 @@ El mismo corte puede ocurrir en turnos del jugador minimizante. El
 algoritmo Alpha-Beta siempre da el mismo resultado que Minimax (o sea,
 es una mejora teóricamente correcta), pero su complejidad temporal
 promedio disminuye de $O(b^d)$ a $O(b^{(3d/4)})$\footnotemark. Lo
-que significa que podemos hacer una búsqueda de un 33\% mas de
+que significa que podemos hacer una búsqueda de un 33\% más de
 profundidad en el mismo tiempo. La complejidad en el peor caso se
 mantiene ($O(b^d)$) y la del mejor caso es aún mejor: $O(\sqrt{b^d})$
 (o sea, el doble de profundidad en el mismo tiempo).
@@ -255,24 +271,30 @@ como movimientos válidos a los movidas que producen una captura
 o promoción. El objetivo es no aplicar la evaluación de tablero
 ciegamente en tableros con piezas atacadas, y forzar a que se sigan
 todas las líneas de capturas. Esto hace que se disminuya el Efecto
-Horizonte y el motor juegue mucho mejor (en el mismo tiempo).
+Horizonte\footnotemark y el motor juegue mucho mejor (en el mismo tiempo).
 \\
+
+\footnotetext{El efecto Horizonte ocurre cuando un motor toma malas
+decisiones que se hubieran evitado por extender la búsqueda en pocas
+movidas}
 
 La búsqueda de quietud no está limitada por profundidad. En contraste,
 solo termina por cortes Alpha-Beta, con la diferencia que al iniciar
 la búsqueda usamos el valor actual del tablero como cota inferior de
 $\alpha$ (similarmente a la Null move heuristic). Esto tiene algún
-fundamento teórico, porque por lo general siempre podemos elegir una
-movida que no sea una captura y terminar con la secuencia de capturas.
+fundamento teórico, porque \emph{por lo general} siempre podemos
+elegir una movida que no sea una captura y terminar con la secuencia de
+capturas.
 \\
 
 \subsubsection{Alto nivel}
 
 En rasgos generales, la búsqueda es como se describió anteriormente,
 pero aumentando la profundidad iterativamente hasta llegar a un límite
-de tiempo (más una pequeña heurística que yo llamo Smart-Stop).
+de tiempo, o cuando la heurístima Smart-Stop decida efectuar la movida.
 Cuando el tiempo se termina, se devuelve el resultado de la última
-búsqueda que se completó íntegramente.
+búsqueda que se completó íntegramente (no se aprovechan resultados
+parciales).
 \\
 
 Se usa una técnica conocida como \emph{Aspiration Windows}, en donde se
@@ -282,23 +304,52 @@ resultado el puntaje 23, y nuestra ventana de aspiración es de 20, la
 búsqueda 6 se llamará con Alpha y Beta iniciales iguales a 3 y 43.
 \\
 
-Hacer esto mejora mucho el rendimiento ya que al tener una ventana mas
+Hacer esto mejora mucho el rendimiento ya que al tener una ventana más
 chica se visitan menos nodos. Pero, no siempre es el caso que la cota
 es correcta, por lo que la búsqueda se rehace si el resultado no cae
 dentro de los Alpha y Beta originales.
+
+\subsection{Smart-Stop}
+
+La heurística Smart-Stop es una forma de evitar etapas de la búsqueda
+incompletas cuando ocurre un corte por tiempo. Estas etapas con
+completamente desperdiciadas, y si se pudiera obviarlas el motor
+tendría más tiempo en el reloj para las próximás movidas.
+\\
+
+Se basa en la observación de que el árbol de búsqueda crece cada vez
+a medida que aumentamos la profundidad. Llamemos $t(i)$ al tiempo que
+tarda la búsqueda hasta una profundidad $i$. Podemos asumir (para la
+gran mayoría de los tableros) que $t(i+1) > t(i)$. Si $T$ es el tiempo
+restante al terminar la búsqueda $i$-ésima y tenemos $T < t(i+1)$, se
+puede concluir que la búsqueda terminará por tiempo y evitarla.
+\\
+
+Para evitar aún más de estos casos, en \ICE{} se asume que $t(i+1) >
+2 \cdot t(i)$. Esto mostró mejores resultados, y casi ningún corte
+espurio.
+\\
+
+Al saber del autor, esta heurística es original de \ICE{}.
 
 \section{Heurísticas}
 
 \subsection{Heurísticas de ordenamiento}
 
-Una heurística de ordenamiento es siempre teóricamente correcta.
+Debido a la naturaleza del Alpha-Beta, una heurística de ordenamiento
+es siempre teóricamente correcta.
+
+Todas estas heurísticas se aplican sobre la lista de movidas
+pseudo-sucesoras y le dan un puntaje a cada una. Luego las movidas se
+ordenan (de manera \emph{Lazy}) según la suma de todos los puntajes. En
+cada heurística se detalla el puntaje empleado en \ICE{}.
 
 \subsubsection{Killer move heuristic}
-Una de las heurísticas de ordenamiento de movidas mas simple y
+Una de las heurísticas de ordenamiento de movidas más simple y
 rendidora es la Killer move heuristic. Consiste en guardar en una tabla
 la movida que generó un corte, indexada por la profundidad en la cual
 se hizo la movida. Al ejecutar de nuevo la búsqueda, si la movida
-guardada aparece como sucesora se le da un bonus.
+guardada aparece como sucesora se le suma un puntaje fijo (1000).
 \\
 
 \subsubsection{Tabla de transposición}
@@ -324,8 +375,8 @@ tenemos en cuenta al volver a visitar el nodo.
 \\
 
 También, guardamos en la TT la movida que causó un corte y la
-puntuamos con un bonus alto (por esto es también una heurística de
-ordenamiento).
+puntuamos con un bonus alto (10000). Por esto es también una
+heurística de ordenamiento.
 
 \subsubsection{Countermove heuristic}
 Es una heurística similar a la Killer Move, pero en vez de registrar
@@ -333,7 +384,7 @@ los cortes indexados por la profundidad de la búsqueda, lo hace según
 la movida realizada anteriormente a la actual, bajo la premisa de que
 hay movidas que tienen una ``respuesta natural'' independientemente de
 la profundidad y el tablero. Da resultados no muy buenos, pero es fácil
-de implementar.
+de implementar. El puntaje es 500.
 
 \subsubsection{MVV-LVA}
 MVV-LVA significa ``\emph{Most valuable victim, least valuable
@@ -344,37 +395,32 @@ usada para puntuar es $10*v - a$ en donde $v$ es el puntaje de la pieza
 víctima y $a$ el puntaje de la pieza atacante.
 \\
 
-Si bien MVV-LVA es la última en esta lista, es de vital importancia
-debido a que puntúa \emph{todas las capturas}, y nos da un orden
-suficientemente bueno al empezar la búsqueda (cuando no hay ninguna
-información guardada en las heurísticas) y también luego, al puntuar
-muchas movidas que no encajan dentro de las otras heurísticas.
-\\
-
-Funciona bastante bien para ser algo tan simple de implementar. En
-especial para la búsqueda de quietud, en donde sólo consideramos las
-capturas. Hace una diferencia muy importante en ese caso debido a que
-no tenemos un límite de profundidad como en la búsqueda principal y
-dependemos casi exclusivamente de los cortes.
+Si bien MVV-LVA es da puntajes mucho menores, es de vital importancia
+debido a que puntúa \emph{todas las capturas}. Funciona bastante
+bien para ser algo tan simple de implementar. En especial para la
+búsqueda de quietud, en donde sólo consideramos las capturas. Hace
+una diferencia muy importante en ese caso debido a que no tenemos un
+límite de profundidad como en la búsqueda principal y dependemos casi
+exclusivamente de los cortes.
 
 \subsection{Heurísticas de corte o reducción}
 
 Las heurísticas de Null Move y Late Move Reductions no son
 teóricamente correctas, pero dan muy buenos resultados al
-implementarse. Es notable que al recortar nodos no necesariamente
-perdemos fuerza del motor. De hecho, como hacemos profundización
+implementarse. Es notable que al recortar nodos no necesariamente se
+pierder fuerza del motor. De hecho, como \ICE{} hace profundización
 iterativa, una buena estimación es que el motor siempre recorrerá
 la misma cantidad de nodos en un tiempo dado, por lo que lo que hacen
 las heurísticas es simplemente dirigir la búsqueda por los caminos
-mas interesante (al hacer un corte en una rama, exploraremos más por
+más interesante (al hacer un corte en una rama, exploraremos más por
 todas las otras). Es vital tener en cuenta eso para pensar sobre las
 heurísticas siguientes.
 
 \subsubsection{Null move heuristic}
 La heurística consiste en la idea intuitiva de que si podemos ceder el
 turno, dándole 2 movidas a nuestro adversario, y seguimos teniendo un
-tablero bueno, entonces nuestro tablero original era bueno y podemos
-cortar la búsqueda.
+tablero bueno, entonces nuestro tablero original era también bueno y
+podemos cortar la búsqueda.
 \\
 
 En términos computacionales esto se implementa cediendo el turno,
@@ -385,7 +431,8 @@ mayor a $\beta$, devolvemos $\beta$ como resultado.
 
 Esto recorta mucho los nodos explorados para una cierta profundidad,
 pero debido a la ilegalidad de la movida debemos tener cuidado de evitar
-situaciones en donde mover nos perjudica (llamado Zugzwang)
+situaciones en donde mover nos perjudica (llamado Zugzwang). En \ICE{}
+se evita aplicar NMH cuando estamos en Jaque o tenemos pocas piezas.
 
 \subsubsection{Late Move Reductions}
 La heurística LMR sigue la idea de que dado un buen ordenamiento de
@@ -409,18 +456,9 @@ hace sumando los siguientes puntajes.
 Simplemente se suman los valores de cada pieza que tiene cada jugador. Las piezas blancas tienen valor positivo y las negras negativo. Los valores son:
 
 \begin{center}
- \begin{tabular}{|c|c|}
-  \hline
-  \WhitePawnOnWhite & 100 \\
-  \hline
-  \WhiteKnightOnWhite & 320 \\
-  \hline
-  \WhiteBishopOnWhite & 320 \\
-  \hline
-  \WhiteRookOnWhite & 500 \\
-  \hline
-  \WhiteQueenOnWhite & 900 \\
-  \hline
+ \begin{tabular}{ccc}
+  \WhitePawnOnWhite = 100 & \WhiteKnightOnWhite = 320 & \WhiteBishopOnWhite = 320 \\
+  \WhiteRookOnWhite = 500 & \WhiteQueenOnWhite = 900  & \\
  \end{tabular}
 \end{center}
 
@@ -430,19 +468,27 @@ en nada.
 \subsection{Pieza-posición}
 Una mejora simple a lo anterior es darle puntajes a las piezas según la
 posición. Para esto se definen 6 tablas de 64 casillas con puntajes.
-Estos puntajes suelen ser menores a los anteriores, debido a que perder
-piezas es algo mucho mas severo.
+De esta manera se puede darle mejor puntajes a los caballos cerca del
+centro, o a los peones más avanzados. Estos puntajes suelen ser menores
+a los anteriores, debido a que perder piezas es algo mucho más severo.
+\\
 
 Para el caso del rey, queremos que ocupe posiciones completamente
 distintas en la apertura y en el juego final, por lo que usamos dos
 tablas, e interpolamos según la etapa del juego.
+\\
+
+Las tablas pieza-posición fueron tomadas de \cite{piece-square-table} y
+ligeramente modificadas.
 
 \subsection{Estado de Jaque}
-Se aplica una penalización por no haber hecho enroque, y una mas severa
-si ya no es posible. Esto incentiva al motor a realizar enroque.
+Se aplica una penalización por no haber hecho enroque, y una más severa
+si ya no es posible. Esto incentiva al motor a realizar el enroque.
 
 \subsection{Estado de filas}
-Se evalua cada fila del tablero según los peones de cada jugador. Si una fila no tiene peones se la llama \emph{abierta}. Si tiene peones de un sólo jugador se la llama \emph{semi-abierta}.
+Se evalua cada fila del tablero según los peones de cada jugador. Si
+una fila no tiene peones se la llama \emph{abierta}. Si tiene peones de
+un sólo jugador se la llama \emph{semi-abierta}.
 \\
 
 Una fila abierta es bastante significativa. Tener una fila abierta cerca
@@ -457,22 +503,36 @@ restamos 100 puntos al lado en jaque, para incentivar a que se exploren
 otras alternativas.
 
 \subsection{Bonus por par de alfiles}
-Simplemente si uno de los lados tiene ambos alfiles, se la da un bonus
-(actualemente 15 puntos).
+Simplemente si uno de los lados tiene ambos alfiles, se le da un bonus.
 
 \subsection{King safety}
 Para cada lado se evalua que tan bien está protegido el rey. Esto se
 hace considerando el estado de las filas cercanas. Tener filas abiertas
-es penalizado, y también preferimos tener a nuestros peones cerca y a
-los del oponente lejos.
+es penalizado, y también se prefiere tener a los peones propios cerca y
+a los del oponente lejos.
 \\
 
 El valor de King-safety se escala según las piezas del oponente. La
-premisa es que nuestro rey sólo puede estar descubierto si el oponente
-tiene material para poder atacarlo.
+premisa es que un rey sólo puede estar descubierto si el oponente tiene
+material para poder atacarlo.
 \\
 
-Esto está fuertemente inspirado en el motor TSCP de Tom Kerrigan.
+Esto está fuertemente inspirado en el motor TSCP\cite{tscp} de Tom
+Kerrigan.
+
+\subsection{Evaluación lazy}
+
+Uno de los puntos más costosos del motor es la evaluación de cada
+pieza. Para tratar de evitar esto, se divide a la evaluación en etapas,
+cada una con una cota. Cuando se debe evaluar un nodo, se procede por
+etapas, teniendo en cuenta las cotas de las etapas siguientes.
+\\
+
+Llamemos $ev(i)$ a la evaluación del tablero hasta la etapa $i$-ésima
+y $C$ a la suma de las cotas de todas las etapas siguientes. Si ocurre
+que $ev(i) - C > \beta$, entonces la verdadera evaluación también
+será mayor a $\beta$, con lo cual se puede concluir que ocurrirá un
+corte y dejar de evaluar el nodo (devolver $\beta$).
 
 \section{Extensiones/Reducciones}
 
@@ -485,77 +545,75 @@ evaluación en un tablero muy inestable.
 \subsection{Extensión por movida forzada}
 Si el tablero actual tiene una sola movida posible, se agrega 1 a la
 profundidad máxima, debido a que este nivel fue ``desperdiciado'' de
-algunamanera.
-
-\section{Resultados}
-Durante el desarrollo se usó de oponente a Fairymax, un motor de
-ajedrez basado de $\mu$-Max (Micro-Max) que juega a un nivel intermedio
-($\sim$2000 ELO). En la versión 0.4 de ICE, ICE parece ser claramente
-superior. Se corrieron 50 partidas en formato 40/4 (40 movidas en
-4 minutos) y el resultado fue 33-10-7 (33 victorias, 10 empates, 7
-derrotas) a favor de ICE.
-
-El registro de partidas se puede encontrar
-\href{http://labdcc.fceia.unr.edu.ar/~gmartinez/ice\_fairy\_40\_4.pgn}
-{aquí}:
-
-\section{Reflexiones}
-Sin duda algo a mejorar es la evaluación de tablero. Escribir una buena
-función de evaluación de tablero requiere muchísimo conocimiento
-del dominio, y por lo general es llevado a cabo por expertos en el
-juego junto a programadores. Sin duda, yo no tengo un nivel ni siquiera
-intermedio del juego, por lo cual me limité a leer y aplicar técnicas
-existentes y bien conocidas.
+alguna manera.
 \\
 
-Se podría paralelizar la búsqueda, aunque esto es algo no trivial
-debido a la naturaleza secuencial del Alpha-Beta. Al paralelizar
-seguramente exploraríamos mas nodos que de forma secuencial, debido a
-que no conoceremos exactamente la ventana en la cual tenemos que buscar.
-Sin embargo, creo que se verían mejoras notables. Esto ya existe en
-otros motores.
+Esto sólo puede saberse cuando terminamos la búsqueda en el nodo
+(debido a que no sabemos cuales de las pseudo-sucesoras son válidas
+hasta ese momento), por lo cual la búsqueda es reiniciada con mayor
+profundidad. La gravedad de esto es disminuída por la tabla de
+transposición.
+
+\section{Resultados}
+Durante el desarrollo se usó de oponente a Fairymax\cite{fairymax},
+un motor de ajedrez basado de $\mu$-Max (Micro-Max) que juega a un
+nivel intermedio ($\sim$2000 ELO\cite{wiki:elo}). En su versión 0.7,
+\ICE{} parece ser claramente superior. Se corrieron 400 partidas en
+formato 40/4 (40 movidas en 4 minutos) y el resultado fue 225-91-84
+(victorias-empates-derrotas) a favor de \ICE{}.
+
+Para la modalidad 40/1 (partidas más rápidas) el resultado fue mas
+marcado: 249-79-72.
+
+El registro de partidas se puede encontrar aquí:
+\url{http://labdcc.fceia.unr.edu.ar/~gmartinez/ice/fairy\_40\_4.pgn.gz}
+y
+\url{http://labdcc.fceia.unr.edu.ar/~gmartinez/ice/fairy\_40\_1.pgn.gz}
+
+\section{Reflexiones y trabajo futuro}
+Sin duda algo a mejorar de \ICE{} es la evaluación de tablero. Escribir
+una buena función de evaluación de tablero requiere muchísimo
+conocimiento del dominio, y por lo general es llevado a cabo por
+expertos en el juego junto a programadores. La evaluación actual es muy
+básica.
+\\
+
+Se podría paralelizar la búsqueda\cite{parallel-ab}, aunque esto
+es algo no trivial debido a la naturaleza secuencial del Alpha-Beta.
+Al paralelizar seguramente exploraríamos más nodos que de forma
+secuencial (debido a que no tendremos la ventana exacta), Sin embargo,
+se observan mejoras notables en otros motores como crafty \cite{crafty}
+\cite{crafty-threads}.
 \\
 
 Otras mejoras pueden ser hacer que el límite de tiempo sea algo más
-inteligente (tener en cuenta cuanto tiempo lleva usado cada jugador,
-y el límite del partido, si es que existe) y hacer que nuestro motor
-``piense'' durante el turno del otro (conocido como \emph{Pondering}).
+inteligente: podría tener en cuenta cuanto tiempo lleva usado cada
+jugador, y el límite del partido, si es que existe, para evaluar
+mejor cuanto tiempo dedicar a una movida. Independientemente, se puede
+hacer que \ICE{} trabaje durante el turno del oponente (conocido como
+\emph{Pondering}\cite{pondering} \cite{wiki:pondering}).
 \\
 
 En algunos casos, con pocas movidas posibles, es bastante claro para un
 humano cual es la movida a elegir. Por ejemplo, si tenemos la opción
-entre avanzar un peón y mover la reina, estando la reina amenazada, es
-casi seguro que debemos mover la reina. Cómo el Alpha-Beta normal es un
-algoritmo para calcular la variación principal del juego, no tiene en
-cuenta que realmente sólo nos interesa saber que mover en la raíz, y
-podría hacer cálculos de más.
-
-Creo que comparando los valores de cada movida en la raíz a medida que
-aumentamos la profundidad puede ayudar a tomar una decisión sobre esto.
-Dicho de otra forma, solo debemos aumentar la profundidad en la medida
-que nos ayude a ``desempatar'' entre movidas del nodo raíz. Esta idea
-podría investigarse e implementarse.
+entre avanzar un peón y mover la reina, estando la reina amenazada,
+es casi seguro que debemos mover la reina. Si bien el Alpha-Beta
+funcionará rápido al detectar cortes ``evidentes'', podríamos tomar
+menos tiempo para esta movida. Evaluar esta idea e implementarla puede
+ser un trabajo futuro.
 \\
 
 Otras mejoras incluyen implementar nuevas heurísticas como Futility
 Pruning o cambiar el método de búsqueda a PVS o MTD(f).
 \\
 
-Algo pendiente es meter a ICE en un torneo de motores y ver los
+Algo pendiente es inscribir a \ICE{} en un torneo de motores y ver los
 resultados. De esta manera tendremos una buena estimación del puntaje
-ELO del motor.
+ELO del motor, algo que aún no se calculó.
 
-\begin{thebibliography}{9}
+\bibliographystyle{plain}
+\bibliography{bib.bib}
 
-\bibitem{piece-square-table}
-  http://chessprogramming.wikispaces.com/Simplified+evaluation+function
-
-\bibitem{zobrist}
-  http://en.wikipedia.org/wiki/Zobrist\_hashing
-
-\bibitem{protocol}
-  http://www.gnu.org/software/xboard/engine-intf.html
-
-\end{thebibliography}
+\end{multicols}
 
 \end{document}
