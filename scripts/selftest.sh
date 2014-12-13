@@ -46,7 +46,8 @@ while [ $i -lt $N ]; do
 	$cmd -xexit -mg 1 -tc 4 -mps 40 \
 		-fcp "$PLAYER1" -scp "$PLAYER2" -sgf "$FILE" \
 		-discourageOwnBooks true -usePolyglotBook true \
-		-polyglotBook scripts/test_book.bin -fNoOwnBookUCI \
+		-xmovesound \
+		-polyglotBook $(pwd)/scripts/test_book.bin -fNoOwnBookUCI \
 		-sNoOwnBookUCI "$@" &
 done
 wait
