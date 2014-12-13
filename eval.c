@@ -9,7 +9,7 @@ static inline score pieceScore() {
 	const int b = G->pieceScore[BLACK];
 	int bonus;
 
-	if (copts.h11n)
+	if (copts.h11n && w != b)
 		bonus = w > b ? (w + 1)/(b + 1) : -(b + 1)/(w + 1);
 	else
 		bonus = 0;
