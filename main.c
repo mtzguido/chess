@@ -439,6 +439,10 @@ int main(int argc, char **argv) {
 		bench_search_mode();
 		break;
 
+	case h11n_table:
+		h11n_table_mode();
+		break;
+
 	case version:
 		print_version();
 		exit(0);

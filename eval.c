@@ -2,6 +2,7 @@
 #include "check.h"
 #include "moves.h"
 #include "eval.h"
+#include <stdio.h>
 
 static inline score pieceScore() {
 	const int w = G->pieceScore[WHITE];
@@ -336,4 +337,34 @@ score boardEval() {
 	}
 
 	return score;
+}
+
+#define TABLE_STEP 250
+
+int h11n_table_mode() {
+	int i, j;
+	int sc;
+
+	startingGame();
+
+	printf("w\\b\t");
+	for (j = 0; j <= 4000; j += TABLE_STEP)
+		printf("%i\t", j);
+	printf("\n");
+	printf("-----------------------------------------------------------"
+	       "-----------------------------------------------------------\n");
+
+	for (i = 0; i <= 4000; i += TABLE_STEP) {
+		printf("%i\t| ", i);
+		for (j = 0; j <= 4000; j += TABLE_STEP) {
+			G->pieceScore[WHITE] = i;
+			G->pieceScore[BLACK] = j;
+
+			sc = pieceScore();
+			printf("%i\t", sc);
+		}
+		printf("\n");
+	}
+
+	return 0;
 }

@@ -17,4 +17,6 @@ extern const evalFun_t evalFuns[];
 extern const score evalBound[];
 extern const score fullBound;
 
+int h11n_table_mode(void);
+
 #endif

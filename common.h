@@ -58,6 +58,7 @@ enum play_mode {
 	board_eval,
 	bench_eval,
 	bench_search,
+	h11n_table,
 	version,
 	help,
 };
