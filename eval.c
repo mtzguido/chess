@@ -32,12 +32,12 @@ static inline score eval_wpawn(const int i, const int j) {
 		ret += DOUBLED_PAWN;
 
 	if (G->pawn_rank[WHITE][j] == 0
-			&& G->pawn_rank[WHITE][j+2] == 0)
+			&& G->pawn_rank[WHITE][j+2] == 0) {
 		ret += ISOLATED_PAWN;
-
-	if (G->pawn_rank[WHITE][j] < i &&
-			G->pawn_rank[WHITE][j+2] < i)
+	} else if (G->pawn_rank[WHITE][j] < i &&
+			G->pawn_rank[WHITE][j+2] < i) {
 		ret += BACKWARDS_PAWN;
+	}
 
 	if (G->pawn_rank[BLACK][j] >= i &&
 			G->pawn_rank[BLACK][j+1] >= i &&
@@ -53,13 +53,13 @@ static inline score eval_bpawn(const int i, const int j) {
 	if (G->pawn_rank[BLACK][j+1] < i)
 		ret += DOUBLED_PAWN;
 
-	if (G->pawn_rank[BLACK][j] == 0
-			&& G->pawn_rank[BLACK][j+2] == 0)
+	if (G->pawn_rank[BLACK][j] == 7
+			&& G->pawn_rank[BLACK][j+2] == 7) {
 		ret += ISOLATED_PAWN;
-
-	if (G->pawn_rank[BLACK][j] > i &&
-			G->pawn_rank[BLACK][j+2] > i)
+	} else if (G->pawn_rank[BLACK][j] > i &&
+			G->pawn_rank[BLACK][j+2] > i) {
 		ret += BACKWARDS_PAWN;
+	}
 
 	if (G->pawn_rank[WHITE][j] <= i &&
 			G->pawn_rank[WHITE][j+1] <= i &&
