@@ -2,12 +2,15 @@
 \usepackage[utf8]{inputenc}
 \usepackage[spanish]{babel}
 \usepackage{fullpage}
+\usepackage[]{units}
+\usepackage{xskak}
 \usepackage{chessfss}
 \usepackage{multicol}
 \usepackage{natbib}
 \usepackage[hyphens]{url}
 \usepackage{hyperref}
 \usepackage[hyphenbreaks]{breakurl}
+\usepackage{appendix}
 
 \newcommand{\ICE}[0]{{\bf ICE}}
 
@@ -35,37 +38,6 @@ Late move reduction y tablas de transposición.
 \end{abstract}
 
 \begin{multicols}{2}
-
-%% \section{Overview}
-%%
-%% Como es usual, el algoritmo de búsqueda elegido es Alpha-Beta con una
-%% búsqueda de quietud (\emph{Quiescence Search}) en los nodos terminales
-%% de la búsqueda.
-%% También se incluyen límites de tiempo para que una movida no tarde una
-%% cantidad exagerada de tiempo, y se implementa el protocol \emph{xboard}
-%% \cite{protocol} casi en su totalidad. Esto último significa que lo
-%% podemos comparar con otros motores existentes.
-%% \\
-%%
-%% Lo que mayormente define al motor son la representación del tablero,
-%% las heurísticas de ordenamiento de movidas, las reducciones y
-%% extensiones de búsqueda, y la evaluación de tablero.
-%% \\
-%%
-%% Para acelerar al motor, normalmente se usan una gran cantidad
-%% de heurísticas. Algunas de estas son teóricamente correctas
-%% (\emph{theoretically sound}) y otras no. Una heurística se llama
-%% teóricamente correcta si no afecta el resultado de la búsqueda,
-%% excepto tal vez por tomar otra variacion principal en el caso de que
-%% haya más de una con el mismo puntaje. Si pensamos a las funciones $S$ y
-%% $S'$ ($S'$ emplea alguna heurística $H$) como búsquedas que devuelven
-%% el \emph{conjunto} de variaciones principales de mayor puntaje, entonces
-%% $H$ es teorícamente correcta si $S(g, d) = S'(g, d)$ para todo tablero
-%% $g$ y profundidad $d$.
-%% \\
-%%
-%% Pasamos a detallar detalles de nuestro motor
-%% \\
 
 \section{Introducción}
 
@@ -523,9 +495,10 @@ Kerrigan.
 \subsection{Evaluación lazy}
 
 Uno de los puntos más costosos del motor es la evaluación de cada
-pieza. Para tratar de evitar esto, se divide a la evaluación en etapas,
-cada una con una cota. Cuando se debe evaluar un nodo, se procede por
-etapas, teniendo en cuenta las cotas de las etapas siguientes.
+pieza. Para tratar de evitar esto, se divide a la evaluación en
+etapas\cite{lazy-eval}, cada una con una cota. Cuando se debe evaluar un
+nodo, se procede por etapas, teniendo en cuenta las cotas de las etapas
+siguientes.
 \\
 
 Llamemos $ev(i)$ a la evaluación del tablero hasta la etapa $i$-ésima
@@ -603,6 +576,12 @@ menos tiempo para esta movida. Evaluar esta idea e implementarla puede
 ser un trabajo futuro.
 \\
 
+Por alguna razón, muchas partidas de \ICE{} contra Fairymax terminan
+en empates, incluso antes de llegar al juego medio (la partida 1
+del apéndice es un ejemplo). No se conoce bien la causa de esto.
+Investigarlo podría dar frutos.
+\\
+
 Otras mejoras incluyen implementar nuevas heurísticas como Futility
 Pruning o cambiar el método de búsqueda a PVS o MTD(f).
 \\
@@ -613,6 +592,184 @@ ELO del motor, algo que aún no se calculó.
 
 \bibliographystyle{plain}
 \bibliography{bib.bib}
+
+\end{multicols}
+
+\newpage
+\appendix
+\section{Algunos finales de \ICE{} vs Fairymax}
+
+\newcommand{\tie}[0]{\nicefrac{1}{2}-\nicefrac{1}{2}}
+\newcommand{\game}[2]{
+	\newchessgame
+	\parbox{0.5\textwidth}{
+	\begin{center}
+	 #2 \\
+	 \hidemoves{#1}
+	 \chessboard[arrow=to,
+		       smallboard,
+		       lastmoveid,
+		       showmover=false,
+		       pgfstyle=straightmove,color=red,
+		       markmove=\xskakget{movefrom}-\xskakget{moveto},
+	 ]
+	\end{center}
+	}
+}
+
+\begin{multicols}{2}
+
+\game{1.e4 e5 2.Nf3 Nc6 3.Nc3 Nf6 4.g3 Bc5 5.Bg2 d6 6.d3 a6 7.O-O O-O
+8.Re1 Ng4 9.Rf1 Nf6 10.Re1 Ng4 11.Rf1 Nf6}
+{1. \ICE{}-Fairymax \tie \\
+Empate por repetición}
+
+\game{1. d4 Nf6 2. c4 e6 3. Nc3 Bb4 4. e3 b6 5. Ne2 Ne4 6. Bd2 Nxd2 7.
+Qxd2 O-O 8. a3 Be7 9. Nf4 Nc6 10. O-O-O g5 11. Nh3 d5 12. Qe2 dxc4 13.
+Qxc4 Bb7 14. f4 gxf4 15. Nxf4 Bd6 16. Nb5 Bxf4 17. exf4 Qf6 18. d5 Na5
+19. Qb4 exd5 20. Rd3 c5 21. Rg3+ Kh8 22. Qd2 Rfc8 23. Qf2 d4 24. a4 a6
+25. Na3 Bc6 26. Nc4 Nxc4 27. Bxc4 Bxa4 28. Rg5 Re8 29. Bd3 h6 30. Rf5
+Qg6 31. Qh4 Re6 32. Re1 Rxe1+ 33. Qxe1 Qxg2 34. Rh5 Kg7 35. Qe5+ Kg8 36.
+Qe2 Qg1+ 37. Qf1 Qxf1+ 38. Bxf1 Kg7 39. Rh3 c4 40. Bxc4 Rc8 41. Rg3+ Kf6
+42. b3 b5 43. bxa4 bxc4 44. Rh3 Kg6 45. Kc2 Rc6 46. Rg3+ Kf5 47. Rg7 Rf6
+48. Rg2 Kxf4 49. h3 Ke3 50. h4 Rf2+ 51. Rxf2 Kxf2 52. Kb2 Ke1 53. Ka3 d3
+54. Kb4 d2 55. Kxc4 d1=Q 56. Kc5 Qxa4 57. h5 Qd7 58. Kc4 Qc6+ 59. Kd3
+Kf2 60. Kd4 Kg2 61. Kd3 Qc5 62. Ke4 Qc4+ 63. Ke5 Qc5+ 64. Ke4 Qd6 65.
+Kf5 Kf1 66. Kg4 Qe5 67. Kf3 Kg1 68. Kg4 Kg2 69. Kh4 Qg5\# }
+{2. Fairymax-\ICE{} 0-1 \\
+Jaque mate}
+
+\game{1. c4 c6 2. Nf3 d5 3. d4 Nf6 4. e3 Bf5 5. Nc3 e6 6. Nh4 Be4 7. Qb3
+Qc7 8. Nxe4 dxe4 9. f4 Be7 10. Bd2 Nbd7 11. O-O-O Nh5 12. g3 Bxh4 13.
+gxh4 Nhf6 14. Be2 O-O 15. Qc3 c5 16. Rdg1 cxd4 17. exd4 Kh8 18. Rg5 Rg8
+19. Be3 h6 20. Ra5 Rgd8 21. h5 Kg8 22. Rb5 Ne8 23. Rg1 Ndf6 24. Rc5 Qd7
+25. f5 exf5 26. Bxh6 Kh7 27. Bf4 Qxd4 28. Qxd4 Rxd4 29. Rxf5 Rd7 30. a4
+Rc8 31. b3 Rc6 32. Rfg5 Rd5 33. h4 Rd8 34. Be3 a6 35. c5 Rdc8 36. Bc4
+R6c7 37. Rf1 Re7 38. Rf4 Rc6 39. Rf2 Rcc7 40. Rff5 Red7 41. Rg3 Rc6 42.
+Rfg5 Rc8 43. b4 Rcd8 44. b5 axb5 45. axb5 Rc8 46. b6 Rcd8 47. Rf5 Ra8
+48. Kc2 Rc8 49. Rg1 Re7 50. Rg2 Nd7 51. Rxf7 Rxf7 52. Bxf7 Nef6 53. Be6
+Rc6 54. Bf5+ Kh8 55. h6 gxh6 56. Bxd7 Nxd7 57. Bd4+ Nf6 58. Rg6 Kh7 59.
+Rxf6 Rc8 60. c6 bxc6 61. Be5 Re8 62. b7 c5 63. Bd6 Kg7 64. Rf8 Rxf8 65.
+Bxf8+ Kxf8 66. b8=Q+ Kf7 67. Qb6 Ke7 68. Qxh6 Kd7 69. h5 Kc7 70. Qe3
+Kc6 71. h6 Kd5 72. h7 Ke5 73. h8=Q+ Ke6 74. Qxe4+ Kd7 75. Qhh7+ Kd6 76.
+Qhe7\# }
+{3. Fairymax-\ICE{} 1-0 \\
+Jaque mate}
+
+\game{1. e4 c5 2. Nf3 d6 3. d4 cxd4 4. Nxd4 Nf6 5. Nc3 Nc6 6. f3 e6 7.
+Be3 Be7 8. Qd2 O-O 9. O-O-O d5 10. exd5 Nxd5 11. Nxd5 Qxd5 12. c4 Qd6
+13. Nxc6 Qxc6 14. Be2 e5 15. Qc3 Bf6 16. Qc2 Be6 17. Bd3 h6 18. Bh7+ Kh8
+19. Be4 Qa6 20. a4 Bxc4 21. Bc5 Rfc8 22. b4 b6 23. Bxa8 bxc5 24. b5 Bxb5
+25. axb5 Bg5+ 26. Kb2 Qxb5+ 27. Qb3 Qe2+ 28. Qc2 Rb8+ 29. Kc3 Qxc2+ 30.
+Kxc2 Rxa8 31. Rd5 Rc8 32. Rxe5 Rc7 33. Re8+ Kh7 34. Ra1 Bf6 35. Ra2 c4
+36. Ra8 Bd4 37. Ra4 Kg6 38. h3 Bf2 39. Rd8 Kf5 40. g4+ Kf4 41. Rd3 Kg3
+42. Rc3 Bb6 43. f4+ Kxf4 44. Raxc4+ Rxc4 45. Rxc4+ Kg5 46. Rc3 h5 47.
+gxh5 Kxh5 48. Rf3 Kg6 49. Kc3 f5 50. Kc4 Kg5 51. Rg3+ Kf6 52. Kd5 f4 53.
+Rg4 Be3 54. Ke4 a5 55. h4 a4 56. h5 Kf7 57. Rg6 a3 58. Rc6 Bd2 59. Rc2
+Bb4 60. Kxf4 Ke6 61. Kg5 Kd5 62. Kg6 Bc5 63. Ra2 Kc4 64. Rc2+ Kd5 65.
+Ra2 Kc4 66. Rc2+ Kb4 67. Kf5 Bd4 68. Ke4 Kb3 69. Kd3 Be5 70. Rc6 a2 71.
+Rb6+ Ka3 72. Ra6+ Kb2 73. h6 gxh6 74. Rb6+ Kc1 75. Rc6+ Kb1 76. Rxh6 Bb2
+77. Ra6 a1=Q 78. Rxa1+ Kxa1}
+{4. Fairymax-\ICE{} \tie \\
+Material insuficiente}
+
+\game{1. c4 e5 2. Nc3 Nf6 3. g3 Bb4 4. Nf3 Nc6 5. Nd5 Bc5 6. Bg2 d6 7.
+O-O O-O 8. d3 Nxd5 9. cxd5 Nd4 10. Nxd4 Bxd4 11. e3 Bb6 12. e4 c6 13.
+dxc6 bxc6 14. Be3 Be6 15. d4 Qf6 16. d5 cxd5 17. Bxb6 axb6 18. exd5 Bf5
+19. Qb3 h6 20. Rfc1 Rfd8 21. Rc4 Rdb8 22. Rc6 b5 23. Qb4 Bd7 24. Qxd6
+Bxc6 25. Qxf6 gxf6 26. dxc6 Ra7 27. Rd1 Kg7 28. Bd5 Rd8 29. Kf1 b4 30.
+Ke1 f5 31. Bb3 Rxd1+ 32. Kxd1 Kf6 33. Kc2 Ke7 34. Kd3 Kd6 35. Kc4 Kxc6
+36. Kxb4 f6 37. a4 h5 38. Bc2 e4 39. Kc3 h4 40. b4 h3 41. b5+ Kc5 42.
+Kd2 Kb4 43. Ke2 Kc3 44. Bd1 Rd7 45. Ke1 Kb4 46. Ke2 Rd4 47. Ke1 Kc5 48.
+Bc2 Rb4 49. Kd2 Kd4 50. Ke1 Rb2 51. Kd2 Kc4 52. b6 Rxb6 53. Ke3 Rd6 54.
+a5 Kc3 55. Ba4 Rd3+ 56. Ke2 Kb4 57. Be8 Ra3 58. Bf7 Rxa5 59. Be6 Re5 60.
+Ba2 Rc5 61. Be6 Rc2+ 62. Ke3 Rc3+ 63. Ke2 Rc5 64. Ke3 Re5 65. Bc8 Ra5
+66. Kd4 Rc5 67. Bd7 Rc4+ 68. Ke3 Rc3+ 69. Ke2 Rf3 70. Be8 Kc5 71. Bh5
+Ra3 72. Bg6 Ra2+ 73. Ke3 Ra1 74. Bxf5 Re1+ 75. Kd2 Rf1 76. Ke3 Kd6 77.
+Ke2 Rb1 78. Bxe4 Rb2+ 79. Ke3 Ke5 80. Bd3 f5 81. Bf1 Rb3+ 82. Ke2 f4 83.
+Bxh3 f3+ 84. Kd2 Ke4 85. Kc2 Ra3 86. Kb2 Rd3 87. Kc1 Rc3+ 88. Kb2 Rc5
+89. Bf1 Ke5 90. h3 Kd4 91. h4 Ra5 92. Kb3 Ra1 93. Bh3 Kd3 94. Bc8 Ke2
+95. g4 Kxf2 96. Kb2 Rh1 97. Kc2 Kg3 98. h5 f2 99. Ba6 Kxg4 100. Kd2 Kf4
+101. Kc3 Ke3 102. h6 Rxh6 103. Bf1 Rh1 104. Bg2 Re1 105. Kb4 Kf4 106.
+Kc3 Rg1 107. Kd2 Rxg2 108. Ke2 Kg3 109. Kf1 Rg1+ 110. Ke2 f1=Q+ 111. Ke3
+Qc4 112. Kd2 Rg2+ 113. Ke1 Qc1\#}
+{5. \ICE{}-Fairymax 0-1 \\
+Jaque mate}
+
+\game{1. e4 c5 2. Nf3 Nc6 3. d4 cxd4 4. Nxd4 Nf6 5. Nc3 d6 6. Bg5 e6 7.
+Qd2 Be7 8. O-O-O O-O 9. f4 h6 10. Bh4 e5 11. Nf5 Bxf5 12. exf5 Qa5 13.
+a3 Rfd8 14. Be2 Nd7 15. Bxe7 Nxe7 16. Bf3 Nc5 17. g4 h5 18. f6 Ng6 19.
+gxh5 Nxf4 20. Rhg1 g6 21. Qe1 Kf8 22. h6 Kg8 23. Qh4 Kh7 24. Ne2 Nxe2+
+25. Bxe2 d5 26. Rgf1 Qb6 27. Rf3 Rac8 28. c3 d4 29. c4 e4 30. Rf2 Na4
+31. Bd3 exd3 32. Rxd3 Rxc4+ 33. Kb1 Nc3+ 34. Rxc3 Rxc3 35. a4 d3 36. Rd2
+Rc2 37. Rxc2 dxc2+ 38. Kxc2 Qc6+ 39. Kb1 Rd1+ 40. Ka2 Qd5+ 41. Qc4 Qxc4+
+42. b3 Qc3 43. b4 Ra1\#}
+{6. Fairymax-\ICE{} 0-1 \\
+Jaque mate}
+
+\game{1. e4 c5 2. f4 e6 3. Nc3 d5 4. Nf3 dxe4 5. Nxe4 Nc6 6. Bb5 Nf6 7.
+Bxc6+ bxc6 8. d3 Nxe4 9. dxe4 Qxd1+ 10. Kxd1 Be7 11. Kd2 O-O 12. Kc3 f5
+13. e5 a5 14. Nd2 Ba6 15. Nc4 Bxc4 16. Kxc4 Rab8 17. Rd1 Rb4+ 18. Kc3
+Re4 19. Rd7 Rf7 20. g3 Re2 21. Rc7 c4 22. Rxc6 Bb4+ 23. Kxc4 Rxc2+ 24.
+Kb5 Rb7+ 25. Ka6 Rxc6+ 26. Kxb7 Rc2 27. h3 h5 28. Ka6 Be1 29. a4 Bxg3
+30. Kxa5 g5 31. fxg5 Bxe5 32. Rb1 f4 33. b4 f3 34. Be3 f2 35. Rf1 Bg3
+36. b5 Re2 37. Bc5 e5 38. Kb6 Re1 39. Bxf2 Rxf1 40. Bxg3 e4 41. Kc6 Rc1+
+42. Kd5 e3 43. b6 Rb1 44. Kc6 Rc1+ 45. Kb5 h4 46. Bxh4 Rf1 47. b7 Kg7
+48. a5 e2 49. Kc5 Rc1+ 50. Kd5 Rd1+ 51. Kc4 Rc1+ 52. Kd3 Rd1+ 53. Kxe2
+Rb1 54. a6 Rb2+ 55. Kd1 Rb1+ 56. Kc2 Rb6 57. Bg3 Rxa6 58. b8=Q Rc6+ 59.
+Kd3 Rg6 60. Qe5+ Kg8 61. Qe8+ Kh7 62. Qf7+ Rg7 63. g6+ Kh6 64. Bf4+ Kh5
+65. Qf5+ Kh4 66. Qg4\#}
+{7. \ICE{}-Fairymax 1-0 \\
+Jaque mate}
+
+\game{1. d4 Nf6 2. c4 e6 3. Nc3 Bb4 4. Qc2 d5 5. cxd5 Qxd5 6. e3 c5 7.
+Bd2 Bxc3 8. Bxc3 cxd4 9. Bxd4 Nc6 10. Bc3 O-O 11. Nf3 Rd8 12. Be2 Qe4
+13. Qb3 h5 14. Bxf6 gxf6 15. O-O Rb8 16. Rad1 Bd7 17. Rd2 e5 18. Rfd1
+Be6 19. Qb5 Re8 20. a3 Ne7 21. Qc5 Qc6 22. Qb4 Qb6 23. Qxb6 axb6 24. Rd6
+Nc8 25. R6d3 Na7 26. Nd2 h4 27. Ne4 Kg7 28. Nd6 Re7 29. Rc3 Rd7 30. e4
+Nc6 31. Bb5 Nd4 32. Bxd7 Ne2+ 33. Kf1 Nxc3 34. Rd3 Bxd7 35. Rxc3 Be6 36.
+Ke2 Rg8 37. Rc7 h3 38. gxh3 Rh8 39. Rxb7 Rxh3 40. Rxb6 Rxh2 41. b4 Bg4+
+42. Kf1 Kg6 43. Rb8 Bh3+ 44. Ke1 Rh1+ 45. Kd2 Ra1 46. Rg8+ Kh5 47. Ra8
+Be6 48. b5 Rb1 49. Ra6 Rb2+ 50. Ke1 Rb1+ 51. Ke2 Rb2+ 52. Kf3 Bg4+ 53.
+Kg2 Kg6 54. Kg3 Be2 55. a4 Rb3+ 56. Kh2 Rf3 57. Kg1 Rh3 58. Nf5 Ra3 59.
+Kh2 Bd3 60. Nd6 Ra2 61. Kg2 Ra1 62. Ra8 Rb1 63. f3 Rb2+ 64. Kg3 Be2 65.
+Rg8+ Kh7 66. Rf8 Rb3 67. Kf2 Bxf3 68. Rxf7+ Kg6 69. Rf8 Bh5 70. a5 Rf3+
+71. Ke1 Re3+ 72. Kd2 Re2+ 73. Kd3 Re1 74. b6 Rb1 75. b7 Rb3+ 76. Kc4
+Rxb7 77. Nxb7 Bd1 78. Nc5 Be2+ 79. Kd5 Kg7 80. Rxf6 Kxf6 81. a6 Bxa6 82.
+Nxa6 Ke7 83. Kxe5 Kd7 84. Kd5 Kd8 85. e5 Ke8 86. e6 Kd8 87. Kd6 Ke8 88.
+Nc7+ Kf8 89. e7+ Kg8 90. Ke5 Kh7 91. e8=Q Kh6 92. Kf6 Kh7 93. Qd8 Kh6
+94. Qh8\#}
+{8. \ICE{}-Fairymax 1-0 \\
+Jaque mate}
+
+\game{1. d4 Nf6 2. c4 e6 3. Nf3 b6 4. g3 Ba6 5. Qb3 Nc6 6. Nbd2 d5 7.
+Bg2 Qd7 8. Ne5 Nxe5 9. dxe5 dxc4 10. Nxc4 O-O-O 11. O-O Qd4 12. exf6
+Bxc4 13. Qf3 Rd5 14. Be3 Qxb2 15. Rfb1 Qxe2 16. Qxe2 Bxe2 17. Bxd5 exd5
+18. Re1 Bc4 19. Bd4 gxf6 20. Bxf6 Rg8 21. Re8+ Kb7 22. Be5 Bb5 23. Rd8
+Bc6 24. Bc3 a5 25. Rb1 Ka6 26. Bd2 Rh8 27. Rc1 Kb7 28. Bc3 Rg8 29. Bxa5
+bxa5 30. Rb1+ Ka7 31. Rc8 Ka6 32. Rbb8 d4 33. Rxf8 Rxf8 34. Rxf8 Bd5
+35. Rd8 c6 36. f4 Kb5 37. Kf2 Kb4 38. Ra8 Bxa2 39. f5 Bd5 40. f6 a4 41.
+Rb8+ Kc3 42. Rb1 a3 43. Rc1+ Kb2 44. Re1 a2 45. Re2+ Kb3 46. Re1 Kc2 47.
+Re2+ Kc3 48. Re1 d3 49. Rc1+ Kd2 50. Rf1 Kc2 51. Ke3 d2 52. Rf2 a1=Q 53.
+Rxd2+ Kc3 54. Rd3+ Kc4 55. Ke2 Qb2+ 56. Ke3 Qe5+ 57. Kd2 Qg5+ 58. Ke2
+Qh5+ 59. g4 Qxg4+ 60. Kd2 Qg2+ 61. Ke3 Qf3+ 62. Kd2 Qf2+ 63. Kc1 Kxd3
+64. Kb1 Qc2+ 65. Ka1 Qc1\#}
+{9. Fairymax-\ICE{} 0-1 \\
+Jaque mate}
+
+\game{1. c4 Nf6 2. Nc3 d5 3. cxd5 Nxd5 4. g3 g6 5. Bg2 Nb6 6. d3 Bg7 7.
+Be3 Nc6 8. Nf3 Bxc3+ 9. bxc3 e5 10. Bh6 Qf6 11. O-O Qe7 12. a4 Nd7 13.
+h4 Nf6 14. Qb3 Ng4 15. Bc1 Qe6 16. Qa3 h6 17. Rb1 f5 18. Bd2 e4 19. dxe4
+fxe4 20. Nd4 Nxd4 21. cxd4 Rh7 22. f3 e3 23. Bc1 Nf6 24. Bxe3 Qe7 25.
+Qxe7+ Rxe7 26. Bxh6 Rxe2 27. Bg5 Kf7 28. Rfc1 c6 29. Bf1 Re7 30. Bc4+
+Kg7 31. g4 Rd7 32. Be6 Re7 33. d5 Bxe6 34. dxe6 Rae8 35. f4 Rc7 36. f5
+Nxg4 37. Rd1 Nf6 38. Bf4 Rce7 39. Bd6 gxf5 40. Bxe7 Rxe7 41. Rd2 Nd5 42.
+h5 Kf6 43. h6 Rh7 44. Re1 Rxh6 45. Rxd5 cxd5 46. e7 Rh8 47. e8=Q Rxe8
+48. Rxe8 a6 49. a5 f4 50. Kf2 Kf5 51. Kf3 d4 52. Re7 d3 53. Rxb7 Ke5 54.
+Rd7 Kf5 55. Rxd3 Ke5 56. Rd7 Kf6 57. Kxf4 Kg6 58. Ke5 Kg5 59. Rg7+ Kh4
+60. Kf5 Kh3 61. Kf4 Kh2 62. Kf3 Kh1 63. Kf2 Kh2 64. Rh7\#}
+{10. Fairymax-\ICE{} 1-0 \\
+Jaque mate}
 
 \end{multicols}
 
