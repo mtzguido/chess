@@ -304,7 +304,7 @@ const evalFun_t evalFuns[] = {
 
 const int nEval = ARRSIZE(evalFuns);
 
-#define EVAL_MATERIAL_BOUND	4100
+#define EVAL_MATERIAL_BOUND	9000
 #define EVAL_CASTLING_BOUND	15
 #define EVAL_CHECK_BOUND	100
 #define EVAL_KING_BOUND		100
