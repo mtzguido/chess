@@ -187,7 +187,7 @@ int isFinished() {
 		}
 	}
 
-	if (inCheck(G->turn))
+	if (inCheck())
 		return WIN(flipTurn(G->turn));
 	else
 		return DRAW_STALE;

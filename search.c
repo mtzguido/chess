@@ -95,7 +95,7 @@ static inline void sort_succ(int i) {
 static inline int calcExtension(int depth) {
 	int ret = 0;
 
-	if (inCheck(G->turn) || hstack[hply - 1].was_promote)
+	if (inCheck() || hstack[hply - 1].was_promote)
 		ret++;
 
 	return ret;
@@ -114,7 +114,7 @@ static inline score null_move_score(int depth, score alpha, score beta)
 	 * Dont null-move when in check or when low in material since
 	 * we're likely to be in Zugzwang
 	 */
-	if (inCheck(G->turn) || G->pieceScore[G->turn] <= NMH_THRESHOLD)
+	if (inCheck() || G->pieceScore[G->turn] <= NMH_THRESHOLD)
 		goto dont;
 
 	if (depth <= NMH_REDUCTION)
@@ -136,7 +136,6 @@ static inline score null_move_score(int depth, score alpha, score beta)
 	first_succ[ply] = first_succ[ply - 1];
 
 	t = -negamax(depth - NMH_REDUCTION - 1, NULL, -beta, -alpha);
-
 
 	undoMove();
 	return t;
@@ -404,7 +403,7 @@ score _negamax(int depth, move *mm, score alpha, score beta) {
 			&& i >= first_succ[ply - 1] + LMR_FULL
 			&& ply - 1 >= LMR_MINDEPTH
 			&& gsuccs[i].s * 3 < gsuccs[first_succ[ply - 1]].s
-			&& !inCheck(G->turn)
+			&& !inCheck()
 			&& depth >= 2
 			&&  hstack[hply - 1].capt == EMPTY
 			&& !hstack[hply - 1].was_promote) {
@@ -450,7 +449,7 @@ score _negamax(int depth, move *mm, score alpha, score beta) {
 	if (nvalid == 0) {
 		assert(!mm);
 
-		if (inCheck(G->turn))
+		if (inCheck())
 			ret = -CHECKMATE_SCORE + ply;
 		else
 			ret = 0; /* Stalemate */

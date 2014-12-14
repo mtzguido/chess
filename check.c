@@ -218,13 +218,14 @@ static bool inCheck_pawn(int kr, int kc, int who) {
 }
 
 static bool inCheck_king() {
-	/* Simplemente viendo la distancia */
+	/* Just by looking at the distance between kings */
 
 	return     abs(G->kingx[0] - G->kingx[1]) <= 1
 		&& abs(G->kingy[0] - G->kingy[1]) <= 1;
 }
 
-bool inCheck(int who) {
+bool inCheck() {
+	const int who = G->turn;
 	u8 kr, kc;
 
 	if (G->inCheck[who] != -1)

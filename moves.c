@@ -308,7 +308,7 @@ static bool doMoveRegular(const move * const m, bool check) {
 }
 
 static bool doMoveNull(const move * const m, bool check) {
-	if (inCheck(G->turn))
+	if (inCheck())
 		return false;
 
 	return true;
@@ -328,7 +328,7 @@ static bool doMoveKCastle(const move * const m, bool check) {
 		}
 	}
 
-	if (inCheck(m->who))
+	if (inCheck())
 		return false;
 
 	{
@@ -339,7 +339,7 @@ static bool doMoveKCastle(const move * const m, bool check) {
 		G->kingy[m->who] = 5;
 		G->inCheck[m->who] = -1;
 
-		if (inCheck(m->who)) {
+		if (inCheck()) {
 			*G = bak;
 			return false;
 		}
@@ -349,7 +349,7 @@ static bool doMoveKCastle(const move * const m, bool check) {
 		G->kingy[m->who] = 6;
 		G->inCheck[m->who] = -1;
 
-		if (inCheck(m->who)) {
+		if (inCheck()) {
 			*G = bak;
 			return false;
 		}
@@ -388,7 +388,7 @@ static bool doMoveQCastle(const move * const m, bool check) {
 		}
 	}
 
-	if (inCheck(m->who))
+	if (inCheck())
 		return false;
 
 	{
@@ -399,7 +399,7 @@ static bool doMoveQCastle(const move * const m, bool check) {
 		G->kingy[m->who] = 3;
 		G->inCheck[m->who] = -1;
 
-		if (inCheck(m->who)) {
+		if (inCheck()) {
 			*G = bak;
 			return false;
 		}
@@ -409,7 +409,7 @@ static bool doMoveQCastle(const move * const m, bool check) {
 		G->kingy[m->who] = 2;
 		G->inCheck[m->who] = -1;
 
-		if (inCheck(m->who)) {
+		if (inCheck()) {
 			*G = bak;
 			return false;
 		}
@@ -497,7 +497,7 @@ static bool __doMove(const move * const m, bool check) {
 	 * undo the move if so
 	 */
 	if (G->inCheck[G->turn] == 1  ||
-		(G->inCheck[G->turn] == -1 && inCheck(G->turn)))
+		(G->inCheck[G->turn] == -1 && inCheck()))
 		goto fail_undo;
 
 	G->turn = flipTurn(G->turn);

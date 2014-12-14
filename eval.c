@@ -282,16 +282,16 @@ static score boardEval_king() {
 	return G->turn == WHITE ? score : -score;
 }
 
+/*
+ * The only player that can be in check is the current one,
+ * and that's the one we're evaluating for so there's no need
+ * to check G->turn.
+ */
 static score boardEval_check() {
-	score score = 0;
-
-	if (inCheck(WHITE)) score += INCHECK;
-	if (inCheck(BLACK)) score -= INCHECK;
-
-	assert(score < maxScore);
-	assert(score > minScore);
-
-	return G->turn == WHITE ? score : -score;
+	if (inCheck())
+		return INCHECK;
+	else
+		return 0;
 }
 
 const evalFun_t evalFuns[] = {

@@ -2,7 +2,8 @@
 #define __CHECK_H
 
 #include <stdbool.h>
+#include "board.h"
 
-bool inCheck(int who);
+bool inCheck();
 
 #endif
