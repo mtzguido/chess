@@ -182,8 +182,7 @@ static void xboard_main() {
 
 			/*
 			 * Try to leave at least 500ms as a margin
-			 * just in case, but always use at least 100ms
-			 * for the current move
+			 * just in case
 			 */
 			assert(timeleft >= 200);
 			if (movesmax == 0)
@@ -194,7 +193,7 @@ static void xboard_main() {
 			dbg("timing info: %i %i %i %i = %lli\n", movesleft,
 					movesmax, timeleft, timemax, maxms);
 
-			move m = machineMove(max(maxms, 100));
+			move m = machineMove(maxms);
 
 			check = doMove(m);
 			assert(check);
