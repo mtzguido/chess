@@ -228,6 +228,9 @@ static void xboard_main() {
 			case DRAW_STALE:
 				printf("1/2-1/2 {Stalemate}\n");
 				break;
+			case DRAW_MATERIAL:
+				printf("1/2-1/2 {Insufficient mating material}\n");
+				break;
 			case WIN(WHITE):
 				printf("1-0 {Checkmate}\n");
 				break;

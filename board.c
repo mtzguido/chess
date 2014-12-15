@@ -125,6 +125,20 @@ void printBoard() {
 	dbg("[ pps o e = %i %i\n", G->pps_O, G->pps_E);
 	dbg("[ zobrist = 0x%" PRIx64 "\n", G->zobrist);
 	dbg("[ idlecount = %i\n", G->idlecount);
+	dbg("[ n_piece(W) = %i, %i, %i, %i, %i, %i\n",
+			G->n_piece[WPAWN],
+			G->n_piece[WKNIGHT],
+			G->n_piece[WBISHOP],
+			G->n_piece[WROOK],
+			G->n_piece[WQUEEN],
+			G->n_piece[WKING]);
+	dbg("[ n_piece(B) = %i, %i, %i, %i, %i, %i\n",
+			G->n_piece[BPAWN],
+			G->n_piece[BKNIGHT],
+			G->n_piece[BBISHOP],
+			G->n_piece[BROOK],
+			G->n_piece[BQUEEN],
+			G->n_piece[BKING]);
 	dbg("[ piecemask[W] = 0x%.16" PRIx64 "\n", G->piecemask[WHITE]);
 	dbg("[ piecemask[B] = 0x%.16" PRIx64 "\n", G->piecemask[BLACK]);
 	tostr(bbuf);
@@ -155,6 +169,37 @@ char charOf(int piece) {
 	return 'x';
 }
 
+static bool insufMaterial() {
+	const int P = G->n_piece[WPAWN];
+	const int N = G->n_piece[WKNIGHT];
+	const int B = G->n_piece[WBISHOP];
+	const int R = G->n_piece[WROOK];
+	const int Q = G->n_piece[WQUEEN];
+	const int p = G->n_piece[BPAWN];
+	const int n = G->n_piece[BKNIGHT];
+	const int b = G->n_piece[BBISHOP];
+	const int r = G->n_piece[BROOK];
+	const int q = G->n_piece[BQUEEN];
+
+	if (P || p)
+		return false;
+
+	if (Q || R || q || r)
+		return false;
+
+	/* Only Knights and Bishops */
+
+	/* No knights and 1 bishop */
+	if (n + N == 0 && b + B == 1)
+		return true;
+
+	/* No bishops and one knight */
+	if (n + N == 1 && b + B == 0)
+		return true;
+
+	return false;
+}
+
 /*
  * Doesn't use succesor info, so it's fast and
  * suitable to use in the searches
@@ -163,7 +208,13 @@ bool isDraw() {
 	int r = reps();
 
 	assert(r > 0);
-	return r >= 3 || G->idlecount >= 100;
+	if (r >= 3 || G->idlecount >= 100)
+		return true;
+
+	if (insufMaterial())
+		return true;
+
+	return false;
 }
 
 int isFinished() {
@@ -176,6 +227,9 @@ int isFinished() {
 		return DRAW_3FOLD;
 	else if (G->idlecount >= 100)
 		return DRAW_50MOVE;
+
+	if (insufMaterial())
+		return DRAW_MATERIAL;
 
 	assert(ply == 0);
 	genSuccs();

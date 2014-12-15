@@ -65,9 +65,11 @@ extern game const G;
 #define flipTurn(t) (1^(t))
 
 /* Results */
-#define DRAW_STALE 10
-#define DRAW_3FOLD 11
-#define DRAW_50MOVE 12
+#define DRAW_STALE	10
+#define DRAW_3FOLD	11
+#define DRAW_50MOVE	12
+#define DRAW_MATERIAL	13
+
 #define WIN(p) (2+(p))
 
 /* Pieces */
