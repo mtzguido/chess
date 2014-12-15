@@ -23,7 +23,7 @@ void addon_reset() {
 	addon_for_each(reset);
 }
 
-void addon_notify_return(const move * const m, int depth, score score, flag_t flag) {
+void addon_notify_return(move m, int depth, score score, flag_t flag) {
 	addon_for_each(notify_return, m, depth, score, flag);
 }
 
@@ -31,7 +31,7 @@ void addon_notify_entry(int depth, score *alpha, score *beta) {
 	addon_for_each(notify_entry, depth, alpha, beta);
 }
 
-void addon_notify_cut(const move * const m, int depth) {
+void addon_notify_cut(move m, int depth) {
 	addon_for_each(notify_cut, m, depth);
 }
 

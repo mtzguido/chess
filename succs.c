@@ -21,7 +21,7 @@ static inline void addToRet_promote_f(move m);
 
 #define addToRet(m)							\
 	do {								\
-		assert(dbg_caps == NULL || isCapture(&m));		\
+		assert(dbg_caps == NULL || isCapture(m));		\
 		assert(m.who == G->turn);				\
 		addToRet_f(m);						\
 	} while(0)

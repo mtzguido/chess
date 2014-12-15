@@ -13,9 +13,9 @@ typedef enum {
 } flag_t;
 
 void addon_reset(void);
-void addon_notify_return(const move * const m, int depth, score s, flag_t flag);
+void addon_notify_return(move m, int depth, score s, flag_t flag);
 void addon_notify_entry(int depth, score *alpha, score *beta);
-void addon_notify_cut(const move * const m, int depth);
+void addon_notify_cut(move m, int depth);
 void addon_score_succs(int depth);
 
 #endif

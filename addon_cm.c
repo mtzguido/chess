@@ -16,22 +16,22 @@ void cm_reset() {
 void cm_score_succs(int depth) {
 	int i;
 
-	/* Find the counter move */
-	const move * const l = &hstack[hply - 1].m;
-	const move * const m = &counterTable[G->turn][l->r][l->c][l->R][l->C];
+	/* Buscamos la counter move */
+	const move l = hstack[hply - 1].m;
+	const move m = counterTable[G->turn][l.r][l.c][l.R][l.C];
 
-	if (m->move_type == MOVE_INVAL)
+	if (m.move_type == MOVE_INVAL)
 		return;
 
 	for (i = first_succ[ply]; i < first_succ[ply+1]; i++) {
-		if (equalMove(&gsuccs[i].m, m)) {
+		if (equalMove(gsuccs[i].m, m)) {
 			gsuccs[i].s += CM_SCORE;
 			break;
 		}
 	}
 }
 
-void cm_notify_cut(const move * const m, int depth) {
-	const move * const om = &hstack[hply - 1].m;
-	counterTable[G->turn][om->r][om->c][om->R][om->C] = *m;
+void cm_notify_cut(move m, int depth) {
+	move om = hstack[hply - 1].m;
+	counterTable[G->turn][om.r][om.c][om.R][om.C] = m;
 }

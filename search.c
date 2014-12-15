@@ -126,7 +126,7 @@ static inline score null_move_score(int depth, score alpha, score beta)
 
 	stats.null_tries++;
 
-	check = doMove(&m);
+	check = doMove(m);
 	/*
 	 * doMoveNull's only restriction is not being in check and we already
 	 * provided a case for that so this should never fail
@@ -231,9 +231,9 @@ static inline score _quiesce(score alpha, score beta) {
 	nvalid = 0;
 	for (i = first_succ[ply]; i < first_succ[ply+1]; i++) {
 		sort_succ(i);
-		const move * const m = &gsuccs[i].m;
+		const move m = gsuccs[i].m;
 
-		assert(m->move_type == MOVE_REGULAR);
+		assert(m.move_type == MOVE_REGULAR);
 
 		/* We only consider captures and promotions */
 		assert(isCapture(m) || isPromotion(m));
@@ -289,7 +289,7 @@ score _negamax(int depth, move *mm, score alpha, score beta) {
 	int i;
 	int ext;
 	int nvalid = 0;
-	const move * bestmove = NULL;
+	int bestmove = -1;
 
 	stats.nall++;
 
@@ -390,7 +390,7 @@ score _negamax(int depth, move *mm, score alpha, score beta) {
 
 	for (i = first_succ[ply]; i < first_succ[ply + 1]; i++) {
 		sort_succ(i);
-		const move * const m = &gsuccs[i].m;
+		const move m = gsuccs[i].m;
 
 		if (!doMove_unchecked(m))
 			continue;
@@ -426,8 +426,8 @@ score _negamax(int depth, move *mm, score alpha, score beta) {
 
 		if (t > best) {
 			best = t;
-			bestmove = m;
-			pv[ply][0] = *m;
+			bestmove = i;
+			pv[ply][0] = m;
 			pv_len[ply] = pv_len[ply + 1] + 1;
 			memcpy(&pv[ply][1], &pv[ply+1][0],
 			       sizeof(move) * pv_len[ply+1]);
@@ -442,7 +442,9 @@ score _negamax(int depth, move *mm, score alpha, score beta) {
 		}
 	}
 
-	if (!bestmove)
+	if (bestmove != -1)
+		stats.picked[bestmove - first_succ[ply]]++;
+	else
 		assert(timeup || nvalid == 0);
 
 	/* Was it a terminal board? */
@@ -455,7 +457,7 @@ score _negamax(int depth, move *mm, score alpha, score beta) {
 			ret = 0; /* Stalemate */
 	} else if (nvalid == 1 && alpha < beta && copts.forced_extend) {
 		__unused bool check;
-		check = doMove(bestmove);
+		check = doMove(gsuccs[bestmove].m);
 		assert(check);
 
 		alpha = alpha_orig;
@@ -470,10 +472,10 @@ score _negamax(int depth, move *mm, score alpha, score beta) {
 	} else {
 		flag_t flag;
 
-		assert(bestmove);
+		assert(bestmove != -1);
 
 		if (mm)
-			*mm = *bestmove;
+			*mm = gsuccs[bestmove].m;
 
 		ret = best;
 		assert(best != minScore);
@@ -487,7 +489,7 @@ score _negamax(int depth, move *mm, score alpha, score beta) {
 		else
 			flag = FLAG_EXACT;
 
-		addon_notify_return(bestmove, depth, ret, flag);
+		addon_notify_return(gsuccs[bestmove].m, depth, ret, flag);
 	}
 
 out:

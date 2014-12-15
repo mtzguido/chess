@@ -9,11 +9,11 @@ static inline void trivial_reset()
 {
 }
 
-static inline void trivial_notify_cut(const move * const m, int depth)
+static inline void trivial_notify_cut(move m, int depth)
 {
 }
 
-static inline void trivial_notify_return(const move * const m, int depth, score score,
+static inline void trivial_notify_return(move m, int depth, score score,
 					 flag_t flag)
 {
 }

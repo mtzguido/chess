@@ -5,9 +5,9 @@
 
 void killer_reset(void);
 void killer_score_succs(int depth);
-void killer_notify_cut(const move * const m, int depth);
+void killer_notify_cut(move m, int depth);
 
-static inline void killer_notify_return(const move * const m, int depth, score score,
+static inline void killer_notify_return(move m, int depth, score score,
 					flag_t flag)
 {
 }

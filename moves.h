@@ -4,8 +4,8 @@
 #include "board.h"
 #include "common.h"
 
-bool doMove(const move * const m);
-bool doMove_unchecked(const move * const m);
+bool doMove(move m);
+bool doMove_unchecked(move m);
 void undoMove(void);
 
 #define MAX_HPLY 2000
