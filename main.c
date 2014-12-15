@@ -280,19 +280,15 @@ static void xboard_main() {
 
 			continue;
 		} else if (!strcmp("black", cmd)) {
-			/* Ignore */
 			continue;
 		} else if (!strcmp("computer", cmd)) {
-			/* Ignore */
 			continue;
 		} else if (!strcmp("easy", cmd)) {
-			/* Ignore */
 			continue;
 		} else if (!strcmp("force", cmd)) {
 			ourPlayer = 2; /* No one */
 			continue;
 		} else if (!strcmp("hard", cmd)) {
-			/* Ignore */
 			continue;
 		} else if (!strcmp("level", cmd)) {
 			int t;
@@ -309,8 +305,8 @@ static void xboard_main() {
 			timeleft = timemax;
 			continue;
 		} else if (!strcmp("nopost", cmd)) {
+			continue;
 		} else if (!strcmp("otim", cmd)) {
-			/* Ignore */
 			continue;
 		} else if (!strcmp("ping", cmd)) {
 			int n;
@@ -318,16 +314,16 @@ static void xboard_main() {
 			printf("pong %d\n", n);
 			continue;
 		} else if (!strcmp("post", cmd)) {
-			/* Ignore */
 			continue;
 		} else if (!strcmp("protover", cmd)) {
 			printf("feature colors=0 setboard=0 playother=0\n");
 			printf("feature ping=1 analyze=0 memory=0\n");
 			printf("feature done=1\n");
+			continue;
 		} else if (!strcmp("accepted", cmd)) {
-			/* Ignore */
+			continue;
 		} else if (!strcmp("rejected", cmd)) {
-			/* Ignore */
+			continue;
 		} else if (!strcmp("st", cmd)) {
 			sscanf(line, "st %d", &timemax);
 			timemax *= 1000;
@@ -338,10 +334,8 @@ static void xboard_main() {
 		} else if (!strcmp("quit", cmd)) {
 			break;
 		} else if (!strcmp("random", cmd)) {
-			/* Ignore */
 			continue;
 		} else if (!strcmp("result", cmd)) {
-			/* Ignore */
 			continue;
 		} else if (!strcmp("time", cmd)) {
 			sscanf(line, "time %d", &timeleft);
@@ -355,12 +349,11 @@ static void xboard_main() {
 
 			continue;
 		} else if (!strcmp("white", cmd)) {
-			/* Ignore */
 			continue;
 		} else if (!strcmp("xboard", cmd)) {
-			/* Ignore */
 			continue;
 		} else if (!strcmp("?", cmd)) {
+			continue;
 		} else {
 			__unused bool check;
 			/* It's likely a move, try to parse it */
