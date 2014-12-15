@@ -35,6 +35,9 @@ endif
 
 ifeq (${CONFIG_FLIPBIT},y)
 	CFLAGS += -DFLIPBIT
+
+	# mask-gen cares about this one
+	HOSTCFLAGS += -DFLIPBIT
 	MODS += FB
 endif
 
@@ -111,7 +114,7 @@ book.gen: book.txt tools/book-gen
 tools:
 	$(Q)mkdir tools
 
-tools/%.o: %.c | tools
+tools/%.o: %.c .config | tools
 	$(Q)$(SAY) "HOSTCC	$@"
 	$(Q)$(HOSTCC) -c $(HOSTCFLAGS) $< -o $@
 

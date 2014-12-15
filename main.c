@@ -145,6 +145,7 @@ static int checkMove(move m) {
 
 	move_text(m, buf);
 	dbg("Got illegal move? %s\n", buf);
+	assert(0);
 	return 1;
 }
 

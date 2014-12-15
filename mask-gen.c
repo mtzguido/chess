@@ -4,6 +4,7 @@
 #include <inttypes.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include "common.h"
 
 uint64_t mask[64];
 
@@ -30,27 +31,21 @@ void print_post() {
 	printf("/* Auto-generated file, do not edit */\n");
 }
 
-uint64_t bit(int i) {
-#ifdef FLIPBIT
-	return ((uint64_t)1) << (63 - i);
-#else
-	return ((uint64_t)1) << i;
-#endif
-}
-
 typedef bool (*genfun_t)(int r, int c, int R, int C);
 
 void genMask(genfun_t f) {
-	int i, j;
+	int r, c;
+	int R, C;
 
-	for (i = 0; i < 64; i++) {
-		for (j = 0; j < 64; j++) {
-			if (f(i/8, i%8, j/8, j%8))
-				mask[i] |= bit(j);
-			else
-				mask[i] &= ~bit(j);
-		}
-	}
+	for (r = 0; r < 8; r++) {
+	for (c = 0; c < 8; c++) {
+	for (R = 0; R < 8; R++) {
+	for (C = 0; C < 8; C++) {
+		if (f(r, c, R, C))
+			mask[8 * r + c] |= posbit(R, C);
+		else
+			mask[8 * r + c] &= ~posbit(R, C);
+	}}}}
 }
 
 bool knight(int r, int c, int R, int C) {
