@@ -1,6 +1,6 @@
 .PHONY:clean all doc autoversion.c
-CFLAGS=-Wc++-compat -Wall -Wextra -Wno-unused-parameter $(CFLAGS_EXTRA)
-LFLAGS=
+CFLAGS=-Wc++-compat -Wall -Wextra -Wno-unused-parameter -fprofile-use $(CFLAGS_EXTRA)
+LFLAGS=-fprofile-use
 HOSTCFLAGS=-Wc++-compat -Wall -Wextra -Wno-unused-parameter $(CFLAGS_EXTRA)
 HOSTLFLAGS=-g
 SHELL=/bin/bash
@@ -21,20 +21,25 @@ SAY = echo
 
 -include .config
 
+MODS =
 ifeq (${CONFIG_PROFOPT},y)
-	CFLAGS += -fprofile-generate -fprofile-use
+	CFLAGS += -fprofile-generate
 	LFLAGS += -fprofile-generate
+	MODS += PO
 endif
 
 ifeq (${CONFIG_FIXOPTS},y)
 	CFLAGS += -DFIXOPTS
+	MODS += FO
 endif
 
 ifeq (${CONFIG_FLIPBIT},y)
 	CFLAGS += -DFLIPBIT
+	MODS += FB
 endif
 
 ifeq (${CONFIG_DEBUG},y)
+	MODS += D
 else
 	CFLAGS += -DNDEBUG
 endif
@@ -42,6 +47,7 @@ endif
 ifeq (${CONFIG_RELEASE},y)
 	CFLAGS += -O99 -flto
 	LFLAGS += -flto=4 -fwhole-program
+	MODS += R
 else
 	CFLAGS += -g -pg
 	LFLAGS += -pg
@@ -50,7 +56,10 @@ endif
 CFLAGS += -DCFG_ZTABLE_SIZE=${CONFIG_ZTABLE_SIZE}
 HOSTCFLAGS += -DCFG_ZTABLE_SIZE=${CONFIG_ZTABLE_SIZE}
 CFLAGS += -DCFG_TTABLE_SIZE=${CONFIG_TTABLE_SIZE}
-CFLAGS += -DCHESS_VERSION='"$(shell git describe --dirty --tags)"'
+
+TAG = $(shell git describe --dirty --tags)
+MODS_STRING = $(if $(MODS),($(shell echo $(MODS) | sed 's/ /,/g')),)
+CFLAGS += -DCHESS_VERSION='"$(TAG)$(MODS_STRING)"'
 CFLAGS += -DCHESS_BUILD_DATE='"$(shell date)"'
 CFLAGS += -DCHESS_BUILD_HOST='"$(shell hostname)"'
 
@@ -102,14 +111,9 @@ book.gen: book.txt tools/book-gen
 tools:
 	$(Q)mkdir tools
 
-ifeq (${CROSS_COMPILE},)
-tools/%.o: %.o | tools
-	$(Q)cp $< $@
-else
 tools/%.o: %.c | tools
 	$(Q)$(SAY) "HOSTCC	$@"
 	$(Q)$(HOSTCC) -c $(HOSTCFLAGS) $< -o $@
-endif
 
 tools/book-gen: $(patsubst %, tools/%, book-gen.o board.o masks.o common.o \
 				       piece-square.o succs.o zobrist.o \

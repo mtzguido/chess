@@ -32,6 +32,7 @@ static void startingGame2() {
 	mark();
 }
 
+#ifndef FIXOPTS
 static int bench_search_mode() {
 	startingGame2();
 
@@ -91,6 +92,7 @@ static int bench_eval_mode() {
 	printf("%i evals in %.3fs\n", N, (t2-t1)/1000.0);
 	return 0;
 }
+#endif
 
 static int checkMove(move m) {
 	int i;
@@ -127,30 +129,6 @@ static int checkMove(move m) {
 	 */
 	printf("Illegal move\n");
 	return 1;
-}
-
-__unused
-static void logToBook(move m) {
-	static FILE *game_log = NULL;
-	static int movenum = 1;
-	struct pgn pp;
-	char mbuf[10];
-
-	if (!copts.log)
-		return;
-
-	if (game_log == NULL)
-		game_log = fopen("gamelog", "w");
-
-	pp = toPGN(m);
-	stringPGN(mbuf, pp);
-
-	fprintf(game_log, "%i. %s ", movenum, mbuf);
-
-	if (movenum % 2 == 0)
-		fprintf(game_log, "\n");
-
-	movenum++;
 }
 
 static void xboard_printmove(move m) {
@@ -423,6 +401,7 @@ int main(int argc, char **argv) {
 		xboard_main();
 		break;
 
+#ifndef FIXOPTS
 	case moves:
 		nmoves();
 		break;
@@ -442,6 +421,7 @@ int main(int argc, char **argv) {
 	case h11n_table:
 		h11n_table_mode();
 		break;
+#endif
 
 	case version:
 		print_version();
