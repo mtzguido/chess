@@ -59,6 +59,7 @@ enum play_mode {
 	bench_eval,
 	bench_search,
 	h11n_table,
+	print_sizes,
 	version,
 	help,
 };

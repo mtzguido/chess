@@ -92,6 +92,19 @@ static int bench_eval_mode() {
 	printf("%i evals in %.3fs\n", N, (t2-t1)/1000.0);
 	return 0;
 }
+
+static int print_sizes_mode() {
+#define psize(s) printf("%-30s = %lu\n", "sizeof(" #s ")", sizeof (s))
+	psize(int);
+	psize(struct game_struct);
+	psize(struct move);
+	psize(struct undo_info);
+	psize(struct stats);
+	psize(struct MS);
+	psize(struct opts);
+#undef psize
+	return 0;
+}
 #endif
 
 static int checkMove(move m) {
@@ -420,6 +433,10 @@ int main(int argc, char **argv) {
 
 	case h11n_table:
 		h11n_table_mode();
+		break;
+
+	case print_sizes:
+		print_sizes_mode();
 		break;
 #endif
 
