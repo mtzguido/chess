@@ -130,6 +130,7 @@ static void setPiece(i8 r, i8 c, piece_t piece) {
 		G->pps_E		-= piece_square_val_E(old_piece, r, c);
 		G->zobrist		^= ZOBR_PIECE(old_piece, r, c);
 		G->piecemask[old_who]	^= posbit(r, c);
+		G->n_piece[old_piece]--;
 	}
 
 	G->board[r][c] = piece;
@@ -150,6 +151,7 @@ static void setPiece(i8 r, i8 c, piece_t piece) {
 		G->pps_E		+= piece_square_val_E(piece, r, c);
 		G->pps_O		+= piece_square_val_O(piece, r, c);
 		G->pieceScore[who]	+= scoreOf(piece);
+		G->n_piece[piece]++;
 	}
 }
 
@@ -194,6 +196,7 @@ static void movePiece(i8 r, i8 c, i8 R, i8 C) {
 		G->pps_E		-= piece_square_val_E(to, R, C);
 		G->zobrist		^= ZOBR_PIECE(to, R, C);
 		G->piecemask[enemy]	^= posbit(R, C);
+		G->n_piece[to]--;
 	}
 
 	if (isPawn(from)) {
@@ -280,8 +283,9 @@ static bool doMoveRegular(move m, bool check) {
 	}
 
 	if (enemy_piece(m.R, m.C)) {
+		piece_t capt = G->board[m.R][m.C];
 		G->idlecount = 0;
-		hstack[hply].capt = G->board[m.R][m.C];
+		hstack[hply].capt = capt;
 	}
 
 	movePiece(m.r, m.c, m.R, m.C);

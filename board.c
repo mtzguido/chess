@@ -39,6 +39,8 @@ static void fix() {
 		G->pawn_rank[WHITE][i] = 0;
 		G->pawn_rank[BLACK][i] = 7;
 	}
+	for (i = 0; i < ARRSIZE(G->n_piece); i++)
+		G->n_piece[i] = 0;
 
 	for (i = 0; i < 8; i++) {
 		for (j = 0; j < 8; j++) {
@@ -54,6 +56,8 @@ static void fix() {
 					G->pieceScore[colorOf(piece)] += scoreOf(piece);
 				G->zobrist ^= ZOBR_PIECE(piece, i, j);
 				G->piecemask[colorOf(piece)] |= posbit(i, j);
+
+				G->n_piece[piece]++;
 			}
 
 			if (piece == WPAWN) {
