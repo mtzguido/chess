@@ -134,15 +134,6 @@ extern struct opts copts;
 
 void dbg(char *s, ...);
 
-static inline int fls_generic(u64 x) {
-	return __builtin_ffsll(x);
-}
-
-#define fls fls_generic
-
-#define mask_for_each(mask, temp, i)					\
-	for ((temp) = (mask);						\
-	     (temp) != 0 && ((i) = fls(temp) - 1, 1);			\
-	     (temp) = (temp) & ~((u64)1 << (i)))
+#include "bits.h"
 
 #endif
