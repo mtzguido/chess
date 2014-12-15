@@ -46,7 +46,7 @@ move parseMove(char *line) {
 	move m;
 
 	if (5 != (t=sscanf(line, "%c%i%c%i%c", &c, &r, &C, &R, &newpiece))
-			&& (newpiece = 0) /* muuuuuuy chanta */
+			&& (newpiece = 0, 1) /* muuuuuuy chanta */
 			&& (4 != (t=sscanf(line, "%c%i%c%i", &c, &r, &C, &R)))) {
 		m.move_type = MOVE_INVAL;
 		return m;

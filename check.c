@@ -227,11 +227,13 @@ static bool inCheck_king() {
 bool inCheck() {
 	const int who = G->turn;
 	u8 kr, kc;
+	int idx;
 
 	if (G->inCheck[who] != -1)
 		return G->inCheck[who];
 
-	if (!(G->piecemask[flipTurn(who)] & all_mask[8*G->kingx[who] + G->kingy[who]])) {
+	idx = 8 * G->kingx[who] + G->kingy[who];
+	if (!(G->piecemask[flipTurn(who)] & all_mask[idx])) {
 		G->inCheck[who] = 0;
 		return 0;
 	}

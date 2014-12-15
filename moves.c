@@ -34,7 +34,7 @@ game const G = &_G;
  * not matter that the piece is in fact a knight.
  */
 static bool danger(u8 r, u8 c, u8 kr, u8 kc) {
-	return all_mask[8*kr + kc] & posbit(r, c);
+	return all_mask[8 * kr + kc] & posbit(r, c);
 }
 
 static void set_castle_k(int who, bool val) {

@@ -109,6 +109,7 @@ static int print_sizes_mode() {
 
 static int checkMove(move m) {
 	int i;
+	char buf[120];
 
 	/*
 	 * Fix promotions to Knights or Queens,
@@ -141,6 +142,9 @@ static int checkMove(move m) {
 	 * like a good proud player and try to carry on
 	 */
 	printf("Illegal move\n");
+
+	move_text(m, buf);
+	dbg("Got illegal move? %s\n", buf);
 	return 1;
 }
 
@@ -369,8 +373,8 @@ static void xboard_main() {
 				continue;
 			}
 
-			dbg("Your move: %c%i -> %c%i\n", m.c + 'a', m.r,
-							 m.C + 'a', m.R);
+			dbg("Your move: %c%i -> %c%i\n", m.c + 'a', 8 - m.r,
+							 m.C + 'a', 8 - m.R);
 
 			if (checkMove(m)) {
 				printf("Error (illegal move): %s\n", line);
