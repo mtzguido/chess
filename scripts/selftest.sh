@@ -26,7 +26,7 @@ FILE=logs/LOG_$seq
 
 i=0
 th=0
-maxth=$(cat /proc/cpuinfo | grep 'cpu cores' | head -n 1 | grep -Eo '[0-9]*')
+maxth=$(getconf _NPROCESSORS_ONLN)
 while [ $i -lt $N ]; do
 	if [ $th -ge $maxth ]; then
 		wait -n
