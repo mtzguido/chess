@@ -28,6 +28,9 @@ static inline void reset_stats() {
 	n_collision		= 0;
 	stats.nopen_s		= 0;
 	stats.nopen_q		= 0;
+	stats.nvisit_s		= 0;
+	stats.nvisit_q		= 0;
+	stats.neval		= 0;
 	stats.ngen		= 0;
 	stats.nall		= 0;
 	stats.null_tries	= 0;
@@ -46,6 +49,8 @@ void print_stats(score exp, bool expect_ok) {
 	const struct stats S = stats;
 
 	dbg("stats: searched %lld (%lld) nodes\n", S.nopen_s, S.nopen_q);
+	dbg("stats: visited %lld (%lld) nodes\n", S.nvisit_s, S.nvisit_q);
+	dbg("stats: structure evals: %lld nodes\n", S.neval);
 	dbg("stats: branching aprox: %.3f\n", 1.0 * (S.nall - 1) / S.nopen_s);
 	dbg("stats: total nodes generated: %lld\n", S.ngen);
 	dbg("stats: null move cuts: %lld/%lld (%.2f%%)\n",

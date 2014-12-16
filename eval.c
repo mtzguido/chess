@@ -239,6 +239,8 @@ static score boardEval_material() {
 static score boardEval_structure() {
 	score score = 0;
 
+	stats.neval++;
+
 	/*
 	 * Con la información de los peones
 	 * evaluamos filas abiertas y status de peones

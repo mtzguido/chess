@@ -178,12 +178,12 @@ static inline score _quiesce(score alpha, score beta) {
 		}
 	}
 
+	stats.nvisit_q++;
+
 	if (isDraw() || reps() >= 2) {
 		ret = 0;
 		goto out;
 	}
-
-	stats.nopen_q++;
 
 	if (copts.lazy) {
 		score bound = fullBound;
@@ -226,6 +226,8 @@ static inline score _quiesce(score alpha, score beta) {
 		ret = ev;
 		goto out;
 	}
+
+	stats.nopen_q++;
 
 	genCaps_wrap(ply);
 	nvalid = 0;
@@ -309,6 +311,8 @@ score _negamax(int depth, move *mm, score alpha, score beta) {
 			}
 		}
 	}
+
+	stats.nvisit_s++;
 
 	/*
 	 * The absolute best we can ever do is CHECKMATE_SCORE - ply -
