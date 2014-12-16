@@ -148,8 +148,6 @@ static inline score eval_king(const u8 col, const int r, const int c) {
 	return ret;
 }
 
-static int bishop_count;
-
 static inline score eval_one_piece(const u8 col, const u8 r, const u8 c,
 				   piece_t piece) {
 	const int top = col == WHITE ? 0 : 7;
@@ -169,12 +167,6 @@ static inline score eval_one_piece(const u8 col, const u8 r, const u8 c,
 	case WKNIGHT:
 	case BKNIGHT:
 		return interpolate(0, KNIGHT_ENDGAME);
-
-	/* Count bishops */
-	case WBISHOP:
-	case BBISHOP:
-		bishop_count++;
-		return 0;
 
 	/* Bonus for rook on (semi)open files */
 	case WROOK:
@@ -197,8 +189,8 @@ static inline score eval_with_ranks(const u8 col) {
 	score score = 0;
 	u64 temp;
 	int i;
+	const piece_t bishop = col == WHITE ? WBISHOP : BBISHOP;
 
-	bishop_count = 0;
 	mask_for_each(G->piecemask[col], temp, i) {
 		const int r = bitrow(i);
 		const int c = bitcol(i);
@@ -207,7 +199,8 @@ static inline score eval_with_ranks(const u8 col) {
 		score += eval_one_piece(col, r, c, piece);
 	}
 
-	if (bishop_count > 1) score += DOUBLE_BISHOP;
+	if (G->n_piece[bishop] > 1)
+		score += DOUBLE_BISHOP;
 
 	return score;
 }
