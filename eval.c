@@ -69,14 +69,6 @@ static inline score eval_bpawn(const int i, const int j) {
 	return ret;
 }
 
-static inline score eval_pawn(const u8 col, const int i,
-			      const int j) {
-	if (col == WHITE)
-		return eval_wpawn(i, j);
-	else
-		return eval_bpawn(i, j);
-}
-
 static const score shield_own[8] = {
 	[0] = -999999,	/* Impossible */
 	[1] = 0,	/* Never moved */
@@ -160,8 +152,9 @@ static inline score eval_one_piece(const u8 col, const u8 r, const u8 c,
 	switch (piece) {
 	/* Evaluate pawns individually */
 	case WPAWN:
+		return eval_wpawn(r, c);
 	case BPAWN:
-		return eval_pawn(col, r, c);
+		return eval_bpawn(r, c);
 
 	/* Penalize knight at end game */
 	case WKNIGHT:
