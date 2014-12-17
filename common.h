@@ -49,6 +49,7 @@ typedef int16_t		i16;
 typedef int8_t		i8;
 
 unsigned long getms(void);
+unsigned long getms_clock(void);
 
 char pieceOf(char c);
 

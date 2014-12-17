@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <sys/time.h>
 #include <syslog.h>
+#include <time.h>
 
 #ifndef FIXOPTS
 struct opts copts;
@@ -51,4 +52,10 @@ unsigned long getms() {
 	gettimeofday(&tv, NULL);
 
 	return tv.tv_sec * 1000 + tv.tv_usec / 1000;
+}
+
+unsigned long getms_clock() {
+	clock_t t = clock();
+
+	return t * 1000 / CLOCKS_PER_SEC;
 }

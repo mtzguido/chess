@@ -84,10 +84,10 @@ static int bench_eval_mode() {
 	unsigned long long t1, t2;
 	startingGame2();
 
-	t1 = getms();
+	t1 = getms_clock();
 	for (i = 0; i < N; i++)
 		boardEval();
-	t2 = getms();
+	t2 = getms_clock();
 
 	printf("%i evals in %.3fs\n", N, (t2-t1)/1000.0);
 	return 0;
