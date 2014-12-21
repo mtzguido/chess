@@ -177,7 +177,6 @@ static inline score eval_one_piece(const u8 col, const u8 r, const u8 c,
 	return 0;
 }
 
-__attribute__((hot))
 static inline score eval_with_ranks() {
 	score score = 0;
 	u64 temp;

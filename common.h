@@ -8,6 +8,7 @@
 
 #define ARRSIZE(a) ((int)((sizeof (a))/(sizeof ((a)[0]))))
 #define __unused  __attribute__((unused))
+#define __noinline __attribute__ ((noinline))
 
 #define unlikely(c) __builtin_expect(c, 0)
 #define   likely(c) __builtin_expect(c, 1)
