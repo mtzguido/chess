@@ -4,7 +4,7 @@
 #include "eval.h"
 #include <stdio.h>
 
-static inline score pieceScore() {
+static score pieceScore() {
 	const int w = G->pieceScore[WHITE];
 	const int b = G->pieceScore[BLACK];
 	int bonus;
@@ -21,11 +21,11 @@ static inline score pieceScore() {
 	return ret;
 }
 
-static inline score ppsScore() {
+static score ppsScore() {
 	return interpolate(G->pps_O, G->pps_E);
 }
 
-static inline score eval_wpawn(const int i, const int j) {
+static score eval_wpawn(const int i, const int j) {
 	score ret = 0;
 
 	if (G->pawn_rank[WHITE][j+1] > i)
@@ -47,7 +47,7 @@ static inline score eval_wpawn(const int i, const int j) {
 	return ret;
 }
 
-static inline score eval_bpawn(const int i, const int j) {
+static score eval_bpawn(const int i, const int j) {
 	score ret = 0;
 
 	if (G->pawn_rank[BLACK][j+1] < i)
@@ -95,7 +95,7 @@ static const score shield_opp[8] = {
  * Subtract 7 for white to keep it from 0 to 7. 7 being
  * no pawn and 1 being a never advanced pawn
  */
-static inline score eval_wshield(const int c) {
+static score eval_wshield(const int c) {
 	assert(G->pawn_rank[BLACK][c+1] > 0);
 	assert(G->pawn_rank[BLACK][c+1] < 8);
 	assert(7 - G->pawn_rank[WHITE][c+1] > 0);
@@ -104,7 +104,7 @@ static inline score eval_wshield(const int c) {
 	     + shield_opp[G->pawn_rank[BLACK][c+1]];
 }
 
-static inline score eval_bshield(const int c) {
+static score eval_bshield(const int c) {
 	assert(G->pawn_rank[BLACK][c+1] > 0);
 	assert(G->pawn_rank[BLACK][c+1] < 8);
 	assert(7 - G->pawn_rank[WHITE][c+1] > 0);
@@ -113,7 +113,7 @@ static inline score eval_bshield(const int c) {
 	     + shield_opp[7 - G->pawn_rank[WHITE][c+1]];
 }
 
-static inline score eval_king(const u8 col, const int r, const int c) {
+static score eval_king(const u8 col, const int r, const int c) {
 	score ret = 0;
 	score (* const eval_shield)(int) =
 		col == WHITE ? eval_wshield : eval_bshield;
@@ -140,7 +140,7 @@ static inline score eval_king(const u8 col, const int r, const int c) {
 	return ret;
 }
 
-static inline score eval_one_piece(const u8 col, const u8 r, const u8 c,
+static score eval_one_piece(const u8 col, const u8 r, const u8 c,
 				   piece_t piece) {
 	const int top = col == WHITE ? 0 : 7;
 	const int bot = col == WHITE ? 7 : 0;
@@ -177,7 +177,7 @@ static inline score eval_one_piece(const u8 col, const u8 r, const u8 c,
 	return 0;
 }
 
-static inline score eval_with_ranks() {
+static score eval_with_ranks() {
 	score score = 0;
 	u64 temp;
 	u64 mask = G->piecemask[WHITE] | G->piecemask[BLACK];
@@ -204,7 +204,7 @@ static inline score eval_with_ranks() {
 	return score;
 }
 
-static inline score castle_score(const u8 col) {
+static score castle_score(const u8 col) {
 	if (!G->castled[col]) {
 		switch(2*G->castle_king[col] + G->castle_queen[col]) {
 		case 0x00: return CASTLE_NN;
