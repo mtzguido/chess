@@ -178,22 +178,29 @@ static inline score eval_one_piece(const u8 col, const u8 r, const u8 c,
 }
 
 __attribute__((hot))
-static inline score eval_with_ranks(const u8 col) {
+static inline score eval_with_ranks() {
 	score score = 0;
 	u64 temp;
+	u64 mask = G->piecemask[WHITE] | G->piecemask[BLACK];
 	int i;
-	const piece_t bishop = col == WHITE ? WBISHOP : BBISHOP;
 
-	mask_for_each(G->piecemask[col], temp, i) {
+	mask_for_each(mask, temp, i) {
 		const int r = bitrow(i);
 		const int c = bitcol(i);
-		const piece_t piece = G->board[r][c];
+		const piece_t piece = G->board[0][i];
+		const int col = colorOf(piece);
 
-		score += eval_one_piece(col, r, c, piece);
+		if (col == WHITE)
+			score += eval_one_piece(col, r, c, piece);
+		else
+			score -= eval_one_piece(col, r, c, piece);
 	}
 
-	if (G->n_piece[bishop] > 1)
+	if (G->n_piece[WBISHOP] > 1)
 		score += DOUBLE_BISHOP;
+
+	if (G->n_piece[BBISHOP] > 1)
+		score -= DOUBLE_BISHOP;
 
 	return score;
 }
@@ -231,8 +238,7 @@ static score boardEval_structure() {
 	 * Con la información de los peones
 	 * evaluamos filas abiertas y status de peones
 	 */
-	score += eval_with_ranks(WHITE);
-	score -= eval_with_ranks(BLACK);
+	score = eval_with_ranks();
 
 	assert(score < maxScore);
 	assert(score > minScore);
