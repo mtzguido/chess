@@ -1,15 +1,23 @@
 #ifndef __BITS_H
 #define __BITS_H
 
-static inline int fls_generic(u64 x) {
-	return __builtin_ffsll(x);
+static inline int fls_generic_1(u64 x) {
+	return __builtin_ffsll(x) - 1;
 }
 
-#define fls fls_generic
+static inline int fls_generic_2(u64 x) {
+	return 63 - __builtin_clzll(x);
+}
+
+static inline int fls_generic_3(u64 x) {
+	return __builtin_ctzll(x);
+}
+
+#define fls fls_generic_3
 
 #define mask_for_each(mask, temp, i)					\
 	for ((temp) = (mask);						\
-	     (temp) != 0 && ((i) = fls(temp) - 1, 1);			\
+	     (temp) != 0 && ((i) = fls(temp), 1);			\
 	     (temp) = (temp) & ~((u64)1 << (i)))
 
 static inline u64 posbit(int r, int c) {

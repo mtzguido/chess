@@ -79,9 +79,9 @@ static int board_eval_mode() {
 }
 
 static int bench_eval_mode() {
-	const int N = 1e6;
 	int i;
 	unsigned long long t1, t2;
+	const int N = 2e6;
 	startingGame2();
 
 	t1 = getms_clock();
