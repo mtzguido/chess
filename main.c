@@ -90,6 +90,7 @@ static int bench_eval_mode() {
 	t2 = getms_clock();
 
 	printf("%i evals in %.3fs\n", N, (t2-t1)/1000.0);
+	printf("That's 1 eval in %.3fus\n", 1000.0 * (t2-t1) / N);
 	return 0;
 }
 
