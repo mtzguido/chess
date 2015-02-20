@@ -18,7 +18,8 @@ static inline int fls_generic_3(u64 x) {
 #define mask_for_each(mask, temp, i)					\
 	for ((temp) = (mask);						\
 	     (temp) != 0 && ((i) = fls(temp), 1);			\
-	     (temp) = (temp) & ~((u64)1 << (i)))
+	     (temp) &= (temp) - 1					\
+	    )
 
 static inline u64 posbit(int r, int c) {
 #ifdef FLIPBIT
