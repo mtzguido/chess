@@ -5,10 +5,6 @@ static inline int fls_generic_1(u64 x) {
 	return __builtin_ffsll(x) - 1;
 }
 
-static inline int fls_generic_2(u64 x) {
-	return 63 - __builtin_clzll(x);
-}
-
 static inline int fls_generic_3(u64 x) {
 	return __builtin_ctzll(x);
 }
