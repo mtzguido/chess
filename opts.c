@@ -12,9 +12,10 @@
 	{ "no-" #name, no_argument, &copts.var, 0 }
 #define BOOL_OPT(name) BOOL_OPT2(name, name)
 
+#define INT_OPT2(name, name2)					\
+	{ #name, required_argument, NULL, OPT_##name2 }
 
-#define INT_OPT(name)						\
-	{ #name, required_argument, NULL, OPT_##name }
+#define INT_OPT(name)	INT_OPT2(name, name)
 
 #define MAYBE_INT_OPT(name)					\
 	{ #name, optional_argument, NULL, OPT_##name }
@@ -29,6 +30,7 @@ enum {
 	OPT_seed,
 	OPT_limit,
 	OPT_lbound,
+	OPT_bit_seed,
 	OPT_verbose,
 	OPT_pps,
 };
@@ -42,6 +44,7 @@ static const struct option long_opts[] = {
 	MODE_OPT(version, version),
 	MODE_OPT(bench-eval, bench_eval),
 	MODE_OPT(bench-search, bench_search),
+	MODE_OPT(bench-bits, bench_bits),
 	MODE_OPT(11n-table, h11n_table),
 	MODE_OPT(print-sizes, print_sizes),
 
@@ -53,6 +56,7 @@ static const struct option long_opts[] = {
 	INT_OPT(seed),
 	INT_OPT(limit),
 	INT_OPT(lbound),
+	INT_OPT2(bit-seed, bit_seed),
 	MAYBE_INT_OPT(verbose),
 	INT_OPT(pps),
 
@@ -100,6 +104,9 @@ int parse_opt(int argc, char **argv) {
 			break;
 		case OPT_lbound:
 			copts.lbound = atoi(optarg);
+			break;
+		case OPT_bit_seed:
+			copts.bit_seed = strtoul(optarg, NULL, 0);
 			break;
 		case OPT_verbose:
 			if (optarg)

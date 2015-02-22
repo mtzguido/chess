@@ -45,6 +45,27 @@ static int bench_search_mode() {
 	return 0;
 }
 
+static int bench_bits_mode() {
+	int i, t;
+	int s = 0;
+	int N = 3e6;
+	unsigned long long t1, t2;
+	u64 seed = copts.bit_seed;
+	u64 temp;
+
+	t1 = getms_clock();
+	for (i = 0; i < N; i++) {
+		mask_for_each(seed, temp, t)
+			s += t;
+	}
+	t2 = getms_clock();
+
+	printf("%i runs in %.3fs\n", N, (t2 - t1)/1000.0);
+	printf("That's 1 run in %.3fus\n", 1000.0 * (t2 - t1) / N);
+
+	return 0;
+}
+
 static int nmoves() {
 	int i;
 	move m;
@@ -89,8 +110,8 @@ static int bench_eval_mode() {
 		boardEval();
 	t2 = getms_clock();
 
-	printf("%i evals in %.3fs\n", N, (t2-t1)/1000.0);
-	printf("That's 1 eval in %.3fus\n", 1000.0 * (t2-t1) / N);
+	printf("%i evals in %.3fs\n", N, (t2 - t1)/1000.0);
+	printf("That's 1 eval in %.3fus\n", 1000.0 * (t2 - t1) / N);
 	return 0;
 }
 
@@ -430,6 +451,10 @@ int main(int argc, char **argv) {
 
 	case bench_search:
 		bench_search_mode();
+		break;
+
+	case bench_bits:
+		bench_bits_mode();
 		break;
 
 	case h11n_table:

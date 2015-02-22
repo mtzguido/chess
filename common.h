@@ -60,6 +60,7 @@ enum play_mode {
 	board_eval,
 	bench_eval,
 	bench_search,
+	bench_bits,
 	h11n_table,
 	print_sizes,
 	version,
@@ -77,6 +78,7 @@ struct opts {
 	int smart_stop;			/* Smart stopping */
 	int shuffle;			/* Shuffle the succ moves */
 	int book;			/* Use opening book */
+	u64 bit_seed;			/* Seed for bit benching */
 
 	bool custom_start;		/* Use a custom starting board */
 	char custom_start_str[100];	/* Custom board spec */
@@ -111,6 +113,7 @@ static const struct opts defopts = {
 	.smart_stop =		1,
 	.shuffle =		0,
 	.book =			1,
+	.bit_seed = 		(u64) 0xf0f0f0f0f0f0f0f0,
 
 	.verbosity =		0,
 	.syslog =		0,
