@@ -172,9 +172,12 @@ static score eval_one_piece(const u8 col, const u8 r, const u8 c,
 		} else {
 			return 0;
 		}
+
+	default:
+		return 0;
 	}
 
-	return 0;
+	__builtin_unreachable();
 }
 
 static score eval_with_ranks() {
@@ -213,6 +216,7 @@ static score castle_score(const u8 col) {
 		case 0x03: return CASTLE_YY;
 		}
 	}
+
 	return 0;
 }
 

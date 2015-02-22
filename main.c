@@ -48,7 +48,7 @@ static int bench_search_mode() {
 static int bench_bits_mode() {
 	int i, t;
 	int s = 0;
-	int N = 3e6;
+	int N = 5e6;
 	unsigned long long t1, t2;
 	u64 seed = copts.bit_seed;
 	u64 temp;
@@ -102,7 +102,7 @@ static int board_eval_mode() {
 static int bench_eval_mode() {
 	int i;
 	unsigned long long t1, t2;
-	const int N = 2e6;
+	const int N = 5e6;
 	startingGame2();
 
 	t1 = getms_clock();
