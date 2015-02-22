@@ -55,12 +55,14 @@ void trans_notify_entry(int depth, score *alpha, score *beta) {
 }
 
 void trans_score_succs(int depth) {
-	u64 key = G->zobrist;
-	u64 idx = key % CFG_TTABLE_SIZE;
+	const u64 key = G->zobrist;
+	const u64 idx = key % CFG_TTABLE_SIZE;
 	int i;
 
 	if (tt[idx].key != key)
 		return;
+
+	assert(tt[idx].m.move_type != MOVE_INVAL);
 
 	for (i = first_succ[ply]; i < first_succ[ply+1]; i++) {
 		if (equalMove(gsuccs[i].m, tt[idx].m)) {
