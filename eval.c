@@ -143,11 +143,12 @@ static score eval_king(const u8 col, const int r, const int c) {
 static score eval_one_piece(const u8 col, const u8 r, const u8 c,
 				   piece_t piece) {
 	const int top = col == WHITE ? 0 : 7;
-	const int bot = col == WHITE ? 7 : 0;
+	const int bot = 7 ^ top;
 	const int opp = flipTurn(col);
 
 	assert(piece != EMPTY);
 	assert(colorOf(piece) == col);
+	assert(piece == G->board[r][c]);
 
 	switch (piece) {
 	/* Evaluate pawns individually */
