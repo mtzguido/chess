@@ -20,7 +20,7 @@ void trivial_score_succs(int depth) {
 			gsuccs[i].s += PROMOTE_SCORE;
 		}
 
-		if (enemy_piece(m.R, m.C)) {
+		if (enemy != EMPTY) {
 			gsuccs[i].s += CAPT_SCORE;
 			gsuccs[i].s += mvv_lva(our, enemy);
 		} else {
