@@ -15,7 +15,7 @@
 /doc/*.bbl
 /doc/*.blg
 /doc/*.dvi
-/*.swp
+**/*.swp
 /tags
 /.config
 /logs/
@@ -23,3 +23,6 @@
 /.deps
 /profile
 /vprof
+/ice-*/**
+ice-old
+ice-new
