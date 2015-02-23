@@ -19,7 +19,7 @@ done
 
 while read board; do
 	for s in $SEEDS; do
-		RES=$(./ice --bench-search --seed $s --init "$board" "$1" | tail -n1)
+		RES=$(./ice --shuffle --bench-search --seed $s --init "$board" "$1" | tail -n1)
 		S=$(echo "$RES" | cut -d' ' -f1)
 		Q=$(echo "$RES" | cut -d' ' -f2)
 
