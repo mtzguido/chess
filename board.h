@@ -136,9 +136,6 @@ static inline bool isCapture(const move m) {
 }
 
 static inline bool isPromotion(const move m) {
-	if (m.move_type != MOVE_REGULAR)
-		return false;
-
 	return m.promote != EMPTY;
 }
 

@@ -7,10 +7,15 @@
 static move killerTable[KTABLE_SIZE][KILLER_WIDTH];
 
 void killer_reset() {
-	int i, j;
+	int i;
+
+	/*
+	 * Only mark the first entry as invalid,
+	 * the scoring function will find it and
+	 * stop without checking the others
+	 */
 	for (i = 0; i < KTABLE_SIZE; i++)
-		for (j = 0; j < KILLER_WIDTH; j++)
-			killerTable[i][j].move_type = MOVE_INVAL;
+		killerTable[i][0].move_type = MOVE_INVAL;
 }
 
 void killer_score_succs(int depth) {
@@ -20,11 +25,18 @@ void killer_score_succs(int depth) {
 		return;
 
 	for (k = 0; k < KILLER_WIDTH; k++) {
-		if (killerTable[depth][k].move_type == MOVE_INVAL)
-			break;
+		const move m = killerTable[depth][k];
+
+		/*
+		 * The table is filled left to right, so if we
+		 * have an empty entry there are no more valid
+		 * ones
+		 */
+		if (m.move_type == MOVE_INVAL)
+			return;
 
 		for (i = first_succ[ply]; i < first_succ[ply+1]; i++) {
-			if (equalMove(gsuccs[i].m, killerTable[depth][k])) {
+			if (equalMove(gsuccs[i].m, m)) {
 				gsuccs[i].s += KILLER_SCORE;
 				break;
 			}
@@ -38,20 +50,23 @@ void killer_notify_cut(move m, int depth) {
 	if (depth > KTABLE_SIZE)
 		return;
 
-	for (i = 0; i < KILLER_WIDTH; i++)
-		if (equalMove(killerTable[depth][i], m)) {
+	for (i = 0; i < KILLER_WIDTH; i++) {
+		move *tm = &killerTable[depth][i];
+
+		if (equalMove(*tm, m)) {
 			if (i != 0) {
 				move swap;
 
-				swap = killerTable[depth][i];
-				killerTable[depth][i] = killerTable[depth][0];
+				swap = *tm;
+				*tm = killerTable[depth][0];
 				killerTable[depth][0] = swap;
 			}
 
 			return;
 		}
+	}
 
-	for (i=KILLER_WIDTH-1; i >= 1; i--)
+	for (i = KILLER_WIDTH-1; i >= 1; i--)
 		killerTable[depth][i] = killerTable[depth][i-1];
 
 	killerTable[depth][0] = m;

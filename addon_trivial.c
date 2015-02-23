@@ -21,10 +21,9 @@ void trivial_score_succs(int depth) {
 		}
 
 		if (enemy != EMPTY) {
-			gsuccs[i].s += CAPT_SCORE;
-			gsuccs[i].s += mvv_lva(our, enemy);
+			gsuccs[i].s += CAPT_SCORE + mvv_lva(our, enemy);
 		} else {
-			/* Rank more valuable pieces a bit higher */
+			/* Rank moves of more valuable pieces a bit higher */
 			gsuccs[i].s += toWhite(our);
 		}
 	}

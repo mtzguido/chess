@@ -68,7 +68,7 @@ void trans_score_succs(int depth) {
 		if (equalMove(gsuccs[i].m, tt[idx].m)) {
 			gsuccs[i].s += TRANS_SCORE;
 			stats.tt_hits++;
-			break;
+			return;
 		}
 	}
 }

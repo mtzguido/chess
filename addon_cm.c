@@ -16,6 +16,9 @@ void cm_reset() {
 void cm_score_succs(int depth) {
 	int i;
 
+	if (hply < 1)
+		return;
+
 	/* Buscamos la counter move */
 	const move l = hstack[hply - 1].m;
 	const move m = counterTable[G->turn][l.r][l.c][l.R][l.C];
