@@ -38,9 +38,18 @@ void killer_notify_cut(move m, int depth) {
 	if (depth > KTABLE_SIZE)
 		return;
 
-	for (i=0; i<KILLER_WIDTH; i++)
-		if (equalMove(killerTable[depth][i], m))
+	for (i = 0; i < KILLER_WIDTH; i++)
+		if (equalMove(killerTable[depth][i], m)) {
+			if (i != 0) {
+				move swap;
+
+				swap = killerTable[depth][i];
+				killerTable[depth][i] = killerTable[depth][0];
+				killerTable[depth][0] = swap;
+			}
+
 			return;
+		}
 
 	for (i=KILLER_WIDTH-1; i >= 1; i--)
 		killerTable[depth][i] = killerTable[depth][i-1];
