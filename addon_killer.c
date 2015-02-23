@@ -21,7 +21,7 @@ void killer_score_succs(int depth) {
 
 	for (k = 0; k < KILLER_WIDTH; k++) {
 		if (killerTable[depth][k].move_type == MOVE_INVAL)
-			continue;
+			break;
 
 		for (i = first_succ[ply]; i < first_succ[ply+1]; i++) {
 			if (equalMove(gsuccs[i].m, killerTable[depth][k])) {
