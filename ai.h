@@ -50,8 +50,8 @@ move machineMove(unsigned long long maxms);
 #define CASTLE_YY		(-5)
 
 /* Move ordering scores */
+#define CM_SCORE		150
 #define CAPT_SCORE		200
-#define CM_SCORE		500
 #define PROMOTE_SCORE		800
 #define KILLER_SCORE		1000
 #define TRANS_SCORE		10000
