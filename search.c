@@ -420,8 +420,8 @@ score _negamax(int depth, move *mm, score alpha, score beta) {
 		}
 
 		/*
-		 * Research if the LMR didn't fail low (or if we
-		 * didn't attemp one)
+		 * Re-search if the LMR didn't fail low (or if we
+		 * didn't attempt one)
 		 */
 		if (t > alpha)
 			t = -negamax(depth - 1, NULL, -beta, -alpha);
