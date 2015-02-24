@@ -215,6 +215,9 @@ static void xboard_main() {
 			dbg("timing info: %i %i %i %i = %lli\n", movesleft,
 					movesmax, timeleft, timemax, maxms);
 
+			if (maxms <= 0)
+				maxms = 1;
+
 			move m = machineMove(maxms);
 
 			check = doMove(m);
