@@ -35,6 +35,9 @@ void cm_score_succs(int depth) {
 }
 
 void cm_notify_cut(move m, int depth) {
+	if (hply < 1)
+		return;
+
 	move om = hstack[hply - 1].m;
 	counterTable[G->turn][om.r][om.c][om.R][om.C] = m;
 }
