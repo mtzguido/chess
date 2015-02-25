@@ -40,7 +40,7 @@ struct game_struct {
 	int pieceScore[2];
 	int pawn_rank[2][10];
 
-	u8 n_piece[15];
+	u8 n_piece[16];
 
 	u8 idlecount;
 	bool castle_king[2];
