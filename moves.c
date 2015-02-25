@@ -233,7 +233,7 @@ static void epCalc(move m) {
 
 static void calcPromotion(move m) {
 	if (m.R == (m.who == WHITE ? 0 : 7)) {
-		piece_t new_piece = m.who == WHITE ? m.promote : (8 | m.promote);
+		piece_t new_piece = mkPiece(m.promote, m.who);
 
 		setPiece(m.r, m.c, new_piece);
 		hstack[hply].was_promote = true;
@@ -321,8 +321,8 @@ static bool doMoveNull(move m, bool check) {
 
 static bool doMoveKCastle(move m, bool check) {
 	const u8 rank = m.who == WHITE ? 7 : 0;
-	const piece_t kpiece = m.who == WHITE ? WKING : BKING;
-	const piece_t rpiece = m.who == WHITE ? WROOK : BROOK;
+	const piece_t kpiece = mkPiece(WKING, m.who);
+	const piece_t rpiece = mkPiece(WROOK, m.who);
 
 	if (check) {
 		if (!(G->castle_king[m.who]
@@ -380,8 +380,8 @@ static bool doMoveKCastle(move m, bool check) {
 
 static bool doMoveQCastle(move m, bool check) {
 	const u8 rank = m.who == WHITE ? 7 : 0;
-	const piece_t kpiece = m.who == WHITE ? WKING : BKING;
-	const piece_t rpiece = m.who == WHITE ? WROOK : BROOK;
+	const piece_t kpiece = mkPiece(WKING, m.who);
+	const piece_t rpiece = mkPiece(WROOK, m.who);
 
 	if (check) {
 		if (!(G->castle_queen[m.who]
@@ -530,8 +530,9 @@ bool doMove_unchecked(move m) {
 }
 
 void undoMoveRegular(move m) {
-	const piece_t pawn     = m.who == WHITE ? WPAWN : BPAWN;
-	const piece_t opp_pawn = m.who == WHITE ? BPAWN : WPAWN;
+
+	const piece_t pawn     = mkPiece(WPAWN, m.who);
+	const piece_t opp_pawn = mkEnemyPiece(WPAWN, m.who);
 
 	movePiece(m.R, m.C, m.r, m.c);
 

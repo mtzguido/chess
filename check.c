@@ -5,8 +5,8 @@
 
 static bool inCheck_row_e(int kr, int kc, int who) {
 	int i, j;
-	const piece_t enemy_q = who == WHITE ? BQUEEN : WQUEEN;
-	const piece_t enemy_r = who == WHITE ? BROOK : WROOK;
+	const piece_t enemy_q = mkEnemyPiece(WQUEEN, who);
+	const piece_t enemy_r = mkEnemyPiece(WROOK, who);
 
 	if (!(G->piecemask[flipTurn(who)] & row_e_mask[kr*8+kc]))
 		return false;
@@ -27,8 +27,8 @@ static bool inCheck_row_e(int kr, int kc, int who) {
 
 static bool inCheck_row_w(int kr, int kc, int who) {
 	int i, j;
-	const piece_t enemy_q = who == WHITE ? BQUEEN : WQUEEN;
-	const piece_t enemy_r = who == WHITE ? BROOK : WROOK;
+	const piece_t enemy_q = mkEnemyPiece(WQUEEN, who);
+	const piece_t enemy_r = mkEnemyPiece(WROOK, who);
 
 	if (!(G->piecemask[flipTurn(who)] & row_w_mask[kr*8+kc]))
 		return false;
@@ -49,8 +49,8 @@ static bool inCheck_row_w(int kr, int kc, int who) {
 
 static bool inCheck_col_s(int kr, int kc, int who) {
 	int i, j;
-	const piece_t enemy_q = who == WHITE ? BQUEEN : WQUEEN;
-	const piece_t enemy_r = who == WHITE ? BROOK : WROOK;
+	const piece_t enemy_q = mkEnemyPiece(WQUEEN, who);
+	const piece_t enemy_r = mkEnemyPiece(WROOK, who);
 
 	if (!(G->piecemask[flipTurn(who)] & col_s_mask[kr*8+kc]))
 		return 0;
@@ -71,8 +71,8 @@ static bool inCheck_col_s(int kr, int kc, int who) {
 
 static bool inCheck_col_n(int kr, int kc, int who) {
 	int i, j;
-	const piece_t enemy_q = who == WHITE ? BQUEEN : WQUEEN;
-	const piece_t enemy_r = who == WHITE ? BROOK : WROOK;
+	const piece_t enemy_q = mkEnemyPiece(WQUEEN, who);
+	const piece_t enemy_r = mkEnemyPiece(WROOK, who);
 
 	if (!(G->piecemask[flipTurn(who)] & col_n_mask[kr*8+kc]))
 		return 0;
@@ -93,8 +93,8 @@ static bool inCheck_col_n(int kr, int kc, int who) {
 
 static bool inCheck_diag_sw(int kr, int kc, int who) {
 	int i, j;
-	const piece_t enemy_q = who == WHITE ? BQUEEN : WQUEEN;
-	const piece_t enemy_b = who == WHITE ? BBISHOP : WBISHOP;
+	const piece_t enemy_q = mkEnemyPiece(WQUEEN, who);
+	const piece_t enemy_b = mkEnemyPiece(WBISHOP, who);
 
 	if (!(G->piecemask[flipTurn(who)] & diag_sw_mask[kr*8+kc]))
 		return false;
@@ -115,8 +115,8 @@ static bool inCheck_diag_sw(int kr, int kc, int who) {
 
 static bool inCheck_diag_nw(int kr, int kc, int who) {
 	int i, j;
-	const piece_t enemy_q = who == WHITE ? BQUEEN : WQUEEN;
-	const piece_t enemy_b = who == WHITE ? BBISHOP : WBISHOP;
+	const piece_t enemy_q = mkEnemyPiece(WQUEEN, who);
+	const piece_t enemy_b = mkEnemyPiece(WBISHOP, who);
 
 	if (!(G->piecemask[flipTurn(who)] & diag_nw_mask[kr*8+kc]))
 		return false;
@@ -136,8 +136,8 @@ static bool inCheck_diag_nw(int kr, int kc, int who) {
 
 static bool inCheck_diag_se(int kr, int kc, int who) {
 	int i, j;
-	const piece_t enemy_q = who == WHITE ? BQUEEN : WQUEEN;
-	const piece_t enemy_b = who == WHITE ? BBISHOP : WBISHOP;
+	const piece_t enemy_q = mkEnemyPiece(WQUEEN, who);
+	const piece_t enemy_b = mkEnemyPiece(WBISHOP, who);
 
 	if (!(G->piecemask[flipTurn(who)] & diag_se_mask[kr*8+kc]))
 		return false;
@@ -157,8 +157,8 @@ static bool inCheck_diag_se(int kr, int kc, int who) {
 
 static bool inCheck_diag_ne(int kr, int kc, int who) {
 	int i, j;
-	const piece_t enemy_q = who == WHITE ? BQUEEN : WQUEEN;
-	const piece_t enemy_b = who == WHITE ? BBISHOP : WBISHOP;
+	const piece_t enemy_q = mkEnemyPiece(WQUEEN, who);
+	const piece_t enemy_b = mkEnemyPiece(WBISHOP, who);
 
 	if (!(G->piecemask[flipTurn(who)] & diag_ne_mask[kr*8+kc]))
 		return false;
@@ -177,7 +177,7 @@ static bool inCheck_diag_ne(int kr, int kc, int who) {
 }
 
 static bool inCheck_knig(int kr, int kc, int who) {
-	const piece_t enemy_kn = who == WHITE ? BKNIGHT : WKNIGHT;
+	const piece_t enemy_kn = mkEnemyPiece(WKNIGHT, who);
 
 	if (!(G->piecemask[flipTurn(who)] & knight_mask[kr*8+kc]))
 		return false;

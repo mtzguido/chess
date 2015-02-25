@@ -800,7 +800,7 @@ static void queenCaps(i8 r, i8 c) {
 
 static void castleSuccs() {
 	const piece_t kr = G->turn == WHITE ? 7 : 0;
-	const piece_t rpiece = G->turn == WHITE ? WROOK : BROOK;
+	const piece_t rpiece = mkPiece(WROOK, G->turn);
 	move m = {0};
 
 	m.who = G->turn;
