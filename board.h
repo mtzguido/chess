@@ -94,8 +94,22 @@ extern game const G;
 #define isRook(c)	((c&7) == WROOK)
 #define isQueen(c)	((c&7) == WQUEEN)
 #define isKing(c)	((c&7) == WKING)
-#define colorOf(c)	(!((c)&8))
-#define toWhite(c)	((c)&7)
+
+static inline int colorOf(piece_t p) {
+	return !(p & 8);
+}
+
+static inline int toWhite(piece_t p) {
+	return p & 7;
+}
+
+static inline piece_t mkPiece(piece_t p, int col) {
+	return p | (col == WHITE ? 0 : 8);
+}
+
+static inline piece_t mkEnemyPiece(piece_t p, int col) {
+	return p | (col == WHITE ? 8 : 0);
+}
 
 void startingGame(void);
 
