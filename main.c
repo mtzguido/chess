@@ -406,7 +406,7 @@ static void xboard_main() {
 			continue;
 		}
 
-		syslog(LOG_ERR, "Error (unknown command): %s\n", cmd);
+		dbg("Error (unknown command): %s\n", cmd);
 	}
 }
 
