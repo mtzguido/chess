@@ -62,9 +62,10 @@ CFLAGS += -DCFG_TTABLE_SIZE=${CONFIG_TTABLE_SIZE}
 
 TAG = $(shell git describe --dirty --tags)
 MODS_STRING = $(if $(MODS),($(shell echo $(MODS) | sed 's/ /,/g')),)
-CFLAGS += -DCHESS_VERSION='"$(TAG)$(MODS_STRING)"'
-CFLAGS += -DCHESS_BUILD_DATE='"$(shell date)"'
-CFLAGS += -DCHESS_BUILD_HOST='"$(shell hostname)"'
+
+CFLAGS_autoversion.c += -DCHESS_VERSION='"$(TAG)$(MODS_STRING)"'
+CFLAGS_autoversion.c += -DCHESS_BUILD_DATE='"$(shell date)"'
+CFLAGS_autoversion.c += -DCHESS_BUILD_HOST='"$(shell hostname)"'
 
 mods=	ai	\
 	search	\
@@ -135,15 +136,15 @@ tools/mask-gen: tools/mask-gen.o
 
 %.o: %.c .config
 	$(Q)$(SAY) "  CC	$@"
-	$(Q)$(CC) $(CFLAGS) -c $<	-o $@
+	$(Q)$(CC) $(CFLAGS) $(CFLAGS_$<) -c $<	-o $@
 
 %.s: %.c .config
 	$(Q)$(SAY) "  AS	$@"
-	$(Q)$(CC) $(CFLAGS) -S -fverbose-asm $<	-o $@
+	$(Q)$(CC) $(CFLAGS) $(CFLAGS_$<) -S -fverbose-asm $<	-o $@
 
 %.i: %.c .config
 	$(Q)$(SAY) "  CPP	$@"
-	$(Q)$(CC) $(CFLAGS) -E $<	-o $@
+	$(Q)$(CC) $(CFLAGS) $(CFLAGS_$<) -E $<	-o $@
 
 clean:
 	$(Q)$(SAY) "CLEAN"
